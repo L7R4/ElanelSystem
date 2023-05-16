@@ -1,0 +1,132 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/resumen.css' %}">
+{% endblock css %}
+
+{% block content %}
+  <div class="filters">
+      <h2>Filtros</h2>
+  </div>
+
+    <!-- Lista de productos -->
+  <div class="information">
+    <div class="container_data">
+      <h2>N° Cliente</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.nro_cliente.nro_cliente}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container_data">
+      <h2>Nombre</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.nombre_completo.nombre}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container_data">
+      <h2>N° Solicitud</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.nro_solicitud}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container_data">
+      <h2>N° Orden</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.nro_orden}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container_data">
+      <h2>Modalidad</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.modalidad}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    
+    <div class="container_data">
+      <h2>N°Cuotas</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.nro_cuotas}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container_data">
+      <h2>Importe</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.importe}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container_data">
+      <h2>Importe x Cuota</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.importe_x_cuota}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container_data">
+      <h2>Fecha Inscripcion</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.fecha}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  
+    <div class="container_data">
+      <h2>Tipo Producto</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.tipo_producto}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container_data">
+      <h2>Producto</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.producto.nombre}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container_data">
+      <h2>Paquete</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.paquete}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container_data">
+      <h2>Vendedor</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.vendedor}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="container_data">
+      <h2>Supervisor</h2>
+      <ul>
+        {% for v in ventas %}
+          <li>{{v.supervisor}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    
+  </div>
+   
+{% endblock content %}

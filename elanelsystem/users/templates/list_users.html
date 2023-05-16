@@ -1,0 +1,110 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/list_customers.css' %}">
+{% endblock css %}
+
+{% block content %}
+<div class="information">
+    <div class="container_data">
+        <h2>Nombre</h2>
+        <ul>
+          {% for user in users %}
+          {% if user.nombre %}
+          <li>{{user.nombre}}</li>
+          {% else %}
+          <li>---</li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>Correo</h2>
+        <ul>
+          {% for user in users %}
+          {% if user.email %}
+          <li>{{user.email}}</li>
+          {% else %}
+          <li>---</li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>Rango</h2>
+        <ul>
+          {% for user in users %}
+          {% if user.rango %}
+          <li>{{user.rango}}</li>
+          {% else %}
+          <li>---</li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="container_data">
+        <h2>DNI</h2>
+        <ul>
+          {% for user in users %}
+          {% if user.dni %}
+          <li>{{user.dni}}</li>
+          {% else %}
+          <li>---</li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="container_data">
+        <h2>Domicilio</h2>
+        <ul>
+          {% for user in users %}
+          {% if user.domic %}
+          <li>{{user.domic}}</li>
+          {% else %}
+          <li>---</li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>Provincia</h2>
+        <ul>
+          {% for user in users %}
+          {% if user. %}{% endif %}
+            <li>{{user.prov}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>Telefono</h2>
+        <ul>
+          {% for user in users %}
+          {% if user. %}{% endif %}
+            <li>{{user.tel}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>F-Nacimiento</h2>
+        <ul>
+          {% for user in users %}
+          {% if user. %}{% endif %}
+            <li>{{user.fec_nacimiento}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>F-NACIMIENTO</h2>
+        <ul>
+          {% for user in users %}
+          {% if user. %}{% endif %}
+            <li>{{user.fec_nacimiento}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{% endblock content %}

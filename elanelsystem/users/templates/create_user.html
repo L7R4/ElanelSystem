@@ -1,0 +1,58 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/create_user.css' %}">
+{% endblock css %}
+
+{% block content %}
+    <div class="wrapper_tittle">
+        <h1>CREAR USUARIO</h1>
+    </div>
+    <form method="POST" id = "form_create_user">
+        {% csrf_token %}
+        <div>
+            <label for="id_nombre"> Nombre completo</label>
+            <input type="text" name="nombre" maxlength="100" required="" id="id_nombre">
+            
+        </div>
+        <div>
+            <label for="id_email">Correo electronico</label>
+            <input type="email" name="email" maxlength="254" required="" id="id_email">
+        </div>
+        <div>
+            <label for="id_tel">Telefono</label>
+            <input type="number" name="tel" id="id_tel">
+        </div>
+        <div>
+            <label for="id_rango">Rol</label>
+            <div>
+                <input 
+                type="text"
+                class = "select_input"
+                name="rango"
+                id="id_rango">
+                <img src="{% static 'images/icons/previous.svg' %}" alt="">
+                <ul id="contenedor" class="select">
+                    <li>Admin</li>
+                    <li>Gerente</li>
+                    <li>Secretaria</li>
+                    <li>Vendedor</li>
+                    <li>Supervisor</li>
+                </ul>
+            </div>
+        </div>
+        <div>
+            <label for="id_password1">Contraseña</label>
+            <input type="password" name="password1" required="" id="id_password1">
+        </div>
+        <div>
+            <label for="id_password2">Repita la contraseña</label>
+            <input type="password" name="password2" required="" id="id_password2">
+        </div>
+        <input type="submit">
+    </form>
+{% endblock content %}
+{% block js %}
+    <script src="{% static 'js/input_select_create_user.js' %}"></script>
+{% endblock js %}

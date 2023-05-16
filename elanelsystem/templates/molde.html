@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/molde.css' %}">
+    {% block css %}
+    {% endblock css %}
+    <title>Elanel SYS</title>
+</head>
+<body>
+    <div class="wrapper">
+
+        <aside class="menu active" id="menu">
+            <div class="button_menu-wrapper">
+                <button class="toggle-button">
+                    <img src="{% static 'images/icons/previous.svg' %}" alt="">
+                </button>
+            </div>
+            
+            <ul class="list">
+                <li>
+                    <a href="{% url 'sales:resumen' %}" id="resumen">
+                        <img src="{% static 'images/icons/resumen.svg' %}" alt="">
+                        <p>Resumen</p> 
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'users:list_customers' %}" id="clientes">
+                        <img src="{% static 'images/icons/clientes.png' %}" alt="">
+                        <p>Clientes</p> 
+                    </a>
+                </li>
+                <li><a href="{% url 'sales:create_sale' %}" id="ventas">
+                    <img src="{% static 'images/icons/ventas.png' %}" alt="">
+                    <p>Ventas</p> 
+                </a>
+                </li>
+                <li><a href="#" id="caja">
+                    <img src="{% static 'images/icons/caja.png' %}" alt="">
+                    <p>Caja</p> 
+                </a>
+                </li>
+                <li><a href="#" id="estados">
+                    <img src="{% static 'images/icons/estados.png' %}" alt="">
+                    <p>Estados</p> 
+                </a>
+                </li>
+                <li><a href="#" id="colboradores">
+                    <img src="{% static 'images/icons/colaboradores.png' %}" alt="">
+                    <p>Colaboradores</p>
+                </a>
+                </li>
+                <li class="add_user"><a href="{% url 'users:list_users' %}" id="usuarios">
+                    <img src="{% static 'images/icons/colaboradores.png' %}" alt="">
+                    <p>Usuarios</p>
+                </a>
+                </li>
+
+                {% if user.rango == "Admin" or user.rango == "A" %}
+                <li>
+                    <a href="{% url 'users:create_user' %}" id="add_user">
+                        <img src="{% static 'images/icons/mas.png' %}" alt="">
+                        <p>Agregar usuario</p> 
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </aside>
+
+        <div class="wrapper_content">
+            {% block content %}
+            {% endblock content %}
+        </div>
+
+    </div>
+    
+    <script src="{% static 'js/menu.js' %}"></script>
+
+    {% block js %}
+    {% endblock js %}
+
+</body>
+</html>

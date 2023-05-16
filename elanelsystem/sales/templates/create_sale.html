@@ -1,0 +1,269 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/create_sale.css' %}">
+{% endblock css %}
+
+{% block content %}
+    <div class="wrapper_tittle">
+        <h1>CALCULADORA</h1>
+    </div>
+    <form method="POST" id="form_create_sale">
+        
+        {% csrf_token %}
+        <div class="wrapper_form_user active">
+            <div class="wrapper_input">
+                <label for="id_nro_cliente">N-Cliente</label>
+                <input 
+                    type="text" 
+                    name="nro_cliente"
+                    id="id_nro_cliente"
+                    required
+                >
+            </div>
+                
+            <div class="wrapper_input">
+                <label for="nombre_completo">Nombre-Cliente</label>
+                <div>
+                    <input 
+                    type="text"
+                    class = "select_input select_input_clientes"
+                    name="nombre_completo"
+                    id="nombre_completo">
+                    <img src="{% static 'images/icons/previous.svg' %}" alt="">
+                    <ul id="contenedor" class="select">
+                        {% for customer in customers %}
+                        <li class = "">{{customer.nombre}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="wrapper_input">
+                <label for="nro_solicitud">N-Solicitud</label>
+                <input 
+                    type="text" 
+                    name="nro_solicitud"
+                    id="nro_solicitud"
+                >
+            </div>
+    
+
+    
+            <div class="wrapper_input">
+                <label for="fecha">Fecha</label>
+                <input 
+                    type="text" 
+                    name="fecha"
+                    id="fecha"
+                    readonly
+                >
+            </div>
+    
+            
+    
+            <div class="wrapper_input">
+                <label for="nro_orden">N-Orden</label>
+                <input 
+                    type="text" 
+                    name="nro_orden"
+                    id="nro_orden"
+                >
+            </div>
+    
+            <div class="wrapper_input">
+                <label for="vendedor">Vendedor</label>
+                <div>
+                    <input 
+                        type="text" 
+                        name="vendedor"
+                        id="vendedor"
+                        class = "select_input select_input_users"
+                    >
+                    <img src="{% static 'images/icons/previous.svg' %}" alt="">
+                    <ul id="contenedor" class="select">
+                        {% for user in usuarios %}
+                            {% if user.rango == "Vendedor" %}
+                                <li class = "">{{user}}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+    
+            <div class="wrapper_input">
+                <label for="supervisor">Supervisor</label>
+                <div>
+                    <input 
+                        type="text" 
+                        name="supervisor"
+                        id="supervisor"
+                        class = "select_input select_input_users"
+                    >
+                    <img src="{% static 'images/icons/previous.svg' %}" alt="">
+                    <ul id="contenedor" class="select">
+                        {% for user in usuarios %}
+                            {% if user.rango == "Supervisor" %}
+                                <li class = "">{{user}}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+    
+            <button id ="next_form_product" type="button"> --> </button>
+        </div>
+
+        <div class="wrapper_form_product">
+            <div class="wrapper_input">
+                <label for="modalidad">Modalidad</label>
+                <div>
+                    <input 
+                        type="text"
+                        name="modalidad"
+                        id="modalidad"
+                    >
+                    <img src="{% static 'images/icons/previous.svg' %}" alt="">
+                    <ul id="contenedor" class="select">
+                        <li>Semanal</li>
+                        <li>Mensual</li>
+                        <li>Bimestral</li>
+                    </ul>
+                </div>
+                
+            </div>
+    
+            <div class="wrapper_input">
+                <label for="nro_cuotas">Nro de Cuotas</label>
+                <input 
+                    type="text" 
+                    name="nro_cuotas"
+                    id="nro_cuotas"
+                >
+            </div>
+
+            <div class="wrapper_input">
+                <label for="importe">Importe</label>
+                <input 
+                    type="number" 
+                    name="importe"
+                    id="importe"
+                >
+            </div>
+    
+            <div class="wrapper_input">
+                <label for="tasa_interes">Tasa de Interes</label>
+                <input 
+                    type="number" 
+                    name="tasa_interes"
+                    id="tasa_interes"
+                    value = 0
+                    readonly
+                >
+            </div>
+
+            <div class="wrapper_input">
+                <label for="intereses_generados">Interes generados</label>
+                <input 
+                    type="number" 
+                    name="intereses_generados"
+                    id="intereses_generados"
+                    value = 0
+                    readonly
+                >
+            </div>
+    
+            <div class="wrapper_input">
+                <label for="importe_x_cuota">Importe/Cuota</label>
+                <input 
+                    type="number" 
+                    name="importe_x_cuota"
+                    id="importe_x_cuota"
+                    value = 0
+                    readonly
+                >
+            </div>
+    
+            <div class="wrapper_input">
+                <label for="total_a_pagar">Total a pagar</label>
+                <input 
+                    type="number" 
+                    name="total_a_pagar"
+                    id="total_a_pagar"
+                    value = 0
+                    readonly
+                >
+            </div>
+            <div class="wrapper_input">
+                <label for="tipo_producto">Tipo de Producto</label>
+                <div>
+                    <input 
+                        type="text" 
+                        name="tipo_producto"
+                        id="tipo_producto"
+                        class = "select_input_products"
+                    >
+                    <img src="{% static 'images/icons/previous.svg' %}" alt="">
+                    <ul id="contenedor" class="select">
+                        <li>Prestamo</li>
+                        <li>Moto</li>
+                        <li>Electrodomestico</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="wrapper_input">
+                <label for="producto">Producto</label>
+                <div>
+                    <input 
+                        type="text" 
+                        name="producto"
+                        id="producto"
+                        class = "select_input select_input_products"
+                        readonly
+                    >
+                    <img src="{% static 'images/icons/previous.svg' %}" alt="">
+                    <ul id="contenedor" class="select">
+                        {% for product in products %}
+                        <li class = "">{{product.nombre}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="wrapper_input">
+                <label for="paquete">Paquete</label>
+                <div>
+                    <input 
+                        type="text" 
+                        name="paquete"
+                        id="paquete"
+                        class = "select_input_products"
+                    >
+                    <img src="{% static 'images/icons/previous.svg' %}" alt="">
+                    <ul id="contenedor" class="select">
+                        <li>Basico</li>
+                        <li>Estandar</li>
+                        <li>Premium</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="wrapper_input">
+                <label for="observaciones">Observaciones</label>
+                <input 
+                    type="text" 
+                    name="observaciones"
+                    id="observaciones"
+                >
+            </div>
+            <button id ="next_form_user" type="button"> <-- </button>
+            <input type="submit" value="Enviar">
+        </div>
+
+        
+    </form>
+
+{% endblock content %}
+{% block js %}
+    <script src="{% static 'js/form_create_sale.js' %}"></script>
+    <script src="{% static 'js/inputs_selects_create_sale.js' %}"></script>
+    <script src="{% static 'js/displays_forms_calculadora.js' %}"></script>
+{% endblock js %}

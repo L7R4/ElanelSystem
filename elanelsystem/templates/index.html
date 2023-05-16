@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <title>Elanel SYS</title>
+</head>
+<body>
+    <div class="wrapper">
+        <img src="{% static 'images/circulo1.svg' %}" alt="" id = "top_left_circle">
+        <img src="{% static 'images/circulo2.svg' %}" alt="" id = "bottom_left_circle">
+        <div class="logo">
+            <figure><img src="{% static 'images/logo_index.png' %}" alt=""></figure>
+        </div>
+        <div class="form_wrapper">
+            <form method = "post">
+                <h2>INICIAR SESION</h2>
+                {% csrf_token %}
+                {% comment %} {{form.as_p}} {% endcomment %}
+                <input type="text" name="username" class="credenciales" maxlength="254" required="" id="id_username" placeholder = "Correo Electronico" autocomplete="off">
+                <input type="password" name="password" class="credenciales" required="" id="id_password" placeholder = "Contraseña" autocomplete ="off">
+                <input type="submit" value="Ingresar">
+            </form>
+        </div>
+    </div>
+</body>
+</html>

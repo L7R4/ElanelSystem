@@ -1,0 +1,150 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/list_customers.css' %}">
+{% endblock css %}
+
+{% block content %}
+<div class="filters">
+    <div>
+        <input 
+        type="text"
+        class = "customer"
+        id="customer">
+        <img src="{% static 'images/icons/search.svg' %}" alt="">
+    </div>
+</div>
+<div class="information">
+    
+    <div class="container_data">
+        <h2>N° CLIENTE</h2>
+        <ul>
+          {% for customer in customers %}
+            <li>{{customer.nro_cliente}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>NOMBRE</h2>
+        <ul>
+          {% for customer in customers %}
+            <li>{{customer.nombre}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>DNI</h2>
+        <ul>
+          {% for customer in customers %}
+            <li>{{customer.dni}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="container_data">
+        <h2>DOMICILIO</h2>
+        <ul>
+          {% for customer in customers %}
+            <li>{{customer.domic}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+
+    <div class="container_data">
+        <h2>LOCALIDAD</h2>
+        <ul>
+          {% for customer in customers %}
+            <li>{{customer.loc}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>PROVINCIA</h2>
+        <ul>
+          {% for customer in customers %}
+            <li>{{customer.prov}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>COD-POSTAL</h2>
+        <ul>
+          {% for customer in customers %}
+            <li>{{customer.cod_postal}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>TELEFONO</h2>
+        <ul>
+          {% for customer in customers %}
+            <li>{{customer.tel}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>F-NACIMIENTO</h2>
+        <ul>
+          {% for customer in customers %}
+            <li>{{customer.fec_nacimiento}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>ESTADO CIVIL</h2>
+        <ul>
+          {% for customer in customers %}
+            <li>{{customer.estado_civil}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+    <div class="container_data">
+        <h2>OCUPACION</h2>
+        <ul>
+          {% for customer in customers %}
+            <li>{{customer.ocupacion}}</li>
+          {% endfor %}
+        </ul>
+    </div>
+</div> 
+
+{% comment %} <div class="products">
+  <div class="titles">
+    <h2>N° Cliente</h2>
+    <h2>Nombre</h2>
+    <h2>DNI</h2>
+    <h2>Domicilio</h2>
+    <h2>Localidad</h2>
+    <h2>Provincia</h2>
+    <h2>Cod-Postal</h2>
+    <h2>Telefono</h2>
+    <h2>F-Nacimiento</h2>
+    <h2>Estado Civil</h2>
+    <h2>Ocupacion</h2>
+  </div>
+  <div class = "container_data">
+    <ul>
+      {% for customer in customers %}
+      <li>
+        <h4>{{customer.nro_cliente}}</h4>
+        <h4>{{customer.nombre}}</h4>
+        <h4>{{customer.dni}}</h4>
+        <h4>{{customer.domic}}</h4>
+        <h4>{{customer.loc}}</h4>
+        <h4>{{customer.prov}}</h4>
+        <h4>{{customer.cod_postal}}</h4>
+        <h4>{{customer.tel}}</h4>
+        <h4>{{customer.fec_nacimiento}}</h4>
+        <h4>{{customer.estado_civil}}</h4>
+        <h4>{{customer.ocupacion}}</h4>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div> {% endcomment %}
+
+{% endblock content %}
+{% block js %}
+<script src="{% static 'js/inputs_search_customers.js' %}"></script>
+{% endblock js %}
