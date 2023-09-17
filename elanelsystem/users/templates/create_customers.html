@@ -1,0 +1,140 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/create_customer.css' %}">
+{% endblock css %}
+    
+{% block content %}
+    <div class="wrapper_tittle">
+        <h1>NUEVO CLIENTE</h1>
+    </div>
+    <form method="post" id="form_create_customer">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="wrapper_input">
+                <label for="id_nro_cliente">N-Cliente</label>
+                <input 
+                    type="text" 
+                    name="nro_cliente"
+                    id="id_nro_cliente"
+                    required
+                    value="{{customer_number}}"
+                >
+            </div>
+            <div class="wrapper_input">
+                <label for="nombre">Nombre</label>
+                <input 
+                    type="text" 
+                    name="nombre"
+                    id="nombre"
+                    required
+                    {% comment %} value="{{customer_number}}" {% endcomment %}
+                >
+            </div>
+            <div class="wrapper_input">
+                <label for="dni">Dni</label>
+                <input 
+                    type="text" 
+                    name="dni"
+                    id="dni"
+                    required
+                    {% comment %} value="{{customer_number}}" {% endcomment %}
+                >
+            </div>
+        </div>
+       
+        <div class="row">
+            
+            <div class="wrapper_input">
+                <label for="localidad">Localicad</label>
+                <input 
+                    type="text" 
+                    name="loc"
+                    id="localidad"
+                    required
+                    {% comment %} value="{{customer_number}}" {% endcomment %}
+                >
+            </div>
+            <div class="wrapper_input">
+                <label for="provincia">Provincia</label>
+                <input 
+                    type="text" 
+                    name="prov"
+                    id="provincia"
+                    required
+                    {% comment %} value="{{customer_number}}" {% endcomment %}
+                >
+            </div>
+            <div class="wrapper_input">
+                <label for="cod_postal">Cod Postal</label>
+                <input 
+                    type="text" 
+                    name="cod_postal"
+                    id="cod_postal"
+                    required
+                    {% comment %} value="{{customer_number}}" {% endcomment %}
+                >
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="wrapper_input">
+                <label for="domicilio">Domicilio</label>
+                <input 
+                    type="text" 
+                    name="dni"
+                    id="domicilio"
+                    required
+                    {% comment %} value="{{customer_number}}" {% endcomment %}
+                >
+            </div>
+            <div class="wrapper_input">
+                <label for="tel">Telefono</label>
+                <input 
+                    type="text" 
+                    name="tel"
+                    id="tel"
+                    required
+                    {% comment %} value="{{customer_number}}" {% endcomment %}
+                >
+            </div>
+            <div class="wrapper_input">
+                <label for="fec_nacimiento">Fecha de nacimiento</label>
+                <input 
+                    type="text" 
+                    name="fec_nacimiento"
+                    id="fec_nacimiento"
+                    required
+                    {% comment %} value="{{customer_number}}" {% endcomment %}
+                >
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="wrapper_input">
+                <label for="estado_civil">Estado Civil</label>
+                <input 
+                    type="text" 
+                    name="estado_civil"
+                    id="estado_civil"
+                    required
+                    {% comment %} value="{{customer_number}}" {% endcomment %}
+                >
+            </div>
+            <div class="wrapper_input">
+                <label for="ocupacion">Ocupación</label>
+                <input 
+                    type="text" 
+                    name="ocupacion"
+                    id="ocupacion"
+                    required
+                    {% comment %} value="{{customer_number}}" {% endcomment %}
+                >
+            </div>
+        </div>
+        
+        <input type="submit" value="Guardar" id="save_customer">
+    </form>
+{% endblock content %}

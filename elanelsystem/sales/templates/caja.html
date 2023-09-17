@@ -1,0 +1,239 @@
+{% extends 'molde.html' %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/caja.css' %}">
+{% endblock css %}
+
+{% block content %}
+    <div class="filters">
+        <div class="buttonsFilters">
+            <button id="openFilters" type ="button">Filtrar</button>
+            {% if urlFilters != "" %}    
+                <a href="{% url 'sales:caja' %}" id="clear_filters"> Limpiar filtros</a>
+            {% endif %}
+        </div>
+        
+        <div class="modalFilters">
+            <div class="background"></div>
+            <div class="modalWrapperFilter">
+                <button type="button" id="closeFormFilter">
+                    <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                </button>
+                <form method="GET" class="calendarFilter">
+                    <div class="wrapperCalendario">
+                        <div class="fromDate">
+                            <h3>De</h3>
+                            <div class="calendar_button">
+                                <input 
+                                    type="hidden" 
+                                    name="fecha_inicial"
+                                    id="fecha_inicial"
+                                >
+                                <h3 id="fromDateContent">Fecha</h3>
+                                <img src="{% static '/images/icons/icon_calendario.png' %}" alt="">
+                            </div>
+                            <div class="calendar">
+                                <div class="mes">
+                                    <h3 id ="fromMonth_year"></h3>
+                                    <div class="button__change_month">
+                                        <button type="button" id="fromDatePrevIcon"> <img src="{% static 'images/icons/back.png' %}" alt=""> </button>
+                                        <button type="button" id="fromDateNextIcon"> <img src="{% static 'images/icons/next.png' %}" alt=""> </button>
+                                    </div>
+                                </div>
+                                <div class="dias">
+                                    <ul class ="tags">
+                                        <li>Dom</li>
+                                        <li>Lun</li>
+                                        <li>Mar</li>
+                                        <li>Mie</li>
+                                        <li>Jue</li>
+                                        <li>Vie</li>
+                                        <li>Sab</li>
+                                    </ul>
+                                    <ul class="fromDatenumbers"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="toDate">
+                            <h3>Hasta</h3>
+                            <div class="calendar_button">
+                                <input 
+                                    type="hidden" 
+                                    name="fecha_final"
+                                    id="fecha_final"
+                                >
+                                <h3 id="toDateContent">Fecha</h3>
+                                <img src="{% static '/images/icons/icon_calendario.png' %}" alt="">
+                            </div>
+                            <div class="calendar">
+                                <div class="mes">
+                                    <h3 id ="toMonth_year"></h3>
+                                    <div class="button__change_month">
+                                        <button type="button" id="toDatePrevIcon"> <img src="{% static 'images/icons/back.png' %}" alt=""> </button>
+                                        <button type="button" id="toDateNextIcon"> <img src="{% static 'images/icons/next.png' %}" alt=""> </button>
+                                    </div>
+                                </div>
+                                <div class="dias">
+                                    <ul class ="tags">
+                                        <li>Dom</li>
+                                        <li>Lun</li>
+                                        <li>Mar</li>
+                                        <li>Mie</li>
+                                        <li>Jue</li>
+                                        <li>Vie</li>
+                                        <li>Sab</li>
+                                    </ul>
+                                    <ul class="toDatenumbers"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wrapperselectType">
+                        <div class="selectTypePayments">
+                            <div class="wrapperSelectTypePayments">
+                              <h3>Filtrar por tipo de pago</h3>
+                              <div class="selectedOption">
+                                <input type="hidden" name="metodoPago" id ="tipoDePago" value="">
+                                <h2>Elija el tipo</h2>
+                                <img src="{% static 'images/icons/iconMore.png' %}" alt="">
+                              </div>
+                              <ul class="options">
+                                <li>Efectivo</li>
+                                <li>Banco</li>
+                                <li>Mercado Pago</li>
+                                <li>Posnet</li>
+                                <li>Transferencia</li>
+                              </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="wrapperSelectIngresoEgreso">
+                        <h3>Filtrar por:</h3>
+                        <div class="selectEgreso_Ingreso">
+                            <input type="radio" name="tipoMovimiento" id="ingreso" value="ingreso">
+                            <label for="ingreso">Ingreso</label>
+            
+                            <input type="radio" name="tipoMovimiento" id="egreso" value="egreso">
+                            <label for="egreso">Egreso</label>
+                        </div>
+                    </div>
+                    <div class="wrapperselectCobrador">
+                        <div class="selectCobrador">
+                          <h3>Filtrar por cobrador</h3>
+                          <input type="text" name="cobrador" id ="cobradorInput" value="" placeholder ="Elija el cobrador" autocomplete="off">
+                          <ul class="options">
+                                {% for cobrador in cobradores %}
+                                    <li>{{cobrador.nombre}}</li>
+                                {% endfor %}
+                          </ul>
+                        </div>
+                    </div>
+                    <button id="submitFilter" type="submit">Filtrar</button>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <div class ="caja">
+        
+        <div class="movimientos">
+            <div class="tittlesWrapper">
+                <ul class="tittles">
+                    <li>Fecha</li>
+                    <li>Metodo de pago</li>
+                    <li>Monto</li>
+                </ul>   
+            </div>
+          
+            <div class="valuesWrapper">
+                  <ul class="values">
+                    {% for mov in movsFilters %}
+                        <li class="mov" id="{{mov.idMov}}">
+                            <div><p class="fecha">{{mov.fecha_pago}}</p></div>
+                            <div><p class="code">{{mov.metodoPago}}</p></div>
+                            {% language 'de' %}
+                            <div><p class="fecha">${{mov.pagado|floatformat}}</p></div>
+                            {% endlanguage %}
+
+                        </li>
+                    {% endfor %}
+                  </ul>       
+            </div>
+
+            <div id="pagination_container">
+                {% if movsFilters.has_previous %}
+                    <a href="?page={{ movsFilters.previous_page_number }}{{urlFilters}}" id="buttonPreviousMov">Atras</a>
+                {% else %}
+                    <a href="" id="buttonPreviousMov">Atras</a>
+                {% endif %}
+                
+                <h3 class="cuotasPages">{{currentPage}} / {{all_pages}}</h3>
+
+                {% if movsFilters.has_next %}
+                    <a href="?page={{ movsFilters.next_page_number }}{{urlFilters}}" id="buttonNextMov">Siguiente</a>
+                {% else %}
+                    <a href="" id="buttonNextMov">Siguiente</a>
+                {% endif %}
+                
+            </div>
+        </div>
+        <div class="resum">
+            <div class="resum__cuenta">
+                <div class="resum__cuenta__tipoCaja">
+                    <h2>Tipo de caja</h2>
+                    <h4>Saldo en efectivo</h4>
+                    <h4>Saldo en banco</h4>
+                    <h4>Saldo en Mer. Pago</h4>
+                    <h4>Saldo en Posnet</h4>
+                    <h4>Saldo en Transferencia</h4>
+                    <h4>Total</h4>
+                </div>
+                <div class="resum__cuenta__saldo">
+                    <h2>Saldo</h2>
+                    {% language 'de' %}
+                    <h4>${{efectivo}}</h4>
+                    <h4>${{banco}}</h4>
+                    <h4>${{merPago}}</h4>
+                    <h4>${{posnet}}</h4>
+                    <h4>${{transferencia}}</h4>
+                    <h4>${{total}}</h4>
+                    {% endlanguage %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main_modalCuota">
+        <div class="background"></div>
+        <div class="modal">
+            <div>
+                <button type="button" id="closeModal">X</button>
+                <h2 id="numeroVenta"></h2>
+                <h2 id="numeroCuota"></h2>
+                <h2 id="dinero"></h2>
+                <h2 id="metodoPago"></h2>
+                <h2 id="cobrador"></h2>
+                <h2 id="fechaPago"></h2>
+                <h2 id="horaPago"></h2>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block js %}
+<script src="{% static 'js/fillMovimientos.js' %}"></script>
+<script src="{% static 'js/calendario.js' %}"></script>
+<script src="{% static 'js/filterCajaTypesPayment.js' %}"></script>
+<script src="{% static 'js/filterCajaCobrador.js' %}"></script>
+<script src="{% static 'js/filterCajaEgresoIngreso.js' %}"></script>
+<script src="{% static 'js/modalFilters.js' %}"></script>
+<script src="{% static 'js/clearClasses.js' %}"></script>
+{% endblock js %}

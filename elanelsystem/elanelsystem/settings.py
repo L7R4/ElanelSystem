@@ -32,13 +32,14 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
+PDF_STORAGE_DIR = os.path.join(BASE_DIR, 'pdfs')
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.humanize',
     'django.contrib.staticfiles',
     'sales',
     'users',
@@ -118,6 +119,9 @@ TIME_ZONE = 'America/Argentina/Buenos_Aires'
 USE_I18N = True
 
 USE_TZ = True
+
+USE_THOUSAND_SEPARATOR = True
+# THOUSAND_SEPARATOR = "\xa0"
 
 
 # Static files (CSS, JavaScript, Images)

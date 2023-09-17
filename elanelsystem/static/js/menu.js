@@ -5,28 +5,31 @@ const menu = document.getElementById("menu")
 
 if (path_name.includes("resumen")) {
     ClearClass()
-    resumen.classList.add("in_path")
-}else if(path_name.includes("clientes")){
+    resumen.parentElement.classList.add("in_path")
+}else if(path_name.includes("cliente")){
     ClearClass()
-    clientes.classList.add("in_path")
-}else if(path_name.includes("ventas")){
+    clientes.parentElement.classList.add("in_path")
+}else if(path_name.includes("detalle_venta")){
     ClearClass()
-    ventas.classList.add("in_path")
+    clientes.parentElement.classList.add("in_path")
+
 }else if(path_name.includes("caja")){
     ClearClass()
-    caja.classList.add("in_path")
-}else if(path_name.includes("estados")){
-    ClearClass()
-    estados.classList.add("in_path")
+    caja.parentElement.classList.add("in_path")
+
 }else if(path_name.includes("colaboradores")){
     ClearClass()
-    colaboradores.classList.add("in_path")
+    colaboradores.parentElement.classList.add("in_path")
 }else if(path_name.includes("/usuario/crear_usuario/")){
     ClearClass()
-    add_user.classList.add("in_path")
+    add_user.parentElement.classList.add("in_path")
 }else if(path_name.includes("usuario")){
     ClearClass()
-    usuarios.classList.add("in_path")
+    usuarios.parentElement.classList.add("in_path")
+}
+else if(path_name.includes("planes")){
+    ClearClass()
+    planes.parentElement.classList.add("in_path")
 }
 
 button_menu.addEventListener("click", ()=>{

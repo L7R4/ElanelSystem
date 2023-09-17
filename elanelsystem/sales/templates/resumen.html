@@ -6,8 +6,14 @@
 {% endblock css %}
 
 {% block content %}
-  <div class="filters">
-      <h2>Filtros</h2>
+  {% comment %} <div class="filters">
+    <div>
+      <input 
+      type="text"
+      class = "sales"
+      id="sales">
+      <img src="{% static 'images/icons/search.svg' %}" alt="">
+    </div>
   </div>
 
     <!-- Lista de productos -->
@@ -16,7 +22,7 @@
       <h2>N° Cliente</h2>
       <ul>
         {% for v in ventas %}
-          <li>{{v.nro_cliente.nro_cliente}}</li>
+          <li><a href="{% url 'sales:detail_sale' v.id %}">{{v.nro_cliente.nro_cliente}}</a></li>
         {% endfor %}
       </ul>
     </div>
@@ -52,7 +58,6 @@
         {% endfor %}
       </ul>
     </div>
-    
     <div class="container_data">
       <h2>N°Cuotas</h2>
       <ul>
@@ -61,6 +66,7 @@
         {% endfor %}
       </ul>
     </div>
+    
     <div class="container_data">
       <h2>Importe</h2>
       <ul>
@@ -127,6 +133,6 @@
       </ul>
     </div>
     
-  </div>
+  </div> {% endcomment %}
    
 {% endblock content %}

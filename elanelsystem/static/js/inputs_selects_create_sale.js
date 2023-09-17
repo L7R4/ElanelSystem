@@ -1,4 +1,4 @@
-const selects = document.querySelectorAll("#form_create_sale > div > div > img");
+const selects = document.querySelectorAll(".image_display");
 let flag = false;
 window.addEventListener('load',()=>{
     selects.forEach(element => {

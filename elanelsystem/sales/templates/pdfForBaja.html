@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <img src="{% static 'images/logoElanelPDF.png' %}" alt="">
+    <div id ="imageLogo">
+    </div>
+    <div id="subtittle">
+        <h2>Solicitud de baja</h2>
+        <h2>Agencia Corrientes</h2>
+    </div>
+    <div id ="detalle">
+        <h2>Numero de contraro: <strong>{{nroContrato}}</strong></h2>
+        <h2>Cliente: <strong>{{cliente}}</strong></h2>
+        <h2>Domicilio: <strong>{{domicilio}}</strong></h2>
+        <h2>Localidad: <strong>{{localidad}}</strong></h2>
+        <h2>Producto: <strong>{{producto}}</strong></h2>
+        <h2>Pack: <strong>{{pack}}</strong></h2>
+        <h2>Cantidad de cuotas pagas: <strong>{{cantCuotasPagadas}}</strong></h2>
+        <h2>Cantidad de cuotas emitidas: <strong>{{cuotas}}</strong></h2>
+        <h2>Dinero a devolver: <strong>{{dineroDevolver}}</strong></h2>
+        <h2>Motivo de la baja: <strong>{{motivo}}</strong></h2>
+        <h2>Fecha de la baja: <strong>{{fecha}}</strong></h2>
+        <h2>Observaciones: <strong>{{observaciones}}</strong></h2>
+    </div>
+    <div id="contrato">
+        <p>Por la presente solicito la baja del contrato suscripto dejando constancia  que mi voluntad resolutiva importa la extinción  de la relación contractual habida con Elanel Servicios y Soluciones, decisión que ha sido adoptada luego de ser debidamente informado y con pleno conocimiento de las consecuencias de la misma, conforme Art. 4 de la ley 24.240; no teniendo más nada que reclamar en ningún concepto.</p>
+    </div>
+    <div id="firmas">
+        <div>
+            <p>_______________________________</p>
+            <h6><strong>Firma de conformidad</strong></h6>
+        </div>
+        <div>
+            <p>_______________________________</p>
+            <h6><strong>Aclaración de la Firma y DNI</strong></h6>
+        </div>
+        
+    </div>
+</body>
+</html>

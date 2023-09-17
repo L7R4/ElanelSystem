@@ -1,0 +1,329 @@
+{% extends 'molde.html' %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/detail_sale.css' %}">
+{% endblock css %}
+
+{% block content %}
+<div class="wrapper_information">
+    <h1>Operacion n° {{object.nro_operacion}}</h1>
+    {% if object.adjudicado.status %}
+    <h3 class="checkAdj">Credito Personal</h3>
+    {% endif %}
+
+    <div class="information">
+        <div class="inputs" id="producto">
+            <h2>Producto</h2>
+            <div>
+                <h3>{{object.producto.nombre}}</h3>
+            </div>
+        </div>
+        {% if object.adjudicado.status %}
+            <div class="inputs"  id="paquete">
+                <h2>Tipo de adjudicacion</h2>
+                <div>
+                    <h3>{{object.adjudicado.tipo|title }}</h3>
+                </div>
+            </div>
+        {% else %}
+        <div class="inputs"  id="paquete">
+            <h2>Paquete</h2>
+            <div>
+                <h3>{{object.paquete}}</h3>
+            </div>
+        </div>
+        {% endif %}
+        
+
+        <div class="inputs" id="n_solicitud">
+            <h2>N° Solicitud</h2>
+            <div>
+                <h3>{{object.nro_solicitud}}</h3>
+            </div>
+        </div>
+
+        {% if object.adjudicado.status %}
+        {% else %}
+        <div class="inputs" id="n_orden">
+            <h2>N° Orden</h2>
+            <div>
+                <h3>{{object.nro_orden}}</h3>
+            </div>
+        </div>
+
+        {% endif %}
+
+        <div class="inputs" id="fec_inscripcion">
+            <h2>Fecha de inscripcion</h2>
+            <div>
+                <h3>{{object.fecha}}</h3>
+            </div>
+        </div> 
+
+        <div class="inputs" id="montoXCuota">
+            <h2>Monto x Cuota</h2>
+            <div>
+                {% language 'de' %}
+                    <h3>{{object.importe_x_cuota|floatformat:0}}</h3>
+                {% endlanguage %}
+
+            </div>
+        </div>
+        
+        <div class="inputs" id="total_pagar">
+            <h2>Total a pagar</h2>
+            <div>
+                {% language 'de' %}
+                    <h3>{{object.total_a_pagar|floatformat:0}}</h3>
+                {% endlanguage %}
+            </div>
+        </div>
+
+        <div class="inputs" id="anticipo">
+            <h2>Cuota de inscripcion</h2>
+            <div>
+                {% language 'de' %}
+                    <h3>{{object.primer_cuota|floatformat:0}}</h3>
+                {% endlanguage %}
+            </div>
+        </div>
+        {% if object.adjudicado.status %}
+        {% else %}
+        <div class="inputs" id="primer_cuota">
+            <h2>Primer cuota</h2>
+            <div>
+                {% language 'de' %}
+                    <h3>{{object.primer_cuota|floatformat:0}}</h3>
+                {% endlanguage %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="inputs" id="modalidad">
+            <h2>Modalidad</h2>
+            <div>
+                <h3>{{object.modalidad}}</h3>
+            </div>
+        </div>
+        {% if object.adjudicado.status %}
+            <div class="inputs" id="vendedor">
+                <h2>Agencia</h2>
+                <div>
+                    <h3>{{object.agencia}}</h3>
+                </div>
+            </div>
+        {% else %}
+            <div class="inputs" id="vendedor">
+                <h2>Vendedor</h2>
+                <div>
+                    <h3>{{object.vendedor}}</h3>
+                </div>
+            </div>
+
+            <div class="inputs" id="supervisor">
+                <h2>Supervisor</h2>
+                <div>
+                    <h3>{{object.supervisor}}</h3>
+                </div>
+            </div>
+        {% endif %}
+        
+    </div>
+    
+    
+  
+</div>
+{% if  object.deBaja.status %}
+    <div class="wrapper_cuotas enBaja">
+    
+        <div class="cuotas">
+            <h1>Cuotas no disponibles</h1>
+            <h2>La operacion ya fue dada de baja</h2>
+        </div>
+        
+    </div>
+{% else %}
+<div {% if object.adjudicado.status %} class="wrapper_cuotas adjudicado" {% else %}class="wrapper_cuotas" {% endif %}>
+    {% if object.adjudicado.status %}
+    {% else %}
+    <div class="buttonStatusVentas">
+        <div class="buttonDeBaja">
+            <button type="button" id="baja"> Dar baja </button>
+            <div class="formConfirmWrapper">
+                <form method="POST" >
+                    {% csrf_token %}
+                    <div class="inputPorcentajeWrapper">
+                        <div class="input">
+                            <p>Porcentaje</p>
+                            <div id="inputPorcentaje">
+                                <div>
+                                    <input name="porcentage" type="number" value="{{porcetageDefault}}"readonly>
+                                    <p>%</p>
+                                </div>
+                                
+                                <div class="editPorcentajeWrapper">
+                            
+                                    <button type="button" id="editPorcentaje">Editar
+                                        <img src="{% static "images/icons/editar.svg" %}" alt="iconEditar">
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="confirmWrapper">
+                        <h3>¿Estás seguro que quieres dar de baja esta operación?</h3>
+                        <button id="yesConfirm" type="submit" name="option" value="Yes" onclick="abrirNuevaVentana()">Si</button>
+                        <button id="noConfirm" type="button">No</button>
+                    </div>
+                </form>
+            </div>
+            <div class="formClave">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="inputClaveWrapper">
+                        <p>Ingrese la clave</p>
+                        <div id="inputClave">
+                            <input name="clave" type="number" id="clave">
+                            <p>{{errorMessage}}</p>
+                        </div>
+                        
+                    </div>
+                    <div class="confirmClaveWrapper">
+                        <button id="confirm" type="submit" name="confirmClave">Confirmar</button>
+                        <button id="notConfirm" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="selectAdjudicacion">
+            <div class="wrapperSelectAdjudicacion">
+              <div class="selectedOption">
+                <h2>Adjudicar</h2>
+                <img src="{% static 'images/icons/iconMore.png' %}" alt="">
+              </div>
+              <ul class="options">
+                <a href="{% url 'sales:adjSorteo' object.id%}">Por sorteo</a>
+                <a href="{% url 'sales:adjNegociacion' object.id%}">Por negociacion</a>
+              </ul>
+            </div>
+       </div>
+
+       <div class="buttonChangePack">
+            <a href="{% url 'sales:cambioPack' object.id %}">Cambiar pack</a>
+       </div>
+       
+       <div class="buttonChangeTitularidad">
+            <a href="#">Cambiar titularidad</a>
+       </div>
+        
+    </div>
+    {% endif %}
+   
+   <form class="cuotas" method ="POST">
+        {% csrf_token %}
+        <h3>N° Cuotas {{object.nro_cuotas}}</h3>
+        <div id="cuotasForm">
+            <ul class="cuotas_list">
+                {% for cuota in cuotas %}
+                <div class ="cuota">
+                    <div class="marca">
+                        <img src="{% static 'images/icons/iconBloqueado.png' %}" alt="">
+                    </div>
+                    <input type="checkbox" name="cuota" id="{{cuota}}" value ="{{cuota}}">
+                    <label for="{{cuota}}">{{cuota}}</label>
+                </div>
+                
+                {% endfor %}
+            </ul>
+            <div class="tipo_pago">
+                
+                <div class="containerDetalleCuota">
+                    <button type="button" id="closeTipoPago"><img src="{% static 'images/icons/eliminar.svg' %}" alt=""></button>
+                    <div class="descuentoCuota">
+                        <h3>Coloque el dinero</h3>
+                        <div method="POST" class="wrapperDescuentoCuota">
+                            <input type="hidden" name="cuotaParaDescuento" id="cuotaParaDescuento" value="">
+                            <input type="number" id="dineroDescuento" name ="dineroDescuento" value="0">
+                            <button type="button" id="submitDescuento" name="aplicarDescuento">Aplicar</button>
+                        </div>
+                    </div>
+                    <button type="button" id="descuentoCuota"><img src="{% static 'images/icons/descuentoIcon.png' %}" alt=""></button>
+                    <h4 class = "cuotaPicked"></h4>
+                    <h3>Elija el tipo de pago</h3>
+                    <input type="hidden" name="tipodePago" id="tipoPago" value="">
+                    <input type="hidden" name="metodoPago" id="metodoPago" value="">
+                    <input type="hidden" name="cobrador" id="cobrador" value="">
+                </div>
+
+                <div class="typesPayments">
+                    <input type="radio" name="types_payments" id="total" value="total">
+                    <label class="active" for="total">Abonar total</label>
+                    <input type="radio" name="types_payments" id="parcial" value="parcial">
+                    <label for="parcial">Abonar parcial</label>
+                </div>
+
+                <div class="methodPayments">
+                    
+                    <div class="selectCobradorWrapper">
+                        <h4>Elige un cobrador:</h4>
+                        <div class="cobradorSelectedWrapper">
+                            <h3 class="cobrador">-----</h3>
+                        </div>
+                        <ul class="cobradoresList">
+                            {% for cobrador in cobradores %}
+                                <li>{{cobrador.nombre}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="pickedAmount">
+                        <h4>Monto a abonar:</h4>
+                        <input type="text" name="amountParcial" id="amountParcial">
+                        <h5 id="dineroRestante"></h5>
+                    </div>
+
+                    <ul>
+                        <li>Efectivo</li>
+                        <li>Banco</li>
+                        <li>Posnet</li>
+                        <li>Mercado Pago</li>
+                        <li>Transferencia</li>
+                    </ul>
+
+                </div>
+
+                <div class="buttonSubmitWrapper">
+                    <button type="button" name="sendPayment" id="sendPayment" class="blocked">Abonar</button>
+                </div>
+                
+            </div>
+        </div>
+    </form>
+    <div class="cuotaSuccess">
+        <img src="{% static 'images/icons/checkMark.png' %}" alt="">
+        <h2 class="cuotaPagada"></h2>
+    </div>
+</div>
+{% endif %}
+
+
+
+{% endblock content %}
+
+{% block js %}
+<script src="{% static 'js/fetch_form_cuotas2.js' %}"></script>
+<script src="{% static 'js/selectAdjudicacion.js' %}"></script>
+<script src="{% static 'js/buttonBaja.js' %}"></script>
+<script>
+    // Función para abrir una nueva ventana del navegador
+    function abrirNuevaVentana() {
+        window.open("{{urlRedirectPDF}}", '_blank');
+    }
+</script>
+
+{% endblock js %}

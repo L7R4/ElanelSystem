@@ -1,0 +1,225 @@
+.wrapper_content
+{
+    display: flex;
+    /* align-items: center; */
+}
+
+.information
+{
+    width: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.informationWrapperPlan{
+    background-color: #fff;
+    width: 92%;
+    height: 92%;
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.tittles{
+    display: flex;
+    /* column-gap: calc(100% / 6); */
+    list-style: none;
+    width: 100%;
+    justify-content: space-around;  
+}
+.selectMenu
+{
+    width: 20%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+.selectMenu > div
+{
+    height: 92%;
+    width: 100%;
+    display: flex;
+    flex-flow: wrap;
+    justify-content: center;
+}
+
+
+.informationWrapperPlan > .tittlesWrapper{
+    width: 100%;
+    background-color: #3D7CD8;
+}
+.informationWrapperPlan > .tittlesWrapper > .tittles > li{
+    color: white;
+    font-size: 1.6rem;
+    font-family: raleway-semibold;
+    padding: 1rem 0;
+    width: 16.6%;
+    text-align: center;
+}
+.informationWrapperPlan > .valuesWrapper > .values
+{
+    width: 100%;
+    list-style: none;
+
+}
+
+.informationWrapperPlan > .valuesWrapper > .values > li
+{
+    display: flex;
+    font-size: 1.4rem;
+    justify-content: space-around;
+    font-family: raleway-semibold;
+    position: relative;
+    padding: 1rem 0;
+    width: 100%;
+}
+.informationWrapperPlan > .valuesWrapper > .values > li > div
+{
+    width: 16.6%;
+    text-align: center;
+}
+
+.informationWrapperPlan > .buttonCreate
+{
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background-color: #3D7CD8;
+    padding: .6rem;
+    border-radius: .6rem;
+    cursor: pointer;
+}
+.informationWrapperPlan > .buttonCreate > img
+{
+    width: 2.1rem;
+}
+
+
+.selectInformationButtons
+{
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; */
+    align-items: center;
+}
+
+.selectInformationButtons > button
+{
+    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+    padding: 0.8rem 1rem;
+    min-width: 13rem;
+    text-align: center;
+    font-family: raleway-semibold;
+    background-color: white;
+    border-radius: 0.6rem;
+    border-color: transparent;
+    cursor: pointer;
+    outline: none;
+    margin-bottom: 1.3rem;
+}
+.selectInformationButtons > button.active
+{
+    background-color: #3D7CD8;
+    color: white;
+}
+
+
+.editPlan
+{
+    align-self: flex-end;
+}
+
+.editPlan > button
+{
+    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+    padding: 0.8rem 1rem;
+    min-width: 13rem;
+    text-align: center;
+    font-family: raleway-semibold;
+    background-color: white;
+    border-radius: 0.6rem;
+    border-color: transparent;
+    cursor: pointer;
+    outline: none;
+}
+
+
+
+/* MODAL CREAR INSTANCIA */
+.createInstanceBackground
+{
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    left: 0;
+    top: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    z-index: 10;
+    display: none;
+
+}
+
+.createInstanceWrapper{
+    width: 100%;
+    height: 8rem;
+    background-color: #3D7CD8;
+    border-radius: 1rem;
+    position: absolute;
+    bottom: -20%;
+    transition: .1s all linear;
+}
+.createInstanceWrapper.active
+{
+    bottom: 0%;
+}
+.createInstanceWrapper > h3
+{
+    font-family: raleway-semibold;
+    font-size: clamp(1rem, 1.4vw, 1.6rem);
+    color: rgb(17, 17, 17);
+    /* color: rgb(252, 251, 251); */
+    padding: .8rem 1.5rem;
+}
+
+#closeFormCreateInstance
+{
+    position: absolute;
+    top: .6rem;
+    right: 1.5rem;
+    cursor:pointer;
+}
+.buttonClose > img
+{
+    width: 2.2rem;
+}
+
+#formCreateInstance{
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+    row-gap: 1rem;
+
+}
+
+.inputsWrapper
+{
+    width: 16.6%;
+    text-align: center;
+}
+
+.inputsWrapper > input{
+    height: 2.8rem;
+    width: 12rem;
+    background-color: rgba(0, 0, 0, 0.068);
+    border: 2px solid #3D7CD8;
+    border-radius: 1rem;
+    outline: none;
+    text-indent: 1.2rem;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    color: white;
+}

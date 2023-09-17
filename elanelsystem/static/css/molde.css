@@ -56,10 +56,9 @@ aside.menu.active{
   #menu li {
     height: 4rem;
     margin-top: 2rem;
-    
-  }
-  #menu li:hover {
-    background-color: #ddd;
+    position: relative;
+    display: flex;
+    align-items: center;
   }
   .button_menu-wrapper
   {
@@ -81,9 +80,10 @@ aside.menu.active{
     width: fit-content;
     align-items: center;
     text-decoration: none;
-    color: #2D2E2F;
     font-size: clamp(1.5rem, 1.3vw, 1.8rem);
     font-family: raleway-semibold;
+    position: relative;
+    z-index: 2;
   }
   
   #menu > .list > li > a>img{
@@ -93,13 +93,29 @@ aside.menu.active{
   #menu > .list > li > a > p{
     padding: 0 2rem 0rem 1rem;
     white-space: nowrap;
+    color: rgb(32, 53, 85);
+  }
+  #menu > .list > li > .check{
+    background-color: #3d7bd8;
+    border-radius: .4rem;
+    height: 90%;
+    width: 1.7rem;
+    position: absolute;
+    z-index: 1;
+    left: -2.6rem;
+    display: none;
+  }
+  #menu > .list > li:hover > .check{
+    display: block;
+    background-color: #3d7bd83b;
+  }
+  #menu > .list > li.in_path > .check
+  {
+    display: block;
   }
 
-  #menu > .list > li > a.in_path
-  {
-    background-color: #3D7CD8;
-    border-radius: 1rem;
-  }
+  
+
   /* Estilos para el botón que abre y cierra el aside */
   .toggle-button {
     border: none;
@@ -125,6 +141,7 @@ aside.menu{
     width: 1rem;
     rotate: 180deg;
     transition: all 0.3s ease-in-out;
+    filter: invert(1);
 }
 
 .wrapper_content
@@ -141,6 +158,14 @@ aside.menu{
   border-radius: 5px;
 }
 .wrapper_content::-webkit-scrollbar-thumb{
+  background: #fff;
+  border-radius: 1rem;
+}
+*::-webkit-scrollbar{
+  width: 4px;
+  border-radius: 5px;
+}
+*::-webkit-scrollbar-thumb{
   background: #fff;
   border-radius: 1rem;
 }

@@ -1,0 +1,91 @@
+{% extends 'molde.html' %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/planes.css' %}">
+{% endblock css %}
+
+{% block content %}
+<div class="information">
+    <div class="informationWrapperPlan">
+        <div class="tittlesWrapper">
+            <ul class="tittles">
+                <li>Valor Nominal</li>
+                <li>Susc. y Cuota 1</li>
+                <li>24 Cuotas</li>
+                <li>30 Cuotas</li>
+                <li>48 Cuotas</li>
+                <li>60 Cuotas</li>
+            </ul>   
+        </div>
+        <div class="valuesWrapper">
+            <ul class="values">
+                {% for p in planes %}
+                    <li {% if p.tipodePlan == "basico" %} class="basico"{% endif %}>
+                        {% language 'de' %}
+                        <div><p>${{p.valor_nominal}}</p></div>
+                        <div><p>${{p.suscripcion}}</p></div>
+                        <div><p>${{p.c24}}</p></div>
+                        <div><p>${{p.c30}}</p></div>
+                        <div><p>${{p.c48}}</p></div>
+                        <div><p>${{p.c60}}</p></div>
+
+                        {% endlanguage %}
+                    </li>
+                {% endfor %} 
+            </ul>  
+            
+            
+        </div>
+        <div class="createInstanceWrapper">
+            <h3>Rellene los campos</h3>
+            <div class="buttonClose">
+                <img src="{% static 'images/icons/eliminar.svg' %}" id="closeFormCreateInstance"alt="">
+            </div>
+            <form id="formCreateInstance" method="POST">
+                {% csrf_token %}
+                <div class="inputsWrapper">
+                    <input type="text" name="valorNominal" id="valorNominal" value="$">
+                </div>
+                <div class="inputsWrapper">
+                    <input type="text" name="suscripcion" id="suscripcion" value="$">
+                    <input type="hidden" name="cuota1" id="cuota1" value="">
+
+                </div>
+                <div class="inputsWrapper">
+                    <input type="text" name="c24" id="c24" value="$">
+                </div>
+                <div class="inputsWrapper">
+                    <input type="text" name="c30" id="c30" value="$">
+                </div>
+                <div class="inputsWrapper">
+                    <input type="text" name="c48" id="c48" value="$">
+                </div>
+                <div class="inputsWrapper">
+                    <input type="text" name="c60" id="c60" value="$">
+                </div>
+            </form>
+        </div>
+        <div class="buttonCreate"><img src="{% static 'images/icons/mas.png' %}" alt=""></div>
+    </div>
+</div>
+
+<div class="selectMenu">
+    <div>
+        <div class="selectInformationButtons">
+            <button type="button" id="planesUrl">Planes</button>
+            <button type="button">Motos</button>
+            <button type="button">Combos</button>
+        </div>
+        <div class="editPlan">
+            <button type="button">Editar Planes</button>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block js %}
+<script src="{% static 'js/modalCreateInstance.js' %}"></script>
+{% endblock js %}

@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -26,45 +27,59 @@
                         <img src="{% static 'images/icons/resumen.svg' %}" alt="">
                         <p>Resumen</p> 
                     </a>
+                    <div class="check"></div>
                 </li>
                 <li>
                     <a href="{% url 'users:list_customers' %}" id="clientes">
-                        <img src="{% static 'images/icons/clientes.png' %}" alt="">
+                        <img src="{% static 'images/icons/clientes.svg' %}" alt="">
                         <p>Clientes</p> 
                     </a>
+                    <div class="check"></div>
                 </li>
-                <li><a href="{% url 'sales:create_sale' %}" id="ventas">
+                {% comment %} <li><a href="{% url 'sales:create_sale' %}" id="ventas">
                     <img src="{% static 'images/icons/ventas.png' %}" alt="">
                     <p>Ventas</p> 
                 </a>
+                </li> {% endcomment %}
+                <li>
+                    <a href="{% url 'sales:caja' %}" id="caja">
+                        <img src="{% static 'images/icons/dinero.svg' %}" alt="">
+                        <p>Caja</p> 
+                    </a>
+                    <div class="check"></div>
                 </li>
-                <li><a href="#" id="caja">
-                    <img src="{% static 'images/icons/caja.png' %}" alt="">
-                    <p>Caja</p> 
-                </a>
+                <li>
+                    <a href="#" id="colboradores">
+                        <img src="{% static 'images/icons/colaboradores.svg' %}" alt="">
+                        <p>Colaboradores</p>
+                    </a>
+                    <div class="check"></div>
                 </li>
-                <li><a href="#" id="estados">
-                    <img src="{% static 'images/icons/estados.png' %}" alt="">
-                    <p>Estados</p> 
-                </a>
+
+                <li>
+                    <a href="{% url 'products:planes' %}" id="planes">
+                        <img src="{% static 'images/icons/planes.svg' %}" alt="">
+                        <p>Planes</p>
+                    </a>
+                    <div class="check"></div>
+                </li> 
+
+                <li class="add_user">
+                    <a href="{% url 'users:list_users' %}" id="usuarios">
+                        <img src="{% static 'images/icons/usuarios.svg' %}" alt="">
+                        <p>Usuarios</p>
+                    </a>
+                    <div class="check"></div>
                 </li>
-                <li><a href="#" id="colboradores">
-                    <img src="{% static 'images/icons/colaboradores.png' %}" alt="">
-                    <p>Colaboradores</p>
-                </a>
-                </li>
-                <li class="add_user"><a href="{% url 'users:list_users' %}" id="usuarios">
-                    <img src="{% static 'images/icons/colaboradores.png' %}" alt="">
-                    <p>Usuarios</p>
-                </a>
-                </li>
+                
 
                 {% if user.rango == "Admin" or user.rango == "A" %}
                 <li>
                     <a href="{% url 'users:create_user' %}" id="add_user">
-                        <img src="{% static 'images/icons/mas.png' %}" alt="">
+                        <img src="{% static 'images/icons/mas.svg' %}" alt="">
                         <p>Agregar usuario</p> 
                     </a>
+                    <div class="check"></div>
                 </li>
                 {% endif %}
             </ul>

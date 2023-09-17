@@ -25,4 +25,5 @@ urlpatterns = [
     path("", IndexLoginView.as_view(),name="indexLogin"),
     path("",include("sales.urls", namespace="sales")),
     path("",include("users.urls", namespace="users")),
+    path("",include("products.urls", namespace="products")),
 ]+ static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

@@ -1,11 +1,13 @@
+from typing import Any
 from django.shortcuts import redirect, render
 from django.views import generic
 from .models import Usuario,Cliente
+from sales.models import Ventas
 from .forms import FormCreateUser
 from django.urls import reverse_lazy
 
 import json
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpRequest, HttpResponseRedirect, HttpResponse
 
 class CrearUsuario(generic.View):
     model = Usuario
@@ -51,7 +53,6 @@ class ListaUsers(generic.ListView):
         context["users"] = self.model.objects.all()
         return context
     
-
 class ListaClientes(generic.View):
     model = Cliente
     template_name= "list_customers.html"
@@ -64,20 +65,44 @@ class ListaClientes(generic.View):
         customers_list = []
         for c in customers:
             data_customer = {}
-            data_customer["nro_cliente"] = c.nro_cliente
+            data_customer["pk"] = c.pk
             data_customer["nombre"] = c.nombre
             data_customer["dni"] = c.dni
-            data_customer["domic"] = c.domic
+            data_customer["tel"] = c.tel
             data_customer["loc"] = c.loc
             data_customer["prov"] = c.prov
-            data_customer["cod_postal"] = c.cod_postal
-            data_customer["tel"] = c.tel
-            data_customer["fec_nacimiento"] = c.fec_nacimiento
-            data_customer["estado_civil"] = c.estado_civil
-            data_customer["ocupacion"] = c.ocupacion
             customers_list.append(data_customer)
         data = json.dumps(customers_list)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return HttpResponse(data, 'application/json')
         return render(request, self.template_name,context)
+    
+class CrearCliente(generic.CreateView):
+    model = Cliente
+    template_name = 'create_customers.html'
+    fields = "__all__"
+    success_url = reverse_lazy('sales:create_sale')
+
+    def get(self, request,*args, **kwargs):
+        context = {}
+        context["customer_number"] = Cliente.returNro_Cliente
+        return render(request, self.template_name, context)
+    
+
+class CuentaUser(generic.DetailView):
+    model = Cliente
+    template_name = "cuenta_cliente.html"
+
+    def get(self,request,*args,**kwargs):
+        # planes = Plan.objects.all()
+        self.object = self.get_object()
+        ventas = self.object.ventas_nro_cliente.all()
+
+        for i in range (ventas.count()):
+            ventas[i].suspenderOperacion()
+
+        ventasOrdenadas = ventas.order_by("-adjudicado","deBaja","-nro_operacion")
+        context = {"customer": self.object,
+                   "ventas": ventasOrdenadas}
+        return render(request, self.template_name, context)

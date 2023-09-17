@@ -1,0 +1,631 @@
+.caja
+{
+    display: flex;
+    height: 85%;
+}
+.filters
+{
+    width: 100%;
+    height: 15%;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+}
+.movimientos{
+    width: 65%;
+    height: 100%;   
+    margin-left: 5rem;
+
+}
+.tittles{
+    display: flex;
+    list-style: none;
+    width: 100%;
+    justify-content: space-around; 
+    align-items: center;
+    height: 100%; 
+}
+
+.tittlesWrapper > .tittles > li {
+    color: white;
+    font-size: 1.6rem;
+    font-family: raleway-semibold;
+    padding: 1rem 0;
+    width: 30%;
+    text-align: center;
+}
+
+.movimientos > .tittlesWrapper{
+    width: 100%;
+    background-color: #3D7CD8;
+    border-radius: 0.6rem;
+    height: 8%;
+}
+.movimientos > .valuesWrapper{
+    overflow-y: auto;
+    height: 85%;
+}
+.valuesWrapper > .values > .mov
+{
+    display: flex;
+    font-size: 1.4rem;
+    justify-content: space-around;
+    font-family: raleway;
+    position: relative;
+    padding: 1rem 0;
+    width: 100%;
+    color: rgb(241, 237, 237);
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 0.6rem;
+}
+.valuesWrapper > .values > .mov:hover
+{
+    background-color: #304361;
+}
+.valuesWrapper > .values > .mov > div
+{
+    width: 30%;
+    text-align: center;
+}
+
+
+.mov > .code{
+    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+    background-color: rgba(240, 248, 255, 0.158);
+    width: 100%;
+    padding: .3rem;
+    text-align: center;
+}
+.mov > h1{
+    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+}
+
+
+
+.resum{
+    width: 35%;
+    height: 100%;
+}
+.resum__cuenta{
+    background-color: aliceblue;
+    width: 80%;
+    border-radius: 1rem;
+    display: flex;
+    padding:  1rem 0 ;
+    text-align: center;
+    margin: 0 auto;
+
+}
+.resum__cuenta__tipoCaja{
+    width: 60%;
+
+}
+.resum__cuenta__saldo
+{
+    width: 40%;
+}
+.resum__cuenta > div > h4{
+    border-top:1px black solid;
+    padding: .2rem 2rem;
+    font-size: clamp(1.2rem, 1vw, 1.3rem);
+    font-family: raleway-semibold;
+    padding: .6rem 0;
+
+}
+.resum__cuenta > div > h2{
+    padding: 0rem 2rem .7rem 2rem;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    font-family: raleway-semibold;
+
+}
+
+.modalFilters{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+.modalFilters.active
+{
+    visibility: visible;
+
+}
+.modalWrapperFilter{
+    width: 50%;
+    height: 60%;
+    background-color: #203555;
+    position: relative;
+    padding: 5rem 4rem 0rem 4rem;
+    border-radius: 1.5rem;
+}
+
+.buttonsFilters{
+    width: 15%;
+    display: flex;
+    margin-right: 9%;
+    flex-direction: column;
+    gap: 0.5rem;
+
+}
+
+#openFilters{
+    height: 4rem;
+    width: 100%;
+    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: #1753ED;
+    color: white;
+    outline: none;
+    border-color: transparent;
+    border-radius: 0.6rem;
+    cursor: pointer;
+}
+
+#clear_filters{
+    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: rgba(255, 255, 255, 0.856);
+    outline: none;
+    text-align: center;
+    cursor: pointer;
+    margin-right: 1%;
+}
+
+
+
+/* CALENDARIO */
+.wrapperCalendario{
+    display: flex;
+    flex-basis: 100%;
+    gap: 1.5rem;
+}
+.calendarFilter{
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 2rem;
+    row-gap: 5rem;
+    align-items: center;
+    position: relative;
+}
+
+.fromDate,.toDate{
+    width: 35%;
+    position: relative;
+}
+.calendar_button
+{
+    background-color: white;
+    border-radius: .6rem;
+    height: 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 .8rem;
+    cursor: pointer;
+    /* margin: 0 auto; */
+}
+.fromDate > h3,.toDate > h3
+{
+    font-family: raleway-semibold;
+    font-size: 1.4rem;
+    color: white;
+    margin-bottom: .4rem;
+    margin-left: .2rem;
+}
+#fromMonth_year, #toMonth_year
+{
+    font-family: raleway-semibold;
+    font-size: 1.4rem; 
+}
+.calendar_button > img{
+    width: 2rem;
+    height: 2rem;
+}
+.calendar_button > h3{
+    font-family: raleway-semibold;
+    font-size: clamp(1.2rem, 1vw, 1.3rem);
+}
+.calendar
+{
+    border-radius: 1rem;
+    width: 22rem;
+    position: absolute;
+    margin-top: .4rem;
+    overflow: hidden;
+    height: 0rem;
+    background-color: white;
+    z-index: 7;
+    
+}
+.fromDate > .calendar
+{
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 10%);
+}
+.toDate > .calendar
+{
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 10%);
+}
+
+.calendar.active
+{
+    padding: 0.2rem 1.3rem;
+    height: fit-content;
+    min-height: 24rem;
+}
+.mes
+{
+    display: flex;
+    justify-content: space-between;
+    
+    margin-top: 1rem;
+    font-size: 1.4rem;
+    align-items: center;
+}
+.button__change_month > button
+{
+    border: none;
+    background-color: transparent;
+    font-size: 1.4rem;
+    border-radius: 1rem;
+    cursor: pointer;
+}
+.button__change_month > button > img{
+    width: 2.3rem;
+    height: 2.3rem;
+}
+.dias
+{
+    margin-top: 1rem;
+}
+.dias > ul > li{
+    width: calc(100% / 7);
+    text-align: center;
+    padding-top: .7rem;
+    position: relative;
+    height: 2rem;
+    cursor: pointer;
+    font-family: raleway-semibold;
+}
+
+.dias > .fromDatenumbers > li::before,
+.dias > .toDatenumbers > li::before
+{
+    content: "";
+    position: absolute;
+    width: 80%;
+    height: 90%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    border-radius: .6rem;
+    z-index: -1;
+}
+
+
+.dias > .fromDatenumbers > li:hover::before,
+.dias > .toDatenumbers > li:hover::before
+{
+    background-color: rgba(0, 0, 0, 0.336);
+}
+
+
+.dias > .fromDatenumbers > li.active::before,
+.dias > .toDatenumbers > li.active::before
+{
+    background-color: rgba(19, 16, 224, 0.575);
+}
+
+
+.tags
+{
+    font-size: 1.1rem;
+    display: flex;
+    list-style: none;
+    justify-content: space-around;
+}
+
+.fromDatenumbers,.toDatenumbers
+{
+    font-size: 1.1rem;
+    display: flex;
+    list-style: none;
+    font-family: raleway-semibold;
+    flex-wrap: wrap;
+}
+
+#submitFilter
+{
+    width: 20%;
+    height: 3rem;
+    position: absolute;
+    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: #1753ED;
+    color: white;
+    outline: none;
+    border-color: transparent;
+    border-radius: .6rem;
+    cursor: pointer;
+    top: 125%;
+}
+#submitFilter > img{
+    width: 2rem;
+    height: 2rem;
+    /* filter: invert(1); */
+}
+#closeFormFilter{
+    position: absolute;
+    right: 3%;
+    top: 3%;
+    outline: none;
+    border-color: transparent;
+    background-color: transparent;
+    cursor: pointer;
+
+}
+#closeFormFilter > img{
+    width: 3rem;
+    /* height: 2rem; */
+    filter: invert(1);
+}
+
+
+/* filtro por tipo de pagos */
+
+.wrapperselectType{
+    width: 35%;
+}
+
+.wrapperSelectTypePayments
+{
+    position: relative;
+    z-index: 6;
+}
+.wrapperSelectTypePayments > h3{
+    font-family: raleway-semibold;
+    font-size: 1.4rem;
+    color: white;
+    margin-bottom: 0.4rem;
+    margin-left: 0.2rem;
+}
+
+.selectedOption
+{
+    background-color: white;
+    padding: 0 0.8rem;
+    height: 3rem;
+    border-radius: .6rem;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.selectedOption >h2{
+    font-size: clamp(1.2rem, 1vw, 1.3rem);
+    font-family: raleway-semibold;  
+}
+.selectedOption >img{
+   width: 1.5rem;
+}
+.wrapperSelectTypePayments > .options
+{
+    list-style: none;
+    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+    /* padding: 1.6rem 0    ; */
+    font-family: raleway-semibold;
+    width: 100%;
+    background-color: rgba(255, 255, 255);
+    max-height: 0rem;    
+    overflow: hidden;  
+    position:absolute;
+    top: 75%;
+    z-index: 1;
+    border-bottom-left-radius: .6rem;
+    border-bottom-right-radius: .6rem;
+}
+.wrapperSelectTypePayments > .options.active{
+    max-height: none;
+}
+.wrapperSelectTypePayments > .options > li
+{
+    margin-left: .8rem;
+    cursor: pointer;
+    width: 100%;
+    padding: 1rem 0;
+}
+.wrapperSelectTypePayments > .options > li:first-child
+{
+    margin-top: 1rem;
+}
+.wrapperSelectTypePayments > .options > li:hover
+{
+    color: #3D7CD8;
+}
+
+
+/* FIltro por ingreso y egreso */
+.wrapperSelectIngresoEgreso{
+    width: 35%;
+}
+.wrapperSelectIngresoEgreso > h3{
+    font-family: raleway-semibold;
+    font-size: 1.4rem;
+    color: white;
+    margin-bottom: 0.4rem;
+    margin-left: 0.2rem;
+}
+.selectEgreso_Ingreso
+{
+    display: flex;
+    gap: 1rem;
+    align-self: flex-end;
+}
+.selectEgreso_Ingreso > input{
+    display: none;
+}
+.selectEgreso_Ingreso > label{
+    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+    padding: 0 0.8rem;
+    height: 3rem;
+    border-radius: 0.6rem;
+    min-width: 7rem;
+    width: 40%;
+    text-align: center;
+    font-family: raleway-semibold;
+    background-color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.selectEgreso_Ingreso > label.active{
+    background-color: #3D7CD8;
+    color: white;
+}
+
+/* FIlTRO POR COBRADOR */
+.wrapperselectCobrador{
+    width: 35%;
+}
+.selectCobrador{
+    position: relative;
+    z-index: 5;
+}
+.selectCobrador > h3{
+    font-family: raleway-semibold;
+    font-size: 1.4rem;
+    color: white;
+    margin-bottom: 0.4rem;
+    margin-left: 0.2rem;
+}
+.selectCobrador > input{
+    background-color: white;
+    font-family: raleway-semibold;
+    font-size: 1.3rem;
+    border-radius: 0.6rem;
+    position: relative;
+    z-index: 2;
+    height: 3rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    outline: none;
+    text-indent: 1rem;
+    border: none;
+}
+.selectCobrador > .options{
+    list-style: none;
+    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+    padding-top: 1rem;
+    font-family: raleway-semibold;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.952);
+    height: 0rem;
+    /* max-height: 13rem; */
+    overflow: hidden;
+    position: absolute;
+    top: 75%;
+    z-index: 1;
+    border-bottom-left-radius: 0.6rem;
+    border-bottom-right-radius: 0.6rem;
+    transition: .2s height ease;
+    overflow-y: auto;
+}
+.selectCobrador > .options.active
+{
+    height: 13rem ;
+}
+
+.selectCobrador > .options > li{
+    margin-left: 0.8rem;
+    cursor: pointer;
+    width: 100%;
+    padding: 1rem 0;
+}
+
+
+
+
+/* MODAL CUOTA */
+.main_modalCuota{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+.main_modalCuota.active{
+    visibility: visible;
+}
+.background
+{
+    background-color: rgba(0, 0, 0, 0.5);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+.modal{
+    width: 50%;
+    height: 40%;
+    background-color:#fff;
+    border-radius: 1rem;
+    position: absolute;
+}
+
+/* PAGINACION DE MOVIMIENTOS */
+#pagination_container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+}
+
+#pagination_container > a
+{
+    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+    font-family: raleway-semibold;
+    height: 3rem;
+    background-color: #fff;
+    color: #203555;
+    text-decoration: none;
+    padding: 0 1rem;
+    min-width: 8.5rem;
+    border-radius: 0.6rem;
+    border-color: transparent;
+    outline: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#pagination_container > .cuotasPages{
+    color: white;
+    font-size: 1.6rem;
+    font-family: raleway-semibold;
+}
+

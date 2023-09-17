@@ -1,0 +1,153 @@
+{% extends 'molde.html' %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/cuentaUser.css' %}">
+{% endblock css %}
+
+{% block content %}
+<div class="filters">
+    <a href="{% url 'sales:create_sale' customer.id %}" id="create_customer">AGREGAR</a>
+</div>
+<div class="accountWrapper">
+
+    <div class="operations">
+        <div class="operationsWrapper">
+            <ul class="operationsList">
+              {% for operacion in ventas %} 
+                <li class="operationItem">
+                    <div class="iconWrapper">
+                        <img src="{% static 'images/icons/iconMoto.png' %}" alt="">
+                    </div>
+                    <div class="attributes">
+                        <div class = "nameStatus">
+                            <h1>{{operacion.producto.nombre}}</h1>
+                            {% if  operacion.adjudicado.status%}
+                                <img src="{% static 'images/icons/operationAdjudicado.svg' %}" alt="">
+                                <h3>Adjudicado por {{operacion.adjudicado.tipo}}</h3>
+                            {% else %}
+                                {% if operacion.deBaja.status %}
+                                <img src="{% static 'images/icons/operationBaja.svg' %}" alt="">
+                                <h3>De baja por {{operacion.deBaja.motivo}}</h3>
+                                {% if operacion.deBaja.motivo == "cliente" %}
+                                    <a href="{% url 'sales:bajaPDF' operacion.pk %}" target="_blank" id="downloadPDF">Descargar PDF</a>
+                                {% endif %}
+
+                                {% else %}
+                                    {% if operacion.suspendida %}
+                                        <img src="{% static 'images/icons/operationSuspendido.svg' %}" alt="">
+                                        <h3>Suspendido</h3>
+                                    {% else %}
+                                        <img src="{% static 'images/icons/operationActivo.svg' %}" alt="">
+                                        <h3>Activo</h3>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class ="information">
+                            {% language 'de' %}
+                            <h2>Importe</h2>
+                            <h3>${{operacion.importe|floatformat:0}}</h3>
+                            {% endlanguage %}
+                        </div>
+                        {% if operacion.nro_orden == "" %}
+                        {% else %}
+                        <div class ="information">
+                            <h2>N° Orden</h2>
+                            <h3>{{operacion.nro_orden}}</h3>
+                        </div>
+                        {% endif %}
+                        
+                        <div class ="information">
+                            <h2>Fecha Inscripcion</h2>
+                            <h3>{{operacion.fecha}}</h3>
+                        </div>
+                        <div class ="information">
+                            <h2>N° Operacion</h2>
+                            <h3>{{operacion.nro_operacion}}</h3>
+                        </div>
+                    </div>
+                    <div class="iconsAttributes">
+                        <a href="{% url 'sales:detail_sale' operacion.id %}" class="buttonMore">
+                            <div>
+                                <h3>Ver mas</h3>
+                                <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                            </div>
+                        </a>
+                    </div>
+                </li>
+              {% endfor %}  
+            </ul>       
+        </div>
+    </div> 
+    
+    <div class="informationUser">
+        <div class="informationUserWrapper">
+            <ul class="data">
+                <li id="nombre">
+                    <h2>Nombre completo</h2>
+                    <h3>{{customer.nombre}}</h3>
+                </li>
+
+                <li id="nroCliente">
+                    <h2>N° Cliente</h2>
+                    <h3>{{customer.nro_cliente}}</h3>
+                </li>
+                
+                <li id="dni">
+                    <h2>DNI</h2>
+                    <h3>{{customer.dni}}</h3>
+                </li>
+
+                <li id="fechaNacimiento">
+                    <h2>Fecha de nacimiento</h2>
+                    <h3>{{customer.fec_nacimiento}}</h3>
+                </li>
+
+                <li id="loc">
+                    <h2>Localidad</h2>
+                    <h3>{{customer.loc}}</h3>
+                </li>
+
+                <li id="prov">
+                    <h2>Provincia</h2>
+                    <h3>{{customer.prov}}</h3>
+                </li>
+
+                <li id="postal">
+                    <h2>Cod. Postal</h2>
+                    <h3>{{customer.cod_postal}}</h3>
+                </li>
+
+                <li id="domic">
+                    <h2>Domicilio</h2>
+                    <h3>{{customer.domic}}</h3>
+                </li>
+
+                <li id="tel">
+                    <h2>Telefono</h2>
+                    <h3>{{customer.tel}}</h3>
+                </li>
+
+                <li id="estadoCivil">
+                    <h2>Estado civil</h2>
+                    <h3>{{customer.estado_civil}}</h3>
+                </li>
+
+                <li id="ocupacion">
+                    <h2>Ocupacion</h2>
+                    <h3>{{customer.ocupacion}}</h3>
+                </li>
+            </ul>       
+        </div>
+    </div> 
+
+</div>
+
+{% endblock content %}
+
+{% block js %}
+{% comment %} <script src="{% static 'js/inputs_search_customers.js' %}"></script> {% endcomment %}
+{% endblock js %}
