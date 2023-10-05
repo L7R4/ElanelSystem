@@ -153,14 +153,14 @@
         <div class="buttonDeBaja">
             <button type="button" id="baja"> Dar baja </button>
             <div class="formConfirmWrapper">
-                <form method="POST" >
+                <form id="formBaja"  method="POST">
                     {% csrf_token %}
                     <div class="inputPorcentajeWrapper">
                         <div class="input">
                             <p>Porcentaje</p>
                             <div id="inputPorcentaje">
                                 <div>
-                                    <input name="porcentage" type="number" value="{{porcetageDefault}}"readonly>
+                                    <input name='porcentage' id='porcentage' type='text' value ='{{porcetageDefault}}' onkeypress='return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 8 || event.charCode == 13 || (event.charCode >= 37 && event.charCode <= 40)' readonly>
                                     <p>%</p>
                                 </div>
                                 
@@ -176,24 +176,23 @@
                     </div>
                     <div class="confirmWrapper">
                         <h3>¿Estás seguro que quieres dar de baja esta operación?</h3>
-                        <button id="yesConfirm" type="submit" name="option" value="Yes" onclick="abrirNuevaVentana()">Si</button>
+                        <button id="yesConfirm" type="button">Si</button>
                         <button id="noConfirm" type="button">No</button>
                     </div>
                 </form>
             </div>
             <div class="formClave">
-                <form method="POST">
+                <form method="POST" id="formPassword">
                     {% csrf_token %}
                     <div class="inputClaveWrapper">
                         <p>Ingrese la clave</p>
                         <div id="inputClave">
                             <input name="clave" type="number" id="clave">
-                            <p>{{errorMessage}}</p>
                         </div>
                         
                     </div>
                     <div class="confirmClaveWrapper">
-                        <button id="confirm" type="submit" name="confirmClave">Confirmar</button>
+                        <button id="confirm" type="button" name="confirmClave">Confirmar</button>
                         <button id="notConfirm" type="button">Cancelar</button>
                     </div>
                 </form>
@@ -319,11 +318,6 @@
 <script src="{% static 'js/fetch_form_cuotas2.js' %}"></script>
 <script src="{% static 'js/selectAdjudicacion.js' %}"></script>
 <script src="{% static 'js/buttonBaja.js' %}"></script>
-<script>
-    // Función para abrir una nueva ventana del navegador
-    function abrirNuevaVentana() {
-        window.open("{{urlRedirectPDF}}", '_blank');
-    }
-</script>
+<script src="{% static 'js/redirectBajaPDF.js' %}"></script>
 
 {% endblock js %}

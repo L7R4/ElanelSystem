@@ -1,7 +1,7 @@
 from django.db import models
 from django.dispatch import receiver
 from django.core.validators import RegexValidator
-from django.contrib.auth.models import AbstractBaseUser,BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser,BaseUserManager, PermissionsMixin
 
 class UserManager(BaseUserManager):
     def create_user(self,email,nombre,rango,password = None):
@@ -110,3 +110,10 @@ class Cliente(models.Model):
 
     def __str__(self):
         return f'{self.nombre} - {self.dni}'
+    
+class Key(models.Model):
+    motivo = models.CharField(max_length=20, default="")
+    password = models.IntegerField()
+
+    def __str__(self):
+        return f'{self.motivo} - {self.password}'
