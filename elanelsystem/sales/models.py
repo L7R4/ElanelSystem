@@ -167,13 +167,14 @@ class Ventas(models.Model):
     def calcularDineroADevolver(self):
         dineroADevolver = 0
         cuotasPagadasCant = len(self.cuotas_pagadas())
-        porcentage = self.deBaja["porcentaje"]
+        porcentage = int(self.deBaja["porcentaje"])
+        cuotasPagas = self.cuotas_pagadas()
+        valores = [item["total"] for item in cuotasPagas]
 
         if(cuotasPagadasCant >= 6):
-            cuotasPagas = self.cuotas_pagadas()
-            valores = [item["total"] for item in cuotasPagas]
-            dineroADevolver=(sum(valores) + sum(valores)*(porcentage/100)) - cuotasPagas[len(cuotasPagas)-1]["total"]
-
+            dineroADevolver=(sum(valores)*(porcentage/100)) - cuotasPagas[len(cuotasPagas)-1]["total"]
+        elif(porcentage != 0 and cuotasPagadasCant < 6):
+            dineroADevolver = sum(valores)*(porcentage/100)
         return dineroADevolver
 
 

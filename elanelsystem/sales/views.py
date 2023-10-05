@@ -1,18 +1,21 @@
+import time
 from typing import Any, Dict
 from django.db import models
 from django.forms import ValidationError
 from django.shortcuts import render, redirect, HttpResponseRedirect
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.urls import reverse_lazy
 from django.views import generic
 from .models import Ventas,CoeficientesListadePrecios
 from .forms import FormChangePAck, FormCreateVenta, FormCreateAdjudicacion
-from users.models import Cliente,Usuario
+from users.models import Cliente,Usuario,Key
 from .models import Ventas
 from products.models import Products,Plan
 import datetime
 import os
 import json
+import random
+import string
 from django.shortcuts import reverse
 from django.core.serializers import serialize
 from dateutil.relativedelta import relativedelta
@@ -163,7 +166,7 @@ class CrearVenta(generic.DetailView):
 class DetailSale(generic.DetailView):
     model = Ventas
     template_name = "detail_sale.html"
-    
+
     def get(self,request,*args,**kwargs):
         context ={}
         self.object = self.get_object()
@@ -185,12 +188,17 @@ class DetailSale(generic.DetailView):
             cuota = "Cuota " + str(i) 
             cuotas.append(cuota)
 
+        lenght = 5 # Cambia esto a la cantidad de caracteres que deseas generar
+
+        # # Genera una cadena de caracteres aleatorios
+        # code = ''.join(random.choice(string.ascii_letters) for _ in range(lenght))
+        # context["code"] = code
         context['cuotas'] = cuotas
         context['cobradores'] = Usuario.objects.all()
         context["object"] = self.object
         context["nro_cuotas"] = sale_target.nro_cuotas
         context["urlRedirectPDF"] = reverse("sales:bajaPDF",args=[self.object.pk])
-        print(context["urlRedirectPDF"])
+
         try:
             if len(self.object.cuotas_pagadas()) >= 6:
                 context["porcetageDefault"] = 50
@@ -208,10 +216,75 @@ class DetailSale(generic.DetailView):
     
     def post(self,request,*args,**kwargs):
         self.object = self.get_object()
-        if(request.method == 'POST' and "option" in str(request.body)):
-            porcentage = request.POST.get('porcentage')
+        porcentageValido = 0
+        try:
+            if len(self.object.cuotas_pagadas()) >= 6:
+                porcentageValido = 50
+            else:
+                porcentageValido = 0
+        except IndexError as e:
+            porcentageValido = 0
+        
+        print("---------------------------------------------")
+        print(request.body)
+        print(request.POST)
+        requestKey=""
+        try:
+            print(json.loads(request.body)["c"])
+            requestKey = json.loads(request.body)["c"]
+        except KeyError:
+            pass
+        print("---------------------------------------------")
+
+        
+
+        # PARA VALIDAR LA CLAVE DE LA INPUT DE PORCENTAJE DE BAJA
+        if(request.method == 'POST' and "clave" in str(request.body)):
+            clave = json.loads(request.body)
+
+            correctPassw = Key.objects.all().filter(motivo="baja")[0].password
+            passw = int(clave.get("clave"))
+           
+            if correctPassw == passw: 
+                return JsonResponse({'ok': "OK",'c':'LpOim'}, safe=False)
+
+            else:
+                return HttpResponseBadRequest('Contraseña invalida', status=406)
+        
+
+        # PARA GENERAR EL PDF CON LA BAJA DESPUES DE LA CLAVE
+        elif(request.method == 'POST' and ("porcentageLpOim" == requestKey)):
+            print("asdasd")
+
+            porcentage = json.loads(request.body)["porcentage"]
+            print(porcentage)
             self.object.darBaja("cliente",porcentage)
-            return HttpResponseRedirect(reverse("users:cuentaUser",args=[self.object.nro_cliente.pk]))
+            response_data = {
+                'success': True,
+                'urlPDF': reverse("sales:bajaPDF", args=[self.object.pk]),
+                'urlUser': reverse("users:cuentaUser", args=[self.object.nro_cliente.pk])
+            }
+           
+            return JsonResponse(response_data, safe=False)
+            
+
+        # PARA GENERAR EL PDF CON LA BAJA SIN LA CLAVE
+        elif(request.method == 'POST' and ("porcentage" == requestKey)):
+            print("asdasd213")
+
+            porcentage = json.loads(request.body)["porcentage"]
+            print(porcentage)
+            if(int(porcentage) == porcentageValido):
+                self.object.darBaja("cliente",porcentage)
+                response_data = {
+                'success': True,
+                'urlPDF': reverse("sales:bajaPDF", args=[self.object.pk]),
+                'urlUser': reverse("users:cuentaUser", args=[self.object.nro_cliente.pk])
+            }
+                return JsonResponse(response_data, safe=False)
+            else:
+                print("Error")
+                return HttpResponseBadRequest('WEPSSSSSSSSSSSS', status=406)
             
         elif request.method == 'POST' and "descuento" not in json.loads(request.body):
             data = json.loads(request.body)
@@ -223,8 +296,6 @@ class DetailSale(generic.DetailView):
                 self.object.pagoTotal(cuota,metodoPago,cobrador)
             elif status == "Parcial":
                 amountParcial = data.get('amountParcial')
-                print("Entro parcial brother")
-                print(cuota+" " + metodoPago +" " + amountParcial + " "+ cobrador)
                 self.object.pagoParcial(cuota,metodoPago,amountParcial,cobrador)
 
         elif(request.method == 'POST' and "descuento" in json.loads(request.body)):
@@ -232,9 +303,9 @@ class DetailSale(generic.DetailView):
             cuota = data.get('cuota')
             descuento = data.get('descuento')
             self.object.aplicarDescuento(cuota,int(descuento))
-            
-       
-        
+
+
+        print("Weps")
         return redirect('sales:detail_sale',self.object.id)
 
 
@@ -486,10 +557,9 @@ class ChangePack(generic.DetailView):
         return render(request, self.template_name, {'form': form, 'object' : self.get_object()})
 
 
-
 def viewsPDFBaja(request,pk):
+    time.sleep(5)
     operacionBaja = Ventas.objects.get(id=pk)
-
     context ={
                 "nroContrato":operacionBaja.nro_solicitud,
                 "cliente": operacionBaja.nro_cliente.nombre,

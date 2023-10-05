@@ -444,6 +444,12 @@
 #amountParcial.invalido{
     border: 2px solid rgba(255, 0, 0, 0.616);
 }
+.errorMessageSendBaja{
+    font-family: raleway-semibold;
+    font-size: 1.3rem;
+    color: #ed1717;
+    margin-top: .5rem;
+}
 
 #dineroRestante
 {
@@ -768,11 +774,10 @@
     width: 100%;
     outline: none;
     height: 1.7rem;
-}
-.input > #inputPorcentaje > div>input:read-only{
     background-color: rgb(54 53 51 / 18%);
     cursor: default;
 }
+
 
 
 .buttonDeBaja > .formConfirmWrapper > form > .confirmWrapper{
@@ -816,6 +821,12 @@
     margin: .5rem 0;
 
 }
+.inputClaveWrapper > #inputClave > p{
+    font-family: raleway-semibold;
+    font-size: 1.3rem;
+    color: #ed1717;
+}
+
 .inputClaveWrapper > #inputClave > input{
     font-family: raleway-semibold;
     font-size: 1.3rem;

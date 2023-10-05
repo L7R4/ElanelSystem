@@ -210,7 +210,6 @@ inputDescuentoCuota.addEventListener('click', ()=>{
 
         let data = await fetchCuotas()
         calcularDineroRestante(cuotaPicked.innerHTML,data)
-        console.log(data)
         descuentoCuotaWrapper.classList.remove("active")
         dineroDescuento.value = ""
         cuotaParaDescuento.value =""
