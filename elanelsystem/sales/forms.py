@@ -18,7 +18,7 @@ tipoProductos = Products.TIPO_PRODUCTO
 
 
 class FormCreateVenta(forms.Form):
-    nro_solicitud = forms.CharField(required=True, max_length=10)
+    nro_contrato = forms.CharField(required=True, max_length=10)
     modalidad =forms.CharField(required=True,max_length=30)
     nro_cuotas = forms.IntegerField(required=True)
     anticipo = forms.IntegerField(required=True)
@@ -78,23 +78,26 @@ class FormCreateVenta(forms.Form):
         return paquete_input
 
         
-    def clean_nro_solicitud(self):
-        nro_solicitud_input = self.cleaned_data['nro_solicitud']
+    def clean_nro_contrato(self):
+        nro_contrato_input = self.cleaned_data['nro_contrato']
 
         # Verificar que el valor ingresado sea un número
-        if not nro_solicitud_input.isdigit():
+        if not nro_contrato_input.isdigit():
             raise forms.ValidationError('El numero de solicitud debe ser un valor numérico.')
         
-        return nro_solicitud_input
+        return nro_contrato_input
     
     
     def clean_nro_orden(self):
         nro_orden_input = self.cleaned_data['nro_orden']
+        nro_contrato_input = self.cleaned_data['nro_contrato']
 
         # Verificar que el valor ingresado sea un número
         if not nro_orden_input.isdigit():
             raise forms.ValidationError('El numero de orden debe ser un valor numérico.')
         
+        if not nro_contrato_input.endswith(nro_orden_input):
+            raise forms.ValidationError('N° Orden invalido.')
         return nro_orden_input
 
 
@@ -143,7 +146,7 @@ class FormCreateVenta(forms.Form):
     
 
 class FormCreateAdjudicacion(forms.Form):
-    nro_solicitud = forms.CharField(required=True, max_length=10)
+    nro_contrato = forms.CharField(required=True, max_length=10)
     modalidad = forms.CharField(required=True,max_length=30)
     nro_cuotas = forms.IntegerField(required=True)
     anticipo = forms.IntegerField(required=True)

@@ -35,11 +35,11 @@
         
 
         <div id="wrapperNroSolicitud">
-            {% for error in form.nro_solicitud.errors %}
+            {% for error in form.nro_contrato.errors %}
                 <p>{{error}}</p>
             {% endfor %}
-            <label for="">{{form.nro_solicitud.label}}</label>
-            {{form.nro_solicitud}}
+            <label for="">{{form.nro_contrato.label}}</label>
+            {{form.nro_contrato}}
         </div>
 
 
@@ -130,7 +130,7 @@
                 <p>{{error}}</p>
             {% endfor %}
             <label for="">
-                {{form.intereses_generados.label}}
+                {{form.intereses_generados.label|truncatechars:15}}
             </label>
             {{form.intereses_generados}}
         </div>

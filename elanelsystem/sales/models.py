@@ -134,6 +134,7 @@ class Ventas(models.Model):
         bajaField = self.deBaja
         bajaField["status"] = False
         bajaField["motivo"] = ""
+        bajaField["detalleMotivo"] = ""
         
         self.deBaja = bajaField
         self.save()
@@ -150,15 +151,19 @@ class Ventas(models.Model):
 
     def cuotas_pagadas(self):
         cuotas = [cuota for cuota in self.cuotas if cuota["status"] == "Pagado"]
-        cuotas.pop(0)
-        return [cuota for cuota in cuotas if cuota["status"] == "Pagado"]
+        try:
+            cuotas.pop(0)
+            return [cuota for cuota in cuotas if cuota["status"] == "Pagado"]
+        except IndexError as e:
+            return []
     
 
     
-    def darBaja(self,motivo,porcentaje):
+    def darBaja(self,motivo,porcentaje,detalleMotivo):
         self.deBaja["status"] = True
         self.deBaja["motivo"] = motivo
         self.deBaja["porcentaje"] = porcentaje
+        self.deBaja["detalleMotivo"] = detalleMotivo
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y -- %H:%M")
         self.save()
         

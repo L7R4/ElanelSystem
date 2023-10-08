@@ -7,7 +7,7 @@ from .forms import FormCreateUser
 from django.urls import reverse_lazy
 
 import json
-from django.http import HttpRequest, HttpResponseRedirect, HttpResponse
+from django.http import HttpRequest, HttpResponseRedirect, HttpResponse, JsonResponse
 
 class CrearUsuario(generic.View):
     model = Usuario
@@ -106,3 +106,16 @@ class CuentaUser(generic.DetailView):
         context = {"customer": self.object,
                    "ventas": ventasOrdenadas}
         return render(request, self.template_name, context)
+    
+
+# def requestOperations(request):
+#     operationsData= []
+#     operations = Ventas.objects.all()
+
+
+#     for i in range(int(operations.count())):
+#         operation = {}
+#         operation["id"] = operations[i].nro_operacion
+#         operationsData.append(operation)
+
+#     return JsonResponse(operationsData, safe=False)

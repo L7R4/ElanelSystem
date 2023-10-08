@@ -19,7 +19,6 @@ async function cuotasGet() {
 
 async function main() {
     let data = await cuotasGet()
-    console.log(data)
 
     cuotasButtons.forEach(cuota => {
         cuota.addEventListener('click', ()=>{

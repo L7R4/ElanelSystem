@@ -1,6 +1,8 @@
 let confirmBaja = document.getElementById("yesConfirm");
 let urlBaja = window.location.pathname
 let inputPorcentage = document.getElementById("porcentage")
+let bajaMotivo = document.getElementById("bajaMotivo")
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -39,7 +41,8 @@ async function darBaja() {
         method: "POST",
         body:JSON.stringify({ 
             porcentage: inputPorcentage.value,
-            c: inputEditPorcentage.name
+            c: inputEditPorcentage.name,
+            motivo: bajaMotivo.value
         }),
         headers: {
             "X-CSRFToken": getCookie('csrftoken'),
