@@ -10,6 +10,17 @@
 {% block content %}
 <div class="filters">
     <a href="{% url 'sales:create_sale' customer.id %}" id="create_customer">AGREGAR</a>
+    <div>
+        <!-- <h3>N° operacion</h3> -->
+        <div class="searchFilter">
+            <input 
+            type="text"
+            class = "customer"
+            id="operation">
+            <img src="{% static 'images/icons/search.svg' %}" alt="">
+        </div>
+    </div>
+    
 </div>
 <div class="accountWrapper">
 
@@ -64,6 +75,7 @@
                             <h2>Fecha Inscripcion</h2>
                             <h3>{{operacion.fecha}}</h3>
                         </div>
+
                         <div class ="information">
                             <h2>N° Operacion</h2>
                             <h3>{{operacion.nro_operacion}}</h3>
@@ -93,7 +105,7 @@
 
                 <li id="nroCliente">
                     <h2>N° Cliente</h2>
-                    <h3>{{customer.nro_cliente}}</h3>
+                    <h3 id="numberCliente">{{customer.nro_cliente}}</h3>
                 </li>
                 
                 <li id="dni">
@@ -149,5 +161,5 @@
 {% endblock content %}
 
 {% block js %}
-{% comment %} <script src="{% static 'js/inputs_search_customers.js' %}"></script> {% endcomment %}
+<script src="{% static 'js/input_search_operation.js' %}"></script>
 {% endblock js %}

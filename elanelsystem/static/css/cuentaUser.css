@@ -5,6 +5,49 @@
     display: flex;
     align-items: center;
 }
+.filters > div{
+    min-width: fit-content;
+    width: 15%;
+    margin-left: 3rem;
+    margin-right: 3rem;
+    
+}
+.filters > div > h3{
+    color: white;
+    font-family: raleway-semibold;
+    font-size: 1.3rem;
+    margin-left: .5rem;
+    margin-bottom: .3rem;
+}
+.searchFilter{
+    position: relative;
+    display: flex;
+    height: auto;
+    flex-flow: column;
+    justify-content: center;
+}
+.searchFilter> input{
+    height: 3.1rem;
+    width: 100%;
+    background-color: #304361;
+    border: 2px solid #3D7CD8;
+    border-radius: 1rem;
+    outline: none;
+    text-indent: 1.2rem;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway;
+    color: white;
+    position: relative;
+    z-index: 2;
+    padding-left: 2.4rem;
+}
+.searchFilter > img{
+    position: absolute;
+    filter: invert(1);
+    width: 1.8rem;
+    left: 7%;
+    z-index: 6;
+}
 #create_customer {
     padding: 1.6rem 4rem;
     color: white;

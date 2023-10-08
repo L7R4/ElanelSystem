@@ -778,6 +778,23 @@
     cursor: default;
 }
 
+#formBaja > .motivoBaja > textarea{
+    width: 90%;
+    resize: none;
+    outline: none;
+    padding: 0.3rem .7rem;
+    border-radius: 0.5rem;
+    border: 1px solid #3d7cd8;
+    font-family: raleway-semibold;
+    font-size: 1.2rem;
+    margin-bottom: .8rem;
+}
+#formBaja > .motivoBaja > h3
+{
+    font-family: raleway-semibold;
+    font-size: 1.3rem;
+    margin-bottom: 0.3rem;
+}
 
 
 .buttonDeBaja > .formConfirmWrapper > form > .confirmWrapper{

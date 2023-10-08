@@ -186,3 +186,4 @@ function actualizarResultados(resultados,contenedor) {
     contenedor.style.height = height +'px'
 }
 
+

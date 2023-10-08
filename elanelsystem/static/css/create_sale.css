@@ -133,6 +133,12 @@
     width: fit-content;
     padding-left: 0.7rem;
     padding-bottom: 0.3rem;
+    
+    /* PARA MOSTRAR SOLO UNA LINEA EN EL LABEL Y QUE NO SEAN MULTIPLES LINEAS */
+    /* overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1; */
 }
 #form_create_sale input[type="number"]::-webkit-inner-spin-button,
 #form_create_sale input[type="number"]::-webkit-outer-spin-button {
@@ -249,7 +255,8 @@
 #id_paquete,
 #id_total_a_pagar,
 #id_primer_cuota,
-#id_anticipo{
+#id_anticipo,
+#id_nro_orden{
     background-color: #3f4653d4!important;
     pointer-events: none;
     border: 2px solid #1c2d45b8!important;

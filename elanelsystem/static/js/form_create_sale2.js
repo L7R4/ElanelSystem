@@ -19,7 +19,7 @@ const inputInteresesGenerados = document.getElementById('id_intereses_generados'
 const inputImportexCuota = document.getElementById('id_importe_x_cuota')
 const inputTotalAPagar = document.getElementById('id_total_a_pagar')
 const inputPaquete = document.getElementById('id_paquete')
-
+const inputNroContrato = document.getElementById("id_nro_contrato")
 
 
 fetch(url,{
@@ -147,6 +147,9 @@ fetch(url,{
         })
     })
     
+    inputNroContrato.addEventListener("input",()=>{
+        putNroOrden()
+    })
     
     
     
@@ -236,3 +239,14 @@ function actualizarResultados(resultados,contenedor) {
     contenedor.style.height = height +'px'
 }
 
+function putNroOrden(){
+    // Obtener el valor del campo de número de contrato
+    const nroContratoValue = inputNroContrato.value;
+
+    // Obtener los últimos 3 dígitos del número de contrato
+    const ultimosTresDigitos = nroContratoValue.slice(-3);
+
+    // Actualizar el campo de número de orden con los últimos 3 dígitos
+    const numeroOrdenInput = document.getElementById("id_nro_orden");
+    numeroOrdenInput.value = ultimosTresDigitos;
+}

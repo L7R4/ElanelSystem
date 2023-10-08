@@ -127,7 +127,7 @@ class CrearVenta(generic.DetailView):
                 nro_cliente_instance = Cliente.objects.get(nro_cliente__iexact=request.POST['nro_cliente'])
                 sale.nro_cliente = nro_cliente_instance
 
-                sale.nro_solicitud = form.cleaned_data['nro_solicitud']
+                sale.nro_solicitud = form.cleaned_data['nro_contrato']
                 sale.modalidad = form.cleaned_data['modalidad']
                 sale.importe = form.cleaned_data['importe']
                 sale.primer_cuota = form.cleaned_data['primer_cuota']
@@ -225,16 +225,12 @@ class DetailSale(generic.DetailView):
         except IndexError as e:
             porcentageValido = 0
         
-        print("---------------------------------------------")
-        print(request.body)
-        print(request.POST)
         requestKey=""
         try:
             print(json.loads(request.body)["c"])
             requestKey = json.loads(request.body)["c"]
         except KeyError:
             pass
-        print("---------------------------------------------")
 
         
 
@@ -254,11 +250,9 @@ class DetailSale(generic.DetailView):
 
         # PARA GENERAR EL PDF CON LA BAJA DESPUES DE LA CLAVE
         elif(request.method == 'POST' and ("porcentageLpOim" == requestKey)):
-            print("asdasd")
-
             porcentage = json.loads(request.body)["porcentage"]
-            print(porcentage)
-            self.object.darBaja("cliente",porcentage)
+            motivoDetalle = json.loads(request.body)["motivo"]
+            self.object.darBaja("cliente",porcentage,motivoDetalle)
             response_data = {
                 'success': True,
                 'urlPDF': reverse("sales:bajaPDF", args=[self.object.pk]),
@@ -273,9 +267,9 @@ class DetailSale(generic.DetailView):
             print("asdasd213")
 
             porcentage = json.loads(request.body)["porcentage"]
-            print(porcentage)
             if(int(porcentage) == porcentageValido):
-                self.object.darBaja("cliente",porcentage)
+                motivoDetalle = json.loads(request.body)["motivo"]
+                self.object.darBaja("cliente",porcentage,motivoDetalle)
                 response_data = {
                 'success': True,
                 'urlPDF': reverse("sales:bajaPDF", args=[self.object.pk]),
@@ -304,8 +298,6 @@ class DetailSale(generic.DetailView):
             descuento = data.get('descuento')
             self.object.aplicarDescuento(cuota,int(descuento))
 
-
-        print("Weps")
         return redirect('sales:detail_sale',self.object.id)
 
 
@@ -318,6 +310,7 @@ class CreateAdjudicacion(generic.DetailView):
         self.object = self.get_object()
         url = request.path
         cuotasPagadas = self.object.cuotas_pagadas()
+        print(cuotasPagadas)
         valoresCuotasPagadas = [item["total"] for item in cuotasPagadas]
         sumaCuotasPagadas = sum(valoresCuotasPagadas)
         if("negociacion" in url):
@@ -402,7 +395,7 @@ class CreateAdjudicacion(generic.DetailView):
                 sale.nro_cliente = nro_cliente_instance
 
 
-                sale.nro_solicitud = form.cleaned_data['nro_solicitud']
+                sale.nro_solicitud = form.cleaned_data['nro_contrato']
                 sale.modalidad = form.cleaned_data['modalidad']
                 sale.importe = form.cleaned_data['importe']
                 sale.anticipo = form.cleaned_data['anticipo']
@@ -569,11 +562,9 @@ def viewsPDFBaja(request,pk):
                 "producto": operacionBaja.producto.nombre,
                 "cantCuotasPagadas" : len(operacionBaja.cuotas_pagadas()),
                 "cuotas" : operacionBaja.nro_cuotas,
-                "motivo" : "No deseado",
+                "motivo" : operacionBaja.deBaja["detalleMotivo"],
                 "dineroDevolver" : operacionBaja.calcularDineroADevolver(),
                 "fecha" : operacionBaja.deBaja["fecha"],
-                "observaciones": "Ninguna",
-
             }
             
     productoName = str(operacionBaja.producto.nombre)
