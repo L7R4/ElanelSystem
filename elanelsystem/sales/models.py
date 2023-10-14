@@ -50,6 +50,9 @@ class Ventas(models.Model):
     nro_operacion = models.IntegerField(default=returnOperacion)
     agencia = models.CharField(default="", max_length=20, choices= AGENCIAS)
 
+    cambioTitularidadField = models.JSONField(default=list)
+    clientes_anteriores = models.ManyToManyField(Cliente, related_name='ventas_anteriores', blank=True)
+
     adjudicado = models.JSONField(default=dict)
     deBaja = models.JSONField(default=dict)
     suspendida = models.BooleanField(default=False)
@@ -149,6 +152,45 @@ class Ventas(models.Model):
         self.save()
 
 
+    def createCambioTitularidad(self,lastCuota,user,oldCustomer,newCustomer,pkOldCustomer,pkNewCustomer):
+        cambioTitularidadField = self.cambioTitularidadField
+        print("weps")
+        print(cambioTitularidadField)
+        if(len(cambioTitularidadField) == 0):
+            idDelCambio = 0
+            cambioTitularidadField.append(
+                    {  
+                       "change" :True,
+                       "id": idDelCambio,
+                       "lastCuota": lastCuota,
+                       "fecha": datetime.datetime.now().strftime("%d-%m-%Y"),
+                       "user": user,
+                       "oldCustomer":oldCustomer,
+                       "pkOldCustomer": pkOldCustomer,
+                       "newCustomer":newCustomer,
+                       "pkNewCustomer": pkNewCustomer
+
+                    })
+        else:
+            idDelCambio = self.cambioTitularidadField[-1]["id"] + 1
+            cambioTitularidadField.append(
+                    {  
+                       "change" :True,
+                       "id": idDelCambio,
+                       "lastCuota": lastCuota,
+                       "fecha": datetime.datetime.now().strftime("%d-%m-%Y"),
+                       "user": user,
+                       "oldCustomer":oldCustomer,
+                       "pkOldCustomer": pkOldCustomer,
+                       "newCustomer":newCustomer,
+                       "pkNewCustomer": pkNewCustomer
+
+                    })
+        print("weps2")
+        print(cambioTitularidadField)
+        
+        self.save()
+
     def cuotas_pagadas(self):
         cuotas = [cuota for cuota in self.cuotas if cuota["status"] == "Pagado"]
         try:
@@ -157,7 +199,6 @@ class Ventas(models.Model):
         except IndexError as e:
             return []
     
-
     
     def darBaja(self,motivo,porcentaje,detalleMotivo):
         self.deBaja["status"] = True
@@ -167,7 +208,6 @@ class Ventas(models.Model):
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y -- %H:%M")
         self.save()
         
-
 
     def calcularDineroADevolver(self):
         dineroADevolver = 0

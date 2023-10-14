@@ -1,0 +1,64 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/selectNewCustomerForChange.css' %}">
+{% endblock css %}
+
+{% block content %}
+<div class="filters">
+      <a href="{% url 'users:crearYCambiar' object.pk %}" id="create_customer">AGREGAR</a>
+    <div>
+        <input 
+        type="text"
+        class = "customer"
+        id="customer">
+        <img src="{% static 'images/icons/search.svg' %}" alt="">
+    </div>
+</div>
+<div class="tittleDo">
+    <h3>Elija el cliente con el que desea reemplazarlo</h3>
+    <div class="buttons">
+      <button id="yesConfirm" type="submit" form="formSelectCustomer">Confirmar</button>
+      
+    <div id="noConfirm">
+      <a href="{% url 'sales:detail_sale' object.id %}">Cancelar</a>
+    </div>
+    </div>
+</div>
+<div class="information">
+    <div class="tittlesWrapper">
+      <ul class="tittles">
+          <li>Nombre</li>
+          <li>DNI</li>
+          <li>Telefono</li>
+          <li>Localidad</li>
+          <li>Provincia</li>
+      </ul>   
+    </div>
+
+    <form method="POST" id="formSelectCustomer" class="valuesWrapper">
+        {% csrf_token %}
+        <input type="hidden" value="" name="newCustomer" id="newCustomerInput">
+        <ul class="values">
+          {% for customer in customers %}
+            <li class ="item">
+              <div class="selectCheck">
+                <div class="selectedCheck"></div>
+              </div>
+              <div><p>{{customer.nombre|truncatechars:24}}</p></div>
+              <div><p>{{customer.dni}}</p></div>
+              <div><p>{{customer.tel}}</p></div>
+              <div><p>{{customer.loc}}</p></div>
+              <div><p>{{customer.prov}}</p></div>
+            </li>
+          {% endfor %} 
+        </ul>       
+    </form>
+</div> 
+
+{% endblock content %}
+{% block js %}
+<script src="{% static 'js/selectCustomerChangeTitularidad.js' %}"></script>
+
+{% endblock js %}

@@ -8,6 +8,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 from .models import Ventas,CoeficientesListadePrecios
 from .forms import FormChangePAck, FormCreateVenta, FormCreateAdjudicacion
+from users.forms import CreateClienteForm
 from users.models import Cliente,Usuario,Key
 from .models import Ventas
 from products.models import Products,Plan
@@ -19,9 +20,10 @@ import string
 from django.shortcuts import reverse
 from django.core.serializers import serialize
 from dateutil.relativedelta import relativedelta
+import locale
 import requests
 from django.core.paginator import Paginator
-from .utils import printPDF
+from .utils import printPDF, printPDFtitularidad
 
 import elanelsystem.settings as settings
 
@@ -187,12 +189,10 @@ class DetailSale(generic.DetailView):
         for i in range (initial,int(sale_target.nro_cuotas+1)):
             cuota = "Cuota " + str(i) 
             cuotas.append(cuota)
-
         lenght = 5 # Cambia esto a la cantidad de caracteres que deseas generar
-
-        # # Genera una cadena de caracteres aleatorios
-        # code = ''.join(random.choice(string.ascii_letters) for _ in range(lenght))
-        # context["code"] = code
+        wepst= self.object.cambioTitularidadField
+        print(list(reversed(wepst)))
+        context["changeTitularidad"] = list(reversed(self.object.cambioTitularidadField))
         context['cuotas'] = cuotas
         context['cobradores'] = Usuario.objects.all()
         context["object"] = self.object
@@ -577,6 +577,39 @@ def viewsPDFBaja(request,pk):
         response['Content-Disposition'] = 'inline; filename='+productoName+'.pdf'
         return response
 
+def viewPDFTitularidad(request,pk,idCambio):
+    operacionTitu = Ventas.objects.get(id=pk)
+    newCustomer = operacionTitu.cambioTitularidadField[idCambio]["pkNewCustomer"]
+    oldCustomer = operacionTitu.cambioTitularidadField[idCambio]["oldCustomer"]
+
+    # Establece el idioma local en español
+    locale.setlocale(locale.LC_TIME, 'es_AR.utf8')
+
+    dateNow = datetime.date.today().strftime("%d de %B de %Y")
+    context ={
+                "fechaNow": dateNow,
+                "oldCustomer": oldCustomer,
+                "nroOperacion":operacionTitu.nro_operacion,
+                "cliente": Cliente.objects.get(id=newCustomer).nombre,
+                "domicilio": Cliente.objects.get(id=newCustomer).domic,
+                "dni": Cliente.objects.get(id=newCustomer).dni,
+                "localidad": Cliente.objects.get(id=newCustomer).loc,
+                "provincia": Cliente.objects.get(id=newCustomer).prov,
+                "estado_civil" : Cliente.objects.get(id=newCustomer).estado_civil,
+                "fecha_nac" : Cliente.objects.get(id=newCustomer).fec_nacimiento,
+                "ocupacion" : Cliente.objects.get(id=newCustomer).ocupacion,
+            }
+            
+    titularName = "Cambio de titular: " + str(Cliente.objects.get(id=newCustomer).nombre) + str(operacionTitu.nro_orden)
+    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "titularidad.pdf")
+    
+    printPDFtitularidad(context,request.build_absolute_uri(),urlPDF)
+
+    with open(urlPDF, 'rb') as pdf_file:
+        response = HttpResponse(pdf_file,content_type="application/pdf")
+        response['Content-Disposition'] = 'inline; filename='+titularName+'.pdf'
+        return response
+
 
 def requestCuotas(request):
     ventas = Ventas.objects.all()
@@ -732,3 +765,108 @@ class Caja(generic.View):
         else:
             # Esta es una solicitud normal, renderiza la plantilla HTML
             return render(request, self.template_name, context)
+        
+
+class ChangeTitularidad(generic.DetailView):
+    template_name = 'changeTitularidad.html'
+    model = Ventas
+
+
+    def get(self,request,*args, **kwargs):
+        self.object = self.get_object()
+        customers = Cliente.objects.all()
+        context = {
+            "customers": customers,
+            "object": self.object,
+        }
+
+        customers_list = []
+        for c in customers:
+            data_customer = {}
+            data_customer["pk"] = c.pk
+            data_customer["nombre"] = c.nombre
+            data_customer["dni"] = c.dni
+            data_customer["tel"] = c.tel
+            data_customer["loc"] = c.loc
+            data_customer["prov"] = c.prov
+            customers_list.append(data_customer)
+        data = json.dumps(customers_list)
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return HttpResponse(data, 'application/json')
+        return render(request, self.template_name,context)
+
+    def post(self,request,*args,**kwargs):
+        self.object = self.get_object()
+
+        if(request.method == 'POST'):
+            newCustomer = request.POST.get("newCustomer")
+            dniNewCustomer = Cliente.objects.all().filter(dni=newCustomer)
+
+            # Agrega el antiguo cliente a la lista de clientes anteriores
+            self.object.clientes_anteriores.add(self.object.nro_cliente)
+            
+
+            # Coloca los datos del cambio de titularidad
+            lastCuota = self.object.cuotas_pagadas()
+            self.object.createCambioTitularidad(lastCuota[-1],request.user.nombre,self.object.nro_cliente.nombre,dniNewCustomer[0].nombre,self.object.nro_cliente.pk,dniNewCustomer[0].pk)
+
+            # Actualiza el dueño de la venta
+            self.object.nro_cliente = dniNewCustomer[0]
+
+            self.object.save()
+
+        return redirect('sales:changeTitu',self.object.id)
+   
+    
+class CrearUsuarioYCambiarTitu(generic.DetailView):
+    model = Ventas
+    template_name = 'crearclienteycambiar.html'
+    form_class = CreateClienteForm
+
+    def get(self, request,*args, **kwargs):
+        self.object = self.get_object()
+        context = {}
+        context["customer_number"] = Cliente.returNro_Cliente
+        context["object"] = self.object
+        context['form'] = self.form_class
+
+        return render(request, self.template_name, context)
+    
+
+    def post(self,request,*args,**kwargs):
+        form =self.form_class(request.POST)
+        self.object = self.get_object()
+        
+        if form.is_valid():
+                customer = Cliente()
+                customer.nro_cliente = form.cleaned_data["nro_cliente"]
+                customer.nombre = form.cleaned_data['nombre']
+                customer.dni = form.cleaned_data['dni']
+                customer.domic = form.cleaned_data['domic']
+                customer.loc = form.cleaned_data['loc']
+                customer.prov = form.cleaned_data['prov']
+                customer.cod_postal = form.cleaned_data['cod_postal']
+                customer.tel = form.cleaned_data['tel']
+                customer.estado_civil = form.cleaned_data['estado_civil']
+                customer.fec_nacimiento = form.cleaned_data['fec_nacimiento']
+                customer.ocupacion = form.cleaned_data['ocupacion']
+                customer.save()
+
+
+                # Coloca los datos del cambio de titularidad
+                lastCuota = self.object.cuotas_pagadas()
+                self.object.createCambioTitularidad(lastCuota[-1],request.user.nombre,self.object.nro_cliente.nombre,customer.nombre,self.object.nro_cliente.pk,customer.pk)
+                self.object.nro_cliente = customer
+                self.object.save()
+                
+                return redirect("sales:detail_sale",pk= self.get_object().pk)
+
+        else:
+            print(form)
+            context = {}
+            context["customer_number"] = Cliente.returNro_Cliente
+            context["object"] = self.object
+            context['form'] = self.form_class
+            return render(request, self.template_name, context)
+            

@@ -3,7 +3,7 @@ from django.shortcuts import redirect, render
 from django.views import generic
 from .models import Usuario,Cliente
 from sales.models import Ventas
-from .forms import FormCreateUser
+from .forms import CreateClienteForm, FormCreateUser
 from django.urls import reverse_lazy
 
 import json
@@ -44,6 +44,7 @@ class CrearUsuario(generic.View):
                 # message_error = {"message": "No valido"}
         return redirect("sales:resumen")
 
+
 class ListaUsers(generic.ListView):
     model = Usuario
     template_name = "list_users.html"
@@ -52,6 +53,7 @@ class ListaUsers(generic.ListView):
         context = super().get_context_data(**kwargs)
         context["users"] = self.model.objects.all()
         return context
+   
     
 class ListaClientes(generic.View):
     model = Cliente
@@ -77,18 +79,46 @@ class ListaClientes(generic.View):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return HttpResponse(data, 'application/json')
         return render(request, self.template_name,context)
-    
+
+   
 class CrearCliente(generic.CreateView):
     model = Cliente
     template_name = 'create_customers.html'
-    fields = "__all__"
-    success_url = reverse_lazy('sales:create_sale')
+    form_class = CreateClienteForm
+
 
     def get(self, request,*args, **kwargs):
         context = {}
         context["customer_number"] = Cliente.returNro_Cliente
+        context['form'] = self.form_class
         return render(request, self.template_name, context)
     
+
+    def post(self,request,*args,**kwargs):
+        form =self.form_class(request.POST)
+        
+        if form.is_valid():
+                customer = Cliente()
+                customer.nro_cliente = form.cleaned_data["nro_cliente"]
+                customer.nombre = form.cleaned_data['nombre']
+                customer.dni = form.cleaned_data['dni']
+                customer.domic = form.cleaned_data['domic']
+                customer.loc = form.cleaned_data['loc']
+                customer.prov = form.cleaned_data['prov']
+                customer.cod_postal = form.cleaned_data['cod_postal']
+                customer.tel = form.cleaned_data['tel']
+                customer.estado_civil = form.cleaned_data['estado_civil']
+                customer.fec_nacimiento = form.cleaned_data['fec_nacimiento']
+                customer.ocupacion = form.cleaned_data['ocupacion']
+                customer.save()              
+                return redirect("users:list_customers")
+
+        else:
+            context = {}
+            context["customer_number"] = Cliente.returNro_Cliente
+            context['form'] = self.form_class
+            return render(request, self.template_name, context)
+
 
 class CuentaUser(generic.DetailView):
     model = Cliente
@@ -106,16 +136,3 @@ class CuentaUser(generic.DetailView):
         context = {"customer": self.object,
                    "ventas": ventasOrdenadas}
         return render(request, self.template_name, context)
-    
-
-# def requestOperations(request):
-#     operationsData= []
-#     operations = Ventas.objects.all()
-
-
-#     for i in range(int(operations.count())):
-#         operation = {}
-#         operation["id"] = operations[i].nro_operacion
-#         operationsData.append(operation)
-
-#     return JsonResponse(operationsData, safe=False)

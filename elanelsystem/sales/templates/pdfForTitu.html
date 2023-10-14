@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>  
+    <div class="fecha">
+        {{fechaNow}}
+    </div>
+    <div id="subtittle">
+        <h2>Elanel Servicios y Soluciones</h2>
+        <h2>Presente</h2>
+    </div>
+    <div id="subtittle_p2">
+        <h2>Referencia</h2>
+        <h2>Cambio de titularidad</h2>
+        <h2>Nro. Venta {{nroOperacion}}</h2>
+        <h2>De {{oldCustomer}}</h2>
+    </div>
+
+    <div id ="detalle">
+        <p>De mi mayor consideración</p>
+        <p>En mi carácter de titular del contrato nro.{{nroOperacion}} me dirijo a Uds. a los fines de solicitar el cambio de titular de este contrato</p>
+        <p>Por lo tanto, quedan a favor del Sr/a {{cliente}} DNI: {{dni}}</p>
+        <p>Con domicilio en {{domicilio}}, de la localidad de {{localidad}}, {{provincia}}, todos los beneficios que corresponden al sistema de servicios contratado</p>
+        <p>Sin otro particular, saludo a Uds. atentamente.</p>
+       
+    </div>
+    <div id="firmas">
+        <div>
+            <p>_______________________________</p>
+            <h6><strong>Firma</strong></h6>
+        </div>
+        <div>
+            <p>_______________________________</p>
+            <h6><strong>Tipo y nro. de DNI</strong></h6>
+        </div>
+        <div>
+            <p>_______________________________</p>
+            <h6><strong>Aclaracion</strong></h6>
+        </div>
+    </div>
+</body>
+</html>
