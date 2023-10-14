@@ -130,7 +130,27 @@
                 </div>
             </div>
         {% endif %}
-        
+        {% if object.cambioTitularidadField %}
+            <div class="changeTitularidadWrapper">
+                <h2>Cambios de titularidad</h2>
+                {% for change in changeTitularidad %}
+                    <div class="changeItem">
+                        <div class="names">
+                            <a href="{% url 'users:cuentaUser' change.pkNewCustomer %}">{{change.newCustomer}}</a>
+                            <img src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                            <a href="{% url 'users:cuentaUser' change.pkOldCustomer %}">{{change.oldCustomer}}</a>
+                        </div>
+                        <div class="changeItemInformation">
+                            <a id="verPDFTitularidad" href="{% url 'sales:tituPDF' object.pk change.id %}" target="_blank">Ver PDF</a>
+                            <h3>Desde: <strong>{{change.lastCuota.cuota}}</strong></h3>
+                            <h3>Fecha: <strong>{{change.fecha}}</strong></h3>
+                            <h3>Responsable: <strong>{{change.user}}</strong></h3>
+                        </div>
+                    </div>
+                {%endfor%}
+            </div>
+        {%endif%}
+
     </div>
     
     
@@ -222,7 +242,7 @@
        </div>
        
        <div class="buttonChangeTitularidad">
-            <a href="#">Cambiar titularidad</a>
+            <a href="{% url 'sales:changeTitu' object.pk %}">Cambiar titularidad</a>
        </div>
         
     </div>

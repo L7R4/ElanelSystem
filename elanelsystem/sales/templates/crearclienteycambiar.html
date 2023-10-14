@@ -18,11 +18,6 @@
             </div>
         {%endfor%}
     </form>
-    <div class="wrapperButtons">
-        <input type="submit" value="Guardar" form="form_create_customer" id="save_customer">
-        <a id ="cancelar" href="{% url 'sales:resumen' %}"> Cancelar </a>
-    </div>
-    
-
+    <input type="submit" value="Guardar y cambiar" form="form_create_customer" id="save_customer">
 
 {% endblock content %}

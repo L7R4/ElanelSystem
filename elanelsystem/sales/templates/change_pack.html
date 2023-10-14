@@ -126,7 +126,7 @@
                 <p>{{error}}</p>
             {% endfor %}
             <label for="">
-                {{form.intereses_generados.label}}
+                {{form.intereses_generados.label|truncatechars:15}}
             </label>
             {{form.intereses_generados}}
         </div>

@@ -1,7 +1,7 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import Resumen,CrearVenta, DetailSale,Caja,CreateAdjudicacion,requestCuotas,viewsPDFBaja,ChangePack
+from .views import Resumen,CrearVenta, DetailSale,Caja,CreateAdjudicacion,requestCuotas,viewsPDFBaja,ChangePack ,ChangeTitularidad,viewPDFTitularidad
  
 app_name="sales"
 
@@ -13,7 +13,10 @@ urlpatterns = [
     path("ventas/<int:pk>/adjudicacion/sorteo/",CreateAdjudicacion.as_view(),name="adjSorteo"),
     path("ventas/<int:pk>/adjudicacion/negociacion/",CreateAdjudicacion.as_view(),name="adjNegociacion"),
     path("ventas/<int:pk>/cambiopack",ChangePack.as_view(),name="cambioPack"),
+    path("ventas/<int:pk>/cambiotitularidad",ChangeTitularidad.as_view(),name="changeTitu"),
     path('request-cuotas/', requestCuotas, name='rc'),
     path("ventas/caja/",Caja.as_view(),name="caja"),
     path("ventas/pdf/baja/<int:pk>",viewsPDFBaja,name="bajaPDF"),
+    path("ventas/pdf/titularidad/<int:pk>/<int:idCambio>",viewPDFTitularidad,name="tituPDF"),
+    
 ]

@@ -2,12 +2,28 @@
 {
     padding-left: 5rem;
     overflow-x: hidden;
+    position: relative;
 }
 .wrapper_input{
     display: flex;
     flex-flow: column;
     height: 6rem;
     width: fit-content;
+}
+.wrapper_tittle{
+    height: 10%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-top: 3rem;
+
+}
+.wrapper_tittle > h1 {
+    font-size: clamp(3rem, 3vw, 6rem);
+    font-family: raleway;
+    color: white;
+    margin-left: 1rem;
+    letter-spacing: .1rem;
 }
 
 
@@ -35,61 +51,92 @@
 }
 
 /* INPUTS DESIGN */
-.row
-{
+#form_create_customer{
     display: flex;
+    width: 85%;
+    /* height: 60%; */
+    flex-wrap: wrap;
+    align-content:start ;
     column-gap: 4rem;
+    row-gap: 2rem;
+    margin-top: 5rem;
+}
+#form_create_customer > .inputWrapper {
+    margin-right: 2rem;
+    margin-bottom: 1rem;
     width: fit-content;
-    margin-top: 2rem;
 }
-#id_nro_cliente, #cod_postal
-{
-    width: clamp(13rem, 8vw, 19rem);
-    
-}
-#dni, #tel,#fec_nacimiento,#estado_civil,#ocupacion{
-    width: clamp(15rem, 13vw, 20rem);
-
-}
-#localidad, #provincia
-{
-    width: clamp(20rem, 20vw, 35rem);    
-}
-#domicilio,#nombre{
-    width: clamp(22rem, 24vw, 35rem);    
-    
-}
-#save_customer{
-    width: 20rem;
-    height: 4rem;
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: #1753ED;
-    color: white;
-    outline: none;
-    border-color: transparent;
-    border-radius: 1rem;
-    cursor: pointer;
-    margin-top: auto;
-}
-.wrapper_tittle
-{
-    height: 20%;
+#form_create_customer > .inputWrapper > input{
+    height: 3rem;
     width: 100%;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    background-color: rgba(253,253,253,0.07);
+    border: 2px solid #3D7CD8;
+    border-radius: 1rem;
     display: flex;
     align-items: center;
+    padding: 0rem 2rem 0rem 1rem;
+    outline: none;
+    color: white;
 }
-#form_create_customer
-{
-    height: 70%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
+/* #form_create_customer > .inputsWrapper{} */
+#form_create_customer > .inputWrapper > label{
+    color: white;
+    display: block;
+    font-size: 1.3rem;
+    font-family: raleway-semibold;
+    margin-bottom: 0.3rem;
+    height: fit-content;
 }
 
-.wrapper_tittle > h1
-{
-    font-size: clamp(3rem, 3vw, 5rem);;
-    font-family: raleway-bold;
+
+/* INPUTS DESIGN */
+#form_create_customer > #id_nro_clientew, #form_create_customer > #id_fec_nacimientow, #form_create_customer > #id_cod_postalw{
+    width: 12%;
+}
+#form_create_customer > #id_nombrew, #form_create_customer > #id_domicw, #form_create_customer > #id_ocupacionw{
+    width: 35%;
+}
+#form_create_customer > #id_locw, #form_create_customer > #id_provw{
+    width: 25%;
+}
+
+.wrapperButtons{
+    position: absolute;
+    bottom: 4rem;
+    left: 5rem;
+    display: flex;
+    column-gap: 1rem;
+}
+#save_customer{
+    padding: 1rem 3rem;
     color: white;
+    font-size: 1.6rem;
+    font-family: raleway-semibold;
+    background-color: #1753ED;
+    border-radius: 1rem;
+    letter-spacing: .04rem;
+    outline: none;
+    border-color: transparent;
+    cursor: pointer;
+}
+.wrapperButtons > #cancelar{
+    padding: 1rem 3rem;
+    text-decoration: none;
+    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+    font-family: raleway-semibold;
+    background-color: #ed1717;
+    color: white;
+    border-radius: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#form_create_customer input[type="number"]::-webkit-inner-spin-button,
+#form_create_customer input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }

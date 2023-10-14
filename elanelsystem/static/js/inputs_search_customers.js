@@ -16,6 +16,7 @@ fetch(url,{
       return response.json()
 })
   .then(data =>{
+    console.log(data)
   // 3) TERCER PASO
   inputSearchCustomer.addEventListener("input", () => {
     const texto = inputSearchCustomer.value;
