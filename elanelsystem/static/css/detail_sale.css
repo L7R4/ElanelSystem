@@ -180,6 +180,7 @@
     outline: none;
     height: fit-content;
     cursor: pointer;
+    display: none;
 
 }
 #descuentoCuota:hover{
@@ -391,6 +392,67 @@
 .cobradoresList > li:hover
 {
     background-color: #3043615d;
+}
+.selectMotivoWrapper{
+    width: 100%;
+    position: relative;
+    margin: 1rem 0;
+}
+.selectMotivoWrapper > h4{
+    font-family: raleway-semibold;
+    font-size: 1.3rem;
+    margin-bottom: 0.3rem;
+}
+
+.motivoSelectedWrapper{
+    background-color: white;
+    width: 90%;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    padding: 0.6rem;
+    font-size: clamp(.9rem, 1vw, 1.1em);
+    font-family: raleway-semibold;
+    border: 1px solid #3d7bd8d5;
+    border-radius: 0.6rem;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+}
+.motivosList{
+    width: 90%;
+    /* padding: 1rem; */
+    padding: 0.6rem;
+    margin: 0 auto;
+    list-style: none;
+    background-color: white;
+    border-radius: 0.6rem;
+    position: absolute;
+    top: 70%;
+    height: 0rem;
+    overflow: auto;
+    /* transition: .3s height ease; */
+    z-index: 1;
+}
+.motivosList > li:first-child{
+    padding-top: 1.5rem;
+
+}
+.motivosList > li{
+    font-size: clamp(1rem, 1vw, 1.2rem);
+    font-family: raleway-semibold;
+    padding:  .5rem 0;
+    cursor: pointer;
+}
+.motivosList > li:hover{
+    color:#3D7CD8;
+
+}
+
+
+.motivosList.active{
+    border: 1px solid #3d7bd8d5;
+    height: 9rem;
 }
 
 .pickedAmount
@@ -685,6 +747,7 @@
     height: 100%;
     background-color: #00000083;
     position: absolute;
+    z-index: 3;
     top: 0;
     left: 0;
 }

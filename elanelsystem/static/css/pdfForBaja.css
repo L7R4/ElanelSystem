@@ -67,8 +67,9 @@ img{
 }
 
 #contrato{
-    width: 79.5rem;
-    background-color: #2D2E2F;
+    width: 77.5rem;
+    border: 1px solid #2D2E2F;
+    border-radius: .8rem;
     display: flex;
     justify-content: center;
     margin-bottom: 5rem;
@@ -76,13 +77,13 @@ img{
     margin: 0 auto;
     margin-right: 1rem;
     position: relative;
-    left:-7.5rem;
+    left:-6.8rem;
 }
 #contrato > p{
     width:90%;
     font-size: 1.3rem;
-    font-family: raleway;
-    color: white;
+    font-family: raleway-semibold;
+    color: #000;
     text-align: center;
 }
 

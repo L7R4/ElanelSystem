@@ -1,0 +1,115 @@
+@page {
+    size: Letter; /* Change from the default size of A4 */
+    margin: 1.5cm; /* Set margin on each page */
+}
+@font-face {
+  font-family: babapro;
+  src: url("../fonts/Babapro-Ea4rr.otf");
+}
+
+@font-face {
+  font-family: raleway;
+  src: url("../fonts/Raleway-Regular.ttf");
+}
+@font-face {
+  font-family: raleway-bold;
+  src: url("../fonts/Raleway-Bold.ttf");
+}
+@font-face {
+  font-family: raleway-semibold;
+  src: url("../fonts/Raleway-SemiBold.ttf");
+}
+@font-face {
+    font-family: raleway-regular;
+    src: url("../fonts/Raleway-Regular.ttf");
+  }
+html {
+  box-sizing: border-box;
+  font-size: 62.5%;
+}
+* {
+    margin: 0;
+    padding: 0;
+    font-feature-settings: "pnum" on, "lnum" on;
+  }
+
+.fecha{
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    
+}
+.fecha > p{
+    width: fit-content;
+    height: fit-content;
+    font-family: raleway;
+    font-size: 1.4rem;
+}
+#subtittle{
+    width: 100%;
+    border-bottom:  1px solid #000;
+    margin-top: 1rem;
+}
+#subtittle > p{
+    width: fit-content;
+    height: fit-content;
+    font-family: raleway;
+    font-size: 1.5rem;
+    margin-bottom: .5rem;
+}
+
+#subtittle_p2{
+    width: 100%;
+    margin: 2rem 0;
+}
+
+#subtittle_p2 > p{
+    font-family: raleway;
+    width: 100%;
+    font-size: 1.5rem;
+    margin-bottom: .5rem;
+    text-align: end;
+}
+
+#detalle{
+    width: 100%;
+    border-top:  1px solid #000;
+    padding: 2rem 0;
+
+}
+#detalle > p{
+    font-family: raleway;
+    font-size: 1.4rem;
+    margin-bottom: .6rem;
+}
+
+#detalle > p:nth-child(2){
+    text-indent: 20rem;
+}
+
+#detalle > p:last-child{
+    text-align: end;
+    margin-top: 1rem;
+}
+#firmas{
+    width: 100%;
+    margin-top: 30rem;
+    /* background-color: #3D7CD8; */
+}
+#firmas > div{
+    width: 70%;
+    margin: 0 auto;
+    margin-top: 7rem;
+    border-top: 1px solid #000;
+
+}
+#firmas > div > p{
+    font-family: raleway;
+    font-size: 1.4rem;
+    text-align: center;
+}
+
+#page2 > #firmas {
+    margin-top: 25rem;
+    
+}

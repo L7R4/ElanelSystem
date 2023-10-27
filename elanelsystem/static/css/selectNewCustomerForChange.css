@@ -177,6 +177,15 @@
     text-align: center;
 }
 
+.tittleDo > .buttons > h4{
+    font-size: clamp(1.1rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    color: #ff7b7b;
+    padding: 0.3rem 1rem;
+    border-radius: 0.6rem;
+    white-space: nowrap;
+}
+
 #yesConfirm{
     color: white;
     font-size: clamp(1.3rem, 1.3vw, 1.5rem);
@@ -188,12 +197,14 @@
     border-color: transparent;
     cursor: pointer;
     min-width: 12rem;
+    height: 100%;
 }
 .tittleDo > .buttons{
     display: flex;
     column-gap: 1rem;
     margin-right: 4rem;
     height: 3.4rem;
+    align-items: center;
 }
 
 #noConfirm{
@@ -204,6 +215,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100%;
 }
 #noConfirm > a{
     text-decoration: none;

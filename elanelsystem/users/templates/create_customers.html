@@ -14,15 +14,25 @@
         {% for inp in form%} 
             <div class="inputWrapper" id="{{inp.auto_id}}w">
                 <label for="">{{inp.label|truncatechars:13}}</label>
-                {{inp}} 
+                {{inp}}
+                {% if inp.errors %}
+                    <p class="error-message">{{ inp.errors.0 }}</p>
+                {% endif %}
+               
             </div>
         {%endfor%}
     </form>
     <div class="wrapperButtons">
         <input type="submit" value="Guardar" form="form_create_customer" id="save_customer">
-        <a id ="cancelar" href="{% url 'sales:resumen' %}"> Cancelar </a>
+        <a id ="cancelar" href="{% url 'users:list_customers' %}"> Cancelar </a>
     </div>
-    
-
-
 {% endblock content %}
+{% block js %}
+    <script>
+        document.getElementById('id_fec_nacimiento').addEventListener('input', function (e) {
+        var input = e.target;
+        var val = input.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,2})(\d{0,4})/);
+        input.value = !val[2] ? val[1] : val[1] + '/' + val[2] + (val[3] ? '/' + val[3] : '');
+        });
+    </script>
+{% endblock js %}

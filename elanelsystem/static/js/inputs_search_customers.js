@@ -10,7 +10,8 @@ const url = window.location.pathname;
 
 fetch(url,{
   method: 'get',
-  headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' ,}
+  headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
+  cache: 'no-store'  
 }).then(
   function(response){
       return response.json()
@@ -65,4 +66,10 @@ function buscar(texto, datos){
   return listFilteredData;
 }
 
+// Esto evita el comportamiento predeterminado del botón "Tab" y el "Enter"
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Tab' || e.key === 'Enter') {
+    e.preventDefault();
+  }
+});
 

@@ -1,8 +1,8 @@
 let confirmBaja = document.getElementById("yesConfirm");
 let urlBaja = window.location.pathname
 let inputPorcentage = document.getElementById("porcentage")
-let bajaMotivo = document.getElementById("bajaMotivo")
-
+let bajaMotivo = document.getElementById("motivo")
+let observacion = document.getElementById("bajaObservacion")
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -27,6 +27,7 @@ confirmBaja.addEventListener("click",()=>{
         }
     })
     .catch(error => {
+        console.log(error)
         if(!document.querySelector(".errorMessageSendBaja")){
             let errorMessage = document.createElement('p');
             errorMessage.className = 'errorMessageSendBaja';
@@ -42,7 +43,8 @@ async function darBaja() {
         body:JSON.stringify({ 
             porcentage: inputPorcentage.value,
             c: inputEditPorcentage.name,
-            motivo: bajaMotivo.value
+            motivo: bajaMotivo.value,
+            observacion: observacion.value
         }),
         headers: {
             "X-CSRFToken": getCookie('csrftoken'),

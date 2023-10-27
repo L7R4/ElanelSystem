@@ -12,6 +12,7 @@ async function cuotasGet() {
     const response = await fetch("/request-cuotas/", {
         method: 'get',
         headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
+        cache: 'no-store',
     });
     const data = await response.json();
     return data;
@@ -41,7 +42,8 @@ closeModal.addEventListener('click', ()=>{
 
 function fillModalWithMovData(movimientos,mov) {
     let movSelected = movimientos.filter(c=> c.idMov == mov.id)
-    numeroVenta.innerHTML = movSelected[0]["idVenta"]
+    numeroVenta.innerHTML = movSelected[0]["nro_operacion"]
+    numeroCliente.innerHTML = movSelected[0]["nroCliente"]
     numeroCuota.innerHTML = movSelected[0]["cuota"]
     dinero.innerHTML = movSelected[0]["pagado"]
     metodoPago.innerHTML = movSelected[0]["metodoPago"]

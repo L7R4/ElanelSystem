@@ -64,4 +64,9 @@ function actualizarResultados(resultados,contenedor) {
     return contenedor
 }
 
-
+// Esto evita el comportamiento predeterminado del botón "Tab" y el "Enter"
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab' || e.key === 'Enter') {
+      e.preventDefault();
+    }
+  });

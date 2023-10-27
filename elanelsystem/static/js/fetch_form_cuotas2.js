@@ -22,6 +22,7 @@ const descuentoCuotaButton = document.getElementById("descuentoCuota")
 const descuentoCuotaWrapper = document.querySelector(".descuentoCuota")
 const inputDescuentoCuota = document.getElementById("submitDescuento")
 
+
 const cobradorSelectedWrapper = document.querySelector(".cobradorSelectedWrapper")
 const cobradores = document.querySelectorAll(".cobradoresList > li")
 const cobradoresList = document.querySelector(".cobradoresList")
@@ -60,6 +61,7 @@ async function fetchCuotas() {
     const response = await fetch(url, {
         method: 'get',
         headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
+        cache: 'no-store',
     });
     const data = await response.json();
     return data;
@@ -217,7 +219,6 @@ inputDescuentoCuota.addEventListener('click', ()=>{
 })
 
 function testSale(cuotaTest,typePayment,resto) {
-    // let cuotasStatus = await fetchCuotas()
 
     if(typePayment == "Pagado"){
         if (cuotaTest.children[0].classList.contains("atrasado")) {
@@ -258,6 +259,11 @@ function selectCuota(target,cuotas) {
 
         let inputCuota = target.children[2].innerHTML
         cuotaPicked.innerHTML = inputCuota
+        if(inputCuota == "Cuota 0" || inputCuota == "Cuota 1"){
+            descuentoCuotaButton.style.display = "block"
+        }else{
+            descuentoCuotaButton.style.display = "none"
+        }
         typePaymentWindow.classList.add("active");
         testCuotaSelected(target,cuotas)
     }
@@ -307,7 +313,6 @@ function selectCobrador(target) {
     cobradorSelected.innerHTML = target.innerHTML;
     inputCobrador.value = target.innerHTML;
     validarSubmit()
-
 }
 
 // SELECCIONA EL TIPO DE PAGO
@@ -479,4 +484,10 @@ document.addEventListener("click", function(event) {
         }
 });
 
+// Esto evita el comportamiento predeterminado del botón "Tab" y el "Enter"
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab' || e.key === 'Enter') {
+      e.preventDefault();
+    }
+  });
 

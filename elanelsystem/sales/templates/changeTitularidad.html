@@ -19,11 +19,12 @@
 <div class="tittleDo">
     <h3>Elija el cliente con el que desea reemplazarlo</h3>
     <div class="buttons">
+      <h4>{{error}}</h4>
       <button id="yesConfirm" type="submit" form="formSelectCustomer">Confirmar</button>
       
-    <div id="noConfirm">
-      <a href="{% url 'sales:detail_sale' object.id %}">Cancelar</a>
-    </div>
+      <div id="noConfirm">
+        <a href="{% url 'sales:detail_sale' object.id %}">Cancelar</a>
+      </div>
     </div>
 </div>
 <div class="information">

@@ -50,8 +50,8 @@ class Ventas(models.Model):
     nro_operacion = models.IntegerField(default=returnOperacion)
     agencia = models.CharField(default="", max_length=20, choices= AGENCIAS)
 
-    cambioTitularidadField = models.JSONField(default=list)
-    clientes_anteriores = models.ManyToManyField(Cliente, related_name='ventas_anteriores', blank=True)
+    cambioTitularidadField = models.JSONField(default=list,blank=True,null=True)
+    # clientes_anteriores = models.ManyToManyField(Cliente, related_name='ventas_anteriores', blank=True)
 
     adjudicado = models.JSONField(default=dict)
     deBaja = models.JSONField(default=dict)
@@ -86,7 +86,7 @@ class Ventas(models.Model):
 
 
         cuotas.append({"cuota" :f'Cuota 0',
-                       "idVenta": self.pk,
+                       "nro_operacion": self.nro_operacion,
                        "status": "Pendiente",
                        "total": self.primer_cuota,
                        'pagado': 0,
@@ -101,10 +101,10 @@ class Ventas(models.Model):
                        })
         
         for i in range(1,self.nro_cuotas+1):
-            fechaDeVenta =  fechaDeVenta  + relativedelta(months=1)
+            fechaDeVenta =  fechaDeVenta + self.contarDiasSegunModalidad(self.modalidad)
             contMeses += 1
             cuotas.append({"cuota" :f'Cuota {i}',
-                           "idVenta": self.pk,
+                           "nro_operacion": self.nro_operacion,
                            "status": "Bloqueado",
                            "total": self.importe_x_cuota + (self.importe_x_cuota * (self.PORCENTAJE_ANUALIZADO *contYear))/100,
                            'pagado': 0,
@@ -132,13 +132,36 @@ class Ventas(models.Model):
 
         self.save()
 
+    
+    def contarDiasSegunModalidad(self,modalidad):
+        hoy = datetime.datetime.now()  # Obtén la fecha actual
+        modalidad = modalidad.lower()
+
+        if modalidad == 'diario':
+            dias_a_sumar = 1
+        elif modalidad == 'semanal':
+            dias_a_sumar = 7
+        elif modalidad == 'quincenal':
+            dias_acuotas_pagadas_sumar = 15
+        elif modalidad == 'mensual':
+            # Usa relativedelta para sumar un mes
+            hoy_mas_un_mes = hoy + relativedelta(months=1)
+            # Calcula la diferencia en días
+            dias_a_sumar = (hoy_mas_un_mes - hoy).days
+        else:
+            raise ValueError("Modalidad no válida")
+
+        fecha_resultado = relativedelta(days=dias_a_sumar)
+        return fecha_resultado
+
 
     def createBaja(self):
         bajaField = self.deBaja
         bajaField["status"] = False
         bajaField["motivo"] = ""
         bajaField["detalleMotivo"] = ""
-        
+        bajaField["observacion"] = ""
+        bajaField["responsable"] = ""
         self.deBaja = bajaField
         self.save()
 
@@ -147,15 +170,15 @@ class Ventas(models.Model):
         adjuField = self.adjudicado
         adjuField["status"] = False
         adjuField["tipo"] = ""
-        
         self.adjudicado = adjuField
         self.save()
 
 
     def createCambioTitularidad(self,lastCuota,user,oldCustomer,newCustomer,pkOldCustomer,pkNewCustomer):
         cambioTitularidadField = self.cambioTitularidadField
-        print("weps")
-        print(cambioTitularidadField)
+        if(pkNewCustomer == self.nro_cliente.pk):
+            raise ValueError("No se puede cambiar por el mismo cliente")
+        
         if(len(cambioTitularidadField) == 0):
             idDelCambio = 0
             cambioTitularidadField.append(
@@ -186,10 +209,9 @@ class Ventas(models.Model):
                        "pkNewCustomer": pkNewCustomer
 
                     })
-        print("weps2")
-        print(cambioTitularidadField)
         
         self.save()
+
 
     def cuotas_pagadas(self):
         cuotas = [cuota for cuota in self.cuotas if cuota["status"] == "Pagado"]
@@ -200,11 +222,13 @@ class Ventas(models.Model):
             return []
     
     
-    def darBaja(self,motivo,porcentaje,detalleMotivo):
+    def darBaja(self,motivo,porcentaje,detalleMotivo,observacion,responsable):
         self.deBaja["status"] = True
         self.deBaja["motivo"] = motivo
         self.deBaja["porcentaje"] = porcentaje
+        self.deBaja["observacion"] = observacion
         self.deBaja["detalleMotivo"] = detalleMotivo
+        self.deBaja["responsable"] = responsable
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y -- %H:%M")
         self.save()
         
@@ -332,8 +356,7 @@ class Ventas(models.Model):
 
 
     def addPorcentajeAdjudicacion(self):
-        # NOW = datetime.datetime.now()
-        NOW = datetime.datetime.now() + relativedelta(days=+18)
+        NOW = datetime.datetime.now()
         INTERES = 0.01
         cuotas = self.cuotas
 
@@ -343,11 +366,10 @@ class Ventas(models.Model):
 
         for i in range(initial,int(self.nro_cuotas + initial)):
             fechaVencimiento = cuotas[i]["fechaDeVencimiento"]
-            fechaVEncimientoFormated = datetime.datetime.strptime(fechaVencimiento,"%d-%m-%Y")
-            fechaInicioDeCuota = fechaVEncimientoFormated + relativedelta(months=-1)
+            fechaVencimientoFormated = datetime.datetime.strptime(fechaVencimiento,"%d-%m-%Y")
+            fechaInicioDeCuota = fechaVencimientoFormated + relativedelta(months=-1)
             
             if(NOW > fechaInicioDeCuota + relativedelta(days=+15)):
-                # print("Weps: " + str(cuotas[i]))
                 cantidadDias = (NOW - (fechaInicioDeCuota + relativedelta(days=+15))).days
                 cuotas[i]["interesPorMora"] = cantidadDias*INTERES
                 cuotas[i]["totalFinal"] = cuotas[i]["total"]+(cuotas[i]["total"] * cuotas[i]["interesPorMora"])
