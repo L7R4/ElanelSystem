@@ -96,38 +96,54 @@
 }
 #form_create_sale #id_tipo_producto{
     position: relative;
-    z-index: 9;
+    z-index: 12;
 }
 #form_create_sale #wrapperTipoProducto > ul{
-    z-index: 8;
+    z-index: 11;
 }
 
 
 #form_create_sale #id_producto{
     position: relative;
-    z-index: 7;
+    z-index: 10;
 }
 #form_create_sale #wrapperProducto > ul{
-    z-index: 6;
+    z-index: 9;
 }
 
 #form_create_sale #id_agencia{
     position: relative;
-    z-index: 5;
+    z-index: 8;
 }
 
 #form_create_sale #wrapperVendedor > ul{
-    z-index: 4;
+    z-index: 7;
 }
 
 #form_create_sale #id_modalidad{
     position: relative;
-    z-index: 3;
-}
-#form_create_sale #wrapperModalidad > ul{
-    z-index: 2;
+    z-index: 6;
 }
 
+#form_create_sale #wrapperModalidad > ul{
+    z-index: 5;
+}
+
+#form_create_sale #id_vendedor{
+    position: relative;
+    z-index: 4;
+}
+#form_create_sale #wrapperVendedor > ul{
+    z-index: 3;
+}
+
+#form_create_sale #id_supervisor{
+    position: relative;
+    z-index: 2;
+}
+#form_create_sale #wrapperSupervisor > ul{
+    z-index: 1;
+}
 
 
 
@@ -265,7 +281,8 @@
 #id_paquete,
 #id_total_a_pagar,
 #id_primer_cuota,
-#id_anticipo{
+#id_anticipo,
+#id_nro_orden{
     background-color: #3f4653d4!important;
     pointer-events: none;
     border: 2px solid #1c2d45b8!important;

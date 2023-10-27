@@ -17,12 +17,13 @@ const inputImportexCuota = document.getElementById('id_importe_x_cuota')
 const inputTotalAPagar = document.getElementById('id_total_a_pagar')
 const inputPaquete = document.getElementById('id_paquete')
 const inputAnticipo = document.getElementById('id_anticipo')
-
+const inputNroContrato = document.getElementById("id_nro_solicitud")
 
 
 fetch(url,{
     method: 'get',
-    headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' ,}
+    headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
+    cache: 'no-store',
 }).then(
     function(response){
         return response.json()
@@ -122,6 +123,8 @@ function testClicks(event) {
     }
     
 }
+
+
 function clearActiveMenu() {
     inputSelects.forEach(element => {
         element.classList.remove("active")
@@ -183,3 +186,26 @@ function actualizarResultados(resultados,contenedor) {
     let height = contenedor.scrollHeight
     contenedor.style.height = height +'px'
 }
+
+function putNroOrden(){
+    // Obtener el valor del campo de número de contrato
+    const nroContratoValue = inputNroContrato.value;
+
+    // Obtener los últimos 3 dígitos del número de contrato
+    const ultimosTresDigitos = nroContratoValue.slice(-3);
+
+    // Actualizar el campo de número de orden con los últimos 3 dígitos
+    const numeroOrdenInput = document.getElementById("id_nro_orden");
+    numeroOrdenInput.value = ultimosTresDigitos;
+}
+inputNroContrato.addEventListener("input",()=>{
+    putNroOrden()
+})
+
+
+// Esto evita el comportamiento predeterminado del botón "Tab" y el "Enter"
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab' || e.key === 'Enter') {
+      e.preventDefault();
+    }
+  });

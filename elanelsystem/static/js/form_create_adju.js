@@ -22,7 +22,8 @@ const inputAnticipo = document.getElementById('id_anticipo')
 
 fetch(url,{
     method: 'get',
-    headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' ,}
+    headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
+    cache: 'no-store'    
 }).then(
     function(response){
         return response.json()
@@ -124,6 +125,8 @@ function testClicks(event) {
     }
     
 }
+
+
 function clearActiveMenu() {
     inputSelects.forEach(element => {
         element.classList.remove("active")
@@ -186,4 +189,11 @@ function actualizarResultados(resultados,contenedor) {
     contenedor.style.height = height +'px'
 }
 
+
+// Esto evita el comportamiento predeterminado del botón "Tab" y el "Enter"
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab' || e.key === 'Enter') {
+      e.preventDefault();
+    }
+  });
 

@@ -18,6 +18,11 @@
             </div>
         {%endfor%}
     </form>
-    <input type="submit" value="Guardar y cambiar" form="form_create_customer" id="save_customer">
+    <div class="wrapperButtons">
+        <input type="submit" value="Guardar y cambiar" form="form_create_customer" id="save_customer">
+        <a id ="cancelar" href="{% url 'sales:changeTitu' object.pk %}"> Cancelar </a>
+    </div>
+    
+
 
 {% endblock content %}

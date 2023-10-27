@@ -214,15 +214,65 @@
     <div class="main_modalCuota">
         <div class="background"></div>
         <div class="modal">
-            <div>
-                <button type="button" id="closeModal">X</button>
-                <h2 id="numeroVenta"></h2>
-                <h2 id="numeroCuota"></h2>
-                <h2 id="dinero"></h2>
-                <h2 id="metodoPago"></h2>
-                <h2 id="cobrador"></h2>
-                <h2 id="fechaPago"></h2>
-                <h2 id="horaPago"></h2>
+            <div class="tittleModal">
+                <h3>Detalle de cuota</h3>
+                <button type="button" id="closeModal">
+                    <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                </button>
+            </div>
+            <div class="modal_information">
+                <div class="wrapperData">
+                    <h2>N° de Operacion</h2>
+                    <div class="backgroundInput">
+                        <h2 id="numeroVenta"></h2>
+                    </div>
+                </div>
+                <div class="wrapperData">
+                    <h2>Metodo de pago</h2>
+                    <div class="backgroundInput">
+                        <h2 id="metodoPago"></h2>
+                    </div>
+                </div>
+                <div class="wrapperData">
+                    <h2>Fecha de pago</h2>
+                    <div class="backgroundInput">
+                        <h2 id="fechaPago"></h2>
+                    </div>
+                </div>
+                <div class="wrapperData">
+                    <h2>N° de Cuota</h2>
+                    <div class="backgroundInput">
+                        <h2 id="numeroCuota"></h2>
+                    </div>
+                </div>
+                <div class="wrapperData">
+                    <h2>Dinero</h2>
+                    <div class="backgroundInput">
+                        <h2 id="dinero"></h2>
+                    </div>
+                </div>
+                <div class="wrapperData">
+                    <h2>Hora de pago</h2>
+                    <div class="backgroundInput">
+                        <h2 id="horaPago"></h2>
+                    </div>
+                </div>
+                <div class="wrapperData">
+                    <h2>N° de Cliente</h2>
+                    <div class="backgroundInput">
+                        <h2 id="numeroCliente"></h2>
+                    </div>
+                </div>
+                
+                
+                <div class="wrapperData">
+                    <h2>Cobrador</h2>
+                    <div class="backgroundInput">
+                        <h2 id="cobrador"></h2>
+                    </div>
+                </div>
+                
+                
             </div>
         </div>
     </div>

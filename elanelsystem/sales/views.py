@@ -176,10 +176,10 @@ class DetailSale(generic.DetailView):
         self.object.testVencimientoCuotas()
         status_cuotas = self.object.cuotas
 
-
         if(self.object.adjudicado):
             self.object.addPorcentajeAdjudicacion()
 
+        
 
         cuotas = []
 
@@ -190,8 +190,7 @@ class DetailSale(generic.DetailView):
             cuota = "Cuota " + str(i) 
             cuotas.append(cuota)
         lenght = 5 # Cambia esto a la cantidad de caracteres que deseas generar
-        wepst= self.object.cambioTitularidadField
-        print(list(reversed(wepst)))
+        
         context["changeTitularidad"] = list(reversed(self.object.cambioTitularidadField))
         context['cuotas'] = cuotas
         context['cobradores'] = Usuario.objects.all()
@@ -227,7 +226,6 @@ class DetailSale(generic.DetailView):
         
         requestKey=""
         try:
-            print(json.loads(request.body)["c"])
             requestKey = json.loads(request.body)["c"]
         except KeyError:
             pass
@@ -252,7 +250,9 @@ class DetailSale(generic.DetailView):
         elif(request.method == 'POST' and ("porcentageLpOim" == requestKey)):
             porcentage = json.loads(request.body)["porcentage"]
             motivoDetalle = json.loads(request.body)["motivo"]
-            self.object.darBaja("cliente",porcentage,motivoDetalle)
+            motivoObservacion = json.loads(request.body)["observacion"]
+            responsable = request.user.nombre
+            self.object.darBaja("cliente",porcentage,motivoDetalle,motivoObservacion,responsable)
             response_data = {
                 'success': True,
                 'urlPDF': reverse("sales:bajaPDF", args=[self.object.pk]),
@@ -264,12 +264,12 @@ class DetailSale(generic.DetailView):
 
         # PARA GENERAR EL PDF CON LA BAJA SIN LA CLAVE
         elif(request.method == 'POST' and ("porcentage" == requestKey)):
-            print("asdasd213")
-
             porcentage = json.loads(request.body)["porcentage"]
             if(int(porcentage) == porcentageValido):
                 motivoDetalle = json.loads(request.body)["motivo"]
-                self.object.darBaja("cliente",porcentage,motivoDetalle)
+                motivoObservacion = json.loads(request.body)["observacion"]
+                responsable = request.user.nombre
+                self.object.darBaja("cliente",porcentage,motivoDetalle,motivoObservacion,responsable)
                 response_data = {
                 'success': True,
                 'urlPDF': reverse("sales:bajaPDF", args=[self.object.pk]),
@@ -277,7 +277,6 @@ class DetailSale(generic.DetailView):
             }
                 return JsonResponse(response_data, safe=False)
             else:
-                print("Error")
                 return HttpResponseBadRequest('WEPSSSSSSSSSSSS', status=406)
             
         elif request.method == 'POST' and "descuento" not in json.loads(request.body):
@@ -310,7 +309,7 @@ class CreateAdjudicacion(generic.DetailView):
         self.object = self.get_object()
         url = request.path
         cuotasPagadas = self.object.cuotas_pagadas()
-        print(cuotasPagadas)
+
         valoresCuotasPagadas = [item["total"] for item in cuotasPagadas]
         sumaCuotasPagadas = sum(valoresCuotasPagadas)
         if("negociacion" in url):
@@ -376,13 +375,18 @@ class CreateAdjudicacion(generic.DetailView):
         self.object = self.get_object()
         numeroAdjudicacion = self.object.nro_operacion
 
+        cuotasPagadas = self.object.cuotas_pagadas()
+        valoresCuotasPagadas = [item["total"] for item in cuotasPagadas]
+        sumaCuotasPagadas = sum(valoresCuotasPagadas)
         url = request.path
         if("sorteo" in url):
             tipo_adjudicacion = "sorteo"
         elif("negociacion" in url):
             tipo_adjudicacion = "negociacion"
+            sumaCuotasPagadas = sumaCuotasPagadas * 0.5
 
-
+       
+        
         if request.POST["nro_cliente"] != self.get_object().nro_cliente.nro_cliente:
             raise ValidationError('Hubo un cambio malicioso de numero de cliente')
         
@@ -416,11 +420,23 @@ class CreateAdjudicacion(generic.DetailView):
                 sale.save()
                 sale.crearCuotas()
                 sale.crearAdjudicacion(numeroAdjudicacion,tipo_adjudicacion)
-                self.object.darBaja("adjudicacion")
+                self.object.darBaja("adjudicacion",0,"","",request.user.nombre)
 
                 return redirect("users:cuentaUser",pk= self.get_object().nro_cliente.pk)
-
-        return render(request, self.template_name, {'form': form, 'object' : self.get_object()})
+        
+        
+        aumentoPorcentaje = self.object.importe * 0.1 
+        importeNuevo = aumentoPorcentaje + self.object.importe
+        context = {
+            'form': form,
+            'object': self.get_object(),
+            'tipoProducto': self.object.producto.tipo_de_producto,
+            'tipoDeAdjudicacion' : tipo_adjudicacion.upper(),
+            'producto': self.object.producto.nombre,
+            'importeNuevo': int(importeNuevo),
+            'dineroAnticipo' : int(sumaCuotasPagadas)
+        }
+        return render(request, self.template_name, context)
 
 
 class ChangePack(generic.DetailView):
@@ -543,15 +559,19 @@ class ChangePack(generic.DetailView):
                 sale.crearCuotas()
                 sale.createBaja()
                 sale.createAdjudicado()            
-                self.object.darBaja("cambio de pack")
+                self.object.darBaja("cambio de pack",0,"","",request.user.nombre)
 
                 return redirect("users:cuentaUser",pk= self.get_object().nro_cliente.pk)
-
-        return render(request, self.template_name, {'form': form, 'object' : self.get_object()})
+        context = {
+            'form': form,
+            'object': self.get_object(),
+            'tipoProducto': self.object.producto.tipo_de_producto,
+            'producto': self.object.producto.nombre,
+        }
+        return render(request, self.template_name, context)
 
 
 def viewsPDFBaja(request,pk):
-    time.sleep(5)
     operacionBaja = Ventas.objects.get(id=pk)
     context ={
                 "nroContrato":operacionBaja.nro_solicitud,
@@ -563,6 +583,7 @@ def viewsPDFBaja(request,pk):
                 "cantCuotasPagadas" : len(operacionBaja.cuotas_pagadas()),
                 "cuotas" : operacionBaja.nro_cuotas,
                 "motivo" : operacionBaja.deBaja["detalleMotivo"],
+                "observacion" : operacionBaja.deBaja["observacion"],
                 "dineroDevolver" : operacionBaja.calcularDineroADevolver(),
                 "fecha" : operacionBaja.deBaja["fecha"],
             }
@@ -598,6 +619,7 @@ def viewPDFTitularidad(request,pk,idCambio):
                 "estado_civil" : Cliente.objects.get(id=newCustomer).estado_civil,
                 "fecha_nac" : Cliente.objects.get(id=newCustomer).fec_nacimiento,
                 "ocupacion" : Cliente.objects.get(id=newCustomer).ocupacion,
+                "telefono" : Cliente.objects.get(id=newCustomer).tel,
             }
             
     titularName = "Cambio de titular: " + str(Cliente.objects.get(id=newCustomer).nombre) + str(operacionTitu.nro_orden)
@@ -614,6 +636,7 @@ def viewPDFTitularidad(request,pk,idCambio):
 def requestCuotas(request):
     ventas = Ventas.objects.all()
     cuotas_data = []
+    
     idMov=0
     for i in range(int(ventas.count())):
         for k in range(len(ventas[i].cuotas)):
@@ -622,8 +645,11 @@ def requestCuotas(request):
                     for j in range (len(ventas[i].cuotas[k]["pagoParcial"]["amount"])):
                         movimiento_dataParcial ={}
                         movimiento_dataParcial['cuota'] = ventas[i].cuotas[k]["cuota"]
-                        movimiento_dataParcial['idVenta'] = ventas[i].cuotas[k]["idVenta"]
-
+                        movimiento_dataParcial['nro_operacion'] = ventas[i].cuotas[k]["nro_operacion"]
+                        nOpe = ventas[i].cuotas[k]["nro_operacion"]
+                        nroCliente = Ventas.objects.filter(nro_operacion = nOpe)
+                        movimiento_dataTotal['nroCliente'] = nroCliente[0].nro_cliente.nro_cliente
+                        
                         idMov +=1
                         movimiento_dataParcial["idMov"] =  idMov
                         movimiento_dataParcial['fecha_pago'] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["date"]
@@ -638,7 +664,10 @@ def requestCuotas(request):
                 else:
                     movimiento_dataTotal = {}
                     movimiento_dataTotal['cuota'] = ventas[i].cuotas[k]["cuota"]
-                    movimiento_dataTotal['idVenta'] = ventas[i].cuotas[k]["idVenta"]
+                    movimiento_dataTotal['nro_operacion'] = ventas[i].cuotas[k]["nro_operacion"]
+                    nOpe = ventas[i].cuotas[k]["nro_operacion"]
+                    nroCliente = Ventas.objects.filter(nro_operacion = nOpe)
+                    movimiento_dataTotal['nroCliente'] = nroCliente[0].nro_cliente.nro_cliente
 
                     idMov +=1
                     movimiento_dataTotal["idMov"] =  idMov
@@ -800,23 +829,32 @@ class ChangeTitularidad(generic.DetailView):
         self.object = self.get_object()
 
         if(request.method == 'POST'):
-            newCustomer = request.POST.get("newCustomer")
-            dniNewCustomer = Cliente.objects.all().filter(dni=newCustomer)
+            try:
+                newCustomer = request.POST.get("newCustomer")
+                dniNewCustomer = Cliente.objects.all().filter(dni=newCustomer)
 
-            # Agrega el antiguo cliente a la lista de clientes anteriores
-            self.object.clientes_anteriores.add(self.object.nro_cliente)
-            
+                # Agrega el antiguo cliente a la lista de clientes anteriores
+                # self.object.clientes_anteriores.asdd(self.object.nro_cliente)
+                
 
-            # Coloca los datos del cambio de titularidad
-            lastCuota = self.object.cuotas_pagadas()
-            self.object.createCambioTitularidad(lastCuota[-1],request.user.nombre,self.object.nro_cliente.nombre,dniNewCustomer[0].nombre,self.object.nro_cliente.pk,dniNewCustomer[0].pk)
+                # Coloca los datos del cambio de titularidad
+                lastCuota = self.object.cuotas_pagadas()
+                self.object.createCambioTitularidad(lastCuota[-1],request.user.nombre,self.object.nro_cliente.nombre,dniNewCustomer[0].nombre,self.object.nro_cliente.pk,dniNewCustomer[0].pk)
 
-            # Actualiza el dueño de la venta
-            self.object.nro_cliente = dniNewCustomer[0]
+                # Actualiza el dueño de la venta
+                self.object.nro_cliente = dniNewCustomer[0]
 
-            self.object.save()
+                self.object.save()
 
-        return redirect('sales:changeTitu',self.object.id)
+                return redirect("sales:detail_sale",pk= self.get_object().pk)
+            except ValueError as vE:
+                customers = Cliente.objects.all()
+                context = {
+                    "customers": customers,
+                    "object": self.object,
+                    "error": vE,
+                }
+                return render(request,self.template_name,context)
    
     
 class CrearUsuarioYCambiarTitu(generic.DetailView):

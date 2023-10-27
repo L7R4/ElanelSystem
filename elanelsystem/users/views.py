@@ -1,4 +1,3 @@
-from typing import Any
 from django.shortcuts import redirect, render
 from django.views import generic
 from .models import Usuario,Cliente
@@ -95,8 +94,8 @@ class CrearCliente(generic.CreateView):
     
 
     def post(self,request,*args,**kwargs):
-        form =self.form_class(request.POST)
         
+        form =self.form_class(request.POST)
         if form.is_valid():
                 customer = Cliente()
                 customer.nro_cliente = form.cleaned_data["nro_cliente"]
@@ -112,11 +111,10 @@ class CrearCliente(generic.CreateView):
                 customer.ocupacion = form.cleaned_data['ocupacion']
                 customer.save()              
                 return redirect("users:list_customers")
-
         else:
             context = {}
             context["customer_number"] = Cliente.returNro_Cliente
-            context['form'] = self.form_class
+            context['form'] = form
             return render(request, self.template_name, context)
 
 

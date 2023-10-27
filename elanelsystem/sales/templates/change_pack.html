@@ -45,6 +45,13 @@
             </ul>
         </div>
         
+        <div id="wrapperNroSolicitud">
+            {% for error in form.nro_solicitud.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">{{form.nro_solicitud.label}}</label>
+            {{form.nro_solicitud}}
+        </div>
 
         <div id="wrapperNroOrden">
             {% for error in form.nro_orden.errors %}
@@ -54,15 +61,6 @@
                 {{form.nro_orden.label}}
             </label>
             {{form.nro_orden}}
-        </div>
-
-
-        <div id="wrapperNroSolicitud">
-            {% for error in form.nro_solicitud.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">{{form.nro_solicitud.label}}</label>
-            {{form.nro_solicitud}}
         </div>
 
 

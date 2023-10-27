@@ -7,17 +7,17 @@
 </head>
 <body>  
     <div class="fecha">
-        {{fechaNow}}
+        <p>{{fechaNow}}</p>
     </div>
     <div id="subtittle">
-        <h2>Elanel Servicios y Soluciones</h2>
-        <h2>Presente</h2>
+        <p>Elanel Servicios y Soluciones</p>
+        <p>Presente</p>
     </div>
     <div id="subtittle_p2">
-        <h2>Referencia</h2>
-        <h2>Cambio de titularidad</h2>
-        <h2>Nro. Venta {{nroOperacion}}</h2>
-        <h2>De {{oldCustomer}}</h2>
+        <p>Referencia</p>
+        <p>Cambio de titularidad</p>
+        <p>Nro. Venta {{nroOperacion}}</p>
+        <p>De {{oldCustomer}}</p>
     </div>
 
     <div id ="detalle">
@@ -30,16 +30,52 @@
     </div>
     <div id="firmas">
         <div>
-            <p>_______________________________</p>
-            <h6><strong>Firma</strong></h6>
+            <!-- <p>_______________________________</p> -->
+            <p>Firma</p>
         </div>
         <div>
-            <p>_______________________________</p>
-            <h6><strong>Tipo y nro. de DNI</strong></h6>
+            <!-- <p>_______________________________</p> -->
+            <p>Tipo y nro. de DNI</p>
         </div>
         <div>
-            <p>_______________________________</p>
-            <h6><strong>Aclaracion</strong></h6>
+            <!-- <p>_______________________________</p> -->
+            <p>Aclaracion</p>
+        </div>
+    </div>
+    <div id="page2" style="page-break-before: always;">
+        <div class="fecha">
+            <p>{{fechaNow}}</p>
+        </div>
+        <div id="subtittle">
+            <p>Elanel Servicios y Soluciones</p>
+            <p>Presente</p>
+        </div>
+        <div id="subtittle_p2">
+            <p>Referencia</p>
+            <p>Cambio de titularidad</p>
+            <p>Nro. Venta {{nroOperacion}}</p>
+            <p>De {{cliente}}</p>
+        </div>
+    
+        <div id ="detalle">
+            <p>De mi mayor consideración</p>
+            <p>Tengo el agrado de dirigirme a Uds. con el fin de hacerles saber que partir de la presente, asumo los compromisos correspondientes como cliente de Elanel Servicios y Soluciones.</p>
+            
+            <p>Por tal motivo, le informo los datos correspondientes para hacer posible este trámite: Apellido y Nombre: {{cliente}}, DNI: {{dni}}, Estado Civil: {{estado_civil}}, Fecha de Nac.:{{fecha_nac}}, con domicilio en {{domicilio}}, localidad: {{localidad}},{{provincia}} teléfono: {{telefono}}, ocupación: {{ocupacion}}</p>
+            <p>IG/FACEBOOK _________________________________________</p>
+            <p>Ahora bien, hago propicia la presente para noticiar que cuento con total información sobre el contrato de Servicios de Asistencia Técnica y Mecánica y los beneficios especiales de vuestro Sistema.</p>
+            <p>Sin otro particular, saludo a Uds. atentamente.</p>
+        </div>
+        <div id="firmas">
+            <div>
+            <p>Firma</p>
+            </div>
+            <div>
+                <p>Tipo y nro. de DNI</p>
+            </div>
+            <div>
+                <p>Aclaracion</p>
+            </div>
         </div>
     </div>
 </body>

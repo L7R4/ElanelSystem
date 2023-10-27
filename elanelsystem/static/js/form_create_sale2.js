@@ -24,7 +24,8 @@ const inputNroContrato = document.getElementById("id_nro_contrato")
 
 fetch(url,{
     method: 'get',
-    headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' ,}
+    headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
+    cache: 'no-store'  
 }).then(
     function(response){
         return response.json()
@@ -250,3 +251,11 @@ function putNroOrden(){
     const numeroOrdenInput = document.getElementById("id_nro_orden");
     numeroOrdenInput.value = ultimosTresDigitos;
 }
+
+
+// Esto evita el comportamiento predeterminado del botón "Tab" y el "Enter"
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab' || e.key === 'Enter') {
+      e.preventDefault();
+    }
+  });

@@ -9,6 +9,12 @@ let formClave = document.querySelector(".formClave")
 let notConfirm = document.getElementById("notConfirm")
 let confirmPassword = document.getElementById("confirm")
 
+let motivoSelectedWrapper = document.querySelector(".motivoSelectedWrapper")
+let motivosList = document.querySelector(".motivosList")
+const motivos = document.querySelectorAll(".motivosList > li")
+let textMotivo = document.querySelector(".motivoText")
+
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -79,3 +85,25 @@ confirmPassword.addEventListener("click",()=>{
         }
     })
 })
+
+motivoSelectedWrapper.addEventListener("click", ()=>{
+    motivosList.classList.toggle("active");
+});
+motivos.forEach(motivo => {
+    motivo.addEventListener("click",()=>{
+        selectMotivo(motivo)
+    })
+});
+
+function selectMotivo(target) {
+    textMotivo.innerHTML = target.innerHTML;
+    motivo.value = target.innerHTML;
+    validarSubmit()
+}
+
+// Esto evita el comportamiento predeterminado del botón "Tab" y el "Enter"
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab' || e.key === 'Enter') {
+      e.preventDefault();
+    }
+  });
