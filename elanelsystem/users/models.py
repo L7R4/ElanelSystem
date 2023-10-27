@@ -43,7 +43,15 @@ class Usuario(AbstractBaseUser):
         ('Supervisor', 'Supervisor'),
     )
 
+    SUCURSALES =(
+        ("resistencia_chaco","Resistencia, Chaco "),
+        ("saenzPenia_chaco","Saenz Peña, Chaco "),
+        ("corrientes_corrientes","Corrientes, Corrientes "),
+        ("misiones_misiones","Misiones, Misiones"),
+    )
+
     nombre = models.CharField("Nombre Completo",max_length=100)
+    sucursal = models.CharField("Agencia", max_length=30, choices=SUCURSALES, default="")
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
     rango = models.CharField("Rango:",max_length=15, choices=RANGOS)
     dni = models.CharField("DNI",max_length=20, blank = True, null = True)
