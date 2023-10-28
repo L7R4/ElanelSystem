@@ -1,46 +1,22 @@
-const selects = document.querySelectorAll("#form_create_user > div > div > img");
-window.addEventListener('load',()=>{
-    selects.forEach(element => {
-        window.addEventListener('click', (event)=> {
-                console.log(element.parentElement.contains(event.target))
-                if (!element.parentElement.contains(event.target)) {
-                    console.log("uno")
-                    element.classList.remove('active')
-                    activeSelect(element) 
-                }else if(event.target == element && element.classList.contains("active")){
-                    console.log("dos")
-                    element.classList.remove('active')
-                    activeSelect(element) 
-                }else if(element.parentElement.contains(event.target)){
-                    console.log("tres")
-                    element.classList.add('active')
-                    activeSelect(element)
-                }
+document.addEventListener('DOMContentLoaded', function() {
+    const selectInputs = document.querySelectorAll('.select_input');
+    const selectOptions = document.getElementById('contenedorAgencia');
+    selectInputs.forEach(element => {
+        element.addEventListener('click', function(event) {
+            event.stopPropagation();
+            element.nextElementSibling.style.height = (selectOptions.style.height === '14rem') ? '0' : '14rem';
+        });
+        document.addEventListener('click', function(event) {
+            if (!element.contains(event.target)) {
+                element.nextElementSibling.style.height = '0';
+            }
+        });
+        element.nextElementSibling.querySelectorAll('li').forEach(function(option) {
+            option.addEventListener('click', function() {
+                element.value = option.textContent;
+                element.nextElementSibling.style.display = '0';
+            });
         });
     });
-})
 
-function activeSelect(inputSelect){
-    const height = inputSelect.nextElementSibling.scrollHeight;
-    if (inputSelect.classList.contains('active')) {
-        console.log("entro al active")
-        inputSelect.previousElementSibling.style.zIndex = "5"
-        inputSelect.nextElementSibling.style.zIndex = "4"
-        inputSelect.nextElementSibling.style.height = height +'px'
-        let hijos_select = inputSelect.nextElementSibling.children
-        Array.from(hijos_select).forEach(item =>{
-            item.addEventListener("click", ()=>{
-                let text_value = item.textContent
-                inputSelect.previousElementSibling.value = text_value
-                inputSelect.previousElementSibling.dispatchEvent(new Event("input"))
-            })
-        })
-    }else{
-        inputSelect.nextElementSibling.style.height = '0px'
-        inputSelect.nextElementSibling.style.zIndex = "1"
-        setTimeout(() => {
-            inputSelect.previousElementSibling.style.zIndex = "2";
-          }, "400");
-    }
-    
-}
+});

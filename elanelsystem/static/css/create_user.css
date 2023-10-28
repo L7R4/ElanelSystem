@@ -32,33 +32,26 @@
     flex-flow:column;
     min-width: 30%;
     height: 6rem;
+    position: relative;
     /* background-color: rgba(240, 248, 255, 0.479); */
 }
+
 #form_create_user > div > input
 {
-    height: 3.1rem;
+    height: 3rem;
     width: 80%;
-    background-color: rgba(253,253,253,0.07);
-    border: 3px solid #3D7CD8;
-    border-radius: 1rem;
-    outline: none;
-    text-indent: 1.2rem;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway;
+    font-family: raleway-semibold;
+    background-color: #304361;
+    border: 2px solid #3D7CD8;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    padding: 0rem 2rem 0rem 1rem;
+    outline: none;
     color: white;
 }
-#form_create_user > div > div> input
-{
-    height: 3.1rem;
-    width: 80%;
-    background-color: #304361;
-    border: 3px solid #3D7CD8;
-    border-radius: 1rem;
-    outline: none;
-    text-indent: 1.2rem;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway;
-    color: white;
+#form_create_user > div > input.select_input{
     position: relative;
     z-index: 2;
 }
@@ -86,7 +79,7 @@
     cursor: pointer;
 }
 
-#form_create_user > div > div > .select{
+#form_create_user > div > .select{
     position: absolute;
     height: 0;
     max-height: 20rem;
@@ -94,28 +87,28 @@
     top: 70%;
     /* left: 3px; */
     transition: all .4s ease;
-    width: 82%;
+    width: 90%;
     z-index:1;
     background: white;
     border-radius: 0.5rem;
     /* border: 3px solid #3D7CD8; */
 }
-#form_create_user > div > div > .select > li
+#form_create_user > div > .select > li
 {
     padding: 1rem;
     font-family: raleway;
     font-size: 1.4rem;
     color: black;
 }
-#form_create_user > div > div > .select > li:first-child{
-    padding-top: 2rem;
+#form_create_user > div > .select > li:first-child{
+    padding-top: 3rem;
 }
-#form_create_user > div > div > .select > li:hover
+#form_create_user > div > .select > li:hover
 {
     background-color: #3d7bd867;
     cursor: pointer;
 }
-#form_create_user > div > div > .select::-webkit-scrollbar{
+#form_create_user > div > .select::-webkit-scrollbar{
     width: 4px;
     border-radius: 5px;
 }
@@ -133,4 +126,16 @@
     width: fit-content;
     padding-left: .7rem;
     padding-bottom: .3rem;
+}
+#saveButton{
+    padding: 1rem 3rem;
+    color: white;
+    font-size: 1.6rem;
+    font-family: raleway-semibold;
+    background-color: #1753ED;
+    border-radius: 1rem;
+    letter-spacing: .04rem;
+    outline: none;
+    border-color: transparent;
+    cursor: pointer;
 }
