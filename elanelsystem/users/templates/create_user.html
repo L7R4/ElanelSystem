@@ -9,49 +9,55 @@
     <div class="wrapper_tittle">
         <h1>CREAR USUARIO</h1>
     </div>
-    <form method="POST" id = "form_create_user">
+    <form method="POST"  autocomplete="off" id="form_create_user">
         {% csrf_token %}
-        <div>
+
+        <div class="inputWrapper" id="nombreCompletoWrapper">
             <label for="id_nombre"> Nombre completo</label>
             <input type="text" name="nombre" maxlength="100" required="" id="id_nombre">
-            
         </div>
-        <div>
+        <div class="inputWrapper" id="emailWrraper">
             <label for="id_email">Correo electronico</label>
             <input type="email" name="email" maxlength="254" required="" id="id_email">
         </div>
-        <div>
+        <div class="input" id="sucursalWrapper">
+            <label for="sucursal">Sucursal</label>
+            <input type="text" class = "select_input" name="agencia" id="sucursal">
+            <ul id="contenedorAgencia" class="select" autocomplete="off">
+                <li>Admin</li>
+                <li>Gerente</li>
+                <li>Secretaria</li>
+                <li>Vendedor</li>
+                <li>Supervisor</li>
+            </ul>
+        </div>
+
+        <div class="inputWrapper" id="telefonoWrapper">
             <label for="id_tel">Telefono</label>
             <input type="number" name="tel" id="id_tel">
         </div>
-        <div>
-            <label for="id_rango">Rol</label>
-            <div>
-                <input 
-                type="text"
-                class = "select_input"
-                name="rango"
-                id="id_rango">
-                <img src="{% static 'images/icons/previous.svg' %}" alt="">
-                <ul id="contenedor" class="select">
-                    <li>Admin</li>
-                    <li>Gerente</li>
-                    <li>Secretaria</li>
-                    <li>Vendedor</li>
-                    <li>Supervisor</li>
-                </ul>
-            </div>
+        
+        <div class="input" id="rolWrapper">
+            <label for="rango">Rol</label>
+            <input type="text" class = "select_input" name="rango" id="rango" autocomplete="off">
+            <ul id="contenedorRol" class="select">
+                <li>Admin</li>
+                <li>Gerente</li>
+                <li>Secretaria</li>
+                <li>Vendedor</li>
+                <li>Supervisor</li>
+            </ul>
         </div>
-        <div>
+        <div class="input" id="passwordWrapper">
             <label for="id_password1">Contraseña</label>
             <input type="password" name="password1" required="" id="id_password1">
         </div>
-        <div>
+        <div class="input" id="passwordWrapper">
             <label for="id_password2">Repita la contraseña</label>
             <input type="password" name="password2" required="" id="id_password2">
         </div>
-        <input type="submit">
     </form>
+    <button type="submit" id="saveButton" form="form_create_user">Agregar</button>
 {% endblock content %}
 {% block js %}
     <script src="{% static 'js/input_select_create_user.js' %}"></script>
