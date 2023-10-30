@@ -51,7 +51,18 @@
     outline: none;
     color: white;
 }
-#form_create_user > div > input.select_input{
+#form_create_user > div > p{
+    position: absolute;
+    font-size: clamp(1.1rem, 1vw, 1.3rem);
+    font-family: raleway-semibold;
+    color: #ff7b7b;
+    padding: 0.3rem 1rem;
+    top: 95%;
+    left: -2%;
+    border-radius: 0.6rem;
+    white-space: nowrap;
+}
+#form_create_user > div > input.selectInput{
     position: relative;
     z-index: 2;
 }
@@ -138,4 +149,25 @@
     outline: none;
     border-color: transparent;
     cursor: pointer;
+}
+#cancelar{
+    padding: 1rem 3rem;
+    text-decoration: none;
+    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+    font-family: raleway-semibold;
+    background-color: #ed1717;
+    color: white;
+    border-radius: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+}
+.wrapperButtons{
+    display: flex;
+    column-gap: 1rem;
+    position: absolute;
+    bottom: 10%;
+    right: 10%;
 }

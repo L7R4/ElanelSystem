@@ -4,62 +4,59 @@ from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager, PermissionsMixin
 
 class UserManager(BaseUserManager):
-    def create_user(self,email,nombre,rango,password = None):
+    def create_user(self,email,nombre,dni,rango,password = None):
         if not email:
             raise ValueError("Debe contener un email")
 
         user = self.model(
             email = self.normalize_email(email),
             nombre = nombre,
+            dni = dni,
             rango = rango,
-            # password = password,
-            # contraseña = password
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
     
-    def create_superuser(self,email,nombre,rango,password):
+    def create_superuser(self,email,nombre,dni,password,rango="Admin"):
         user = self.create_user(
             email,
             nombre = nombre,
             rango = rango,
+            dni = dni,
             password=password
         )
         user.usuario_admin = True
         user.save()
         return user
 
-    # def get_by_natural_key(self, email):
-    #     return self.get(email=email)
-
 
 class Usuario(AbstractBaseUser):
     RANGOS = (
         ('Admin', 'Admin'),
-        ('Gerenete', 'Gerente'),
+        ('Gerente', 'Gerente'),
         ('Secreteria', 'Secretaria'),
         ('Vendedor', 'Vendedor'),
         ('Supervisor', 'Supervisor'),
     )
 
     SUCURSALES =(
-        ("resistencia_chaco","Resistencia, Chaco "),
-        ("saenzPenia_chaco","Saenz Peña, Chaco "),
-        ("corrientes_corrientes","Corrientes, Corrientes "),
-        ("misiones_misiones","Misiones, Misiones"),
+        ("Resistencia, Chaco","Resistencia, Chaco"),
+        ("Saenz Peña, Chaco","Saenz Peña, Chaco"),
+        ("Corrientes, Corrientes","Corrientes, Corrientes"),
+        ("Misiones, Misiones","Misiones, Misiones"),
     )
 
     nombre = models.CharField("Nombre Completo",max_length=100)
-    sucursal = models.CharField("Agencia", max_length=30, choices=SUCURSALES, default="")
+    sucursal = models.CharField("Sucursal", max_length=30, choices=SUCURSALES, default="")
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
     rango = models.CharField("Rango:",max_length=15, choices=RANGOS)
-    dni = models.CharField("DNI",max_length=20, blank = True, null = True)
+    dni = models.CharField("DNI",max_length=8, blank = True, null = True)
     domic = models.CharField("Domicilio",max_length=200, blank = True, null = True)
     prov = models.CharField("Provincia",max_length=100, blank = True, null = True)
-    tel = models.IntegerField("Telefono", blank = True, null = True)
+    tel = models.CharField("Telefono",max_length=11, blank = True, null = True)
     fec_nacimiento = models.DateField("Fecha de Nacimiento", blank = True, null = True)
-    usuario_admin = models.BooleanField(default=True)
+    usuario_admin = models.BooleanField(default=False)
     usuario_active = models.BooleanField(default=True)
 
     objects = UserManager()
@@ -68,15 +65,15 @@ class Usuario(AbstractBaseUser):
     def __str__(self):
         return self.nombre
     
-    class Meta:
-        permissions = [
-            ("puede_ver_algo","Puede ver algo"),
-            ("puede_cambiar_algo","Puede cambiar algo"),
-            ("puede_borrar_algo","Puede eliminar algo"),
-        ]
+    # class Meta:
+    #     permissions = [
+    #         ("puede_ver_algo","Puede ver algo"),
+    #         ("puede_cambiar_algo","Puede cambiar algo"),
+    #         ("puede_borrar_algo","Puede eliminar algo"),
+    #     ]
 
     USERNAME_FIELD ="email"
-    REQUIRED_FIELDS= ["nombre","rango"]
+    REQUIRED_FIELDS= ["nombre","dni"]
     
     # objects = MyAccountManager()
 
