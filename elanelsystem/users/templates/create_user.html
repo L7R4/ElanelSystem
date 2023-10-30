@@ -9,56 +9,94 @@
     <div class="wrapper_tittle">
         <h1>CREAR USUARIO</h1>
     </div>
-    <form method="POST"  autocomplete="off" id="form_create_user">
+        <form method="POST"  autocomplete="off" id="form_create_user">
         {% csrf_token %}
-
         <div class="inputWrapper" id="nombreCompletoWrapper">
-            <label for="id_nombre"> Nombre completo</label>
-            <input type="text" name="nombre" maxlength="100" required="" id="id_nombre">
+            {% for error in form.nombre.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">{{form.nombre.label}}</label>
+            {{form.nombre}}
+        </div>
+        <div class="inputWrapper" id="dniWrapper">
+            {% for error in form.dni.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for=""> {{form.dni.label}}</label>
+            {{form.dni}}
         </div>
         <div class="inputWrapper" id="emailWrraper">
-            <label for="id_email">Correo electronico</label>
-            <input type="email" name="email" maxlength="254" required="" id="id_email">
+            {% for error in form.email.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="id_email">{{form.email.label}}</label>
+            {{form.email}}
         </div>
         <div class="input" id="sucursalWrapper">
-            <label for="sucursal">Sucursal</label>
-            <input type="text" class = "select_input" name="agencia" id="sucursal">
-            <ul id="contenedorAgencia" class="select" autocomplete="off">
-                <li>Admin</li>
-                <li>Gerente</li>
-                <li>Secretaria</li>
-                <li>Vendedor</li>
-                <li>Supervisor</li>
+            <p>{{errorSucursal}}</p>
+            <label for="">{{form.sucursal.label}}</label>
+            {{form.sucursal}}
+            <ul id="contenedorAgencia" class="select">
+                {% for agencia in sucursales %}
+                    <li>{{agencia}}</li>
+                {% endfor %}
             </ul>
+            
         </div>
 
         <div class="inputWrapper" id="telefonoWrapper">
-            <label for="id_tel">Telefono</label>
-            <input type="number" name="tel" id="id_tel">
+            {% for error in form.tel.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">{{form.tel.label}}</label>
+            {{form.tel}}
         </div>
         
         <div class="input" id="rolWrapper">
-            <label for="rango">Rol</label>
-            <input type="text" class = "select_input" name="rango" id="rango" autocomplete="off">
+            <p>{{errorRango}}</p>
+            <label for="">{{form.rango.label}}</label>
+            {{form.rango}}
             <ul id="contenedorRol" class="select">
-                <li>Admin</li>
-                <li>Gerente</li>
-                <li>Secretaria</li>
-                <li>Vendedor</li>
-                <li>Supervisor</li>
+                {% for  rol in roles %}
+                    <li>{{rol}}</li>
+                {% endfor %}
             </ul>
         </div>
-        <div class="input" id="passwordWrapper">
-            <label for="id_password1">Contraseña</label>
-            <input type="password" name="password1" required="" id="id_password1">
+        <div class="input" id="password1Wrapper">
+            {% for error in form.password2.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">{{form.password1.label}}</label>
+            {{form.password1}}
+            {% comment %} <button type="button" onclick="mostrarContraseña()">Mostrar contraseña</button> {% endcomment %}
         </div>
-        <div class="input" id="passwordWrapper">
-            <label for="id_password2">Repita la contraseña</label>
-            <input type="password" name="password2" required="" id="id_password2">
+        <div class="input" id="password2Wrapper">
+            {% for error in form.password2.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">{{form.password2.label}}</label>
+            {{form.password2}}
         </div>
     </form>
-    <button type="submit" id="saveButton" form="form_create_user">Agregar</button>
+    <div class="wrapperButtons">
+        <button type="submit" id="saveButton" form="form_create_user">Agregar</button>
+        <a id ="cancelar" href="{% url 'users:list_customers' %}"> Cancelar </a>
+    </div>
 {% endblock content %}
 {% block js %}
     <script src="{% static 'js/input_select_create_user.js' %}"></script>
+
+
+    {% comment %} PARA VER LA CONTRASEÑA {% endcomment %}
+
+    {% comment %} <script>
+        function mostrarContraseña() {
+        var contraseñaInput = document.getElementById("password1");
+        if (contraseñaInput.type === "password") {
+            contraseñaInput.type = "text";
+        } else {
+            contraseñaInput.type = "password";
+        }
+        }
+  </script> {% endcomment %}
 {% endblock js %}

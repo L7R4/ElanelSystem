@@ -10,37 +10,62 @@ from django.http import HttpRequest, HttpResponseRedirect, HttpResponse, JsonRes
 
 class CrearUsuario(generic.View):
     model = Usuario
-   
+    form_class = FormCreateUser
     template_name = "create_user.html"
-    # success_url = reverse_lazy('')
+    
+    sucursales =[]
+    roles = []
+    for i in range (0,len(list(Usuario.SUCURSALES))):
+        sucursales.append(Usuario.SUCURSALES[i][1])
+    
+    for i in range (0,len(list(Usuario.RANGOS))):
+        roles.append(Usuario.RANGOS[i][1])
     
 
     def get(self,request,*args, **kwargs):
         context = {}
+        context["sucursales"] = self.sucursales
+        context["roles"] = self.roles
+        context["form"] = self.form_class
+
         return render(request, self.template_name,context)
     
-    def post(self,request,*args, **kwargs):
-        form = FormCreateUser()
-        if request.method == "POST":
-                nombre = request.POST.get('nombre')
-                email = request.POST.get('email')
-                tel = request.POST.get('tel')
-                rango = request.POST.get('rango')
-                password1 = request.POST.get('password1')
-                password2 = request.POST.get('password2')
-                usuario_admin = True
 
-                new_user= self.model.objects.create_user(
-                email=email,
-                nombre=nombre,
-                rango=rango,
-                password = password2)
-                new_user.rango = rango
+    def post(self,request,*args, **kwargs):
+        form =self.form_class(request.POST)
+        if form.is_valid():
+                nombre = form.cleaned_data["nombre"]
+                dni = form.cleaned_data["dni"]
+                email = form.cleaned_data["email"]
+                sucursal = form.cleaned_data["sucursal"]
+                tel = form.cleaned_data["tel"]
+                rango = form.cleaned_data["rango"]
+                password1 = form.cleaned_data["password1"]
+                password2 = form.cleaned_data["password2"]
+                # passwordClean = form.clean_password(password1,password2)
+                new_user = self.model.objects.create_user(
+                    email=email,
+                    nombre=nombre,
+                    dni=dni,
+                    rango=rango,
+                    password=password2
+                )
+                new_user.sucursal = sucursal
+                new_user.tel = tel
+                new_user.usuario_admin = True
                 new_user.save()
 
+
         else:
-                print(form)
-                # message_error = {"message": "No valido"}
+            context = {}
+            context["errorSucursal"] = form.clean_sucursal(request.POST.get("sucursal"))
+            context["errorRango"] = form.clean_rango(request.POST.get("rango"))
+
+            context["sucursales"] = self.sucursales
+            context["roles"] = self.roles
+            context["form"] = form
+            
+            return render(request, self.template_name,context)
         return redirect("sales:resumen")
 
 

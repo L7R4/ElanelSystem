@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const selectInputs = document.querySelectorAll('.select_input');
-    const selectOptions = document.getElementById('contenedorAgencia');
+    const selectInputs = document.querySelectorAll('.selectInput');
+    const selectOptions = document.querySelectorAll('.select');
     selectInputs.forEach(element => {
         element.addEventListener('click', function(event) {
             event.stopPropagation();
-            element.nextElementSibling.style.height = (selectOptions.style.height === '14rem') ? '0' : '14rem';
+            element.nextElementSibling.style.height = (element.nextElementSibling.style.height === '14rem') ? '0' : '14rem';
         });
         document.addEventListener('click', function(event) {
             if (!element.contains(event.target)) {
