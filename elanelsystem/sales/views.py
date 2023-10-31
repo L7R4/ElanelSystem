@@ -33,11 +33,59 @@ class Resumen(generic.View):
     template_name = 'resumen.html'
 
     def get(self,request,*args,**kwargs):
-        ventas = Ventas.objects.all()
-        context = {
-            "ventas" : ventas,
+
+        # Ganancias
+        ganancias_monthly = [1195, 3648, 8022, 3634, 4880, 1033, 1547, 9107, 8654, 1192, 1879, 2266]
+        current_ganancias = ganancias_monthly[-1]
+        last_ganancias = ganancias_monthly[-2]
+        feedback_ganancias = str ( round((((last_ganancias - current_ganancias) / last_ganancias) * 100) * -1, 2) )
+
+        if feedback_ganancias[0].isdigit():
+            feedback_ganancias = '+' + feedback_ganancias
+
+        ganancias = {
+            'title':'Ganancias',
+            'current': 123123,
+            'monthly': ganancias_monthly,
+            'feedback': f'{feedback_ganancias}% vs el mes anterior',
+            'isPositive': feedback_ganancias[0] == '+'
         }
-        # print(context)
+        
+        # Gastos
+        gastos_monthly = [400, 4035, 3323, 4918, 7462, 5336, 9831, 9272, 4398, 5581, 4872, 1635, 4872]
+        current_gastos = gastos_monthly[-1]
+        last_gastos = gastos_monthly[-2]
+        feedback_gastos = str ( round((((last_gastos - current_gastos) / last_gastos) * 100) * -1, 2) )
+
+        if feedback_gastos[0].isdigit():
+            feedback_gastos = '+' + feedback_gastos
+        
+        gastos = {
+            'title':'Gastos',
+            'current': 12311123,
+            'monthly':gastos_monthly,
+            'feedback': f'{feedback_gastos}% vs el mes anterior',
+            'isPositive': feedback_gastos[0] == '+'
+        }
+
+        # Numero de clientes
+        clientes_monthly = [6021, 1649, 3354, 8201, 8154, 1057, 5778, 3397, 7040, 7924, 3682, 1364]
+        current_clientes = clientes_monthly[-1]
+        last_clientes = clientes_monthly[-2]
+        feedback_clientes = str ( round((((last_clientes - current_clientes) / last_clientes) * 100) * -1, 2) )
+        numero_clientes = {
+            'title':'Numero de clientes',
+            'current': 123123,
+            'monthly': clientes_monthly,
+            'feedback': f'{feedback_clientes}% vs el mes anterior',
+            'isPositive': feedback_clientes[0] == '+'
+        }
+
+        context = {
+            'ganancias':ganancias,
+            'gastos':gastos,
+            'numero_clientes':numero_clientes,
+        }
         return render(request, self.template_name, context)
     
     

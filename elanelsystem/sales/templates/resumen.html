@@ -6,6 +6,63 @@
 {% endblock css %}
 
 {% block content %}
+
+    <!-- Chart blueprint -->
+  <!-- <div style="width:500px">
+    <canvas id="myChart"></canvas>
+  </div> -->
+    
+
+  <div class="data-container">
+
+    <!-- Data block/Ganancias -->
+      <div class="data-block">
+        <div class="data-header">
+          <span class="data-title">{{ganancias.title}}</span>
+        </div>  
+    
+        <span class="data-value">${{ganancias.monthly|last}}</span>
+        <span class="data-feedback" {% if ganancias.isPositive %} style="color:green" {% else %} style="color:red" {% endif %}>{{ganancias.feedback}}</span>
+
+        <div style="width:500px">
+          <canvas id="ganancias_chart"></canvas>
+        </div>
+      </div>
+
+    <!-- Data block/Gastos -->
+      <div class="data-block">
+        <div class="data-header">
+          <span class="data-title">{{gastos.title}}</span>
+        </div>  
+    
+        <span class="data-value">${{gastos.monthly|last}}</span>
+        <span class="data-feedback" {% if gastos.isPositive %} style="color:green" {% else %} style="color:red" {% endif %}>{{gastos.feedback}}</span>
+
+        <div style="width:500px"> 
+          <canvas id="gastos_chart"></canvas>
+        </div>
+      </div>
+
+    <!-- Data block/Clientes -->
+      <div class="data-block">
+        <div class="data-header">
+          <span class="data-title">{{numero_clientes.title}}</span>
+        </div>  
+    
+        <span class="data-value">${{numero_clientes.monthly|last}}</span>
+        <span class="data-feedback" {% if numero_clientes.isPositive %} style="color:green" {% else %} style="color:red" {% endif %}>{{numero_clientes.feedback}}</span>
+
+        <div style="width:500px">
+          <canvas id="numero_clientes_chart"></canvas>
+        </div>
+      </div>
+
+  </div>
+
+
+
+
+
   {% comment %} <div class="filters">
     <div>
       <input 
@@ -134,5 +191,15 @@
     </div>
     
   </div> {% endcomment %}
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script 
+    src="{% static 'js/charts.js' %}" 
+    data-ganancias="{{ganancias.monthly}}"
+    data-gastos="{{gastos.monthly}}"
+    data-numero_clientes="{{numero_clientes.monthly}}"
+    >
+  </script>
    
 {% endblock content %}
