@@ -54,27 +54,26 @@ new Chart(gastos_chart, {
 }); 
 
 
-// Numero Clientes
-const numero_clientes_chart = document.getElementById('numero_clientes_chart')
+// Medios Pago
+const medios_pago_chart = document.getElementById('medios_pago_chart')
 
-numero_clientes = data.numero_clientes
-numero_clientes = numero_clientes.slice(1, numero_clientes.length-1).split(",")
+medios_list = data.medios_list
+medios_values = data.medios_values
+medios_list = medios_list.slice(1, medios_list.length-1).split(', ')
+medios_values = medios_values.slice(1, medios_values.length-1).split(', ')
 
-new Chart(numero_clientes_chart, {
-  type: 'line',
+for (let i=0; i<medios_list.length; i++){
+  medios_list[i] = medios_list[i].slice(1, medios_list[i].length-1)
+}
+
+new Chart(medios_pago_chart, {
+  type: 'pie',
   data: {
-    labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+    labels: medios_list,
     datasets: [{
-      label: 'Numero de clientes',
-      data: numero_clientes,
+      label: 'Pagos',
+      data: medios_values,
       borderWidth: 1,
     }]
-  },
-  options: {
-    scales: {
-      y: {
-        beginAtZero: true
-      }
-    }
   }
 }); 
