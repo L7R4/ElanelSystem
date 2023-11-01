@@ -24,7 +24,7 @@
         <span class="data-value">${{ganancias.monthly|last}}</span>
         <span class="data-feedback" {% if ganancias.isPositive %} style="color:green" {% else %} style="color:red" {% endif %}>{{ganancias.feedback}}</span>
 
-        <div style="width:500px">
+        <div style="width:700px">
           <canvas id="ganancias_chart"></canvas>
         </div>
       </div>
@@ -38,22 +38,26 @@
         <span class="data-value">${{gastos.monthly|last}}</span>
         <span class="data-feedback" {% if gastos.isPositive %} style="color:green" {% else %} style="color:red" {% endif %}>{{gastos.feedback}}</span>
 
-        <div style="width:500px"> 
+        <div style="width:700px"> 
           <canvas id="gastos_chart"></canvas>
         </div>
       </div>
 
-    <!-- Data block/Clientes -->
+    <!-- Data block/Medios Pago -->
       <div class="data-block">
-        <div class="data-header">
-          <span class="data-title">{{numero_clientes.title}}</span>
-        </div>  
-    
-        <span class="data-value">${{numero_clientes.monthly|last}}</span>
-        <span class="data-feedback" {% if numero_clientes.isPositive %} style="color:green" {% else %} style="color:red" {% endif %}>{{numero_clientes.feedback}}</span>
+        <div class="data-multiple-header">
+          {% for key, value in medios_pagos.medios_pago.items %}
+            <div class="data-block">
+              <div class="data-header">
+                <span class="data-title">{{ key }}</span>
+              </div>
+              <span class="data-value">{{ value }}</span>
+            </div>
+          {% endfor %}
+        </div>
 
-        <div style="width:500px">
-          <canvas id="numero_clientes_chart"></canvas>
+        <div style="width:700px">
+          <canvas id="medios_pago_chart"></canvas>
         </div>
       </div>
 
@@ -198,7 +202,8 @@
     src="{% static 'js/charts.js' %}" 
     data-ganancias="{{ganancias.monthly}}"
     data-gastos="{{gastos.monthly}}"
-    data-numero_clientes="{{numero_clientes.monthly}}"
+    data-medios_list="{{medios_list}}",
+    data-medios_values="{{medios_values}}"
     >
   </script>
    
