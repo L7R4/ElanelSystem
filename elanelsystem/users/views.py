@@ -42,7 +42,6 @@ class CrearUsuario(generic.View):
                 rango = form.cleaned_data["rango"]
                 password1 = form.cleaned_data["password1"]
                 password2 = form.cleaned_data["password2"]
-                # passwordClean = form.clean_password(password1,password2)
                 new_user = self.model.objects.create_user(
                     email=email,
                     nombre=nombre,
@@ -58,9 +57,6 @@ class CrearUsuario(generic.View):
 
         else:
             context = {}
-            context["errorSucursal"] = form.clean_sucursal(request.POST.get("sucursal"))
-            context["errorRango"] = form.clean_rango(request.POST.get("rango"))
-
             context["sucursales"] = self.sucursales
             context["roles"] = self.roles
             context["form"] = form
@@ -84,7 +80,7 @@ class ListaClientes(generic.View):
     template_name= "list_customers.html"
 
     def get(self,request,*args, **kwargs):
-        customers = Cliente.objects.all()
+        customers = Cliente.objects.filter(agencia_registrada = request.user.sucursal)
         context = {
             "customers": customers
         }
@@ -134,6 +130,7 @@ class CrearCliente(generic.CreateView):
                 customer.estado_civil = form.cleaned_data['estado_civil']
                 customer.fec_nacimiento = form.cleaned_data['fec_nacimiento']
                 customer.ocupacion = form.cleaned_data['ocupacion']
+                customer.agencia_registrada = request.user.sucursal
                 customer.save()              
                 return redirect("users:list_customers")
         else:
@@ -150,6 +147,7 @@ class CuentaUser(generic.DetailView):
     def get(self,request,*args,**kwargs):
         # planes = Plan.objects.all()
         self.object = self.get_object()
+        print(self.object.agencia_registrada)
         ventas = self.object.ventas_nro_cliente.all()
 
         for i in range (ventas.count()):

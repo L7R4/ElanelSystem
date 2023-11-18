@@ -37,18 +37,18 @@ class Ventas(models.Model):
     )
     PORCENTAJE_ANUALIZADO = 15;
    
-    AGENCIAS = (
-        ("Agencia Chaco", "Agencia Chaco"),
-        ("Agencia Corrientes", "Agencia Corrientes"),
-        ("Agencia Misiones", "Agencia Misiones"),
-    )
+    # AGENCIAS = (
+    #     ("Agencia Chaco", "Agencia Chaco"),
+    #     ("Agencia Corrientes", "Agencia Corrientes"),
+    #     ("Agencia Misiones", "Agencia Misiones"),
+    # )
 
     nro_cliente = models.ForeignKey(Cliente,on_delete=models.CASCADE,related_name="ventas_nro_cliente")
     nro_solicitud = models.CharField("Nro solicitud:",max_length=10,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')],default="")
     modalidad = models.CharField("Modalidad:",max_length=15, choices=MODALIDADES,default="")
     nro_cuotas = models.IntegerField()
     nro_operacion = models.IntegerField(default=returnOperacion)
-    agencia = models.CharField(default="", max_length=20, choices= AGENCIAS)
+    agencia = models.CharField(default="", max_length=30)
 
     cambioTitularidadField = models.JSONField(default=list,blank=True,null=True)
     # clientes_anteriores = models.ManyToManyField(Cliente, related_name='ventas_anteriores', blank=True)
@@ -386,3 +386,29 @@ class Ventas(models.Model):
             contadorDias += 1
         return contadorDias
 
+
+class ArqueoCaja(models.Model):
+    sucursal = models.CharField("Sucursal", max_length=30)
+    fecha = models.CharField("Fecha", max_length=30)
+    admin = models.CharField(max_length=70, default="")
+    responsable = models.CharField(max_length=70, default="")
+    totalEfectivo = models.FloatField("Total efectivo", default=0)
+    totalPlanilla = models.FloatField("Total Planilla Efectivo", default=0)
+    totalSegunDiarioCaja = models.FloatField("Total segun diario de caja", default=0)
+    diferencia = models.FloatField("Diferencia", default=0)
+    observaciones = models.TextField()
+    detalle = models.JSONField(default=dict)
+
+
+class MovimientoExterno(models.Model):
+    TIPOS_MOVIMIENTOS = (
+        ('Ingreso', 'Ingreso'),
+        ('Egreso', 'Egreso'), 
+    )
+     
+    movimiento = models.CharField("Movimiento:",max_length=8, choices=TIPOS_MOVIMIENTOS)
+    dinero = models.FloatField("Dinero:")
+    metodoPago = models.CharField("Metodo de pago:",max_length=30)
+    concepto = models.CharField("Concepto:",max_length=200)
+    ente = models.CharField("Ente:",max_length=40)
+    fecha = models.CharField("Fecha:",max_length=10)

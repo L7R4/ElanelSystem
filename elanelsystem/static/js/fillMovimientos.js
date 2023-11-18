@@ -17,15 +17,27 @@ async function cuotasGet() {
     const data = await response.json();
     return data;
 }
+async function movsExternosGet() {
+    const response = await fetch("/requestEgresoIngreso/", {
+        method: 'get',
+        headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
+        cache: 'no-store',
+    });
+    const data = await response.json();
+    return data;
+}
 
 async function main() {
-    let data = await cuotasGet()
+    let data_cuotas = await cuotasGet()
+    let data_movsExternos = await movsExternosGet()
+    let dataTotal = data_cuotas.concat(data_movsExternos); // Combinar los arrays
 
+    console.log(dataTotal)
     cuotasButtons.forEach(cuota => {
         cuota.addEventListener('click', ()=>{
             mainModal.classList.add("active")
             mainModal.style.opacity = "1"
-            fillModalWithMovData(data,cuota)
+            fillModalWithMovData(dataTotal,cuota)
         })
     });
 }
@@ -41,15 +53,31 @@ closeModal.addEventListener('click', ()=>{
 })
 
 function fillModalWithMovData(movimientos,mov) {
+    console.log(movimientos)
     let movSelected = movimientos.filter(c=> c.idMov == mov.id)
-    numeroVenta.innerHTML = movSelected[0]["nro_operacion"]
-    numeroCliente.innerHTML = movSelected[0]["nroCliente"]
-    numeroCuota.innerHTML = movSelected[0]["cuota"]
-    dinero.innerHTML = movSelected[0]["pagado"]
-    metodoPago.innerHTML = movSelected[0]["metodoPago"]
-    cobrador.innerHTML = movSelected[0]["cobrador"]
-    fechaPago.innerHTML = movSelected[0]["fecha_pago"]
-    horaPago.innerHTML = movSelected[0]["hora"]
+    if("concepto" in movSelected[0]){
+        console.log(movSelected)
+        numeroVenta.innerHTML = ""
+        numeroCliente.innerHTML = ""
+        numeroCuota.innerHTML = ""
+        dinero.innerHTML = ""
+        metodoPago.innerHTML = ""
+        cobrador.innerHTML = ""
+        fechaPago.innerHTML = ""
+        horaPago.innerHTML = ""
+        sucursal.innerHTML = ""
+    }else{
+        numeroVenta.innerHTML = movSelected[0]["nro_operacion"]
+        numeroCliente.innerHTML = movSelected[0]["nroCliente"]
+        numeroCuota.innerHTML = movSelected[0]["cuota"]
+        dinero.innerHTML = movSelected[0]["pagado"]
+        metodoPago.innerHTML = movSelected[0]["metodoPago"]
+        cobrador.innerHTML = movSelected[0]["cobrador"]
+        fechaPago.innerHTML = movSelected[0]["fecha_pago"]
+        horaPago.innerHTML = movSelected[0]["hora"]
+        sucursal.innerHTML = movSelected[0]["sucursal"]
+        
+    }
     
 }
 
