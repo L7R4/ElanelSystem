@@ -24,3 +24,14 @@ def printPDFtitularidad(data,url,productoName):
     pdf = HTML(string=html_template,base_url=url).write_pdf(target=productoName, stylesheets = [CSS(css_url)])
     # print(pdf)
     return pdf
+
+def printPDFarqueo(data,url,productoName):
+    template = get_template("pdfForArqueo.html")
+    context = data
+    html_template = template.render(context)
+    css_url = os.path.join(settings.BASE_DIR, "static/css/pdfArqueo.css")
+    if not os.path.exists(settings.PDF_STORAGE_DIR):
+        os.makedirs(settings.PDF_STORAGE_DIR)
+    pdf = HTML(string=html_template,base_url=url).write_pdf(target=productoName, stylesheets = [CSS(css_url)])
+    # print(pdf)
+    return pdf

@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, HttpResponseRedirect
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.urls import reverse_lazy
 from django.views import generic
-from .models import Ventas,CoeficientesListadePrecios
+from .models import ArqueoCaja, Ventas,CoeficientesListadePrecios,MovimientoExterno
 from .forms import FormChangePAck, FormCreateVenta, FormCreateAdjudicacion
 from users.forms import CreateClienteForm
 from users.models import Cliente,Usuario,Key
@@ -23,7 +23,7 @@ from dateutil.relativedelta import relativedelta
 import locale
 import requests
 from django.core.paginator import Paginator
-from .utils import printPDF, printPDFtitularidad
+from .utils import printPDF, printPDFtitularidad,printPDFarqueo
 
 import elanelsystem.settings as settings
 
@@ -113,12 +113,13 @@ class CrearVenta(generic.DetailView):
             'intereses': intereses, 
             'usuarios': usuarios, 
         }
+
         return render(request,self.template_name,context)
     
 
     def post(self, request, *args, **kwargs):
         form =self.form_class(request.POST)
-        
+        self.object = self.get_object()
         if request.POST["nro_cliente"] != self.get_object().nro_cliente:
             raise ValidationError('Hubo un cambio malicioso de numero de cliente')
         
@@ -143,7 +144,7 @@ class CrearVenta(generic.DetailView):
                 sale.tipo_producto = form.cleaned_data['tipo_producto']
                 sale.paquete = form.cleaned_data['paquete']
                 sale.nro_orden = form.cleaned_data['nro_orden']
-
+                sale.agencia = request.user.sucursal
                 # Para guardar como objeto Producto
                 producto_instance = Products.objects.get(nombre__iexact=form.cleaned_data['producto'])
                 sale.producto = producto_instance
@@ -175,7 +176,6 @@ class DetailSale(generic.DetailView):
         sale_target = Ventas.objects.get(pk=self.object.id)
         self.object.testVencimientoCuotas()
         status_cuotas = self.object.cuotas
-
         if(self.object.adjudicado):
             self.object.addPorcentajeAdjudicacion()
 
@@ -632,6 +632,48 @@ def viewPDFTitularidad(request,pk,idCambio):
         response['Content-Disposition'] = 'inline; filename='+titularName+'.pdf'
         return response
 
+def viewPDFArqueo(request,pk):
+    
+    # Establece el idioma local en español
+    locale.setlocale(locale.LC_TIME, 'es_AR.utf8')
+
+    arqueo = ArqueoCaja.objects.get(id=pk)
+    context ={
+                "fecha": arqueo.fecha,
+                "sucursal": arqueo.sucursal,
+                "responsable":arqueo.responsable,
+                "admin": arqueo.admin,
+                "totalEfectivo": arqueo.totalEfectivo,
+                "totalPlanilla": arqueo.totalPlanilla,
+                "totalSegunDiarioCaja": arqueo.totalSegunDiarioCaja,
+                "diferencia": arqueo.diferencia,
+                "observaciones": arqueo.observaciones,
+                "p1000": arqueo.detalle["p1000"],
+                "p500": arqueo.detalle["p500"],
+                "p200": arqueo.detalle["p200"],
+                "p100": arqueo.detalle["p100"],
+                "p50": arqueo.detalle["p50"],
+                "p20": arqueo.detalle["p20"],
+                "p10": arqueo.detalle["p10"],
+                "p5": arqueo.detalle["p5"],
+                "p2": arqueo.detalle["p2"],
+                "p1": arqueo.detalle["p1"],
+                "p05": arqueo.detalle["p0.5"],
+                "p025": arqueo.detalle["p0.25"],
+                "p01": arqueo.detalle["p0.1"],
+                "p005": arqueo.detalle["p0.05"]
+            }
+            
+    arqueoName = "Arqueo de caja del: " + str(arqueo.fecha)
+    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "arqueo.pdf")
+    
+    printPDFarqueo(context,request.build_absolute_uri(),urlPDF)
+
+    with open(urlPDF, 'rb') as pdf_file:
+        response = HttpResponse(pdf_file,content_type="application/pdf")
+        response['Content-Disposition'] = 'inline; filename='+arqueoName+'.pdf'
+        return response
+
 
 def requestCuotas(request):
     ventas = Ventas.objects.all()
@@ -648,8 +690,9 @@ def requestCuotas(request):
                         movimiento_dataParcial['nro_operacion'] = ventas[i].cuotas[k]["nro_operacion"]
                         nOpe = ventas[i].cuotas[k]["nro_operacion"]
                         nroCliente = Ventas.objects.filter(nro_operacion = nOpe)
-                        movimiento_dataTotal['nroCliente'] = nroCliente[0].nro_cliente.nro_cliente
-                        
+                        movimiento_dataParcial['nroCliente'] = nroCliente[0].nro_cliente.nro_cliente
+                        movimiento_dataParcial["sucursal"] = ventas[i].agencia
+
                         idMov +=1
                         movimiento_dataParcial["idMov"] =  idMov
                         movimiento_dataParcial['fecha_pago'] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["date"]
@@ -668,6 +711,7 @@ def requestCuotas(request):
                     nOpe = ventas[i].cuotas[k]["nro_operacion"]
                     nroCliente = Ventas.objects.filter(nro_operacion = nOpe)
                     movimiento_dataTotal['nroCliente'] = nroCliente[0].nro_cliente.nro_cliente
+                    movimiento_dataTotal["sucursal"] = ventas[i].agencia
 
                     idMov +=1
                     movimiento_dataTotal["idMov"] =  idMov
@@ -685,10 +729,61 @@ def requestCuotas(request):
 
     cuotas_data.reverse()
     return JsonResponse(cuotas_data, safe=False)
- 
-            
+
+
+
+def requestEgresoIngreso(request):
+    if (request.method == "POST"):
+        newMovDict = {}
+        newMov = MovimientoExterno()
         
-    #     return movimientosFiltrados
+        received_data = json.loads(request.body)
+        movimiento = received_data.get("movimiento")
+        dineroMov = received_data.get("dineroMov")
+        metodoPagoMov = received_data.get("metodoPagoMov")
+        ente = received_data.get("ente")
+        conceptoMov = received_data.get("conceptoMov")
+        fechaMov = received_data.get("fechaMov")
+
+        newMov = MovimientoExterno(
+            movimiento=movimiento,
+            dinero=dineroMov,
+            metodoPago=metodoPagoMov,
+            ente=ente,
+            concepto=conceptoMov,
+            fecha=fechaMov
+        )
+        newMov.save()
+
+        newMovDict = {
+            "movimiento": movimiento,
+            "dineroMov": dineroMov,
+            "metodoPagoMov": metodoPagoMov,
+            "ente": ente,
+            "conceptoMov": conceptoMov,
+            "fechaMov": fechaMov
+        }
+
+        return JsonResponse(newMovDict, safe=False)
+    elif(request.method =="GET"):
+        movsExternosList =[]
+        movsExternos = MovimientoExterno.objects.all()
+        json_data = requestCuotas(request)
+        r_cuotas = json.loads(json_data.content)
+       
+        for mov in movsExternos:
+            movDict ={}
+            movDict = {
+                "idMov": len(r_cuotas) + len(movsExternos),
+                "tipoMovimiento": mov.movimiento,
+                "pagado": mov.dinero,
+                "metodoPago": mov.metodoPago,
+                "ente": mov.ente,
+                "concepto": mov.concepto,
+                "fecha_pago": mov.fecha
+            }
+            movsExternosList.append(movDict)
+        return JsonResponse(movsExternosList, safe=False)
 
 
 class Caja(generic.View):
@@ -713,16 +808,25 @@ class Caja(generic.View):
         cobradores = Usuario.objects.all()
 
     # PARA OBTENER DESDE LA VISTA 'requestCuotas' TODAS LOS MOVIMIENTOS REALIZADOS 
-
+        TIPOS_DE_FILTROS = {
+            "cobrador": "Cobrador: ",
+            "metodoPago": "Metodo de pago: ",
+            "sucursal": "Sucursal: ",
+            "fecha_inicial": "Fecha inicial: ",
+            "fecha_final": "Fecha final: ",
+        }
         urlCuotas = reverse('sales:rc')
         base_url = request.build_absolute_uri('/')[:-1]  # Obtiene la URL base del servidor
         full_url = base_url + urlCuotas
         response = requests.get(full_url)
         movimientos =[]
+        json_data = requestEgresoIngreso(request)
+        movs_data = json.loads(json_data.content)
         urlFilters =""
         if response.status_code == 200:
             movimientos = response.json()
-
+            movimientos = movimientos + movs_data
+            print(movimientos)
             r = request.GET.copy()
             if "page" in r:
                 r.pop("page")
@@ -733,9 +837,20 @@ class Caja(generic.View):
                 requestToDict = request.GET.dict()
                 context["urlFilters"] ="&"+urlFilters
 
-
                 # Elimina los elementos con valores vacíos
                 clearContext = {key: value for key, value in requestToDict.items() if value != '' and key != 'page'}
+                
+
+                filtrosActivos =[]
+                for key,value in TIPOS_DE_FILTROS.items():
+                    if key in clearContext.keys():
+                        itemFilter ={}
+                        itemFilter = {value: clearContext[key]}
+                        print(itemFilter)
+                        filtrosActivos.append(itemFilter)
+
+                context["filtrosActivos"] = filtrosActivos
+
                 # print(clearContext)
                 if("fecha_inicial" in clearContext.keys() and "fecha_final" in clearContext.keys()):
                     contextByDateFiltered= self.filtroMovimientos_fecha(clearContext["fecha_inicial"],movimientos,clearContext["fecha_final"])
@@ -787,6 +902,10 @@ class Caja(generic.View):
         data = json.dumps(listNamesCobradores)
 
     # ------------------------------------------------------------
+        sucursales = []
+        for i in range (0,len(list(Usuario.SUCURSALES))):
+            sucursales.append(Usuario.SUCURSALES[i][1])
+        context["sucursales"] = sucursales
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
              # Esta es una solicitud AJAX, devuelve solo JSON
@@ -795,6 +914,78 @@ class Caja(generic.View):
             # Esta es una solicitud normal, renderiza la plantilla HTML
             return render(request, self.template_name, context)
         
+
+class CierreCaja(generic.View):
+
+    template_name = 'cierreDeCaja.html'
+
+    def get(self,request,*args,**kwargs):
+        context = {}
+        json_data = requestCuotas(request)
+        cuotas_data = json.loads(json_data.content)
+
+        today = datetime.date.today().strftime("%d-%m-%Y")
+        movimientosHoy = list(filter(lambda x: x.get('fecha_pago') == str(today), cuotas_data))
+        
+        if len(movimientosHoy) == 0:
+            context["movs"] = "No hay nada"
+        else:
+            context["movs"] = movimientosHoy
+
+        context["sucursal"] = request.user.sucursal
+        context["fecha"] =  datetime.date.today().strftime("%d/%m/%Y")
+        context["admin"]= request.user
+        
+        return render(request, self.template_name, context)
+    
+
+    def post(self,request,*args,**kwargs):
+        context= {}
+        arqueo = ArqueoCaja()
+        BILLETES = [1000,500,200,100,50,20,10,5,2,1,0.5,0.25,0.1,0.05]
+        
+        # OBTIENE LOS DATOS----------------------------------------------------
+        sucursal = request.user.sucursal
+        fecha =  datetime.date.today().strftime("%d/%m/%Y")
+        admin = request.user
+        responsable = json.loads(request.body)["responsable"]
+        totalSegunDiarioCaja = json.loads(request.body)["totalSegunDiarioCaja"]
+        observaciones = json.loads(request.body)["observaciones"]
+        
+        total=0
+        for b in BILLETES:
+            billeteCantidad = json.loads(request.body)["p"+ str(b)]
+            billeteItem = {}
+            billeteItem["cantidad"] = billeteCantidad
+            billeteItem["importeTotal"] = float(billeteCantidad) * b
+            total += float(billeteCantidad) * b
+            arqueo.detalle["p"+ str(b)] = billeteItem
+
+        # ---------------------------------------------------------------------
+
+        # COLOCA LOS DATOS ---------------------------------------------------
+        
+        arqueo.sucursal = sucursal
+        arqueo.fecha = fecha
+        arqueo.admin = admin
+        arqueo.responsable = responsable
+        arqueo.totalEfectivo = total
+        arqueo.totalPlanilla = total
+        arqueo.totalSegunDiarioCaja = float(totalSegunDiarioCaja)
+        arqueo.diferencia = total - float(totalSegunDiarioCaja)
+        arqueo.observaciones = observaciones
+        # ---------------------------------------------------------------------
+
+        arqueo.save()
+
+        response_data = {
+            'success': True,
+            'urlPDF': reverse("sales:arqueoPDF", args=[ArqueoCaja.objects.latest('pk').pk]),
+            'urlCaja': reverse("sales:caja")
+        }
+        
+        return JsonResponse(response_data, safe=False)
+
 
 class ChangeTitularidad(generic.DetailView):
     template_name = 'changeTitularidad.html'
@@ -907,4 +1098,30 @@ class CrearUsuarioYCambiarTitu(generic.DetailView):
             context["object"] = self.object
             context['form'] = self.form_class
             return render(request, self.template_name, context)
-            
+
+
+class OldArqueosView(generic.View):
+    model = ArqueoCaja
+    template_name= "listaDeArqueos.html"
+
+    def get(self,request,*args, **kwargs):
+        arqueos = ArqueoCaja.objects.filter(sucursal = request.user.sucursal)
+        print(arqueos)
+        context = {
+            "arqueos": arqueos
+        }
+        arqueos_list = []
+        for a in arqueos:
+            data_arqueo = {}
+            data_arqueo["pk"] = a.pk
+            data_arqueo["sucursal"] = a.sucursal
+            data_arqueo["fecha"] = a.fecha
+            data_arqueo["admin"] = a.admin
+            data_arqueo["responsable"] = a.responsable
+            data_arqueo["totalPlanilla"] = a.totalPlanilla
+            arqueos_list.append(data_arqueo)
+        data = json.dumps(arqueos_list)
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return HttpResponse(data, 'application/json')
+        return render(request, self.template_name,context)

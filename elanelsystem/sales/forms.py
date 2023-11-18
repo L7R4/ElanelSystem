@@ -12,7 +12,7 @@ getProducts = Products.objects.all()
 getVendedores = Usuario.objects.filter(rango = "Vendedor") | Usuario.objects.filter(rango="Supervisor")
 getSupervisores = Usuario.objects.filter(rango = "Vendedor") | Usuario.objects.filter(rango="Supervisor")
 modalidades = Ventas.MODALIDADES
-agencias = Ventas.AGENCIAS
+# agencias = Ventas.AGENCIAS
 paquetes = Products.PAQUETES
 tipoProductos = Products.TIPO_PRODUCTO
 
@@ -126,7 +126,6 @@ class FormCreateVenta(forms.Form):
     def clean_vendedor(self):
         vendedor_input = self.cleaned_data['vendedor']
         vendedores_permitidos = [p.nombre.lower() for p in getVendedores]
-        print(vendedores_permitidos)
 
         if vendedor_input.lower() not in vendedores_permitidos:
             raise forms.ValidationError('Vendedor no válido')
@@ -137,7 +136,6 @@ class FormCreateVenta(forms.Form):
     def clean_supervisor(self):
         supervisor_input = self.cleaned_data['supervisor']
         supervisores_permitidos = [p.nombre.lower() for p in getSupervisores]
-        print(supervisores_permitidos)
 
         if supervisor_input.lower() not in supervisores_permitidos:
             raise forms.ValidationError('Supervisor no válido')
@@ -234,14 +232,14 @@ class FormCreateAdjudicacion(forms.Form):
         return fecha_input
 
 
-    def clean_agencia(self):
-        agencia_input = self.cleaned_data['agencia']
-        agencias_permitidos = [a[0].lower() for a in agencias]
+    # def clean_agencia(self):
+    #     agencia_input = self.cleaned_data['agencia']
+    #     agencias_permitidos = [a[0].lower() for a in agencias]
 
-        if agencia_input.lower() not in agencias_permitidos:
-            raise forms.ValidationError('Agencia no válido')
+    #     if agencia_input.lower() not in agencias_permitidos:
+    #         raise forms.ValidationError('Agencia no válido')
 
-        return agencia_input
+    #     return agencia_input
     
 class FormChangePAck(forms.Form):
     nro_solicitud = forms.CharField(required=True, max_length=10)

@@ -3,6 +3,7 @@
     display: flex;
     height: 85%;
 }
+
 .filters
 {
     width: 100%;
@@ -149,18 +150,55 @@
 }
 
 .buttonsFilters{
-    width: 15%;
+    width: 100%;
     display: flex;
-    margin-right: 9%;
-    flex-direction: column;
-    gap: 0.5rem;
+    margin-right: 3rem;
+    gap: 2rem;
+    justify-content: flex-end;
+    height: 4rem;
 
+}
+.buttonsFilters > a{
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: white;
+    text-decoration: none;
+    /* height: 75%; */
+    width: 10%;
+    min-width: fit-content;
+    padding: 1% 2%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #1753ED;
+    border-radius: 0.6rem;
+}
+.buttonNewMov{
+    width: 10%;
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: transparent;
+    min-width: fit-content;
+    color: white;
+    outline: none;
+    padding: 1% 2%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-color: transparent;
+    border-radius: 0.6rem;
+    cursor: pointer;
+    border: 2px solid #1753ED;
 }
 
 #openFilters{
-    height: 4rem;
-    width: 100%;
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+    /* height: 100%; */
+    width: 10%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1% 2%;
+    font-size: clamp(1rem, 1.1vw, 1.5rem);
     font-family: raleway-semibold;
     background-color: #1753ED;
     color: white;
@@ -180,7 +218,9 @@
     margin-right: 1%;
 }
 
-
+.wrapperselectType,.wrapperSelectIngresoEgreso,.wrapperselectCobrador,.wrapperselectSucursal{
+    width: 40%;
+}
 
 /* CALENDARIO */
 .wrapperCalendario{
@@ -243,17 +283,19 @@
     overflow: hidden;
     height: 0rem;
     background-color: white;
-    z-index: 7;
-    
 }
+
+
 .fromDate > .calendar
 {
+    z-index: 8;
     top: 50%;
     left: 50%;
     transform: translate(-50%, 10%);
 }
 .toDate > .calendar
 {
+    z-index: 7;
     top: 50%;
     left: 50%;
     transform: translate(-50%, 10%);
@@ -383,81 +425,6 @@
 }
 
 
-/* filtro por tipo de pagos */
-
-.wrapperselectType{
-    width: 35%;
-}
-
-.wrapperSelectTypePayments
-{
-    position: relative;
-    z-index: 6;
-}
-.wrapperSelectTypePayments > h3{
-    font-family: raleway-semibold;
-    font-size: 1.4rem;
-    color: white;
-    margin-bottom: 0.4rem;
-    margin-left: 0.2rem;
-}
-
-.selectedOption
-{
-    background-color: white;
-    padding: 0 0.8rem;
-    height: 3rem;
-    border-radius: .6rem;
-    position: relative;
-    z-index: 2;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.selectedOption >h2{
-    font-size: clamp(1.2rem, 1vw, 1.3rem);
-    font-family: raleway-semibold;  
-}
-.selectedOption >img{
-   width: 1.5rem;
-}
-.wrapperSelectTypePayments > .options
-{
-    list-style: none;
-    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-    /* padding: 1.6rem 0    ; */
-    font-family: raleway-semibold;
-    width: 100%;
-    background-color: rgba(255, 255, 255);
-    max-height: 0rem;    
-    overflow: hidden;  
-    position:absolute;
-    top: 75%;
-    z-index: 1;
-    border-bottom-left-radius: .6rem;
-    border-bottom-right-radius: .6rem;
-}
-.wrapperSelectTypePayments > .options.active{
-    max-height: none;
-}
-.wrapperSelectTypePayments > .options > li
-{
-    margin-left: .8rem;
-    cursor: pointer;
-    width: 100%;
-    padding: 1rem 0;
-}
-.wrapperSelectTypePayments > .options > li:first-child
-{
-    margin-top: 1rem;
-}
-.wrapperSelectTypePayments > .options > li:hover
-{
-    color: #3D7CD8;
-}
-
-
 /* FIltro por ingreso y egreso */
 .wrapperSelectIngresoEgreso{
     width: 35%;
@@ -497,29 +464,44 @@
     background-color: #3D7CD8;
     color: white;
 }
-
-/* FIlTRO POR COBRADOR */
-.wrapperselectCobrador{
-    width: 35%;
+.selectTypePayments > input{
+    z-index: 6;
 }
-.selectCobrador{
-    position: relative;
+.selectTypePayments > .options{
     z-index: 5;
 }
-.selectCobrador > h3{
+
+.selectCobrador > input{
+    z-index: 4;
+}
+.selectCobrador > .options{
+    z-index: 3;
+}
+
+.selectSucursal > input{
+    z-index: 2;
+}
+.selectSucursal > .options{
+    z-index: 1;
+}
+
+/* FIlTROS SELECTS */
+.selectInput{
+    position: relative;
+}
+.selectInput > h3{
     font-family: raleway-semibold;
     font-size: 1.4rem;
     color: white;
     margin-bottom: 0.4rem;
     margin-left: 0.2rem;
 }
-.selectCobrador > input{
+.selectInput > input{
     background-color: white;
     font-family: raleway-semibold;
     font-size: 1.3rem;
     border-radius: 0.6rem;
     position: relative;
-    z-index: 2;
     height: 3rem;
     width: 100%;
     display: flex;
@@ -529,7 +511,7 @@
     text-indent: 1rem;
     border: none;
 }
-.selectCobrador > .options{
+.selectInput > .options{
     list-style: none;
     font-size: clamp(1.4rem, 1.2vw, 1.5rem);
     padding-top: 1rem;
@@ -541,24 +523,22 @@
     overflow: hidden;
     position: absolute;
     top: 75%;
-    z-index: 1;
     border-bottom-left-radius: 0.6rem;
     border-bottom-right-radius: 0.6rem;
     transition: .2s height ease;
     overflow-y: auto;
 }
-.selectCobrador > .options.active
+.selectInput > .options.active
 {
     height: 13rem ;
 }
 
-.selectCobrador > .options > li{
+.selectInput > .options > li{
     margin-left: 0.8rem;
     cursor: pointer;
     width: 100%;
     padding: 1rem 0;
 }
-
 
 
 
@@ -654,6 +634,24 @@
     color: rgba(0, 0, 0, 0.93);
 }
 
+/* TEXTO DE FILTROS */
+.wrapperFiltroTexto > ul{
+    list-style: none;
+}
+
+.wrapperFiltroTexto .fitroItem{
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: rgba(255, 255, 255, 0.756);
+}
+
+.wrapperFiltroTexto .fitroItem > strong{
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: white;
+}
+
+
 
 
 /* PAGINACION DE MOVIMIENTOS */
@@ -687,4 +685,111 @@
     font-size: 1.6rem;
     font-family: raleway-semibold;
 }
+
+
+/* MODAL DE NUEVO INGRESO O EGRESO*/
+.main_modalNewEgresoIngreso{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+.main_modalNewEgresoIngreso.active{
+    visibility: visible;
+}
+.background__newEgresoIngreso
+{
+    background-color: rgba(0, 0, 0, 0.5);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+.modal_newEgresoIngreso{
+    width: 50%;
+    height: 40%;
+    background-color:#fff;
+    border-radius: 1rem;
+    position: absolute;
+}
+.modal_newEgresoIngreso > .tittleModal{
+    display: flex;
+    padding: 1.5rem 2rem;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal_newEgresoIngreso > .tittleModal > h3{
+    font-size: clamp(2rem, 1.7vw, 3rem);
+    font-family: raleway-semibold;
+    color: #3D7CD8;
+}
+.modal_newEgresoIngreso > .tittleModal > button{
+    outline: none;
+    border-color: transparent;
+    background-color: transparent;
+    cursor: pointer;
+}
+.modal_newEgresoIngreso > .tittleModal > button > img{
+    width: 3rem;
+    /* filter: invert(1); */
+}
+
+.modal_newEgresoIngreso > .modal_form{
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    column-gap:1rem ;
+    row-gap: .8rem;
+    padding: 1.5rem 2rem;
+    padding-top: 0;
+}
+.modal_newEgresoIngreso > .modal_information > .wrapperInput{
+    width: 30%;
+}
+
+
+.modal_newEgresoIngreso > .modal_form > .wrapperInput > .inputEgresoIngreso{
+    height: 3rem;
+    background-color: rgba(253,253,253,0.07);
+    border: 1.3px solid #3D7CD8;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    outline: none;
+    width: 80%;
+    padding: 0rem 2rem 0rem 1rem;
+}
+.modal_newEgresoIngreso > .modal_form > .wrapperInput > h2{
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: 'raleway-semibold';
+    margin-bottom: .3rem;
+    margin-left: .3rem;
+}
+.modal_newEgresoIngreso > #confirmMovimiento{
+    width: 10rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem;
+    font-size: clamp(1rem, 1.1vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: #1753ED;
+    color: white;
+    outline: none;
+    border-color: transparent;
+    border-radius: 0.6rem;
+    cursor: pointer;
+    margin-left: 2rem;
+}
+
+
 

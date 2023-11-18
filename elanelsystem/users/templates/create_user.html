@@ -33,7 +33,9 @@
             {{form.email}}
         </div>
         <div class="input" id="sucursalWrapper">
-            <p>{{errorSucursal}}</p>
+            {% for error in form.sucursal.errors %}
+                <p>{{error|truncatechars:25}}</p>
+            {% endfor %}
             <label for="">{{form.sucursal.label}}</label>
             {{form.sucursal}}
             <ul id="contenedorAgencia" class="select">
@@ -53,7 +55,9 @@
         </div>
         
         <div class="input" id="rolWrapper">
-            <p>{{errorRango}}</p>
+            {% for error in form.rango.errors %}
+                <p>{{error|truncatechars:25}}</p>
+            {% endfor %}
             <label for="">{{form.rango.label}}</label>
             {{form.rango}}
             <ul id="contenedorRol" class="select">

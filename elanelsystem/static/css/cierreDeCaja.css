@@ -1,0 +1,266 @@
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.wrapper_content{
+    display: flex;
+}
+.buttons{
+    width: 40%;
+    display: flex;
+    height: 100%;
+    column-gap:1rem;
+    align-items: flex-end;
+    box-sizing: border-box;
+    padding-bottom:2.5rem;
+}
+.buttons > a{
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: white;
+    text-decoration: none;
+    min-width: fit-content;
+    padding: 0rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #1753ED;
+    box-sizing: border-box;
+    border-radius: 0.6rem;
+    height: 4rem;
+}
+.buttons > button{
+    padding: 1rem 2rem;
+    height: 4rem;
+    min-width: fit-content;
+    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: #1753ED;
+    color: white;
+    outline: none;
+    border-color: transparent;
+    border-radius: 0.6rem;
+    cursor: pointer;
+    
+}
+.arqueo{
+    width: 60%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.arqueoWrapper{
+    box-shadow: 0px 0px 20px 2px #027df13b;
+    border: 2px solid #027df14d;
+    height: 93%;
+    width: 80%;
+    border-radius: .8rem;
+    overflow:auto;
+}
+/* -------------------------------------------------------- */
+/* TITULO */
+
+.tittleWrapper{
+    width: 100%;
+}
+.tittleWrapper > h1{
+    font-size: clamp(1.6rem, 1.4vw, 2rem);
+    color: white;
+    font-family: raleway-semibold;
+    text-align: center;
+    padding: 1rem;
+    background-color: #027df14d;
+}
+
+/* -------------------------------------------------------- */
+/* SUBITULO */
+
+.subtittleWrapper > ul > .data{
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+    padding: 0rem 2rem;
+}
+.subtittleWrapper > ul > .data > div{
+    width: 50%;
+}
+.subtittleWrapper > ul > .data > div > h3{
+    font-size: clamp(1.3rem, 1.1vw, 1.5rem);
+    color: white;
+    font-family: raleway-semibold;
+    padding: .4rem 0;
+}
+.data > .dataTittle{
+    border-right: 1px solid white;
+}
+.data > .dataValue{
+    margin-left: 2rem;
+}
+.data > .dataValue > input{
+    height: 2rem;
+    width: 80%;
+    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+    font-family: raleway-semibold;
+    background-color: rgba(253,253,253,0.07);
+    border: 1px solid #3d7bd880;
+    border-radius: .5rem;
+    display: flex;
+    align-items: center;
+    padding: 0 0.7rem;
+    outline: none;
+    color: white;
+    margin: .4rem 0;
+}
+
+/* -------------------------------------------------------- */
+/* DETALLE */
+
+.tittleEfectivo > h2{
+    border-top: 1px solid white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    color: white;
+    font-family: raleway-semibold;
+    padding: .5rem 2rem;
+    background-color: #ffffff3a;
+}
+
+.tittlesDetalles > ul{
+    display: flex;
+    /* column-gap: calc(100% / 6); */
+    list-style: none;
+    width: 100%;
+    justify-content: space-around;
+}
+
+.tittlesDetalles > ul > li{
+    color: white;
+    font-size: clamp(1.3rem, 1.1vw, 1.5rem);
+    font-family: raleway-semibold;
+    padding: 1rem 0;
+    width: 33.333%;
+    text-align: center;
+}
+
+
+.valuesWrapper > ul.detalleItems > li{
+    display: flex;
+    font-size: 1.4rem;
+    align-items: center;
+    justify-content: space-around;
+    font-family: raleway;
+    position: relative;
+    padding: .4rem 0;
+    width: 100%;
+    color: rgb(241, 237, 237);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+}
+.valuesWrapper > ul.detalleItems > li > div{
+    width: 33.333%;
+    text-align: center;
+}
+.valuesWrapper > ul.detalleItems > li > div.itemMoneda>p{
+    display: inline;
+}
+.valuesWrapper > ul.detalleItems > li > div.itemImporte>p{
+    display: inline;
+}
+
+.valuesWrapper > ul.detalleItems > li > div.itemCantidad{
+    display: flex;
+    justify-content: center;
+}
+.valuesWrapper > ul.detalleItems > li > div.itemCantidad > input{
+    height: 2rem;
+    width: 4rem;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    background-color: rgba(253,253,253,0.07);
+    border: 1px solid #3d7bd880;
+    border-radius: .5rem;
+    display: flex;
+    align-items: center;
+    padding: 0 .7rem;
+    outline: none;
+    color: white;
+    text-align: center;
+}
+.valuesWrapper > ul.detalleTotales {
+    border-top: 1px solid white;
+}
+.valuesWrapper > ul.detalleTotales > .total{
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+    padding: 0rem 2rem;
+}
+
+.valuesWrapper > ul.detalleTotales > .total > div{
+    width: 50%;
+}
+.valuesWrapper > ul.detalleTotales > .total > div.totalImporte > input{
+    height: 2rem;
+    width: 8rem;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    background-color: rgba(253,253,253,0.07);
+    border: 1px solid #3d7bd880;
+    border-radius: .5rem;
+    display: flex;
+    align-items: center;
+    padding: 0 0.7rem;
+    outline: none;
+    color: white;
+    margin-left: .6rem;
+}
+.valuesWrapper > ul.detalleTotales > .total > div.totalImporte{
+    display: flex;
+    align-items: center;
+}
+.valuesWrapper > ul.detalleTotales > .total > div > p{
+    font-size: clamp(1.3rem, 1.1vw, 1.5rem);
+    color: white;
+    font-family: raleway-semibold;
+    padding: .6rem 0;
+}
+.total > .totalTittle{
+    border-right: 1px solid white;
+}
+.total> .totalImporte{
+    margin-left: 2rem;
+}
+
+/* OBSERVACIONES */
+.observacionesWrapper > .obsTittle > h2{
+    border-top: 1px solid white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    color: white;
+    font-family: raleway-semibold;
+    padding: .5rem 2rem;
+    background-color: #ffffff3a;
+}
+.observacionesWrapper > .inputObs{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+.observacionesWrapper > .inputObs > textarea{
+    height: 10rem;
+    width: 90%;
+    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+    font-family: raleway;
+    background-color: rgba(253,253,253,0.07);
+    border: 1px solid #3d7bd880;
+    border-radius: .5rem;
+    padding: .7rem;
+    outline: none;
+    color: white;
+}
+
+
+
+

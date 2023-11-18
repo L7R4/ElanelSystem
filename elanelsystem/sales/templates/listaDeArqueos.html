@@ -1,0 +1,49 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/historialArqueos.css' %}">
+{% endblock css %}
+
+{% block content %}
+<div class="filters">
+      <h1>HISTORIAL DE ARQUEOS</h1>
+    <div>
+        <input 
+        type="text"
+        class = "customer"
+        id="customer">
+        <img src="{% static 'images/icons/search.svg' %}" alt="">
+    </div>
+</div>
+
+<div class="information">
+    <div class="tittlesWrapper">
+      <ul class="tittles">
+          <li>Sucursal</li>
+          <li>Fecha</li>
+          <li>Admin</li>
+          <li>Responsable</li>
+          <li>Total de planilla</li>
+      </ul>   
+    </div>
+
+    <div class="valuesWrapper">
+        <ul class="values">
+          {% for arqueo in arqueos %}
+            <a class ="item" href="{% url 'sales:arqueoPDF' arqueo.pk %}" target="_blank">
+              <div><p>{{arqueo.sucursal|truncatechars:24}}</p></div>
+              <div><p>{{arqueo.fecha}}</p></div>
+              <div><p>{{arqueo.admin}}</p></div>
+              <div><p>{{arqueo.responsable}}</p></div>
+              <div><p>{{arqueo.totalPlanilla}}</p></div>
+            </a>
+          {% endfor %} 
+        </ul>       
+    </div>
+</div> 
+
+{% endblock content %}
+{% block js %}
+<script src="{% static 'js/inputs_search_customers.js' %}"></script>
+{% endblock js %}

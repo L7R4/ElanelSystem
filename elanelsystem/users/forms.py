@@ -4,7 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from .models import Usuario, Cliente
 import re
 
-
+sucursales = Usuario.SUCURSALES
 rangos = Usuario.RANGOS
 
 
@@ -15,6 +15,7 @@ class CustomLoginForm(AuthenticationForm):
 
 
 class FormCreateUser(forms.ModelForm):
+
     """
         CAMPOS ADICIONALES A LOS DEL MODELO 'USUARIO'
     """
@@ -94,6 +95,22 @@ class FormCreateUser(forms.ModelForm):
             )
         }
 
+    def clean_sucursal(self):
+        sucursal = self.cleaned_data['sucursal']
+        sucursales_permitidas = [m[0].lower() for m in sucursales]
+        if sucursal.lower() not in sucursales_permitidas:
+            raise forms.ValidationError('Sucursal inválida')
+        return sucursal
+    
+
+    def clean_rango(self):
+        rango = self.cleaned_data['rango']
+        rangos_permitidas = [m[0].lower() for m in rangos]
+        if rango.lower() not in rangos_permitidas:
+           raise forms.ValidationError('Rango inválido')
+        return rango
+    
+
     def clean_password2(self):
         passw1 = self.cleaned_data['password1']
         passw2 = self.cleaned_data['password2']
@@ -123,22 +140,6 @@ class FormCreateUser(forms.ModelForm):
             raise forms.ValidationError("DNI inválido")
         return dniRequest
     
-    def clean_sucursal(self,sucursal):
-        sucursales = Usuario.SUCURSALES
-        sucursales_permitidas = [m[0].lower() for m in sucursales]
-        if sucursal.lower() not in sucursales_permitidas:
-            return ('Sucursal inválida')
-
-        return sucursal
-    
-    def clean_rango(self,rango):
-        rangos = Usuario.RANGOS
-        rangos_permitidas = [m[0].lower() for m in rangos]
-        if rango.lower() not in rangos_permitidas:
-           return('Rango inválido')
-
-        return rango
-    
 
     def clean_tel(self):
         tel = self.cleaned_data['tel']
@@ -148,6 +149,7 @@ class FormCreateUser(forms.ModelForm):
         if len(tel) < 8 or len(tel) > 11:
             raise forms.ValidationError('Numero invalido')
         return tel
+    
     
     def clean_email(self):
         email = self.cleaned_data.get('email')

@@ -1,7 +1,7 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import Resumen,CrearVenta, DetailSale,Caja,CreateAdjudicacion,requestCuotas,viewsPDFBaja,ChangePack ,ChangeTitularidad,viewPDFTitularidad
+from .views import Resumen,CrearVenta, DetailSale,Caja,CreateAdjudicacion,requestCuotas,viewsPDFBaja,ChangePack ,ChangeTitularidad,viewPDFTitularidad,CierreCaja,viewPDFArqueo,OldArqueosView,requestEgresoIngreso
  
 app_name="sales"
 
@@ -16,7 +16,11 @@ urlpatterns = [
     path("ventas/<int:pk>/cambiotitularidad",ChangeTitularidad.as_view(),name="changeTitu"),
     path('request-cuotas/', requestCuotas, name='rc'),
     path("ventas/caja/",Caja.as_view(),name="caja"),
+    path("ventas/caja/arqueo/",CierreCaja.as_view(),name="cierreDeCaja"),
     path("ventas/pdf/baja/<int:pk>",viewsPDFBaja,name="bajaPDF"),
     path("ventas/pdf/titularidad/<int:pk>/<int:idCambio>",viewPDFTitularidad,name="tituPDF"),
+    path("ventas/pdf/arqueo/<int:pk>/",viewPDFArqueo,name="arqueoPDF"),
+    path("ventas/caja/arqueosanteriores",OldArqueosView.as_view(),name="oldArqueos"),
+    path('requestEgresoIngreso/', requestEgresoIngreso, name='rei'),
     
 ]
