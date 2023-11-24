@@ -2,6 +2,7 @@
 // Reciviendo argumentos
 const data = document.currentScript.dataset
 
+
 // Ganancias
 const ganancias_chart = document.getElementById('ganancias_chart')
 
@@ -75,5 +76,17 @@ new Chart(medios_pago_chart, {
       data: medios_values,
       borderWidth: 1,
     }]
-  }
+  },
+  options: {
+    plugins: {
+        legend: {
+            labels: {
+                // This more specific font property overrides the global property
+                font: {
+                    size: 15
+                }
+            }
+        }
+    }
+}
 }); 
