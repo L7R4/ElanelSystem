@@ -15,51 +15,91 @@
 
   <div class="data-container">
 
-    <!-- Data block/Ganancias -->
-      <div class="data-block">
-        <div class="data-header">
-          <span class="data-title">{{ganancias.title}}</span>
-        </div>  
-    
-        <span class="data-value">${{ganancias.monthly|last}}</span>
-        <span class="data-feedback" {% if ganancias.isPositive %} style="color:green" {% else %} style="color:red" {% endif %}>{{ganancias.feedback}}</span>
+    <!-- Charts -->
 
-        <div style="width:700px">
-          <canvas id="ganancias_chart"></canvas>
-        </div>
-      </div>
+    <div class="data-group charts">
+        <!-- Chart/Ganancias -->
+        <div class="data-block">
+          <div class="data-header">
+            <span class="data-title">{{ganancias.title}}</span>
+            <span class="data-value">${{ganancias.monthly|last}}</span>
+            <span class="data-feedback" {% if ganancias.isPositive %} style="color:green" {% else %} style="color:red" {% endif %}>{{ganancias.feedback}}</span>
+          </div>  
+      
 
-    <!-- Data block/Gastos -->
-      <div class="data-block">
-        <div class="data-header">
-          <span class="data-title">{{gastos.title}}</span>
-        </div>  
-    
-        <span class="data-value">${{gastos.monthly|last}}</span>
-        <span class="data-feedback" {% if gastos.isPositive %} style="color:green" {% else %} style="color:red" {% endif %}>{{gastos.feedback}}</span>
-
-        <div style="width:700px"> 
-          <canvas id="gastos_chart"></canvas>
-        </div>
-      </div>
-
-    <!-- Data block/Medios Pago -->
-      <div class="data-block">
-        <div class="data-multiple-header">
-          {% for key, value in medios_pagos.medios_pago.items %}
-            <div class="data-block">
-              <div class="data-header">
-                <span class="data-title">{{ key }}</span>
-              </div>
-              <span class="data-value">{{ value }}</span>
-            </div>
-          {% endfor %}
+          <div style="width:700px" class="graph-container">
+            <canvas id="ganancias_chart"></canvas>
+          </div>
         </div>
 
-        <div style="width:700px">
-          <canvas id="medios_pago_chart"></canvas>
+        <!-- Chart/Gastos -->
+        <div class="data-block">
+          <div class="data-header">
+            <span class="data-title">{{gastos.title}}</span>
+            <span class="data-value">${{gastos.monthly|last}}</span>
+            <span class="data-feedback" {% if gastos.isPositive %} style="color:green" {% else %} style="color:red" {% endif %}>{{gastos.feedback}}</span>
+          </div>  
+
+          <div style="width:700px" class="graph-container"> 
+            <canvas id="gastos_chart"></canvas>
+          </div>
         </div>
-      </div>
+
+        <!-- Chart/Medios Pago -->
+        <div class="data-block">
+          <div class="data-header">
+            <span class="data-title">Medios de pago</span>
+          </div>
+
+          <div style="width:700px" class="graph-container">
+            <canvas id="medios_pago_chart"></canvas>
+          </div>
+        </div>
+    </div>
+
+      <!-- Individual Values -->
+
+    <div class="data-group individual-data">
+        <!-- Data Block/Atrasadas -->
+        <div class="data-block">
+          <div class="data-header">
+            <span class="data-title">Operaciones Atrasadas</span>
+          </div>
+          <span class="data-value">{{ atrasadas }}</span>
+        </div>
+      
+        <!-- Data Block/Dinero Atrasado -->
+        <div class="data-block">
+          <div class="data-header">
+            <span class="data-title">Dinero Atrasado</span>
+          </div>
+          <span class="data-value">${{ atrasadas }}</span>
+        </div>
+
+        <!-- Data Block/Operaciones Activas -->
+        <div class="data-block">
+          <div class="data-header">
+            <span class="data-title">Operaciones Activas</span>
+          </div>
+          <span class="data-value">{{ op_activas }}</span>
+        </div>
+
+        <!-- Data Block/Operaciones de baja -->
+        <div class="data-block">
+          <div class="data-header">
+            <span class="data-title">Operaciones de Baja</span>
+          </div>
+          <span class="data-value">{{ op_bajas }}</span>
+        </div>
+
+        <!-- Data Block/Operaciones adjudicadas -->
+        <div class="data-block">
+          <div class="data-header">
+            <span class="data-title">Operaciones Adjudicadas</span>
+          </div>
+          <span class="data-value">{{ op_adjudicadas }}</span>
+        </div>
+    </div>
 
   </div>
 

@@ -82,13 +82,26 @@ class Resumen(generic.View):
             'medios_pago': medios,
         }
 
+        atrasadas = 123
+        dinero_atrasado = 321
+        op_activas = 1213
+        op_bajas = 122
+        op_adjudicadas = 131
+
+
         context = {
             'ganancias':ganancias,
             'gastos':gastos,
             'medios_pagos':medios_pagos,
             'medios_list': list(medios.keys()),
-            'medios_values': list(medios.values())
+            'medios_values': list(medios.values()),
+            'atrasadas': atrasadas,
+            'dinero_atrasado': dinero_atrasado,
+            'op_activas': op_activas,
+            'op_bajas': op_bajas,
+            'op_adjudicadas': op_adjudicadas
         }
+
         return render(request, self.template_name, context)
     
     
