@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe de auditorias</title>
+</head>
+<body>
+    <h1 class="tittleOfSections">Informe de auditorias</h1>
+    <div class="headAuditorias">
+        {% for clave in data.0.keys %}
+            {% if  clave != "Auditoria"%}
+                <div>
+                    <h6>{{ clave }}</h6>
+                </div>
+            {% else %}
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    {% for dicc in data %}
+    <div class="wrapperAuditorias">
+            <div class="bodyAuditoria">
+            {% for k, v in dicc.items %}
+                {% if k != "Auditoria" %}
+                    <div><p>{{ v }}</p></div>
+                {% else %}
+                </div>
+                <div class="auditoriasWrapper">
+                    <div>
+                        <h6 class="tittleAuditoria">Auditorias</h6>
+                        <div class="headAuditoriasWrapper">
+                            <h6>Estado</h6>
+                            <h6>Fecha/Hora</h6>
+                            <h6>Comentarios</h6>
+                        </div>
+                    </div>
+                    <div class="listAuditoriasWrapper">
+                        {% for audit in v %}
+                            <div class="auditoriaItem">
+                                {% if audit.grade %}
+                                    <p>Aprobado</p>
+                                {% else %}
+                                    <p>Desaprobado</p>
+                                {% endif %}
+                                <p>{{ audit.fecha_hora|default:'' }}</p>
+                                <p>{{ audit.comentarios|default:'' }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="dividerByItem"></div>
+                {% endif %}
+            {% endfor %}
+    </div>
+    {% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>  
+    <div class="agencia">
+        <p>Agencia {{}}</p>
+    </div>
+    <div class="fecha">
+        <p>Fecha {{}}</p>
+    </div>
+    <div id="subtittle">
+        <p>Vendedor</p>
+        <p>{{}}</p>
+    </div>
+    <div id ="detalle">
+        <table>
+            <tr>
+                <th><h5>A cobrar</h5></th>
+                <th><h5>Cantidad</h5></th>
+                <th><h5>Productividad</h5></th>
+                <th><h5>Comisionado</h5></th>
+            </tr>
+            {% for dicc in data %}
+                <tr>
+                    {% for k,v in dicc.items %}
+                        <td>
+                            <p>{{v}}</p>               
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            <br>
+            <tr>
+                <th><h5>Sub total</h5></th>
+                <th><p>{{}}</p></th>
+                <th><p>{{}}</p></th>
+                <th><p>{{}}</p></th>
+            </tr>
+            <br>
+            <br>
+            <tr>
+                <th><h5>Descuentos</h5></th>
+            </tr>
+            <tr>
+                <th><p>Adelantos</p></th>
+                <th><p>{{}}</p></th>
+            </tr>
+            <tr>
+                <th><p>Ausencias</p></th>
+                <th><p>{{}}</p></th>
+            </tr>
+            <br>
+            <tr>
+                <th><h5>Sub total</h5></th>
+                <th><p>{{}}</p></th>
+            </tr>
+            <br>
+            <br>
+            <tr>
+                <th><h5>Total a pagar</h5></th>
+                <th><p>{{}}</p></th>
+            </tr>
+        </table>
+    </div>
+    {% comment %} <div id="page2" style="page-break-before: always;">
+        <div class="fecha">
+            <p>{{fechaNow}}</p>
+        </div>
+        <div id="subtittle">
+            <p>Elanel Servicios y Soluciones</p>
+            <p>Presente</p>
+        </div>
+        <div id="subtittle_p2">
+            <p>Referencia</p>
+            <p>Cambio de titularidad</p>
+            <p>Nro. Venta {{nroOperacion}}</p>
+            <p>De {{cliente}}</p>
+        </div>
+    
+        <div id ="detalle">
+            <p>De mi mayor consideración</p>
+            <p>Tengo el agrado de dirigirme a Uds. con el fin de hacerles saber que partir de la presente, asumo los compromisos correspondientes como cliente de Elanel Servicios y Soluciones.</p>
+            
+            <p>Por tal motivo, le informo los datos correspondientes para hacer posible este trámite: Apellido y Nombre: {{cliente}}, DNI: {{dni}}, Estado Civil: {{estado_civil}}, Fecha de Nac.:{{fecha_nac}}, con domicilio en {{domicilio}}, localidad: {{localidad}},{{provincia}} teléfono: {{telefono}}, ocupación: {{ocupacion}}</p>
+            <p>IG/FACEBOOK _________________________________________</p>
+            <p>Ahora bien, hago propicia la presente para noticiar que cuento con total información sobre el contrato de Servicios de Asistencia Técnica y Mecánica y los beneficios especiales de vuestro Sistema.</p>
+            <p>Sin otro particular, saludo a Uds. atentamente.</p>
+        </div>
+                <th></th>
+        <div id="firmas">
+            <div>
+            <p>Firma</p>
+            </div>
+            <div>
+                <p>Tipo y nro. de DNI</p>
+            </div>
+            <div>
+                <p>Aclaracion</p>
+            </div>
+        </div>
+    </div> {% endcomment %}
+</body>
+</html>

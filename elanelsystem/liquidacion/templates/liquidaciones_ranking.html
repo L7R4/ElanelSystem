@@ -1,0 +1,144 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/ranking_liquidaciones.css' %}">
+{% endblock css %}
+
+{% block content %}
+    <div class="wrapperTittle">
+        <h2>Ranking</h2>
+        <div id="wrapperSelectSucursal">
+            <label for="id_sucursal">Sucursal</label>
+            <input type="text" name="sucursal" id="id_sucursal" value="Resistencia, Chaco">
+            {% comment %} <ul class="select">
+                <li>Moto</li>
+                <li>Electrodomestico</li>
+                <li>Prestamo</li>
+            </ul> {% endcomment %}
+        </div>
+    </div>
+    <div class="containerBoth">
+        <div class="containerSupervisores">
+            <div class="information">
+                <h2>Supervisores</h2>
+                <div class="tittlesWrapper">
+                    <ul class="tittles">
+                        <li>Supervisor</li>
+                        <li>Dinero total</li>
+                        <li>Cantidad total</li>
+                    </ul>   
+                </div>
+
+                <div class="valuesWrapper">
+                    <ul class="values">
+                        <li class ="item">
+                            <div class="backgroundItem">
+                                <img class="imageMore" src="{% static 'images/icons/moreWhite.png' %}" alt="">
+                                <div><p>Nicolas Vallejos</p></div>
+                                <div><p>$45.908.090</p></div>
+                                <div><p>87</p></div>
+                            </div>
+                            
+                            <ul class="detallesItem">
+                                <h2>Vendedores a cargo</h2>
+                                <div class="tittlesWrapperItem">
+                                    <ul class="tittles">
+                                        <li>Vendedor</li>
+                                        <li>Dinero total</li>
+                                        <li>Cantidad total</li>
+                                    </ul>   
+                                </div>
+                                <div class="valuesWrapperItem">
+                                    <ul>
+                                        <li class="itemValores">
+                                            <div class="backgroundItemVendedores">
+                                                <div><p>Nicolas Vallejos</p></div>
+                                                <div><p>$45.908.090</p></div>
+                                                <div><p>87</p></div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </ul>
+                        </li>
+                         <li class ="item">
+                            <div class="backgroundItem">
+                                <img class="imageMore" src="{% static 'images/icons/moreWhite.png' %}" alt="">
+                                <div><p>Nicolas Vallejos</p></div>
+                                <div><p>$45.908.090</p></div>
+                                <div><p>87</p></div>
+                            </div>
+                            
+                            <ul class="detallesItem">
+                                <h2>Vendedores a cargo</h2>
+                                <div class="tittlesWrapperItem">
+                                    <ul class="tittles">
+                                        <li>Vendedor</li>
+                                        <li>Dinero total</li>
+                                        <li>Cantidad total</li>
+                                    </ul>   
+                                </div>
+                                <div class="valuesWrapperItem">
+                                    <ul>
+                                        <li class="itemValores">
+                                            <div class="backgroundItemVendedores">
+                                                <div><p>Nicolas Vallejos</p></div>
+                                                <div><p>$45.908.090</p></div>
+                                                <div><p>87</p></div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </ul>
+                        </li>
+                    </ul>       
+                </div>
+            </div> 
+        </div>
+
+        <div class="containerVendedores">
+            <div class="information">
+                <h2>Vendedores</h2>
+
+                <div class="tittlesWrapper">
+                    <ul class="tittles">
+                        <li>Vendedor</li>
+                        <li>Dinero total</li>
+                        <li>Cantidad total</li>
+                        <li>Cuotas adel.</li>
+                    </ul>   
+                </div>
+
+                <div class="valuesWrapper">
+                    <ul class="values">
+                        <li class ="item">
+                            <div><p>Alejandro Torres</p></div>
+                            <div><p>$12.200.355</p></div>
+                            <div><p>34</p></div>
+                            <div><p>8</p></div>
+                        </li>
+                        <li class ="item">
+                            <div><p>Alejandro Torres</p></div>
+                            <div><p>$12.200.355</p></div>
+                            <div><p>34</p></div>
+                            <div><p>8</p></div>
+                        </li>
+                    {% comment %} {% for customer in customers %}
+                        <a class ="item" href="{% url 'users:cuentaUser' customer.id %}">
+                        <div><p>{{customer.nombre|truncatechars:24}}</p></div>
+                        <div><p>{{customer.dni}}</p></div>
+                        <div><p>{{customer.tel}}</p></div>
+                        </a>
+                    {% endfor %}  {% endcomment %}
+                    </ul>       
+                </div>
+            </div> 
+        </div>
+    </div>
+    
+{% endblock content %}
+{% block js %}
+<script src="{% static 'js/displayItemsRanking.js' %}"></script>
+    
+{% endblock js %}

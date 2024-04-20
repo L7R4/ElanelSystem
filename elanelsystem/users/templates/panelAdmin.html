@@ -1,0 +1,71 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/panel_admin.css' %}">
+{% endblock css %}
+
+{% block content %}
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Permisos</h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="{% url 'users:panelPermisos' %}" class="buttonMore">
+                <div>
+                    <h3>Editar</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>
+        </div>
+        
+    </div>
+    
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Tabla de coeficientes <h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="#" class="buttonMore">
+                <div>
+                    <h3>Editar</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>    
+        </div>
+               
+    </div>
+        
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Contraseñas de logistica<h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="#" class="buttonMore">
+                <div>
+                    <h3>Editar</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>
+        </div>
+        
+    </div>
+
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Sucursales<h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="{% url 'users:panelSucursales' %}" class="buttonMore">
+                <div>
+                    <h3>Editar</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>
+        </div>
+        
+    </div>
+{% endblock content %}
+{% block js %}
+    
+{% endblock js %}

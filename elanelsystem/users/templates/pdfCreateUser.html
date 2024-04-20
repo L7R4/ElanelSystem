@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de colaborador N°{{nroCliente}}</title>
+
+</head>
+<body>
+    <div id="tittle">
+        <div id="fecha_altaWrapper">
+            <h1>Fecha de alta: <strong>{{date_today}}</strong></h1>
+        </div>
+        <div id="nroClienteWrapper">
+            <h1>Nro colaborador: <strong>{{nroCliente}}</strong></h1>
+        </div>
+    </div>
+    <h2>Datos personales</h2>
+    <div id ="datos_personalesWrapper">
+        <div id="nombreWrapper">
+            <h2>Nombre completo: <strong>{{nombreCompleto}}</strong></h2>
+        </div>
+        <div id="dniWrapper">
+            <h2>DNI: <strong>{{dni}}</strong></h2>
+        </div>
+        <div id="telWrapper">
+            <h2>Telefono: <strong>{{telefono}}</strong></h2>
+        </div>
+        <div id="domicilioWrapper">
+            <h2>Domicilio: <strong>{{domicilio}}</strong></h2>
+        </div>
+        <div id="localidadWrapper">
+            <h2>Localidad: <strong>{{localidad}}</strong></h2>
+        </div>
+        <div id="provinciaWrapper">
+            <h2>Provincia: <strong>{{provincia}}</strong></h2>
+        </div>
+        <div id="cpWrapper">
+            <h2>Cp: <strong>{{cp}}</strong></h2>
+        </div>
+        
+        <div id="lugarNacWrapper">
+            <h2>L.de nacimiento: <strong>{{lugar_nacimiento}}</strong></h2>
+        </div>
+        <div id="fechaNacWrapper">
+            <h2>Fec. nacimiento: <strong>{{fec_nacimiento}}</strong></h2>
+        </div id="">
+        <div id="estadoWrapper">
+            <h2>Estado civil: <strong>{{estado_civil}}</strong></h2>
+        </div>
+        <div id="xpWrapper">
+            <h2>Experiencia laboral:</h2>
+            <div>
+                <p>{{xp_laboral|linebreaks|safe}}</p>
+            </div>
+        </div>
+        <div id="familiaresWrapper">
+            <h2>Datos familiares:</h2>
+            <div>
+                {% for familiar in datos_familiares %}
+                    <div class="familiarItem">
+                        <div class="relacionContainer">
+                            <h3>Relacion:</h3>
+                            <p>{{familiar.relacion}}</p>
+                        </div>
+                        <div class="nombreContainer">
+                            <h3>Nombre:</h3>
+                            <p>{{familiar.nombre}}</p>
+                        </div>
+                        <div class="telContainer">
+                            <h3>Tel:</h3>
+                            <p>{{familiar.tel}}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div id="firmasWrapper">
+        <div>
+            <p>_______________________________</p>
+            <h6><strong>Firma, aclaracion y DNI</strong></h6>
+        </div>
+    </div>
+    <div id="agenciaWrapper">
+        <h4>Agencia {{agenciaNombre}} - {{agenciaDireccion}}</h4>
+    </div>
+
+    <div id="registroDeFirma" style="page-break-before: always;">
+        <h1>Registro de firma</h1>
+        <div class="firmasConfirmWrapper">
+            <div class="linesWrapper">
+                <div></div>
+                <div></div>
+            </div>
+            <div class="labelsFirmasWrapper">
+                <h6><strong>Firma</strong></h6>
+                <h6><strong>Aclaracion</strong></h6>
+            </div>
+        </div>
+        <h3>DNI: ...........................................................</h3>
+    </div>
+
+    <div id="contrato_servicio" style="page-break-before: always;">
+        <h1 id="contrato_servicio_tittle">CONTRATO CIVIL DE LOCACION DE SERVICIOS</h1>
+        <div class="contratoWrapper">
+            <p>En la ciudad de Resistencia, capital de la provincia del Chaco, a los {{day}} días del mes de {{name_month|capfirst}} del año {{year}}; entre ELANEL SERVICIOS S.R.L., CUIT: 30-71804533-5, representada en este acto por la Socio Gerente, la Sra. BRITE GRISELDA CORINA, argentino, D.N.I N° 26968268, con domicilio COMERCIAL en {{agenciaDireccion}} de la ciudad de {{provincia_localidad_sucursal}}, en adelante el COMITENTE, por una parte; y por la otra, el Sr/a. {{nombreCompleto}}, DNI N° {{dni}}, con domicilio real en {{domicilio}} de la Ciudad {{localidad}}-{{provincia}}, en adelante EL PRESTADOR DE SERVICIOS; celebran el presente contrato de locación de servicios de naturaleza civil en los términos del art. 1.251 y concordantes del Código Civil y Comercial de la Nación Argentina, de conformidad a las siguientes cláusulas y condiciones:</p>
+            <br>
+            <p>PRIMERA: EL PRESTADOR DE SERVICIOS prestará al COMITENTE los servicios de ASESOR COMERCIAL en la Provincia de CHACO respecto de los productos ofrecidos por ELANEL SERVICIOS S.R.L., siguiendo expresamente las condiciones y disposiciones insertas en el ANEXO A que forma parte integrante del presente contrato. Los servicios prestados por EL PRESTADOR DE SERVICIOS lo serán por su exclusiva cuenta y riesgo, sin cumplir horario fijo y quedando a su cargo afrontar los gastos que surgieran de los servicios a prestar que fueren necesarios a tal fin.</p>
+            <br>
+            <p>SEGUNDA: EL PRESTADOR DE SERVICIOS se compromete expresamente y obliga a utilizar toda su pericia, conocimiento y celo en su cometido, haciéndose personal y económicamente responsable por cualquier perjuicio que ocasionare a los intereses económicos y/o institucionales del COMITENTE. En caso de mala administración o negligencia que cause perjuicio a LA EMPRESA, EL REPRESENTANTE será responsable y deberá indemnizar a LA EMPRESA por los daños y perjuicios ocasionados.</p>
+            <br>
+            <p>EL PRESTADOR DE SERVICIOS se compromete a:</p>
+            <ul>
+                <li>Actuar con lealtad y buena fe.</li>
+                <li>Informar regularmente a LA EMPRESA sobre sus gestiones.</li>
+                <li>Cumplir con las normativas vigentes en la provincia</li>
+            </ul>
+            <br>
+            <p>TERCERA: EL PRESTADOR DE SERVICIOS declara bajo juramento que actualmente se encuentra inscripto como monotributista en la categoría………. y bajo el C.U.I.T N° …………., encontrándose al día respecto del pago de sus obligaciones fiscales y otras exigencias emanadas de la A.F.I.P. y A.T.P. respectivamente, obligándose a presentar las constancias fiscales correspondientes.</p>
+            <br>
+            <p>CUARTA: A los fines del presente contrato, EL COMITENTE entrega por este acto AL PRESTADOR DE SERVICIOS el ANEXO A que contiene las disposiciones y reglas pertinentes para el cabal cumplimiento del cometido asignado al segundo de los nombrados.</p>
+            <br>
+            <p>QUINTA: EL COMITENTE abonará mensualmente al PRESTADOR DE SERVICOS la retribución correspondiente a la escala inserta en el ANEXO B, que forma parte integrante del presente contrato. La retribución comisional deberá hacerse efectiva entre los días 01 hasta los 15 del mes subsiguiente al vencido, debiendo EL PRESTADOR DE SERVICIO extender recibo o factura correspondiente.</p>
+            <br>
+            <p>SEXTA: El presente contrato tendrá vigencia por SEIS (6) meses, operando finalización indefectiblemente el 05/09/2025, quedando rescindido automáticamente por la mera expiración del plazo acordado.</p>
+            <br>
+            <p>SEPTIMA: Cualquiera de las partes podrá rescindir el presente contrato, sin que medie causa alguna, con la sola obligación de preavisar de ello a la otra, con treinta (30) días de antelación, sin que ello genere derecho a indemnización ni resarcimiento alguno.</p>
+            <br>
+            <br>
+            <br>
+            <br>
+            <p>OCTAVA: CONFIDENCIALIDAD:</p>
+            <br>
+            <p>EL PRESTADOR DE SERVICIOS se compromete a mantener en estricta confidencialidad toda la información que obtenga durante la vigencia del presente contrato y a no utilizarla en beneficio propio o de terceros, quedando sujeto de ser necesario a acciones civiles, comerciales y/o Penales.</p>
+            <br>
+            <p>NOVENA: Las partes se someten a la jurisdicción de los tribunales civiles de la Ciudad de Resistencia - Chaco; renunciando expresamente a cualquier otro fuero o jurisdicción. Igualmente, acuerdan que serán válidas las notificaciones cursadas y destinadas a los domicilios antes denunciados.</p>
+            <br>
+            <p>SE FIRMAN DOS EJEMPLARES DE IGUAL TENOR Y EFECTO, PREVIA INTEGRA LECTURA Y RATIFICACION TOTAL, EN EL LUGAR Y FECHA ANTES INDICADOS.</p>
+            
+        </div>
+       
+    </div>
+</body>
+</html>

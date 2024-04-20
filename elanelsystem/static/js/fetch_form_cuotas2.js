@@ -141,7 +141,7 @@ inputSubmit.addEventListener("click", async () =>{
     let amount = 0;
     let isChecked;
     let cuotaPorAbonar = cuotaPicked
-    
+    console.log(tipoPago.value)
     if (tipoPago.value == "total") {
         isChecked = "Pagado";
         cuotaPorAbonar.previousElementSibling.checked = true
@@ -169,7 +169,7 @@ inputSubmit.addEventListener("click", async () =>{
     .then(async response2 => {
         response2.json()
         let data = await fetchCuotas();
-
+        console.log(data)
         // PARA VALIDAR SI LA CUOTA YA SE PAGO TOTALMENTE O NO
         let resto = calcularDineroRestante(cuotaPorAbonar.innerHTML,data)
         testSale(cuotaSelected,isChecked,resto)

@@ -1,11 +1,13 @@
 const inputsCantidad = document.querySelectorAll(".item > .itemCantidad > input")
 let valoresTotalesXBillete = document.querySelectorAll(".item > .itemImporte > .importeValue")
 
-let totalEfectivoText = document.getElementById("totalEfectivoText")
-let totalPlanillaText = document.getElementById("totalPlanillaText")
+let totalPlanillaText = document.getElementById("totalPlanillaEfectivo")
 let diferenciaText = document.getElementById("diferenciaText")
-let totalSegunDiarioCaja = document.getElementById("totalSegunDiarioCaja")
+let totalDiarioCaja = document.getElementById("saldoSegunCaja")
 
+calcularDiferencia(totalPlanillaText.textContent,totalDiarioCaja.textContent)
+
+saldoSegunCajaInput.value = totalDiarioCaja.textContent
 inputsCantidad.forEach(input => {
     input.addEventListener("input",()=>{
         let billete = input.offsetParent.querySelector(".monedaValue").textContent
@@ -13,28 +15,31 @@ inputsCantidad.forEach(input => {
         if(input.value == ""){
             importe.textContent = 0;
         }else{
-            importe.textContent = (parseFloat(input.value) * billete).toFixed(1);
+            importe.textContent = (parseFloat(input.value) * billete).toFixed(0);
         }
         let sumaTotal = 0;
         valoresTotalesXBillete.forEach(element => {
             sumaTotal += parseFloat(element.textContent)
         });
-        totalEfectivoText.textContent = sumaTotal.toFixed(1)
-        totalPlanillaText.textContent = totalEfectivoText.textContent
-        if(totalSegunDiarioCaja.value == ""){
-            diferenciaText.textContent = 0    
-        }else{
-            diferenciaText.textContent = (parseFloat(totalPlanillaText.textContent) - parseFloat(totalSegunDiarioCaja.value)).toFixed(1)
-            if(parseFloat(diferenciaText.textContent) < 0){
-                diferenciaText.style.color = "#ed1717"
-            }else{
-                diferenciaText.style.color = "#fff"
-            }
-        }
+        totalPlanillaText.textContent = sumaTotal.toFixed(0)
+        totalPlanillaEfectivoInput.value = totalPlanillaText.textContent
+        calcularDiferencia(totalPlanillaText.textContent,totalDiarioCaja.textContent)
     })
 });
 
-totalSegunDiarioCaja.addEventListener("input",()=>{
+function calcularDiferencia(montoPlanilla,montoDiarioCaja) {
+    diferenciaText.textContent = (parseFloat(montoPlanilla)) - (parseFloat(montoDiarioCaja)).toFixed(0)
+
+    if(diferenciaText.textContent < 0){
+        diferenciaText.style.color = "#ed1717" //Falta dinero
+    }else if(diferenciaText.textContent > 0){
+        diferenciaText.style.color = "#61e124" //Falta sobrante
+    }else{
+        diferenciaText.style.color = "#fff" // Dinero justo
+    }
+}
+
+totalPlanillaText.addEventListener("input",()=>{
     let inputEvent = new Event('input')
     inputsCantidad[0].dispatchEvent(inputEvent)
 })

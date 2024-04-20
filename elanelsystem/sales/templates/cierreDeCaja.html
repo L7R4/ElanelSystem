@@ -51,6 +51,11 @@
 
                 <div class="valuesWrapper">
                     <ul class="detalleItems">
+                    <li class="item">
+                            <div class="itemMoneda"><p>$</p><p class="monedaValue">2000</p></div>
+                            <div class="itemCantidad"><input type="number" id="p2000" name="p2000"></div>
+                            <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
+                        </li>
                         <li class="item">
                             <div class="itemMoneda"><p>$</p><p class="monedaValue">1000</p></div>
                             <div class="itemCantidad"><input type="number" id="p1000" name="p1000"></div>
@@ -96,51 +101,24 @@
                             <div class="itemCantidad"><input type="number" name="p2" id="p2"></div>
                             <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
                         </li>
-                        <li class="item">
-                            <div class="itemMoneda"><p>$</p><p class="monedaValue">1</p></div>
-                            <div class="itemCantidad"><input type="number" name="p1" id="p1"></div>
-                            <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
-                        </li>
-                        <li class="item">
-                            <div class="itemMoneda"><p>$</p><p class="monedaValue">0.50</p></div>
-                            <div class="itemCantidad"><input type="number" name="p0.5" id="p0.5"></div>
-                            <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
-                        </li>
-                        <li class="item">
-                            <div class="itemMoneda"><p>$</p><p class="monedaValue">0.25</p></div>
-                            <div class="itemCantidad"><input type="number" name="p0.25" id="p0.25"></div>
-                            <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
-                        </li>
-                        <li class="item">
-                            <div class="itemMoneda"><p>$</p><p class="monedaValue">0.10</p></div>
-                            <div class="itemCantidad"><input type="number" name="p0.1" id="p0.1"></div>
-                            <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
-                        </li>
-                        <li class="item">
-                            <div class="itemMoneda"><p>$</p><p class="monedaValue">0.05</p></div>
-                            <div class="itemCantidad"><input type="number" name="p0.05" id="p0.05"></div>
-                            <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
-                        </li>
+                        
                     </ul>
                     <ul class="detalleTotales">
                         <li class="total">
-                            <div class="totalTittle"> <p>Total Efectivo</p> </div>
-                            <input type="hidden" name="totalEfectivo" id="totalEfectivo" value="0">
-                            <div class="totalImporte"><p>$</p><p id ="totalEfectivoText" class="totalImporteValue">0</p></div>
-                        </li>
-                        <li class="total">
-                            <input type="hidden" name="totalPlanillaEfectivo" id="totalPlanilla" value="0">
+                            <input type="hidden" name="totalPlanillaEfectivo" id="totalPlanillaEfectivoInput" value="0">
                             <div class="totalTittle"> <p>Total Planilla de Efectivo</p> </div>
-                            <div class="totalImporte"><p>$</p><p id ="totalPlanillaText" class="totalImporteValue">0</p></div>
+                            <div class="totalImporte"><p>$ </p><p id="totalPlanillaEfectivo" class="totalImporteValue">0</p></div>
                         </li>
                         <li class="total">
+                            <input type="hidden" name="saldoSegunCaja" id="saldoSegunCajaInput" value="0">
                             <div class="totalTittle"> <p>Saldo según diario de caja</p> </div>
-                            <div class="totalImporte"><p>$</p><input type="number" name="saldoSegunCaja" id="totalSegunDiarioCaja"></div>
+                            <div class="totalImporte"><p>$ </p><p id ="saldoSegunCaja" class="totalImporteValue">{{movs}}</p></div>
                         </li>
+                        
                         <li class="total">
-                            <input type="hidden" name="diferencia" id="diferencia" value="0">
+                            <input type="hidden" name="diferencia" id="diferenciaInput" value="0">
                             <div class="totalTittle"> <p>Diferencia</p> </div>
-                            <div class="totalImporte"><p>$</p><p id ="diferenciaText" class="totalImporteValue">0</p></div>
+                            <div class="totalImporte"><p>$ </p><p id ="diferenciaText" class="totalImporteValue">0</p></div>
                         </li>
                     </ul>
                 </div>
@@ -157,14 +135,27 @@
             </div>
         </form>
     </div>
-    <div class="buttons">
-        <a href="{% url 'sales:oldArqueos' %}" id="oldArqueos"> Ver arqueos anteriores</a>
-        <button id="confirmArqueoCaja" type="button" form="formArqueoCaja">Confirmar arqueo</button>   
+    <div class="options">
+        <div class="inputWrapper" id="sucursalWrapper">
+            <label for="sucursalInput">Elige la sucursal...</label>
+            <input type="text" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" value ="{{sucursal}}" form="formArqueoCaja" class="selectInput">
+            <ul id="contenedorAgencia" class="select">
+                {% for agencia in sucursales %}
+                    <li>{{agencia.localidad}}, {{agencia.provincia}}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="buttons">
+            <a href="{% url 'sales:oldArqueos' %}" id="oldArqueos"> Ver arqueos anteriores</a>
+            <button id="confirmArqueoCaja" type="button" form="formArqueoCaja">Confirmar cierre</button>   
+        </div>
     </div>
+    
     
 {% endblock content %}
 
 {% block js %}
+    <script src="{% static 'js/input_select_create_user.js' %}"></script>
     <script src="{% static 'js/redirectToPDFArqueo.js' %}"></script>
     <script src="{% static 'js/calcularTotalesArqueo.js' %}"></script>
 {% endblock js %}

@@ -1,0 +1,55 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/panel_sucursales.css' %}">
+{% endblock css %}
+
+{% block content %}
+    <div class="wrapperListSucursales" id="wrapperListSucursales">
+        <h1>{{latest_sucursal}}</h1>
+        {% for sucursal in sucursales %}
+            <div class="sucursalItem">
+                <h2>{{sucursal}}</h2>
+                <form method="POST" class="formSucursal">
+                    {% csrf_token %}
+                    <input type="hidden" id="inputID" name="inputID" value="{{sucursal.pk}}">
+                    <div class="containerInputs">
+                        <div class="wrapperInput">
+                            <label for="">Dirección</label>
+                            <input type="text" class="" id="inputDireccion" name="inputDireccion" value="{{sucursal.direccion}}">
+                        </div>
+                        <div class="wrapperInput">
+                            <label for="">Hora de entrada</label>
+                            <input type="text" class="" id="inputHora" name="inputHora" value="{{sucursal.hora_apertura}}">
+                        </div>
+                    </div>
+                    
+                    <div class="buttonsActions">
+                        <button type="button" class="uploadForm">Confirmar</button>
+                        <button type="button" class="desableForm">Cancelar</button>
+                        <button type="button" class="enableForm">Editar</button>
+                        <button type="button" class="deleteSucursal" >Eliminar</button>
+                    </div>
+                </form>
+            
+            </div>
+        {% endfor %}
+    
+    </div>
+    <button type="button" id="buttonAddSucursal">Agregar sucursal</button>
+    
+{% endblock content %}
+{% block js %}
+<script>
+    var CSRF_TOKEN = '{% csrf_token %}'
+    // URLs - - - - - - - -
+    var urlUpdateS = "{% url 'users:updateSucursal' %}"
+    var urlAddS = "{% url 'users:addSucursal' %}"
+    var urlRemoveS = "{% url 'users:removeSucursal' %}"
+    // - - - - - - - -
+
+</script>
+<script src="{% static 'js/fetch_upload_sucursal.js' %}"></script>
+
+{% endblock js %}

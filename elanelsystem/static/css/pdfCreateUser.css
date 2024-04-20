@@ -1,0 +1,218 @@
+@page { 
+    /* size: landscape;  */
+    /* size: Letter; Change from the default size of A4 */
+    margin: 1cm;
+}
+@font-face {
+  font-family: raleway;
+  src: url("../fonts/Raleway-Regular.ttf");
+}
+@font-face {
+  font-family: raleway-bold;
+  src: url("../fonts/Raleway-Bold.ttf");
+}
+@font-face {
+  font-family: raleway-semibold;
+  src: url("../fonts/Raleway-SemiBold.ttf");
+}
+@font-face {
+    font-family: raleway-regular;
+    src: url("../fonts/Raleway-Regular.ttf");
+  }
+html {
+  box-sizing: border-box;
+  font-size: 62.5%;
+}
+* {
+    margin: 0;
+    padding: 0;
+    font-feature-settings: "pnum" on, "lnum" on;
+    box-sizing: border-box;
+}
+#tittle{
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+#tittle > div{
+  display: flex;
+  width: auto;
+  align-items: center;
+}
+#tittle > div > h1{
+  margin-right: 1rem;
+  font-size: 1.7rem;
+  white-space: nowrap;
+  font-family: raleway-semibold;
+  border-bottom: 1px solid #000;
+  color: #3D7CD8;
+  
+}
+
+#tittle > div > h1 > strong{
+  font-family: raleway-semibold;
+  font-size: 1.6rem;
+  color: #000;
+}
+
+body > h2{
+  margin: 2rem 0;
+  width: 100%;
+  font-family: raleway-semibold;
+  font-size: 1.6rem;
+  color: #000000ca;
+  border-bottom: 1px solid #000;
+
+}
+#datos_personalesWrapper{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+#datos_personalesWrapper > div{
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #00000039;
+}
+#datos_personalesWrapper > div > h2{
+  margin-right: 1rem;
+  font-size: 1.6rem;
+  white-space: nowrap;
+  font-family: raleway-semibold;
+  color: #3D7CD8;
+}
+#datos_personalesWrapper > div > h2 > strong{
+  font-size: 1.4rem;
+  color: #000;
+}
+#nombreWrapper,#domicilioWrapper,#estadoWrapper,#xpWrapper{
+  width: 100%;
+}
+
+#dniWrapper, #telWrapper,#fechaNacWrapper,#lugarNacWrapper{
+  width: 48%;
+}
+#provinciaWrapper,#localidadWrapper{
+  width: 38%;
+}
+#cpWrapper{
+  width: 18%;
+}
+
+
+#xpWrapper,#familiaresWrapper{
+  border-bottom: none !important;
+}
+#xpWrapper > div{
+  padding: 1rem;
+  border: 1px solid #00000039;
+  border-radius: .6rem;
+  margin-top: .4rem;
+}
+#xpWrapper > div > p {
+  font-family: raleway-semibold;
+  font-size: 1.3rem;
+  color: #000;
+}
+
+.familiarItem{
+  display: flex;
+  justify-content: space-around;
+  width: 71rem;
+  border: 1px solid #00000057;
+  margin-top: 1rem;
+  border-radius: .5rem;
+  padding: .5rem;
+}
+.familiarItem > div{
+  width: 30%;
+}
+
+.familiarItem > div > h3{
+  font-family: raleway-semibold;
+  font-size: 1.4rem;
+}
+
+.familiarItem > div >p{
+  font-family: raleway-regular;
+  font-size: 1.4rem;
+}
+
+#firmasWrapper{
+  width: 71rem;
+  display: flex;
+  justify-content: center;
+  margin-top: 35rem;
+  margin-bottom: 6rem;
+}
+
+#firmasWrapper > div{
+  font-family: raleway-regular;
+  font-size: 1.9rem;
+  text-align: center;
+}
+#agenciaWrapper{
+  margin-top: auto;
+}
+#agenciaWrapper > h4{
+  font-family: raleway-semibold;
+  font-size: 1.4rem;
+  color: #000000c8;
+}
+
+#registroDeFirma{
+  margin-top: 10rem;
+  height: 30rem;
+  width: 71rem;
+  padding: 4rem 0;
+  border: 1px solid #3D7CD8;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: .5rem;
+}
+#registroDeFirma > h1{
+  font-family: raleway-semibold;
+  font-size: 3rem;
+  white-space: nowrap;
+  text-align: center;
+  margin-bottom: 5rem;
+}
+#registroDeFirma > h3{
+  font-family: raleway-semibold;
+  font-size: 1.8rem;
+  white-space: nowrap;
+  text-align: center;
+}
+.firmasConfirmWrapper{
+  min-width: 95%;
+}
+.firmasConfirmWrapper > div{
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  font-family: raleway-semibold;
+  font-size: 2.3rem;
+}
+.firmasConfirmWrapper > div.linesWrapper{
+  width: 100%;
+}
+.firmasConfirmWrapper > div.linesWrapper > div{
+  border-bottom: 2px dotted #000 ;
+  width: 45%;
+}
+.contratoWrapper{
+  box-sizing: border-box;
+  padding: 2rem;
+  font-family:'Courier New', Courier, monospace;
+  font-size: 1.4rem;
+  text-align: justify;
+}
+.contratoWrapper > ul > li{
+  margin-left: 3rem;
+}
+#contrato_servicio >#contrato_servicio_tittle{
+  font-family:'Courier New', Courier, monospace;
+  font-size: 2.5rem;
+  text-align: center;
+}
+

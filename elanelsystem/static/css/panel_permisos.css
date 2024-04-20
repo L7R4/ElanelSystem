@@ -1,0 +1,338 @@
+*{
+    box-sizing: border-box;
+}
+.wrapper_content{
+    padding: 3%;
+}
+.tittle{
+    height: 15%;
+    display: flex;
+    
+}
+.tittle > h2{
+    color: white;
+    font-size: clamp(1.6rem, 2.2vw, 3rem);
+    font-family: raleway-semibold;
+}
+.containers{
+    display: flex;
+    width: 100%;
+    height: 80%;
+    gap: 3%;
+}
+.wrapperItem{
+    width: 32%;
+    /* position: relative; */
+}
+
+
+.containers > #wrapperGrupos{
+    width: 40%;
+}
+.textContainer{
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 4%;
+    /* height: 4%; */
+}
+
+.textContainer > h3{
+    color: white;
+    font-size: clamp(1.6rem, 1.6vw, 2rem);
+    font-family: raleway-semibold;
+}
+
+.wrapperItem > .containerList{
+    background-color: rgb(253, 253, 253);
+    border-radius: 1.2rem;
+    height: 91%;
+    position: relative;
+    overflow: hidden;
+}
+#wrapperFormNewGroup{
+    position: absolute;
+    top:-30%;
+    height: 20%;
+    width: 100%;
+    background-color: #3D7CD8;
+    padding: 1rem;
+    padding-left: 2rem;
+    transition: .1s all ease-in;
+}
+#wrapperFormNewGroup.active{
+    top: 0%;
+}
+
+#wrapperFormNewGroup > #formNewGroup > .formTittle {
+    display: flex;
+    justify-content: space-between;
+}
+#wrapperFormNewGroup > #formNewGroup > .formTittle > h2{
+    font-size: clamp(1.6rem, 1.6vw, 2rem);
+    font-family: raleway-bold;
+    color: white;    
+}
+
+#wrapperFormNewGroup > #formNewGroup > .formTittle > img{
+    cursor: pointer;
+}
+#wrapperFormNewGroup > #formNewGroup >.containerInputs{
+    display: flex;
+    margin-top: .7rem;
+    gap: 1rem;
+}
+#wrapperFormNewGroup > #formNewGroup >.containerInputs> input{
+    background-color: white;
+    font-family: raleway-semibold;
+    font-size: clamp(1.2rem, 1vw, 1.4rem);
+    border-radius: 0.6rem;
+    position: relative;
+    height: 3rem;
+    width: 60%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    outline: none;
+    text-indent: 1rem;
+    border: none;
+}
+#wrapperFormNewGroup > #formNewGroup >.containerInputs > button{
+    font-size: clamp(1.2rem, 1vw, 1.4rem);
+    /* padding: 0.8rem 1rem; */
+    min-width: 10rem;
+    text-align: center;
+    font-family: raleway-semibold;
+    background-color: white;
+    border-radius: 0.6rem;
+    border-color: transparent;
+    cursor: pointer;
+    outline: none;
+}
+
+
+.wrapperButtons{
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    padding: .4rem;
+    height: 12%;
+}
+.wrapperButtons > .buttonAgregarWrapper{
+    width: fit-content;
+    height: fit-content;
+    background-color: #3D7CD8;
+    padding: .6rem .4rem;
+    margin-right: .8rem;
+    margin-top: .3rem;
+    border-radius: .6rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+.wrapperButtons > .buttonAgregarWrapper > img{
+    width: 80%;
+    height: 80%;
+}
+
+.wrapperItem > .containerList > .items{
+    height: 88%;
+    overflow-y: auto;
+}
+
+.items > ul{
+    list-style: none;
+}
+
+.items > ul > li{
+    padding: 1rem;
+    padding-left: 1.8rem;
+    font-size: clamp(1.4rem, 1.2vw, 1.6rem);
+    font-family: raleway-semibold;
+    border-bottom: 1px #00000036 solid;
+    border-top: 1px #00000036 solid;
+    cursor: pointer;
+}
+
+#itemsGrupos > ul > li.itemPicked{
+    background: #3D7CD8;
+    color: white;
+}
+
+
+#uploadPermisos > div.containerList > .items{
+    height: 90%;
+}
+#itemsPermisos > ul > label{
+    padding: 1rem;
+    display: block;
+    padding-left: 1.8rem;
+    font-size: clamp(1.4rem, 1.2vw, 1.6rem);
+    font-family: raleway-semibold;
+    border-bottom: 1px #00000036 solid;
+    border-top: 1px #00000036 solid;
+    cursor: pointer;
+}
+
+#updatePermisos{
+    height: 91%;
+    position: relative;
+    pointer-events:none;
+}
+#updatePermisos > .backgroundPermission{
+    background-color: #102a5293;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    border-radius: 1.2rem;
+    z-index: 2;
+}
+#updatePermisos > .backgroundPermission.active{
+    display: none;
+}
+#updatePermisos > .containerList{
+    background-color: rgb(253, 253, 253);
+    border-radius: 1.2rem;
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+}
+
+#updatePermisos > .containerList > .items{
+    overflow-y: auto;
+}
+
+#itemsPermisos > ul > input{
+    display: none;
+}
+
+#itemsPermisos > ul > li.perActive{
+    background: #30436127;
+}
+#itemsPermisos > ul > label.perActive{
+    background: #3D7CD8;
+    color: white;
+}
+.wrapperSendUpdateGroup{
+    width: 23%;
+    align-self: flex-end;
+}
+.wrapperSendUpdateGroup >.wrapperMessageSuccess{
+    background-color: rgb(253, 253, 253);
+    padding: 1.4rem;
+    border-radius: 0.6rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: .5s opacity ease;
+    margin-bottom: 2rem;
+}
+.wrapperSendUpdateGroup >.wrapperMessageSuccess.active{
+    pointer-events: unset;
+    opacity: 1;
+}
+.wrapperSendUpdateGroup >.wrapperMessageSuccess > h3{
+    font-size: clamp(1.4rem, 1.2vw, 1.6rem);
+    font-family: raleway-semibold;
+}
+.wrapperSendUpdateGroup >.wrapperMessageSuccess > h3 > span {
+    color: #1753ED;
+}
+
+
+#updatePermisosGrupo{
+    
+    min-width: 10rem;
+    width: 100%;
+    height: 4rem;
+    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: #1753ED;
+    color: white;
+    background-color: #1753ed73;
+    color: #ffffffa8;
+    outline: none;
+    border-color: transparent;
+    border-radius: 0.6rem;
+    cursor: pointer;
+    pointer-events: none;
+}
+#updatePermisosGrupo.enabled{
+    background-color: #1753ED;
+    color: white;
+    pointer-events: unset;
+}
+
+
+#contextMenu{
+    position: absolute;
+    z-index: 5;
+}
+
+#contextMenu > .option{
+    display: flex;
+    gap: .6rem;
+    padding: .5rem;
+    box-sizing: border-box;
+    border: 1px solid #1753ED;
+    background-color: white;
+    border-radius: .6rem;
+    font-size: clamp(1rem, 1vw, 1.3rem);
+    font-family: raleway-semibold;
+    align-items: center;
+    cursor: pointer;
+}
+#contextMenu > .option:hover{
+    background-color: #ffffffe6;
+}
+#contextMenu > .option > img{
+    width: 2rem;
+}
+
+#contextMenu >.option.blocked{
+    pointer-events: none;
+    background-color: rgba(255, 255, 255, 0.861);
+    border-color: transparent;
+    /* color: rgba(255, 255, 255, 0.897); */
+    opacity: .9;
+}
+#confirmarDelete{
+    margin-top: .6rem;
+    box-sizing: border-box;
+    border: 1px solid #1753ED;
+    background-color: white;
+    border-radius: .6rem;
+    padding: .7rem;
+}
+#confirmarDelete > div{
+    display: flex;
+    margin-top: .4rem;
+    gap: .2rem;
+}
+#confirmarDelete > h5{
+    font-size: clamp(1rem, 1vw, 1.3rem);
+    font-family: raleway-semibold;
+}
+
+#confirmarDelete > div > button{
+    padding: .3rem 1rem;
+    font-size: clamp(1rem, 1vw, 1.2rem);
+    font-family: raleway-semibold;
+    border-radius: .5rem;
+    box-sizing: border-box;
+    border-color: transparent;
+    cursor: pointer;
+    outline: none;
+}
+#confirmarDelete > div > button#notConfirmDelete{
+    background-color: #1753ED;
+    border: 1px solid transparent;
+
+}
+
+#confirmarDelete > div > button#confirmDelete{
+    background-color: white;
+    border: 1px solid #1753ED;
+    
+}

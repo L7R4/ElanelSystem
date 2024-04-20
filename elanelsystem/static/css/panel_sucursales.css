@@ -1,0 +1,168 @@
+.wrapper_content
+{
+    padding: 2rem;
+    box-sizing: border-box;
+}
+
+.sucursalItem{
+    width: 80%;
+    background-color: #fff;
+    margin-bottom: 1.4rem;
+    border-radius: .7rem;
+    box-sizing: border-box;
+    padding: 1rem 2rem;
+}
+.sucursalItem > h2{
+    font-size: clamp(1.8rem, 1.5vw, 2.2rem);
+    font-family: raleway-semibold;
+    color:#1753ED; 
+}
+.containerInputs{
+    display: flex;
+    gap: 1rem;
+    margin: .7rem 0rem;
+    width: 100%;
+    flex-wrap: wrap;
+}
+.wrapperInput{
+    width: 30%;
+}
+
+.wrapperInput:first-child{
+    width: 50%;
+}
+
+.wrapperInput > label{
+    display: block;
+    font-size: clamp(1.3rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+    margin-bottom: .3rem;
+    /* color:#1753ED;  */
+}
+
+.wrapperInput > input{
+    width: 100%;
+    box-sizing: border-box;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    background-color: #3043615e;
+    color: #000000c2;
+    border: 2px solid #3D7CD8;
+    border-radius: 0.6rem;
+    display: flex;
+    align-items: center;
+    padding: .6rem;
+    text-indent: 1rem;
+    outline: none;
+    pointer-events: none;
+}
+
+.wrapperInput> input.open{
+    color: #000;
+    background-color: #30436100;
+    pointer-events: unset;
+}
+.wrapperInputNew{
+    width: 47%;
+}
+.wrapperInputNew > label{
+    display: block;
+    font-size: clamp(1.3rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+    margin-bottom: .3rem;
+    /* color:#1753ED;  */
+}
+.wrapperInputNew > input{
+    width: 100%;
+    box-sizing: border-box;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    border: 2px solid #3D7CD8;
+    background-color: #3043615e;
+    color: #000000c2;
+    border-radius: 0.6rem;
+    display: flex;
+    align-items: center;
+    padding: .6rem;
+    text-indent: 1rem;
+    outline: none;
+}
+
+.wrapperInputNew> input.open{
+    color: #000;
+    background-color: #30436100;
+    pointer-events: unset;
+}
+
+.buttonsActions{
+    width: 100%;
+}
+.deleteSucursal, #buttonStopAddSucursal{
+    font-family: raleway-semibold;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    color: white;
+    background-color: #ed1717;
+    border-color: transparent;
+    border-radius: 0.3rem;
+    width: 10%;
+    padding: .3rem .8rem;
+    cursor: pointer;
+}
+.enableForm,.uploadForm, #buttonConfirmAddSucursal{
+    font-family: raleway-semibold;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    color: white;
+    background-color: #3D7CD8;
+    border-color: transparent;
+    border-radius: 0.3rem;
+    width: 10%;
+    padding: .3rem .8rem;
+    cursor: pointer;
+    margin-right: .4rem;
+}
+
+.desableForm{
+    font-family: raleway-semibold;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    background-color: transparent;
+    border: 2px solid #3D7CD8;
+    border-radius: 0.3rem;
+    width: 10%;
+    padding: .3rem .8rem;
+    cursor: pointer;
+}
+
+#buttonAddSucursal{
+    font-family: raleway-semibold;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    color: white;
+    background-color: #3D7CD8;
+    border-color: transparent;
+    border-radius: 0.3rem;
+    width: 20%;
+    padding: .5rem .9rem;
+    cursor: pointer;
+}
+#buttonAddSucursal.blocked{
+    pointer-events: none;
+    color: #ffffffd1;
+    background-color: #3d7cd86e;
+}
+.div{
+    width: 2rem;
+    height: 2rem;
+    background-color: red;
+}
+.desableForm,.uploadForm{
+    display: none;
+}
+.desableForm.active,.uploadForm.active{
+    display: unset;
+}
+.div.active{
+    background-color: green;
+    
+}
+.formSucursal{
+    position: relative;
+}

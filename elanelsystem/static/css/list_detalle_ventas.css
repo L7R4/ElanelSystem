@@ -1,0 +1,148 @@
+.filters
+{
+    height:12%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.filters > div{
+    position: relative;
+    display: flex;
+    width: 40%;
+    height: auto;
+    flex-flow: column;
+    justify-content: center;
+    color: white;
+    font-family: raleway;
+    font-size: 1.3rem;
+    margin-left: auto;
+    margin-right: 3rem;
+}
+.filters > div> img
+{
+    position: absolute;
+    /* rotate: -90deg; */
+    filter: invert(1);
+    width: 1.8rem;
+    right: 2%;
+    z-index: 6;
+}
+.filters > div > .select{
+    position: absolute;
+    height: 0;
+    max-height: 20rem;
+    overflow-y: auto;
+    top: 70%;
+    /* left: 3px; */
+    transition: all .4s ease;
+    width: 82%;
+    z-index:1;
+    background: white;
+    border-radius: 0.5rem;
+    /* border: 3px solid #3D7CD8; */
+}
+.filters > div > input
+{
+    height: 3.1rem;
+    width: 100%;
+    background-color: #304361;
+    border: 2px solid #3D7CD8;
+    border-radius: 1rem;
+    outline: none;
+    text-indent: 1.2rem;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway;
+    color: white;
+    position: relative;
+    z-index: 2;
+}
+
+#create_customer
+{
+    padding: 1.6rem 4rem;
+    color: white;
+    font-size: 1.6rem;
+    font-family: raleway-semibold;
+    background-color: #1753ED;
+    height: fit-content;
+    text-decoration: none;
+    border-radius: 1rem;
+    letter-spacing: .04rem;
+    margin-left: 2rem;
+}
+
+
+
+.information{
+    height: 88%;
+    width: 100%;
+    /* display: flex; */
+    overflow-x: auto;
+    overflow-y: none;
+}
+
+.information::-webkit-scrollbar{
+    width: 2px;
+    height: 5px;
+    border-radius: 5px;
+}
+.information::-webkit-scrollbar-thumb{
+    background: #3D7CD8;
+    border-radius: 1rem;
+}
+
+.tittles{
+    display: flex;
+    /* column-gap: calc(100% / 6); */
+    list-style: none;
+    width: 100%;
+    justify-content: space-around;  
+}
+.information > .tittlesWrapper{
+    width: 180%;
+    background-color: #3D7CD8;
+}
+
+.tittlesWrapper > .tittles > li {
+    color: white;
+    font-size: 1.6rem;
+    font-family: raleway-semibold;
+    padding: 1rem 0;
+    width: 20%;
+    text-align: center;
+}
+.valuesWrapper{
+    width: 180%;
+}
+
+.valuesWrapper > .values > a
+{
+    display: flex;
+    font-size: 1.4rem;
+    align-items: center;
+    justify-content: space-around;
+    font-family: raleway;
+    position: relative;
+    padding: 1rem 0;
+    width: 100%;
+    color: rgb(241, 237, 237);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.valuesWrapper > .values > a:hover
+{
+    background-color: #304361;
+}
+
+.valuesWrapper > .values > a > div
+{
+    width: 20%;
+    text-align: center;
+}
+
+
+
+
+

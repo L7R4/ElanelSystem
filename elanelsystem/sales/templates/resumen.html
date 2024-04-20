@@ -1,138 +1,138 @@
-{% extends 'molde.html' %}
 {% load static %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/resumen.css' %}">
-{% endblock css %}
-
-{% block content %}
-  {% comment %} <div class="filters">
-    <div>
-      <input 
-      type="text"
-      class = "sales"
-      id="sales">
-      <img src="{% static 'images/icons/search.svg' %}" alt="">
-    </div>
-  </div>
-
-    <!-- Lista de productos -->
-  <div class="information">
-    <div class="container_data">
-      <h2>N° Cliente</h2>
-      <ul>
-        {% for v in ventas %}
-          <li><a href="{% url 'sales:detail_sale' v.id %}">{{v.nro_cliente.nro_cliente}}</a></li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="container_data">
-      <h2>Nombre</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.nombre_completo.nombre}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="container_data">
-      <h2>N° Solicitud</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.nro_solicitud}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="container_data">
-      <h2>N° Orden</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.nro_orden}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="container_data">
-      <h2>Modalidad</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.modalidad}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="container_data">
-      <h2>N°Cuotas</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.nro_cuotas}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    
-    <div class="container_data">
-      <h2>Importe</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.importe}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="container_data">
-      <h2>Importe x Cuota</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.importe_x_cuota}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="container_data">
-      <h2>Fecha Inscripcion</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.fecha}}</li>
-        {% endfor %}
-      </ul>
-    </div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/molde.css' %}">
+    <link rel="stylesheet" href="{% static 'css/resumen.css' %}">
+    <script src="https://code.highcharts.com/10/highcharts.js"></script>
   
-    <div class="container_data">
-      <h2>Tipo Producto</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.tipo_producto}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="container_data">
-      <h2>Producto</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.producto.nombre}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="container_data">
-      <h2>Paquete</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.paquete}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="container_data">
-      <h2>Vendedor</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.vendedor}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="container_data">
-      <h2>Supervisor</h2>
-      <ul>
-        {% for v in ventas %}
-          <li>{{v.supervisor}}</li>
-        {% endfor %}
-      </ul>
+    <title>Elanel SYS</title>
+</head>
+<body>
+    <div class="wrapper">
+
+         <aside class="menu active" id="menu">
+            <div class="button_menu-wrapper">
+                <button class="toggle-button">
+                    <img src="{% static 'images/icons/previous.svg' %}" alt="">
+                </button>
+            </div>
+            
+            <ul class="list">
+                {% if perms.sales.my_ver_resumen%}
+
+                    <li>
+                        <a href="{% url 'sales:resumen' %}" id="resumen">
+                            <img src="{% static 'images/icons/resumen.svg' %}" alt="">
+                            <p>Resumen</p> 
+                        </a>
+                        <div class="check"></div>
+                    </li>
+
+                {% endif %}
+                
+                <li>
+                    <a href="{% url 'users:list_customers' %}" id="clientes">
+                        <img src="{% static 'images/icons/clientes.svg' %}" alt="">
+                        <p>Clientes</p> 
+                    </a>
+                    <div class="check"></div>
+                </li>
+
+                <li>
+                    <a href="{% url 'sales:caja' %}" id="caja">
+                        <img src="{% static 'images/icons/dinero.svg' %}" alt="">
+                        <p>Caja</p> 
+                    </a>
+                    <div class="check"></div>
+                </li>
+
+                {% if perms.sales.my_ver_planes%}
+
+                    <li>
+                        <a href="{% url 'products:planes' %}" id="planes">
+                            <img src="{% static 'images/icons/planes.svg' %}" alt="">
+                            <p>Planes</p>
+                        </a>
+                        <div class="check"></div>
+                    </li> 
+
+                {% endif %}
+
+                {% if perms.sales.my_ver_postventa%}
+
+                    <li>
+                        <a href="{% url 'sales:postVentaList' %}" id="planes">
+                            <img src="{% static 'images/icons/postVenta.png' %}" alt="">
+                            <p>Post venta</p>
+                        </a>
+                        <div class="check"></div>
+                    </li> 
+
+                {% endif %}
+                
+                {% if perms.users.my_ver_colaboradores %}
+                    <li class="add_user">
+                        <a href="{% url 'users:list_users' %}" id="colaboradores">
+                            <img src="{% static 'images/icons/usuarios.svg' %}" alt="">
+                            <p>Colaboradores</p>
+                        </a>
+                        <div class="check"></div>
+                    </li>
+                {% endif %}
+                <li class="">
+                    <a href="{% url 'sales:liquidacionesPanel' %}" id="liquidaciones">
+                        <img src="{% static 'images/icons/porcentaje.png' %}" alt="">
+                        <p>Liquidaciones</p>
+                    </a>
+                    <div class="check"></div>
+                </li>
+                {% if perms.users.my_ver_administracion%}
+                    <li>
+                        <a href="{% url 'users:panelAdmin' %}" id="panelAdmin">
+                            <img src="{% static 'images/icons/administracion.svg' %}" alt="">
+                            <p>Administracion</p> 
+                        </a>
+                        <div class="check"></div>
+                    </li>
+                {% endif %}
+
+                <li>
+                    <a href="{% url 'logout' %}" id="close_session">
+                        <img src="{% static 'images/icons/logout.png' %}" alt="">
+                        <p>Cerrar sesion</p> 
+                    </a>
+                    <div class="check"></div>
+                </li>
+            </ul>
+        </aside>
+
+        <div class="wrapper_content">
+            <div id="wrapperResumen1">
+                <div class="wrapperBlocks"></div>
+                <div class="wrapperBlocks"></div>
+                <div class="wrapperBlocks"></div>
+                <div class="wrapperBlocks"></div>
+            </div>
+            <div class="wrapperTittleFluctuacion">
+                <button type="button" id="filtroButtonFluctuaciones">Filtrar</button>
+                <h3>Fluctuación de dinero</h3>
+            </div>
+            <div class="wrapperFluctuacionDinero">
+              <div class="wrapperLeyenda">
+                  
+              </div>
+              <div id="containerDinero"></div>
+            </div>
+        </div>
+
     </div>
     
-  </div> {% endcomment %}
-   
-{% endblock content %}
+    <script src="{% static 'js/menu.js' %}"></script>
+    <script src="{% static 'js/highcharts.js' %}"></script>
+
+</body>
+</html>

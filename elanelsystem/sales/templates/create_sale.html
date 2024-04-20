@@ -209,7 +209,10 @@
             {{form.supervisor}}
             <ul class="select">
                 {% for supervisor in usuarios %}
-                    <li>{{supervisor.nombre}}</li>
+                    {% if supervisor.rango == "Supervisor" %}
+                        <li>{{supervisor.nombre}}</li>
+                    {% else %}  
+                    {% endif %}
                 {% endfor %}
             </ul>
         </div>

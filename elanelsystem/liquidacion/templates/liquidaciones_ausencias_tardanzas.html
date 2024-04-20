@@ -1,0 +1,183 @@
+{% extends 'molde.html' %}
+{% load static %}
+{% load util %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/liquidaciones_ausencias_tardanzas.css' %}">
+{% endblock css %}
+
+{% block content %}
+
+    <div class="wrapperTittle">
+        <h2>Ausencias y tardanzas</h2>
+    </div>
+
+    <div class="containerSupervisores">
+        <div class="information">
+            <h2>Supervisores</h2>
+            <div class="valuesWrapper">
+                <ul class="values">
+                    {% for supervisor in supervisores %}
+                        <li class ="item">
+
+                            <div class="wrapperShortInfo wrapperItem">
+                                <img class="imageMore" src="{% static 'images/icons/moreWhite.png' %}" alt="">
+                                <div><p>{{supervisor.nombre}}</p></div>
+                            </div>
+                        
+                            <div class="wrapperDetailInfo">
+                                <h2>Vendedores a cargo</h2>
+                                <div class="containerTittleAndData">
+                                    <div class="wrapperDetailInfo__tittles">
+                                        <ul class="tittles">
+                                            <li>Vendedor</li>
+                                            <li>Tardanzas</li>
+                                            <li>Ausencias</li>
+                                        </ul>   
+                                    </div>
+                                    <ul class="itemsVendedores">
+                                    {% for vendedor in supervisor.vendedores_a_cargo %}
+                                        <li>
+                                        {% with instancia=vendedor.email|liquidaciones_getVendedorObject %}
+                                            <div class="wrapperShortInfo">
+                                                <div><p>{{vendedor.nombre}}</p></div>
+                                                <div><p class="textCountTardanzas">{{instancia|liquidaciones_countTardanzas}}</p></div>
+                                                <div><p class="textCountFaltas">{{instancia|liquidaciones_countFaltas}}</p></div>
+                                                <img class="imageMore" src="{% static 'images/icons/moreWhite.png' %}" alt="">
+                                            </div>
+                                            <div class="wrapperDetailInfo">
+                                                <div class="containerTittleAndData">
+                                                    <div class="wrapperDetailInfo__subtittles">
+                                                        <ul class="tittles">
+                                                            <li>Fecha</li>
+                                                            <li>Hora de llegada</li>
+                                                            <li>Descuento</li>
+                                                        </ul>   
+                                                    </div>
+                                                    <ul class="listTardanzasAusencias">
+                                                        {% for item in instancia.faltas_tardanzas|organizarPorFecha %}
+                                                            <li>
+                                                                <div><p>{{item.fecha}}</p></div>
+                                                                <div><p>{{item.hora}}</p></div>
+                                                                <div><p>${{item.descuento}}</p></div>
+                                                            </li> 
+                                                        {% endfor %}
+                                                       
+                                                    </ul>
+                                                
+                                                </div>
+                                                
+                                                <div class="buttonsAddItem">
+                                                    <button type="button" onclick="formToCreateNewItemFalta(this,'{{instancia.sucursal.hora_apertura}}','{{instancia.email}}')">Agregar falta</button>
+                                                    <button type="button" onclick="formToCreateNewItemTardanza(this,'{{instancia.sucursal.hora_apertura}}','{{instancia.email}}')">Agregar tardanza</button>
+                                                </div>
+                                            </div>
+                                        {%endwith%}
+                                        </li>
+
+                                    {%endfor%}
+                                        
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>       
+            </div>
+        </div> 
+    </div>
+
+{% endblock content %}
+
+{% block js %}
+<script src="{% static 'js/displayItemsAusencias.js' %}"></script>    
+<script src="{% static 'js/createNewTardanzaAusencia.js' %}"></script>    
+<script>
+
+    function formToCreateNewItemTardanza(button,horaSucursal,colaborador){
+        let new_item = document.querySelector(".new_item")
+        if(new_item){
+            new_item.remove()
+        }
+        let listaItems = button.parentElement.previousElementSibling.children[1]
+        stringForHTML =`
+        <li class="new_item">
+            <form method="POST" id="formCreateNewItem">
+                {% csrf_token %}
+                <input type="hidden" name="colaborador" id="colaborador" value="${colaborador}" readonly>
+                <div><input type="text" name="fecha" id="fecha" value="{{fecha_hoy}}" readonly></div>
+                <div><input type="text" name="hora" id="hora" value="" oninput="calcularTiempo(this.value,'${horaSucursal}')"></div>
+                <div>$<input type="text" name="descuento" id="descuento" value="0" readonly></div>
+            </form>
+            <div class="wrapperButtonsSendItem">
+                <button type="button" id="sendNewItem">Guardar</button>
+                <button type="button" id="closeSendNewItem">Cancelar</button>
+            </div>
+        </li>
+        `;
+        
+        listaItems.insertAdjacentHTML('beforeend', stringForHTML);
+        buttonSendItem(listaItems);
+        buttonCloseItem();
+    }
+    function formToCreateNewItemFalta(button,horaSucursal,colaborador){
+        let new_item = document.querySelector(".new_item")
+        if(new_item){
+            new_item.remove()
+        }
+        let listaItems = button.parentElement.previousElementSibling.children[1]
+        stringForHTML =`
+        <li class="new_item">
+            <form method="POST" id="formCreateNewItem">
+                {% csrf_token %}
+                <input type="hidden" name="colaborador" id="colaborador" value="${colaborador}" readonly>
+                <div><input type="text" name="fecha" id="fecha" value="{{fecha_hoy}}" readonly></div>
+                <div><input type="text" name="hora" id="hora" value="---" readonly></div>
+                <div>$<input type="text" name="descuento" id="descuento" value="{{amountFalta}}" readonly></div>
+            </form>
+            <div class="wrapperButtonsSendItem">
+                <button type="button" id="sendNewItem">Guardar</button>
+                <button type="button" id="closeSendNewItem">Cancelar</button>
+            </div>
+        </li>
+        `;
+        listaItems.insertAdjacentHTML('beforeend', stringForHTML);
+        buttonSendItem(listaItems);
+        buttonCloseItem();
+    }
+
+
+    function calcularTiempo(horaInput,horaSucursal) {
+        const [hhInput, mmInput] = horaInput.split(':');
+        const [hhSucursal, mmSucursal] = horaSucursal.split(':');
+        
+        // Convertir ambas horas a minutos
+        const minutos1 = parseInt(hhInput) * 60 + parseInt(mmInput);
+        const minutos2 = parseInt(hhSucursal) * 60 + parseInt(mmSucursal);
+        
+
+        // Restar los minutos y obtener el resultado
+        if(!isNaN(minutos1)){
+            const resultadoMinutos = minutos1 - minutos2;
+            calcularMonto(resultadoMinutos)
+        }
+
+
+    }
+
+    function calcularMonto(minutos) {
+        const MINUTOS_DE_GRACIA = 15;
+        if(minutos <= MINUTOS_DE_GRACIA){
+           descuento.value = 0; 
+        }else if(minutos > MINUTOS_DE_GRACIA && minutos < 60){
+            descuento.value = {{amountTardanza}}
+        }
+        else if(minutos => 60){
+            descuento.value = {{amountFalta}}
+        }else{
+            descuento.value = 0
+        }
+    }
+
+</script>
+{% endblock js %}

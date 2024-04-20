@@ -1,0 +1,318 @@
+*{
+    box-sizing: border-box;
+}
+.wrapper_content{
+    padding: 1rem;
+    overflow-y: unset;
+}
+.wrapperTittle{
+    width: 100%;
+    padding: 1rem 2rem;
+    height: 10%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.wrapperTittle > h2{
+    font-size: clamp(3rem, 3vw, 7rem);
+    font-family: raleway-semibold;
+    color: white;   
+}
+.values{
+    list-style: none;
+}
+
+
+.containerSupervisores{
+    width: 100%;
+    padding: 1rem;
+    height: 90%;
+    overflow-y: auto;
+}
+.information > h2{
+    color: white;
+    font-size: clamp(1.5rem, 1.6vw, 2rem);
+    font-family: raleway-semibold;
+    padding-left: 1rem;
+    padding-bottom: .5rem;
+    width: 100%;
+    border-bottom: 1px solid #ffffff99;
+}
+
+.information::-webkit-scrollbar{
+    width: 2px;
+    height: 5px;
+    border-radius: 5px;
+}
+.information::-webkit-scrollbar-thumb{
+    background: #3D7CD8;
+    border-radius: 1rem;
+}
+
+.tittles{
+    display: flex;
+    /* column-gap: calc(100% / 6); */
+    list-style: none;
+    padding: 0 1rem;
+
+    width: 100%;
+    justify-content: space-around;  
+}
+
+
+.valuesWrapper > .values > li
+{
+    font-family: raleway;
+    position: relative;
+    width: 90%;
+    color: rgb(241, 237, 237);
+    text-decoration: none;
+    position: relative;
+    margin-top: 1rem;
+}
+
+.valuesWrapper > .values > li > .wrapperShortInfo{
+    background-color: #131820;
+    cursor: pointer;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    /* justify-content: space-around; */
+    position: relative;
+    z-index: 2;
+    padding: 1rem 0;
+    border-radius: .6rem;
+    border: 1px solid #000000c4;
+    transition: .2s all ease;
+}
+.valuesWrapper > .values > li > .wrapperShortInfo > div{
+    margin-left: 3rem;
+}
+.valuesWrapper > .values > li > .wrapperShortInfo >.imageMore{
+    width: 2rem;
+    position: absolute;
+    right: 2rem;
+}
+
+.wrapperDetailInfo{
+    background-color: #304361;
+    border-bottom-left-radius: 0.6rem;
+    border-bottom-right-radius: 0.6rem;
+    position: relative;
+    width: 100%;
+    bottom: .5rem;
+    padding: 0rem;
+    height: 0px;
+    margin-bottom: 0px;
+    overflow-y:auto;
+    min-height: fit-content;
+    max-height: 400px;
+    transition: .2s all ease;
+}
+/* .detallesItem.active{
+
+} */
+.containerTittleAndData{
+    width: 90%;
+    margin: 0 auto;
+    padding: 1rem;
+}
+.wrapperDetailInfo > h2{
+    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: white; 
+    margin-top: 1rem;
+    padding: 1rem 2rem;
+}
+
+.wrapperDetailInfo__tittles > .tittles > li{
+    color: rgba(255, 255, 255, 0.883);
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    padding: 1rem 0;
+    width: 33.3%;
+    text-align: center;
+}
+
+.wrapperDetailInfo__tittles > ul{
+    list-style: none;
+    display: flex;
+    padding: 1rem;
+    list-style: none;
+    width: 100%;
+    justify-content: space-around;  
+}
+
+.wrapperDetailInfo__tittles > ul > .itemValores{
+    color: rgba(255, 255, 255, 0.883);
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    padding: 1rem 0;
+    width: 33.3%;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.itemsVendedores{
+    display: flex;
+    justify-content: center;
+    list-style: none;
+}
+.itemsVendedores > li {
+    background-color: #232D41;
+    width: 100%;
+    border-radius: .7rem;
+    position: relative;
+}
+.itemsVendedores > li > .wrapperShortInfo{
+    display: flex;
+    cursor:pointer;
+    width: 100%;
+    justify-content: space-around;
+    position: relative;
+    padding: 1rem;
+}
+.wrapperDetailInfo__subtittles{
+    margin-top: 1rem;
+}
+.wrapperDetailInfo__subtittles > .tittles > li{
+    color: rgba(255, 255, 255, 0.883);
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    padding: 1rem 0;
+    width: 33.3%;
+    text-align: center;
+}
+.itemsVendedores > li > .wrapperShortInfo > div{
+    color: rgba(255, 255, 255, 0.883);
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    /* padding: 1rem 0; */
+    width: 33.3%;
+    text-align: center; 
+}
+.itemsVendedores > li > .wrapperShortInfo >.imageMore{
+    width: 2rem;
+    position: absolute;
+    right: 2rem;
+}
+.itemsVendedores > li>.wrapperDetailInfo{
+    background-color: #232D41;
+    border-radius: 0;
+    left: 0;
+    max-height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* border-top: 1px solid #304361; */
+}
+.listTardanzasAusencias{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.listTardanzasAusencias > li{
+    display: flex;
+    padding: 1rem;
+    background-color: #1B2230;
+    width: 100%;
+    margin-bottom: 1rem;
+    border-radius: 0.6rem;
+
+}
+.listTardanzasAusencias > li > div{
+    color: rgba(255, 255, 255, 0.883);
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    /* padding: 1rem 0; */
+    width: 33.3%;
+    text-align: center; 
+    
+}
+.buttonsAddItem{
+    display: flex;
+    gap: 1rem;
+    width: 90%;
+    margin: 1rem auto;
+    padding: 1rem;
+    justify-content: flex-end;
+}
+.buttonsAddItem > button{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: .5% 3%;
+    font-size: clamp(1rem, 1.1vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: transparent;
+    color: white;
+    outline: none;
+    border-radius: 0.6rem;
+    cursor: pointer;
+    border: 2px solid #1753ED;
+}
+.new_item{
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+#formCreateNewItem{
+    display: flex;
+    width: 100%;
+}
+
+#formCreateNewItem > div{
+    color: rgba(255, 255, 255, 0.883);
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    width: 33.3%;
+    text-align: center;
+}
+
+#formCreateNewItem > div > input{
+    width: 60%;
+    background-color: rgba(19, 24, 32, 0.502);
+    border: 1px #ffffff8a solid;
+    border-radius: .5rem;
+    height: 2.3rem;
+    outline: none;
+    font-size: clamp(1rem, 1.1vw, 1.3rem);
+    font-family: raleway-semibold;
+    text-indent: 1rem;
+    color: white;
+}
+#formCreateNewItem > div > input:last-child{
+    margin-left: .4rem;
+}
+
+.wrapperButtonsSendItem{
+    display: flex;
+    gap: 2rem;
+    margin-top: 2rem;
+    margin-right: 3%;
+}
+.wrapperButtonsSendItem> button{
+    font-size: clamp(1rem, 1.1vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2% 8%;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    border-radius: 0.6rem;
+}
+
+
+#sendNewItem{
+    background-color: #1753ED;
+    
+}
+#closeSendNewItem{
+    background-color: #ed1717;
+}

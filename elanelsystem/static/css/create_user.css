@@ -1,3 +1,6 @@
+*{
+    box-sizing: border-box;
+}
 .wrapper_content
 {
     padding-left: 5rem;
@@ -21,76 +24,128 @@
 #form_create_user
 {
     width: 100%;
-    /* height: 85%; */
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2.6rem;
 }
 
 #form_create_user > div{
     display: flex;
-    flex-flow:column;
-    min-width: 30%;
-    height: 6rem;
-    position: relative;
-    /* background-color: rgba(240, 248, 255, 0.479); */
+    width: 100%;
+    flex-wrap: wrap;
+    padding: .8rem 2rem;
+    gap: 1rem;
+    max-width: 140rem;
 }
-
-#form_create_user > div > input
-{
-    height: 3rem;
-    width: 80%;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    background-color: #304361;
-    border: 2px solid #3D7CD8;
-    border-radius: 1rem;
-    display: flex;
-    align-items: center;
-    padding: 0rem 2rem 0rem 1rem;
-    outline: none;
+#form_create_user > h2{
     color: white;
-}
-#form_create_user > div > p{
-    position: absolute;
-    font-size: clamp(1.1rem, 1vw, 1.3rem);
     font-family: raleway-semibold;
-    color: #ff7b7b;
-    padding: 0.3rem 1rem;
-    top: 95%;
-    left: -2%;
-    border-radius: 0.6rem;
-    white-space: nowrap;
+    font-size: clamp(1.5rem, 1.5vw, 3rem);
+    width: 98%;
+    background-color: #3D7CD8;
+    /* background-color: #1754ed32; */
+    padding: .8rem 2rem;
+    border-radius: .6rem;
+    border-bottom: 2px solid #ffffffa0;
+    margin: 1rem 0;
 }
-#form_create_user > div > input.selectInput{
-    position: relative;
-    z-index: 2;
-}
-#form_create_user > div > div{
+.inputWrapper{
     position: relative;
     display: flex;
-    height: auto;
     flex-flow: column;
     justify-content: center;
     color: white;
-    font-family: raleway;
-    font-size: 1.3rem;
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.1vw, 2rem);
+
 }
-#form_create_user > div > div> img
+.inputWrapper.grow1
 {
-    position: absolute;
-    rotate: -90deg;
-    filter: invert(1);
-    width: 1.4rem;
-    right: 22%;
-    z-index: 6;
-}
+    flex: 1 2 14rem;
+    max-width: 18rem;
 
-#form_create_user > div > div> img:hover{
+}
+.inputWrapper.grow2
+{
+    flex: 2 2 20rem;
+    max-width: 23rem;
+    
+}
+.inputWrapper.grow3
+{
+    flex: 3 2 25rem;
+    max-width: 30rem;
+}
+#xpLaboralWrapper{
+    min-width: 80%;
+}
+.inputWrapper > input
+{
+    height: 2.9rem;
+    width: 100%;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway;
+    background-color: #304361;
+    border: 2px solid #3D7CD8;
+    border-radius: .6rem;
+    display: flex;
+    align-items: center;
+    padding: .6rem;
+    text-indent: 1rem;
+    outline: none;
+    color: white;
+}
+.inputWrapper > textarea{
+    width: 100%;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway;
+    background-color: #304361;
+    border: 2px solid #3D7CD8;
+    border-radius: .6rem;
+    padding: 1rem;
+    outline: none;
+    color: white;
+}
+#familiares{
+    min-width: 80%;
+}
+#familiares > .familiar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+#familiares > .familiar > input{
+    height: 2.9rem;
+    width: 33%;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway;
+    background-color: #304361;
+    border: 2px solid #3D7CD8;
+    border-radius: .6rem;
+    display: flex;
+    align-items: center;
+    padding: .6rem;
+    text-indent: 1rem;
+    outline: none;
+    color: white;
+}
+#agregar_familiar_button{
+    padding: .8rem 1.1rem;
+    color: white;
+    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+    max-width: fit-content;
+    font-family: raleway-semibold;
+    background-color: #1753ED;
+    border-radius: .6rem;
+    letter-spacing: .04rem;
+    outline: none;
+    border-color: transparent;
     cursor: pointer;
+    /* margin-top: 1rem; */
+}
+.inputWrapper > input.selectInput{
+    position: relative;
+    z-index: 2;
 }
 
-#form_create_user > div > .select{
+.inputWrapper > .select{
     position: absolute;
     height: 0;
     max-height: 20rem;
@@ -98,46 +153,111 @@
     top: 70%;
     /* left: 3px; */
     transition: all .4s ease;
-    width: 90%;
+    width: 100%;
     z-index:1;
     background: white;
     border-radius: 0.5rem;
     /* border: 3px solid #3D7CD8; */
 }
-#form_create_user > div > .select > li
+.inputWrapper > .select > li
 {
     padding: 1rem;
     font-family: raleway;
     font-size: 1.4rem;
     color: black;
 }
-#form_create_user > div > .select > li:first-child{
+.inputWrapper > .select > li:first-child{
     padding-top: 3rem;
 }
-#form_create_user > div > .select > li:hover
+.inputWrapper > .select > li:hover
 {
     background-color: #3d7bd867;
     cursor: pointer;
 }
-#form_create_user > div > .select::-webkit-scrollbar{
+.inputWrapper > .select::-webkit-scrollbar{
     width: 4px;
     border-radius: 5px;
 }
-#form_create_user > div > input[type=number]::-webkit-outer-spin-button,
-#form_create_user > div > input[type=number]::-webkit-inner-spin-button {
+.inputWrapper > input[type=number]::-webkit-outer-spin-button,
+.inputWrapper > input[type=number]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   appearance: none;
   margin: 0;
 }
-#form_create_user > div > label
-{
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: white;
-    width: fit-content;
-    padding-left: .7rem;
-    padding-bottom: .3rem;
+
+#form_create_user > div.datosLogisticosWrapper{
+    display: flex;
 }
+#form_create_user > div.datosLogisticosWrapper > .inputsObligatorios{
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 1rem;
+    max-width: 140rem;
+}
+#form_create_user > div.datosLogisticosWrapper > .inputsObligatorios.active{
+    width: 60%;
+}
+
+#form_create_user > div.datosLogisticosWrapper > .inputsObligatorios.supervisorPicked{
+    width: 60%;
+}
+
+
+
+#vendedoresWrapper{
+    display: none;
+    width: 40%;
+    max-width: 30rem;
+}
+#vendedoresWrapper.active{
+    display: unset;
+}
+
+#vendedoresWrapper > .textContainer{
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 4%;
+}
+
+.textContainer > h3 {
+    color: white;
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.1vw, 2rem);
+}
+
+#vendedoresWrapper > .listVendedores{
+    height: 20rem;
+    background-color: #304361;
+    border-radius: .6rem;
+    overflow: auto;
+}
+#itemsVendedores> ul{
+    list-style: none;
+}
+#itemsVendedores> ul> li > input{
+    display: none;
+}
+#itemsVendedores> ul> li > input:checked ~ label{
+    background-color: #1754ed53;
+    
+}
+
+#itemsVendedores> ul> li > label{
+    color: white;
+    display: block;
+    width: 100%;
+    padding: 1.2rem;
+    font-family: raleway-semibold;
+    cursor: pointer;
+    font-size: clamp(1.3rem, 1.1vw, 2rem);
+}
+
+#itemsVendedores> ul> li:hover{
+    background-color: #1754ed53;
+}
+
 #saveButton{
     padding: 1rem 3rem;
     color: white;
@@ -167,7 +287,6 @@
 .wrapperButtons{
     display: flex;
     column-gap: 1rem;
-    position: absolute;
-    bottom: 10%;
-    right: 10%;
+    margin: 3rem;
+    justify-content: flex-end;
 }

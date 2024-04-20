@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cliente,Usuario,Key
+from .models import Cliente,Usuario,Key,Sucursal
 from django.contrib.auth.models import Permission
 
 @admin.register(Cliente)
@@ -12,6 +12,6 @@ class UsuarioAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'rango', 'dni', 'domic', 'prov', 'tel', 'fec_nacimiento')
 
 
-admin.site.register(Key)   
-
+admin.site.register(Key)
+admin.site.register(Sucursal)
 admin.site.register(Permission)
