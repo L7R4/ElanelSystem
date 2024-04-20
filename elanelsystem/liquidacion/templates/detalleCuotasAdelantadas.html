@@ -1,0 +1,54 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/list_detalle_ventas.css' %}">
+{% endblock css %}
+
+{% block content %}
+<div class="filters">
+    <div>
+        <input 
+        type="text"
+        class = "user"
+        id="user">
+        <img src="{% static 'images/icons/search.svg' %}" alt="">
+    </div>
+</div>
+
+<div class="information">
+    <div class="tittlesWrapper">
+      <ul class="tittles">
+          <li>Cod-Cli</li>
+          <li>Cliente</li>
+          <li>Id venta</li>
+          <li>Imp. cuota 1</li>
+          <li>Fecha de pago</li>
+          <li>Fecha inscripcion</li>
+          <li>Dias de diff</li>
+          <li>Vendedor</li>
+          <li>Cuota comercial</li>
+          <li>Comision</li>
+      </ul>   
+    </div>
+
+    <div class="valuesWrapper">
+        <ul class="values">
+          {% for u in users %}
+            <a class ="item" href="{% url 'users:detailUser' u.id %}">
+              <div><p>{{u.nombre|truncatechars:24}}</p></div>
+              <div><p>{{u.dni}}</p></div>
+              <div><p>{{u.email}}</p></div>
+              <div><p>{{u.sucursal}}</p></div>
+              <div><p>{{u.tel}}</p></div>
+              <div><p>{{u.rango}}</p></div>
+            </a>
+          {% endfor %} 
+        </ul>       
+    </div>
+</div> 
+
+{% endblock content %}
+{% block js %}
+<script src="{% static 'js/inputs_search_users.js' %}"></script>
+{% endblock js %}

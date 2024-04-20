@@ -3,17 +3,25 @@ input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+
 .wrapper_content{
     display: flex;
 }
-.buttons{
+.options{
+    box-sizing: border-box;
+    padding:2.5rem 0;
     width: 40%;
     display: flex;
-    height: 100%;
+    flex-flow: column;
+    justify-content: space-between;
+}
+.buttons{
+    display: flex;
+    /* height: 100%; */
     column-gap:1rem;
     align-items: flex-end;
-    box-sizing: border-box;
-    padding-bottom:2.5rem;
+    
 }
 .buttons > a{
     font-size: clamp(1rem, 1vw, 1.5rem);
@@ -44,6 +52,68 @@ input[type="number"]::-webkit-outer-spin-button {
     cursor: pointer;
     
 }
+
+
+/* SELECCION DE SUCURSAL */
+.inputWrapper {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    row-gap: .5rem;
+    justify-content: center;
+    color: white;
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.1vw, 2rem);
+}
+.inputWrapper > input {
+    /* height: 2rem; */
+    width: 70%;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway;
+    background-color: #304361;
+    border: 2px solid #3D7CD8;
+    border-radius: 0.6rem;
+    display: flex;
+    align-items: center;
+    padding: 0.6rem;
+    text-indent: 1rem;
+    outline: none;
+    position: relative;
+    z-index: 2;
+    box-sizing:border-box ;
+    color: white;
+}
+.inputWrapper > .select {
+    position: absolute;
+    height: 0;
+    max-height: 20rem;
+    overflow-y: auto;
+    top: 70%;
+    /* left: 3px; */
+    transition: all .4s ease;
+    width: 70%;
+    z-index: 1;
+    background: white;
+    border-radius: 0.5rem;
+    /* border: 3px solid #3D7CD8; */
+}
+
+.inputWrapper > .select > li:first-child {
+    padding-top: 3rem;
+}
+
+.inputWrapper > .select > li {
+    padding: 1rem;
+    font-family: raleway;
+    font-size: 1.4rem;
+    color: black;
+}
+
+.inputWrapper > .select > li:hover {
+    background-color: #3d7bd867;
+    cursor: pointer;
+}
+
 .arqueo{
     width: 60%;
     height: 100%;
@@ -260,6 +330,7 @@ input[type="number"]::-webkit-outer-spin-button {
     outline: none;
     color: white;
 }
+
 
 
 

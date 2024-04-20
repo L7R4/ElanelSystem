@@ -1,14 +1,13 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import Resumen,CrearVenta, DetailSale,Caja,CreateAdjudicacion,requestCuotas,viewsPDFBaja,ChangePack ,ChangeTitularidad,viewPDFTitularidad,CierreCaja,viewPDFArqueo,OldArqueosView,requestEgresoIngreso
+from .views import *
  
 app_name="sales"
 
 urlpatterns = [
     path("resumen/",Resumen.as_view(),name="resumen"),
     path("ventas/cliente/<int:pk>/crear_venta/",CrearVenta.as_view(),name="create_sale"),
-    # path("ventas/<int:pk>/crear_venta",CrearVenta.as_view(),name="create_sale"),
     path("ventas/detalle_venta/<int:pk>/",DetailSale.as_view(),name="detail_sale"),
     path("ventas/<int:pk>/adjudicacion/sorteo/",CreateAdjudicacion.as_view(),name="adjSorteo"),
     path("ventas/<int:pk>/adjudicacion/negociacion/",CreateAdjudicacion.as_view(),name="adjNegociacion"),
@@ -20,7 +19,36 @@ urlpatterns = [
     path("ventas/pdf/baja/<int:pk>",viewsPDFBaja,name="bajaPDF"),
     path("ventas/pdf/titularidad/<int:pk>/<int:idCambio>",viewPDFTitularidad,name="tituPDF"),
     path("ventas/pdf/arqueo/<int:pk>/",viewPDFArqueo,name="arqueoPDF"),
+    path('ventas/pdf/informe/', viewsPDFInforme, name='informePDF'),
+    path('ventas/pdf/informesend/', viewPDFInformeAndSend, name='informeSend'),
     path("ventas/caja/arqueosanteriores",OldArqueosView.as_view(),name="oldArqueos"),
-    path('requestEgresoIngreso/', requestEgresoIngreso, name='rei'),
+    path('requestmovs/', requestMovimientos, name='rmovs'),
+    path('create_new_mov/', createNewMov, name='create_new_mov'),
+    path('updatedinero/', updateDinero, name='updateDinero'),
+    path('ventas/postventas/<int:campania>/', PostVenta.as_view(), name='postVentaList'),
+    path('ventas/postventas/informe/', viewsPDFInformePostVenta, name='postVentaPDF'),
+    path('ventas/request_ventas/', requestVentas, name='requestVentas'),path("ventas/cliente/<int:pk>/crear_venta/",CrearVenta.as_view(),name="create_sale"),
+    path("ventas/detalle_venta/<int:pk>/",DetailSale.as_view(),name="detail_sale"),
+    path("ventas/<int:pk>/adjudicacion/sorteo/",CreateAdjudicacion.as_view(),name="adjSorteo"),
+    path("ventas/<int:pk>/adjudicacion/negociacion/",CreateAdjudicacion.as_view(),name="adjNegociacion"),
+    path("ventas/<int:pk>/cambiopack",ChangePack.as_view(),name="cambioPack"),
+    path("ventas/<int:pk>/cambiotitularidad",ChangeTitularidad.as_view(),name="changeTitu"),
+    path('request-cuotas/', requestCuotas, name='rc'),
+    path("ventas/caja/",Caja.as_view(),name="caja"),
+    path("ventas/caja/arqueo/",CierreCaja.as_view(),name="cierreDeCaja"),
+    path("ventas/pdf/baja/<int:pk>",viewsPDFBaja,name="bajaPDF"),
+    path("ventas/pdf/titularidad/<int:pk>/<int:idCambio>",viewPDFTitularidad,name="tituPDF"),
+    path("ventas/pdf/arqueo/<int:pk>/",viewPDFArqueo,name="arqueoPDF"),
+    path('ventas/pdf/informe/', viewsPDFInforme, name='informePDF'),
+    path('ventas/pdf/informesend/', viewPDFInformeAndSend, name='informeSend'),
+    path("ventas/caja/arqueosanteriores",OldArqueosView.as_view(),name="oldArqueos"),
+    path('requestmovs/', requestMovimientos, name='rmovs'),
+    path('create_new_mov/', createNewMov, name='create_new_mov'),
+    path('updatedinero/', updateDinero, name='updateDinero'),
+    path('ventas/postventas/<int:campania>/', PostVenta.as_view(), name='postVentaList'),
+    path('ventas/request_ventas/<int:campania>/', requestVentas, name='requestVentas'),
+
+    # URLS API PARA EL CRM
+    path('requestmovscrm/', requestMovimientosCRM, name='requestMovsCRM'),
     
 ]

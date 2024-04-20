@@ -12,11 +12,13 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from django.urls import reverse_lazy
 import environ
 env = environ.Env()
 environ.Env.read_env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -31,9 +33,18 @@ DEBUG = "True"
 # ALLOWED_HOSTS = ["25.31.50.25","localhost"]
 ALLOWED_HOSTS = ["*"]
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST= "c1611768.ferozo.com"
+EMAIL_USE_SSL = True
+EMAIL_PORT = 465
+# EMAIL_TIMEOUT = None
+EMAIL_HOST_USER="lautaror@elanelsys.com"
+EMAIL_HOST_PASSWORD="ixq039KG*"
+
 
 # Application definition
 PDF_STORAGE_DIR = os.path.join(BASE_DIR, 'pdfs')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,6 +56,7 @@ INSTALLED_APPS = [
     'sales',
     'users',
     'products',
+    'liquidacion',
 ]
 
 MIDDLEWARE = [
@@ -121,13 +133,14 @@ USE_I18N = True
 
 USE_TZ = True
 
-USE_THOUSAND_SEPARATOR = True
+# USE_THOUSAND_SEPARATOR = True
 # THOUSAND_SEPARATOR = "\xa0"
 
-
+LOGOUT_REDIRECT_URL = reverse_lazy('indexLogin')
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+# LOGIN_URL = 'indexLogin'  # Nombre de la vista de inicio de sesión
 STATIC_URL = '/static/'
 MEDIA_URL =  '/public/'
 MEDIA_ROOT = BASE_DIR / "media"

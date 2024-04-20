@@ -161,6 +161,9 @@ aside.menu{
   background: #fff;
   border-radius: 1rem;
 }
+#close_session > img{
+  rotate: 180deg;
+}
 *::-webkit-scrollbar{
   width: 4px;
   border-radius: 5px;
@@ -169,4 +172,5 @@ aside.menu{
   background: #fff;
   border-radius: 1rem;
 }
+
 

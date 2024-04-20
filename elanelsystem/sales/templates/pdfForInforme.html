@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe</title>
+</head>
+<body>
+    <h1 class="tittleOfSections">Detalle de cierre de caja</h1>
+
+    <table>
+        <tr>
+            {% for clave in data.0.keys %}
+                <th><p>{{clave}}</p></th>
+            {% endfor %}
+        </tr>
+        {% for dicc in data %}
+            <tr>
+                {% for k,v in dicc.items %}
+                    <td>
+                        <p>{{v}}</p>               
+                    </td>
+                {% endfor %}
+            </tr>
+            
+        {% endfor %} 
+    </table>
+    
+    <h1 class="tittleOfSections">Resúmen de dinero según métodos de pagos</h1>
+    <div class="resumen">
+        <div class="resum__cuenta__tipoCaja">
+                    <h2>Tipo de caja</h2>
+                    <h4>Saldo en efectivo</h4>
+                    <h4>Saldo en banco</h4>
+                    <h4>Saldo en Mer. Pago</h4>
+                    <h4>Saldo en Posnet</h4>
+                    <h4>Saldo en Transferencia</h4>
+                    <h4>Total</h4>
+        </div>
+        <div class="resum__cuenta__saldo">
+            <h2>Saldo</h2>
+            
+            <h4 id="resumEfectivo">${{metodosPagosResumen.efectivo}}</h4>
+            <h4 id="resumBanco">${{metodosPagosResumen.banco}}</h4>
+            <h4 id="resumMerPago">${{metodosPagosResumen.merPago}}</h4>
+            <h4 id="resumPosnet">${{metodosPagosResumen.posnet}}</h4>
+            <h4 id="resumTrans">${{metodosPagosResumen.transferencia}}</h4>
+            <h4 id="resumTotal">${{metodosPagosResumen.total}}</h4>
+        </div>
+    </div>
+    
+</body>
+</html>

@@ -1,11 +1,11 @@
 from datetime import datetime
+from django.contrib.auth.models import Group,Permission
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
-from .models import Usuario, Cliente
+from django.contrib.auth.forms import AuthenticationForm,UserChangeForm
+from .models import Usuario, Cliente, Sucursal
 import re
 
-sucursales = Usuario.SUCURSALES
-rangos = Usuario.RANGOS
+rangos = Group.objects.all()
 
 
 
@@ -41,7 +41,8 @@ class FormCreateUser(forms.ModelForm):
     """
     class Meta:
         model = Usuario
-        fields =["nombre","email" ,"dni","sucursal", "rango", "tel"]
+        fields =["nombre","email" ,"dni", "rango", "tel", "domic", "prov", "cp", "loc" ,"lugar_nacimiento", "fec_nacimiento","fec_ingreso", "estado_civil", "xp_laboral"]
+
         widgets ={
             'email': forms.EmailInput(
                 attrs= {
@@ -67,15 +68,6 @@ class FormCreateUser(forms.ModelForm):
                     'maxlength':"8"
                 }
             ),
-            'sucursal': forms.TextInput(
-                attrs= {
-                    'id': 'sucursalInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"50",
-                    'class': 'selectInput'
-                }
-            ),
             'rango': forms.TextInput(
                 attrs= {
                     'id': 'rangoInput',
@@ -92,20 +84,91 @@ class FormCreateUser(forms.ModelForm):
                     'autocomplete': 'off',
                     'maxlength':"11"
                 }
-            )
+            ),
+            'domic': forms.TextInput(
+                attrs= {
+                    'id': 'domicInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"200"
+                }
+            ),
+            'prov': forms.TextInput(
+                attrs= {
+                    'id': 'provInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"40"
+                }
+            ),
+            'cp': forms.TextInput(
+                attrs= {
+                    'id': 'cpInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"5"
+                }
+            ),
+            'loc': forms.TextInput(
+                attrs= {
+                    'id': 'locInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"100"
+                }
+            ),
+            'lugar_nacimiento': forms.TextInput(
+                attrs= {
+                    'id': 'lugar_nacimientoInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"100"
+                }
+            ),
+            'fec_nacimiento': forms.TextInput(
+                attrs= {
+                    'id': 'fec_nacimientoInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"10"
+                }
+            ),
+            'fec_ingreso': forms.TextInput(
+                attrs= {
+                    'id': 'fecIngresoInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"10"
+                }
+            ),
+            'estado_civil': forms.TextInput(
+                attrs= {
+                    'id': 'estado_civilInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"20"
+                }
+            ),
+            'xp_laboral': forms.Textarea(
+                attrs= {
+                    'id': 'xp_laboralInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                }
+            ),
         }
 
-    def clean_sucursal(self):
-        sucursal = self.cleaned_data['sucursal']
-        sucursales_permitidas = [m[0].lower() for m in sucursales]
-        if sucursal.lower() not in sucursales_permitidas:
-            raise forms.ValidationError('Sucursal inválida')
-        return sucursal
+    # def clean_sucursal(self):
+    #     sucursal = self.cleaned_data['sucursal']
+    #     print("SUCURSALES PERMITIDAS --------------------------------------------->")
+    #     print(sucursal)
+        
     
 
     def clean_rango(self):
         rango = self.cleaned_data['rango']
-        rangos_permitidas = [m[0].lower() for m in rangos]
+        rangos_permitidas = [m.name.lower() for m in rangos]
+
         if rango.lower() not in rangos_permitidas:
            raise forms.ValidationError('Rango inválido')
         return rango
@@ -164,8 +227,222 @@ class FormCreateUser(forms.ModelForm):
                 raise forms.ValidationError("Email invalido")
 
         return email
-            
+
+class UsuarioUpdateForm(forms.ModelForm):
+
+    """
+        CAMPOS ADICIONALES A LOS DEL MODELO 'USUARIO'
+    """
+    password1 = forms.CharField(label="Contraseña" ,widget=forms.PasswordInput(
+        attrs={
+            'id': 'password1',
+            'required': 'required',
+            'autocomplete': 'off',
+            'maxlength':"24",
+            'value': "{{object.c}}"
+        }
+    ))
+    password2 = forms.CharField(label="Confirmar contraseña", widget=forms.PasswordInput(
+        attrs={
+            'id': 'password2',
+            'required': 'required',
+            'autocomplete': 'off',
+            'maxlength':"24",
+            'value': "{{object.c}}"
+
+        }
+    ))
+
+    """
+        CAMPOS A VALIDAR EN EL FORMULARIO
+    """
+    class Meta:
+        model = Usuario
+        fields =["nombre","email" ,"dni", "rango", "tel", "domic", "prov", "cp", "loc", "lugar_nacimiento", "fec_nacimiento","fec_ingreso","estado_civil", "xp_laboral"]
+
+        widgets ={
+            'email': forms.EmailInput(
+                attrs= {
+                    'id': 'emailInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"100"
+                }
+            ),
+            'nombre': forms.TextInput(
+                attrs= {
+                    'id': 'nombreInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"100"
+                }
+            ),
+            'dni': forms.TextInput(
+                attrs= {
+                    'id': 'dniInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"8"
+                }
+            ),
+            'rango': forms.TextInput(
+                attrs= {
+                    'id': 'rangoInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"20",
+                    'class': 'selectInput'
+                }
+            ),
+            'tel': forms.TextInput(
+                attrs= {
+                    'id': 'telInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"11"
+                }
+            ),
+            'domic': forms.TextInput(
+                attrs= {
+                    'id': 'domicInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"200"
+                }
+            ),
+            'prov': forms.TextInput(
+                attrs= {
+                    'id': 'provInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"40"
+                }
+            ),
+            'cp': forms.TextInput(
+                attrs= {
+                    'id': 'cpInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"5"
+                }
+            ),
+            'loc': forms.TextInput(
+                attrs= {
+                    'id': 'locInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"100"
+                }
+            ),
+            'lugar_nacimiento': forms.TextInput(
+                attrs= {
+                    'id': 'lugar_nacimientoInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"100"
+                }
+            ),
+            'fec_nacimiento': forms.TextInput(
+                attrs= {
+                    'id': 'fec_nacimientoInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"10"
+                }
+            ),
+            'fec_ingreso': forms.TextInput(
+                attrs= {
+                    'id': 'fecIngresoInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"10"
+                }
+            ),
+            'estado_civil': forms.TextInput(
+                attrs= {
+                    'id': 'estado_civilInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                    'maxlength':"20"
+                }
+            ),
+            'xp_laboral': forms.Textarea(
+                attrs= {
+                    'id': 'xp_laboralInput',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                }
+            ),
+        }
+
+
+    def clean_rango(self):
+        rango = self.cleaned_data['rango']
+        rangos_permitidas = [m.name.lower() for m in rangos]
+
+        if rango.lower() not in rangos_permitidas:
+           raise forms.ValidationError('Rango inválido')
+        return rango
+    
+
+    def clean_password2(self):
+        passw1 = self.cleaned_data['password1']
+        passw2 = self.cleaned_data['password2']
+        if(passw1 != passw2):
+            raise forms.ValidationError('Las contraseñas no coinciden')
+        return passw2
+    
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data['nombre']
+        nombre = nombre.title()
+        if not re.match(r'^[a-zA-Z\s]*$', nombre):
+            raise forms.ValidationError('Ingrese solo letras')
+        return nombre
+    
+
+    def clean_dni(self):
+        dniRequest = self.cleaned_data['dni']
+        existing_client = Cliente.objects.filter(dni=dniRequest)
+        if not dniRequest.isdigit():
+            raise forms.ValidationError('DNI inválido')
         
+        if existing_client.exists():
+            print("Este DNI ya pertenece a otro cliente")
+            raise forms.ValidationError("Este DNI ya existe")
+        if len(dniRequest) != 8:
+            raise forms.ValidationError("DNI inválido")
+        return dniRequest
+    
+
+    def clean_tel(self):
+        tel = self.cleaned_data['tel']
+        if not tel.isdigit():
+            raise forms.ValidationError('Numero invalido')
+        
+        if len(tel) < 8 or len(tel) > 11:
+            raise forms.ValidationError('Numero invalido')
+        return tel
+    
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        # usuario actual desde la instancia del formulario
+        usuario_actual = self.instance
+
+        if email and email != usuario_actual.email:
+            # Verificar si el correo electrónico ya existe en la base de datos
+            existing_user = Usuario.objects.filter(email=email)
+            if existing_user.exists():
+                raise forms.ValidationError("¡Email ya registrado!")
+
+            # Validar la estructura del correo electrónico usando una expresión regular
+            if not re.match(r'[^@]+@[^@]+\.[^@]+', email):
+                raise forms.ValidationError("Email invalido")
+
+        return email
+
+
 class CreateClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente

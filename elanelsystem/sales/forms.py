@@ -1,5 +1,5 @@
 from django import forms
-from .models import Ventas
+from .models import Ventas,MovimientoExterno
 from users.models import Cliente, Usuario
 from products.models import Products
 
@@ -9,13 +9,12 @@ from datetime import datetime
 getCustomerNumber = Cliente.objects.all()
 getCustomerName = Cliente.objects.all()
 getProducts = Products.objects.all()
-getVendedores = Usuario.objects.filter(rango = "Vendedor") | Usuario.objects.filter(rango="Supervisor")
-getSupervisores = Usuario.objects.filter(rango = "Vendedor") | Usuario.objects.filter(rango="Supervisor")
+getVendedores = Usuario.objects.all()
+getSupervisores = Usuario.objects.all()
 modalidades = Ventas.MODALIDADES
 # agencias = Ventas.AGENCIAS
 paquetes = Products.PAQUETES
 tipoProductos = Products.TIPO_PRODUCTO
-
 
 class FormCreateVenta(forms.Form):
     nro_contrato = forms.CharField(required=True, max_length=10)
@@ -241,6 +240,7 @@ class FormCreateAdjudicacion(forms.Form):
 
     #     return agencia_input
     
+
 class FormChangePAck(forms.Form):
     nro_solicitud = forms.CharField(required=True, max_length=10)
     modalidad =forms.CharField(required=True,max_length=30)
@@ -364,3 +364,4 @@ class FormChangePAck(forms.Form):
             raise forms.ValidationError('Supervisor no válido')
 
         return supervisor_input
+    

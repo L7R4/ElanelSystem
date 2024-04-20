@@ -1,0 +1,581 @@
+.wrapper_content{
+    box-sizing: border-box;
+    padding: 2rem;
+}
+.filters
+{
+    height:12%;
+    width: 100%;
+}
+.filters > div{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+.filters > div > h3{
+    color: white;
+    font-family: raleway-semibold;
+    font-size: 1.3rem;
+    margin-left: .5rem;
+    margin-bottom: .3rem;
+}
+.searchFilter{
+    width: 30%;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.searchFilter> input{
+    width: 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+    background-color: #304361;
+    border: 2px solid #3D7CD8;  
+    border-radius: .7rem;
+    outline: none;
+    text-indent: 3.5rem;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway;
+    color: white;
+    position: relative;
+    z-index: 2;
+}
+.searchFilter > img{
+    position: absolute;
+    filter: invert(1);
+    width: 1.8rem;
+    left: 5%;
+    z-index: 6;
+}
+
+.sucursalWrapper{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 30%;
+    position: relative;
+}
+.sucursalWrapper > div{
+    position: relative;
+    width: 70%;
+}
+
+.sucursalWrapper > label{
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    color: rgba(255, 255, 255, 0.81);
+}
+.sucursalWrapper > div > input{
+    padding: .6rem;
+    box-sizing: border-box;
+    background-color: #304361;
+    border: 2px solid #3D7CD8;  
+    border-radius: .6rem;
+    outline: none;
+    width: 100%;
+    text-indent: 0.6rem;
+    position: relative;
+    z-index: 2;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: 'raleway-semibold';
+    color: white;
+}
+
+.sucursalWrapper > div > #contenedorAgencia{
+    position: absolute;
+    height: 0;
+    max-height: 20rem;
+    overflow-y: auto;
+    top: 70%;
+    /* left: 3px; */
+    transition: all .4s ease;
+    width: 100%;
+    z-index: 1;
+    background: white;
+    border-radius: 0.5rem;
+    /* border: 3px solid #3D7CD8; */
+}
+
+.sucursalWrapper > div > #contenedorAgencia > li:first-child {
+    padding-top: 3rem;
+}
+
+.sucursalWrapper > div > #contenedorAgencia > li {
+    padding: 1rem;
+    font-family: raleway;
+    font-size: 1.4rem;
+    color: black;
+}
+
+.sucursalWrapper > div > #contenedorAgencia > li:hover {
+    background-color: #3d7bd867;
+    cursor: pointer;
+}
+
+.camapañaFilter{
+    display: flex;
+    align-items: center;
+    width: 20%;
+    gap: 1rem;
+}
+.camapañaFilter > .camapañaInputWrapper{
+    position: relative;
+    width: 40%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.camapañaFilter > .camapañaInputWrapper > img{
+    position: absolute;
+    width: 1.8rem;
+    transform: rotate(90deg);
+    margin-right: 1rem;
+    z-index: 2;
+}
+.camapañaFilter > .camapañaInputWrapper > input{
+    
+    padding: .6rem;
+    box-sizing: border-box;
+    background-color: #304361;
+    border: 2px solid #3D7CD8;  
+    border-radius: .6rem;
+    outline: none;
+    width: 100%;
+    text-indent: 0.6rem;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: 'raleway-semibold';
+    color: white;
+}
+.camapañaFilter > label{
+    
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    color:rgba(255, 255, 255, 0.81);
+
+}
+#filtrar_ventas_button{
+    font-size: clamp(1.1rem, 1.1vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: #1753ED;
+    color: white;
+    padding: 0rem 3rem;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: .6rem;
+    border: 2px solid #1753ED;
+}
+
+
+.accountWrapper{
+    display: flex;
+    column-gap: 2rem;
+    height: 87%;
+}
+.operations{
+    width: 70%;
+    height: 100%;
+    overflow-y: auto;
+
+}
+
+.actionsWrapper{
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.buttonsWrapper > #makeInforme{
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: #1753ED;
+    color: white;
+    text-decoration: none;
+    min-width: fit-content;
+    padding: 2% 3%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #1753ED;
+    border-radius: 0.6rem;
+    margin-bottom: .7rem;
+}
+.countsAuditoriasWrapper{
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.countsAuditoriasWrapper > .countItem{
+    flex: 1 0 50%;
+    text-align: center;
+    font-family: raleway-semibold;
+    font-size: clamp(1rem, 1.1vw, 1.3rem);
+    color: #fff;
+    margin-top: 1rem;
+}
+.countsAuditoriasWrapper > .countItem > .amountAuditorias{
+    width: fit-content;
+    padding: .3rem .8rem;
+    border-radius: .5rem;
+    background-color: #1753ED;
+    margin: 0 auto;
+    margin-top: .3rem;
+}
+
+.ventaWrapper{
+    position: relative;
+    width: 100%;
+    background-color: #fff;
+    border-radius: .7rem;
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+.atributtes{
+    position: relative;
+    overflow: hidden;
+    padding: 0.5rem;
+}
+.wrapperShortInfo{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+.wrapperDetailInfo{
+    max-height: 0px;
+    height: 0px;
+    transition: .1s all ease-out;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.wrapperDetailInfo.active{
+    visibility: unset;
+    margin-top: 1rem;
+    opacity: 1;
+}
+.formAuditoria{
+    position: relative;
+}
+.wrapperShortInfo > .wrapperInfoAtributte{
+    width: 30%;
+}
+.wrapperDetailInfo > .wrapperInfoAtributte{
+    width: 30%;
+}
+.wrapperInfoAtributte > h1{
+    color: #3D7CD8;
+    font-size: clamp(1.3rem, 1.5vw, 2rem);
+    font-family: raleway-bold;
+}
+.wrapperInfoAtributte > h4{
+    font-size: clamp(1rem, 1vw, 1.7rem);
+    font-family: raleway-bold;
+}
+
+.displayDetailInfoButton{
+    background-color: #3D7CD8;
+    position: absolute;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    outline: none;
+    border-color: transparent;
+    border-radius: .4rem;
+    cursor: pointer;
+}
+.wrapperButtonsGrade{
+    box-sizing: border-box;
+    padding: 1rem;
+    background-color: #0000001a;
+    border-radius: 0.6rem;
+    margin-top: 1rem;
+}
+
+.wrapperButtonsGrade.selectedGrade{
+    position: relative;
+    pointer-events: none;
+}
+.backgroundSelect{
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border-radius: 0.6rem;
+    background-color: #43414173;
+}
+.backgroundSelect.active{
+    display: unset;
+}
+
+.operationItem{
+    margin-bottom: 1rem;
+}
+.displayDetailInfoButton > img{
+    filter: invert(1);
+    width: 100%;
+    transform: rotate(90deg);
+}
+.displayDetailInfoButton > img.active{
+    transform: rotate(-90deg);
+}
+.statusWrapper{
+    margin-top: 1rem;
+}
+
+.operationsList{
+    list-style: none;
+}
+.statusWrapper{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.buttonsWrapper{
+    display: flex;
+    gap: .8rem;
+    justify-content: center;
+}
+.statusWrapper input{
+    display: none;
+}
+
+.buttonsWrapper input{
+    display: none;
+}
+
+.buttonsWrapper > label{
+    padding: .8rem 1.5rem;
+    border-radius: .6rem;
+    cursor: pointer;
+    color: white;
+    font-size: clamp(1.1rem, 1.1vw, 1.3rem);
+    font-family: raleway-semibold;
+    display: block;
+}
+
+.buttonsWrapper > label.selected{
+    opacity: .5;
+    pointer-events: none;
+}
+
+
+label#desaprobar{
+    background-color: rgba(237, 20, 20);
+}
+
+label#desaprobar:hover{
+    outline: 1.3px solid  rgba(237, 20, 20);
+    box-shadow: 0 0 5px  rgba(237, 20, 20, 0.9);
+}
+.buttonsWrapper > input#desaprobarI:checked ~ label#desaprobar{
+    outline: 1.3px solid  rgba(237, 20, 20);
+    box-shadow: 0 0 5px  rgba(237, 20, 20, 0.9);
+}
+
+
+label#aprobar{
+    background-color: rgba(61, 123, 216);
+}
+label#aprobar:hover{
+    outline: 1.3px solid rgba(61, 123, 216, 0.85);
+    box-shadow: 0 0 5px rgba(61, 123, 216, 0.9);
+}
+.buttonsWrapper > input#aprobarI:checked ~ label#aprobar{
+    outline: 1.3px solid rgba(61, 123, 216, 0.85);
+    box-shadow: 0 0 5px rgba(61, 123, 216, 0.9);
+}
+
+label#editar{
+    background-color: rgba(61, 123, 216);
+}
+
+label#editar:hover{
+    outline: 1.3px solid rgba(61, 123, 216, 0.85);
+    box-shadow: 0 0 5px rgba(61, 123, 216, 0.9);
+}
+
+button#cancelarGrade{
+    padding: 0.6rem 1.3rem;
+    border-radius: 0.6rem;
+    background-color: transparent;
+    outline: none;
+    border-color: transparent;
+    cursor: pointer;
+    font-size: clamp(1.1rem, 1.1vw, 1.3rem);
+    font-family: raleway-semibold;
+    border: 1px solid rgba(61, 123, 216);
+}
+
+.dotStatus{
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+}
+.dotStatus.pendiente{
+    background-color:#3D7CD8;
+}
+.dotStatus.aprobada{
+    background-color:rgb(9, 213, 19);
+}
+.dotStatus.desaprobada{
+    background-color:rgb(237, 20, 20);
+}
+
+.statusPostVenta{
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+}
+.statusPostVenta > h3{
+    font-size: clamp(1.1rem, 1.1vw, 1.3rem);
+    font-family: raleway-semibold;
+}
+
+.wrapperInputComent > label{
+    font-size: clamp(1.1rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    display: block;
+    margin-bottom: .3rem;
+    margin-top: .8rem;
+}
+
+.wrapperInputComent > textarea#comentarioInput{
+    outline: none;
+    width: 50%;
+    box-sizing: border-box;
+    padding: .8rem;
+    font-size: clamp(1.1rem, 1.1vw, 1.3rem);
+    font-family: raleway;
+    border-radius: .6rem;
+    border: #3D7CD8 1px solid;
+}
+.wrapperMessage{
+    margin: .6rem 0;
+    margin: 0.6rem 0;
+    padding: 0.8rem;
+    border-radius: 0.6rem;
+    background-color: rgba(255, 255, 0, 0.842);
+}
+.wrapperMessage >h3{
+    font-size: clamp(1.1rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+}
+
+.wrapperMessage >h3 > span{
+    font-family: raleway-bold;
+    text-decoration: underline;
+}
+.wrapperButtonsSendItem > button{
+    padding: .6rem 1.3rem;
+    border-radius:.6rem;
+    background-color: transparent;
+    outline: none;
+    border-color: transparent;
+    cursor: pointer;
+    font-size: clamp(1.1rem, 1.1vw, 1.3rem);
+    font-family: raleway-semibold;  
+}
+.wrapperButtonsSendItem > button#confirmComentario{
+    background-color: rgba(61, 123, 216);
+    color: white;
+}
+.wrapperButtonsSendItem > button#cancelarComentario{
+    border: 1px solid rgba(61, 123, 216);
+}
+
+#auditoriaMessageWrapper{
+    position: fixed;
+    bottom: 3rem;
+    right: 2rem;
+    box-sizing: border-box;
+    padding: 1rem;
+    background-color: #ffffffe9;
+    border-radius: .6rem;
+    opacity: 0;
+    transition: 1s all ease;
+}
+#auditoriaMessageWrapper > h2{
+    font-size: clamp(1.1rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    color: rgb(237, 20, 20);
+}
+#auditoriaMessageWrapper > h2{
+    font-size: clamp(1.1rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    color: #3D7CD8;
+}
+
+#auditoriaMessageWrapper.active{
+    opacity: 1;
+}
+
+.containerHistorialAuditorias {
+    width: 100%;
+}
+.containerHistorialAuditorias > .infoCheckWrapper{
+    box-sizing: border-box;
+    padding: 1rem;
+    border: #3D7CD8 1px solid;
+    border-radius: .6rem;
+    margin-bottom: .7rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.containerHistorialAuditorias > .infoCheckWrapper > div{
+    width: 30%;
+    text-align: center;
+}
+.containerHistorialAuditorias > .infoCheckWrapper > div:first-child{
+    text-align: unset;
+    margin-left: .6rem;
+    max-height: 8rem;
+    overflow-y: auto;
+}
+.containerHistorialAuditorias > .infoCheckWrapper > div:first-child::-webkit-scrollbar{
+    width: 4px;
+    border-radius: 5px;
+    background-color: #3043614c;
+}
+.containerHistorialAuditorias > .infoCheckWrapper > div:first-child::-webkit-scrollbar-thumb{
+    background: #304361;
+    border-radius: 1rem;
+}
+.containerHistorialAuditorias > .infoCheckWrapper > div:first-child > p{
+    word-wrap: break-word;
+    font-size: clamp(1rem, 1.1vw, 1.3rem);
+    font-family: raleway;
+}
+.containerHistorialAuditorias > .infoCheckWrapper > div > p{
+    word-wrap: break-word;
+    font-size: clamp(1rem, 1.1vw, 1.3rem);
+    font-family: raleway-semibold;
+}
+.wrapperComentarios > h4{
+    word-wrap: break-word;
+    font-size: clamp(1.1rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+}
+.containerHistorialAuditorias > .infoCheckWrapper > div.wrapperUltimo{
+    position: absolute;
+    width: fit-content;
+    top: 1rem;
+    right: 1rem;
+}
+
+.containerHistorialAuditorias > .infoCheckWrapper > div.wrapperUltimo > p{
+    font-family: raleway-semibold;
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    color: #3D7CD8;
+    text-decoration: underline;
+    text-decoration-color: #3D7CD8;
+}
+

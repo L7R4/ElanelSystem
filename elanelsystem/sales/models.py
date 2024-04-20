@@ -1,10 +1,12 @@
 from django.db import models
-from users.models import Cliente,Usuario
+from django.forms import ValidationError
+from users.models import Cliente,Usuario,Sucursal
 from products.models import Products
 from django.core.validators import RegexValidator
 import json
 import datetime
 from dateutil.relativedelta import relativedelta
+from sales.utils import obtener_ultima_campania
 
 
 class CoeficientesListadePrecios(models.Model):
@@ -12,15 +14,10 @@ class CoeficientesListadePrecios(models.Model):
     cuota = models.IntegerField("Cuotas:")
     porcentage = models.FloatField("Porcentage:")
 
-# class ListadePreciosDeCuotaInscripcion(models.Model):
-#     valor_nominal = models.IntegerField("Valor Nominal:")
-#     cuota = models.IntegerField("Cuotas:")
-#     porcentage = models.FloatField("Porcentage:")
-
 
 class Ventas(models.Model):
 
-    def returnOperacion():
+    def returnOperacion():      
         if not Ventas.objects.last():
             numOperacion = 1
         else:
@@ -35,20 +32,17 @@ class Ventas(models.Model):
         ('Quincenal', 'Quincenal'),
         ('Mensual', 'Mensual'),
     )
-    PORCENTAJE_ANUALIZADO = 15;
+    PORCENTAJE_ANUALIZADO = 15
    
-    # AGENCIAS = (
-    #     ("Agencia Chaco", "Agencia Chaco"),
-    #     ("Agencia Corrientes", "Agencia Corrientes"),
-    #     ("Agencia Misiones", "Agencia Misiones"),
-    # )
 
     nro_cliente = models.ForeignKey(Cliente,on_delete=models.CASCADE,related_name="ventas_nro_cliente")
     nro_solicitud = models.CharField("Nro solicitud:",max_length=10,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')],default="")
     modalidad = models.CharField("Modalidad:",max_length=15, choices=MODALIDADES,default="")
     nro_cuotas = models.IntegerField()
     nro_operacion = models.IntegerField(default=returnOperacion)
-    agencia = models.CharField(default="", max_length=30)
+    agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
+    auditoria = models.JSONField(default=list)
+    campania = models.IntegerField(default=0)
 
     cambioTitularidadField = models.JSONField(default=list,blank=True,null=True)
     # clientes_anteriores = models.ManyToManyField(Cliente, related_name='ventas_anteriores', blank=True)
@@ -113,7 +107,7 @@ class Ventas(models.Model):
                            "hora": "", 
                            "metodoPago": "",
                            "descuento": 0,
-                           "fechaDeVencimiento":f'{fechaDeVenta.strftime("%d-%m-%Y")}', 
+                           "fechaDeVencimiento":f'{fechaDeVenta.strftime("%d/%m/%Y")}', 
                            "diasRetraso": 0,
                            "pagoParcial":{"status": False, "amount": []}
                            })
@@ -142,7 +136,7 @@ class Ventas(models.Model):
         elif modalidad == 'semanal':
             dias_a_sumar = 7
         elif modalidad == 'quincenal':
-            dias_acuotas_pagadas_sumar = 15
+            dias_a_sumar = 15
         elif modalidad == 'mensual':
             # Usa relativedelta para sumar un mes
             hoy_mas_un_mes = hoy + relativedelta(months=1)
@@ -186,7 +180,7 @@ class Ventas(models.Model):
                        "change" :True,
                        "id": idDelCambio,
                        "lastCuota": lastCuota,
-                       "fecha": datetime.datetime.now().strftime("%d-%m-%Y"),
+                       "fecha": datetime.datetime.now().strftime("%d/%m/%Y"),
                        "user": user,
                        "oldCustomer":oldCustomer,
                        "pkOldCustomer": pkOldCustomer,
@@ -201,7 +195,7 @@ class Ventas(models.Model):
                        "change" :True,
                        "id": idDelCambio,
                        "lastCuota": lastCuota,
-                       "fecha": datetime.datetime.now().strftime("%d-%m-%Y"),
+                       "fecha": datetime.datetime.now().strftime("%d/%m/%Y"),
                        "user": user,
                        "oldCustomer":oldCustomer,
                        "pkOldCustomer": pkOldCustomer,
@@ -232,7 +226,19 @@ class Ventas(models.Model):
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y -- %H:%M")
         self.save()
         
+        
+    def initialStatusAuditoria(self):
+        initialDict = {
+            "version":0,
+            "realizada":False,
+            "grade":False,
+            "comentarios":"",
+            "fecha_hora": "",
+        }
+        self.auditoria.append(initialDict)
 
+        self.save()
+        
     def calcularDineroADevolver(self):
         dineroADevolver = 0
         cuotasPagadasCant = len(self.cuotas_pagadas())
@@ -293,12 +299,13 @@ class Ventas(models.Model):
 
         cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))
         if(cuotaSeleccionada[0]["status"] != "Pagado"):
-            cuotaSeleccionada[0]["fecha_pago"] = datetime.datetime.now().strftime("%d-%m-%Y")
+            cuotaSeleccionada[0]["fecha_pago"] = datetime.datetime.now().strftime("%d/%m/%Y")
             cuotaSeleccionada[0]["status"] = "Pagado"
             cuotaSeleccionada[0]["pagado"] = cuotaSeleccionada[0]["total"] - cuotaSeleccionada[0]["descuento"]
             cuotaSeleccionada[0]["cobrador"] = cobrador
             cuotaSeleccionada[0]["hora"] = datetime.datetime.now().time().strftime("%H:%M")
             cuotaSeleccionada[0]["metodoPago"] = metodoPago
+            cuotaSeleccionada[0]["campania"] = obtener_ultima_campania()
             self.desbloquearCuota(cuota)
             self.suspenderOperacion()
         else:
@@ -311,19 +318,20 @@ class Ventas(models.Model):
         cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))
         cuotaSeleccionada[0]["pagoParcial"]["status"]= True
         cuotaSeleccionada[0]["pagoParcial"]["amount"].append({"value": int(amount), 
-                                                            "date":datetime.datetime.now().strftime("%d-%m-%Y"),
+                                                            "date":datetime.datetime.now().strftime("%d/%m/%Y"),
                                                             "hour": datetime.datetime.now().time().strftime("%H:%M"),
                                                             "metodo":metodoPago,
-                                                            "cobrador": cobrador})
+                                                            "cobrador": cobrador,
+                                                            "campania":obtener_ultima_campania()})
         
         valores_parciales = cuotaSeleccionada[0].get("pagoParcial", {}).get("amount", [])
         valores_parciales = [item["value"] for item in valores_parciales]
         sumaPagosParciales = sum(valores_parciales)
         cuotaSeleccionada[0]["pagado"] += sumaPagosParciales
-
-            
-        if((sumaPagosParciales + int(amount)) < cuotaSeleccionada[0]["total"] - cuotaSeleccionada[0]["descuento"]):
+        
+        if(sumaPagosParciales < cuotaSeleccionada[0]["total"] - cuotaSeleccionada[0]["descuento"]):
             cuotaSeleccionada[0]["status"] = "Parcial"
+            
         elif(sumaPagosParciales == cuotaSeleccionada[0]["total"] - cuotaSeleccionada[0]["descuento"]):
             cuotaSeleccionada[0]["status"] = "Pagado"
             self.desbloquearCuota(cuota)
@@ -348,9 +356,9 @@ class Ventas(models.Model):
 
         for i in range(initial,int(self.nro_cuotas + initial)):
             cuota = self.cuotas[i]["fechaDeVencimiento"]
-            if(datetime.datetime.now() > datetime.datetime.strptime(cuota,"%d-%m-%Y") and (self.cuotas[i]["status"] == "Pendiente" or self.cuotas[i]["status"] == "Bloqueado" )):
+            if(datetime.datetime.now() > datetime.datetime.strptime(cuota,"%d/%m/%Y") and (self.cuotas[i]["status"] == "Pendiente" or self.cuotas[i]["status"] == "Bloqueado" )):
                 self.cuotas[i]["status"] = "Atrasado"
-                diasDeRetraso = self.contarDias(datetime.datetime.strptime(cuota,"%d-%m-%Y"))
+                diasDeRetraso = self.contarDias(datetime.datetime.strptime(cuota,"%d/%m/%Y"))
                 self.cuotas[i]["diasRetraso"] = diasDeRetraso
         self.save()
 
@@ -366,7 +374,7 @@ class Ventas(models.Model):
 
         for i in range(initial,int(self.nro_cuotas + initial)):
             fechaVencimiento = cuotas[i]["fechaDeVencimiento"]
-            fechaVencimientoFormated = datetime.datetime.strptime(fechaVencimiento,"%d-%m-%Y")
+            fechaVencimientoFormated = datetime.datetime.strptime(fechaVencimiento,"%d/%m/%Y")
             fechaInicioDeCuota = fechaVencimientoFormated + relativedelta(months=-1)
             
             if(NOW > fechaInicioDeCuota + relativedelta(days=+15)):
@@ -380,19 +388,18 @@ class Ventas(models.Model):
 
     def contarDias(self,fechaReferente):
         contadorDias = 0
-        fechaHoy = datetime.datetime.now().strftime("%d-%m-%Y")
-        while fechaReferente != datetime.datetime.strptime(fechaHoy,"%d-%m-%Y"):
+        fechaHoy = datetime.datetime.now().strftime("%d/%m/%Y")
+        while fechaReferente != datetime.datetime.strptime(fechaHoy,"%d/%m/%Y"):
             fechaReferente = fechaReferente + relativedelta(days=1)
             contadorDias += 1
         return contadorDias
 
 
 class ArqueoCaja(models.Model):
-    sucursal = models.CharField("Sucursal", max_length=30)
+    agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     fecha = models.CharField("Fecha", max_length=30)
     admin = models.CharField(max_length=70, default="")
     responsable = models.CharField(max_length=70, default="")
-    totalEfectivo = models.FloatField("Total efectivo", default=0)
     totalPlanilla = models.FloatField("Total Planilla Efectivo", default=0)
     totalSegunDiarioCaja = models.FloatField("Total segun diario de caja", default=0)
     diferencia = models.FloatField("Diferencia", default=0)
@@ -405,10 +412,69 @@ class MovimientoExterno(models.Model):
         ('Ingreso', 'Ingreso'),
         ('Egreso', 'Egreso'), 
     )
-     
+    TIPOS_COMPROBANTES = (
+        ('A', 'A'),
+        ('B', 'B'),
+        ('C', 'C'),
+    )
+    TIPOS_MONEDAS = (
+        ('ARS', 'ARS'),
+        ('USD', 'USD'),
+        ('BRL', 'BRL'),
+    )
+
+    TIPO_DE_IDENTIFICACION = (
+        ('DNI', 'DNI'),
+        ('CUIT', 'CUIT'),
+    )
+    
+    tipoIdentificacion = models.CharField("Tipo de identificacion:", max_length=15, choices=TIPO_DE_IDENTIFICACION, blank=True, null=True)
+    nroIdentificacion = models.CharField("N° de Identificacion:", max_length=20, blank=True, null=True)
+    tipoComprobante = models.CharField("Tipo de comprobante:", max_length=3, choices=TIPOS_COMPROBANTES, blank=True, null=True)
+    nroComprobante = models.CharField("Nro de comprobante:", max_length=40, blank=True, null=True)
+    denominacion = models.CharField("Denominacion del ente:", max_length=60, blank=True, null=True)
+    tipoMoneda = models.CharField("Tipo de moneda:", max_length=3, choices=TIPOS_MONEDAS, blank=True, null=True)
     movimiento = models.CharField("Movimiento:",max_length=8, choices=TIPOS_MOVIMIENTOS)
     dinero = models.FloatField("Dinero:")
     metodoPago = models.CharField("Metodo de pago:",max_length=30)
-    concepto = models.CharField("Concepto:",max_length=200)
+    agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     ente = models.CharField("Ente:",max_length=40)
     fecha = models.CharField("Fecha:",max_length=10)
+    campania = models.IntegerField("Campaña:",default=0)
+    concepto = models.CharField("Concepto:",max_length=200)
+    premio = models.BooleanField("Premio:", default=False)
+    adelanto = models.BooleanField("Adelanto:",default=False)
+    hora = models.CharField("Hora:",max_length=6)
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        movimiento = cleaned_data.get('movimiento')
+
+        if movimiento != 'Ingreso':
+            tipo_identificacion = cleaned_data.get('tipoIdentificacion')
+            nro_identificacion = cleaned_data.get('nroIdentificacion')
+            tipo_comprobante = cleaned_data.get('tipoComprobante')
+            nro_comprobante = cleaned_data.get('nroComprobante')
+
+            tipo_identificacion_permitidas = [m[0].lower() for m in self.TIPO_DE_IDENTIFICACION]
+            if tipo_identificacion and tipo_identificacion.lower() not in tipo_identificacion_permitidas:
+                raise ValidationError({'tipoIdentificacion': 'Tipo de identificación no válida'})
+
+            if nro_identificacion and not nro_identificacion.isdigit():
+                raise ValidationError({'nroIdentificacion': 'El número de identificación debe ser un valor numérico.'})
+
+            tipo_comprobante_permitidas = [m[0].lower() for m in self.TIPOS_COMPROBANTES]
+            if tipo_comprobante and tipo_comprobante.lower() not in tipo_comprobante_permitidas:
+                raise ValidationError({'tipoComprobante': 'Tipo de comprobante no válido'})
+
+            if nro_comprobante and not nro_comprobante.isdigit():
+                raise ValidationError({'nroComprobante': 'El número de comprobante debe ser un valor numérico.'})
+        else:
+            tipo_moneda = cleaned_data.get('nroComprobante')
+            tipo_monedas_permitidas = [m[0].lower() for m in self.TIPOS_MONEDAS]
+            if tipo_moneda and tipo_moneda.lower() not in tipo_monedas_permitidas:
+                raise ValidationError({'tipoMoneda': 'Tipo de moneda no válida'})
+            
+
+   

@@ -1,0 +1,95 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/panel_liquidaciones.css' %}">
+{% endblock css %}
+
+{% block content %}
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Liquidar<h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="{% url 'liquidacion:liquidacionesComisiones' %}" class="buttonMore">
+                <div>
+                    <h3>Ir</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>
+        </div>
+    </div>
+    
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Ranking<h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="{% url 'liquidacion:liquidacionesRanking' %}" class="buttonMore">
+                <div>
+                    <h3>Ir</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Detalle de ventas <h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="{% url 'liquidacion:liquidacionesDetalleVentas' %}" class="buttonMore">
+                <div>
+                    <h3>Ir</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>    
+        </div>
+               
+    </div>
+
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Ausencias y tardanzas<h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="{% url 'liquidacion:liquidacionesAusenciaYTardanzas' %}" class="buttonMore">
+                <div>
+                    <h3>Ir</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Cuotas adelantadas<h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="{% url 'liquidacion:liquidacionesDetalleCuotasAdelantadas' %}" class="buttonMore">
+                <div>
+                    <h3>Ir</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Tabla de porcentajes<h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="#" class="buttonMore">
+                <div>
+                    <h3>Ir</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>
+        </div>
+    </div>
+
+{% endblock content %}
+{% block js %}
+    
+{% endblock js %}

@@ -3,8 +3,29 @@ from django.dispatch import receiver
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager, PermissionsMixin
 
+
+class Sucursal(models.Model):
+    direccion = models.CharField("Direccion",max_length =100)
+    hora_apertura = models.CharField("Hora de apertura",max_length =5)
+    provincia = models.CharField("Provincia",max_length =80)
+    localidad = models.CharField("Localidad",max_length =80)
+    sucursal_central = models.BooleanField(default=False)
+    pseudonimo = models.CharField("Pseudonimo", max_length=100, default="")
+
+    def __str__(self):
+        return self.pseudonimo
+
+    def save(self, *args, **kwargs):
+        if((self.localidad).lower() in "resistencia"):
+            self.pseudonimo = "Sucursal central"
+        else:    
+            self.pseudonimo = (f'{self.localidad}, {self.provincia}')
+        super(Sucursal, self).save(*args, **kwargs)
+
+
 class UserManager(BaseUserManager):
-    def create_user(self,email,nombre,dni,rango,password = None):
+    
+    def _create_user(self,email,nombre,dni,rango,is_staff,is_superuser,password):
         if not email:
             raise ValueError("Debe contener un email")
 
@@ -13,51 +34,44 @@ class UserManager(BaseUserManager):
             nombre = nombre,
             dni = dni,
             rango = rango,
+            is_staff = is_staff,
+            is_superuser = is_superuser,
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
     
-    def create_superuser(self,email,nombre,dni,password,rango="Admin"):
-        user = self.create_user(
-            email,
-            nombre = nombre,
-            rango = rango,
-            dni = dni,
-            password=password
-        )
-        user.usuario_admin = True
-        user.save()
-        return user
+    def create_user(self,email,nombre,dni,rango,password = None):
+        return self._create_user(email,nombre,dni,rango,False,False,password)
+        
+    def create_superuser(self,email,nombre,dni,rango="Admin",password = None):
+        return self._create_user(email,nombre,dni,rango,True,True,password)
 
 
-class Usuario(AbstractBaseUser):
-    RANGOS = (
-        ('Admin', 'Admin'),
-        ('Gerente', 'Gerente'),
-        ('Secreteria', 'Secretaria'),
-        ('Vendedor', 'Vendedor'),
-        ('Supervisor', 'Supervisor'),
-    )
-
-    SUCURSALES =(
-        ("Resistencia, Chaco","Resistencia, Chaco"),
-        ("Saenz Peña, Chaco","Saenz Peña, Chaco"),
-        ("Corrientes, Corrientes","Corrientes, Corrientes"),
-        ("Misiones, Misiones","Misiones, Misiones"),
-    )
+class Usuario(AbstractBaseUser, PermissionsMixin):
 
     nombre = models.CharField("Nombre Completo",max_length=100)
-    sucursal = models.CharField("Sucursal", max_length=30, choices=SUCURSALES, default="")
+    sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
-    rango = models.CharField("Rango:",max_length=15, choices=RANGOS)
+    rango = models.CharField("Rango:",max_length=40)
     dni = models.CharField("DNI",max_length=8, blank = True, null = True)
-    domic = models.CharField("Domicilio",max_length=200, blank = True, null = True)
-    prov = models.CharField("Provincia",max_length=100, blank = True, null = True)
     tel = models.CharField("Telefono",max_length=11, blank = True, null = True)
-    fec_nacimiento = models.DateField("Fecha de Nacimiento", blank = True, null = True)
-    usuario_admin = models.BooleanField(default=False)
-    usuario_active = models.BooleanField(default=True)
+    
+    c = models.CharField("Contraseña_depuracion:",max_length=250)
+    fec_ingreso = models.CharField("Fecha de ingreso", max_length = 10, default ="")
+    domic = models.CharField("Domicilio",max_length=200, default="")
+    prov = models.CharField("Provincia",max_length=40, default="")
+    cp = models.CharField("Codigo postal",max_length=5, default="")
+    loc = models.CharField("Localidad",max_length=100, default="")
+    lugar_nacimiento = models.CharField("Lugar de nacimiento",max_length=100, default ="")
+    fec_nacimiento = models.CharField("Fecha de nacimiento", max_length = 10, default ="")
+    estado_civil = models.CharField("Estado civil", max_length =30,default ="")
+    xp_laboral = models.TextField("Experiencia laboral", default ="")
+    datos_familiares = models.JSONField("Datos familiares", default=list,blank=True,null=True)
+    vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
+    faltas_tardanzas = models.JSONField("Faltas o tardanzas", default=list,blank=True,null=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=True)
 
     objects = UserManager()
 
@@ -65,32 +79,13 @@ class Usuario(AbstractBaseUser):
     def __str__(self):
         return self.nombre
     
-    # class Meta:
-    #     permissions = [
-    #         ("puede_ver_algo","Puede ver algo"),
-    #         ("puede_cambiar_algo","Puede cambiar algo"),
-    #         ("puede_borrar_algo","Puede eliminar algo"),
-    #     ]
 
     USERNAME_FIELD ="email"
     REQUIRED_FIELDS= ["nombre","dni"]
     
-    # objects = MyAccountManager()
-
-    def has_perm(self,perm, obj=None):
-        return True
-
-    def has_module_perms(self,app_label):
-        return True
-    
-   
-    @property
-    def is_staff(self):
-        return self.usuario_admin
-    
 
 class Cliente(models.Model):
-    def returNro_Cliente():
+    def returNro_Cliente(): 
         
         if not Cliente.objects.last():
             number_client = 1

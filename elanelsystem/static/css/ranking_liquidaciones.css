@@ -1,0 +1,226 @@
+*{
+    box-sizing: border-box;
+}
+.wrapper_content{
+    padding: 1rem;
+}
+.wrapperTittle{
+    width: 100%;
+    padding: 1rem 2rem;
+    height: 10%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.wrapperTittle > h2{
+    font-size: clamp(3rem, 3vw, 7rem);
+    font-family: raleway-semibold;
+    color: white;   
+}
+.values{
+    list-style: none;
+}
+.containerBoth{
+    display: flex;
+    width: 100%;
+}
+
+.containerSupervisores,.containerVendedores{
+    width: 50%;
+    padding: 1rem;
+    height: 90%;
+}
+.containerSupervisores{
+    border-right: 2px solid #fff;
+}
+.information > h2{
+    color: white;
+    font-size: clamp(1.5rem, 1.6vw, 2rem);
+    font-family: raleway-semibold;
+    padding-left: 1rem;
+    padding-bottom: .5rem;
+    width: 100%;
+    border-bottom: 1px solid #ffffff99;
+}
+
+.information::-webkit-scrollbar{
+    width: 2px;
+    height: 5px;
+    border-radius: 5px;
+}
+.information::-webkit-scrollbar-thumb{
+    background: #3D7CD8;
+    border-radius: 1rem;
+}
+
+.tittles{
+    display: flex;
+    /* column-gap: calc(100% / 6); */
+    list-style: none;
+    width: 100%;
+    justify-content: space-around;  
+}
+.information > .tittlesWrapper{
+    width: 100%;
+    /* background-color: #3D7CD8; */
+}
+
+.containerSupervisores .tittlesWrapper > .tittles > li {
+    color: white;
+    font-size: clamp(1.3rem, 1.2vw, 1.7rem);
+    font-family: raleway-semibold;
+    padding: 1rem 0;
+    width: 33.3%;
+    text-align: center;
+}
+
+.containerVendedores .tittlesWrapper > .tittles > li {
+    color: white;
+    font-size: clamp(1.3rem, 1.2vw, 1.7rem);
+    font-family: raleway-semibold;
+    padding: 1rem 0;
+    width: 33.3%;
+    text-align: center;
+}
+
+.valuesWrapper > .values > li
+{
+    font-family: raleway;
+    position: relative;
+    width: 100%;
+    color: rgb(241, 237, 237);
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+    margin-top: 1rem;
+}
+
+.valuesWrapper > .values > li > .backgroundItem{
+    background-color: #131820;
+
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: relative;
+    z-index: 2;
+    padding: 1rem 0;
+    border-radius: .6rem;
+    border: 1px solid #000000c4;
+    transition: .2s all ease;
+}
+
+.valuesWrapper > .values > li > .backgroundItem >.imageMore{
+    width: 2rem;
+    position: absolute;
+    right: 2rem;
+}
+
+/* .valuesWrapper > .values > li:hover
+{
+} */
+
+.containerSupervisores .valuesWrapper > .values > li > .backgroundItem > div
+{
+    width: 33.3%;
+    text-align: center;
+}
+
+.containerVendedores .valuesWrapper > .values > li > .backgroundItem > div
+{
+    width: 25%;
+    text-align: center;
+}
+.detallesItem{
+    background-color: #304361;
+    border-bottom-left-radius: 0.6rem;
+    border-bottom-right-radius: 0.6rem;
+    position: absolute;
+    width: 100%;
+    top: 90%;
+    border: 1px solid #0000009b;
+    border-top-color: transparent;
+    height: 0px;
+    margin-bottom: 0px;
+    overflow-y: hidden;
+    max-height: 400px;
+    transition: .2s all ease;
+}
+/* .detallesItem.active{
+
+} */
+
+.detallesItem > h2{
+    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: white; 
+    padding: 1rem 2rem;
+}
+
+.tittlesWrapperItem > .tittles > li{
+    color: rgba(255, 255, 255, 0.883);
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    padding: 1rem 0;
+    width: 33.3%;
+    text-align: center;
+}
+
+.valuesWrapperItem > ul{
+    list-style: none;
+    display: flex;
+    list-style: none;
+    width: 100%;
+    justify-content: space-around;  
+}
+
+.valuesWrapperItem > ul > .itemValores{
+    color: rgba(255, 255, 255, 0.883);
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    padding: 1rem 0;
+    width: 33.3%;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.backgroundItemVendedores{
+    background-color: #13182080;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    width: 95%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: relative;
+    padding: 1rem 0;
+    border-radius: .6rem;
+    /* border: 1px solid #000000c4; */
+}
+.backgroundItemVendedores > div{
+    width: 33.3%;
+    text-align: center;
+}
+
+.containerVendedores .valuesWrapper > .values{
+    list-style: none;
+}
+.containerVendedores .valuesWrapper > .values > li.item{
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 1rem;
+    border-bottom: 1px solid #ffffff2c;
+    border-top: 1px solid #ffffff2c;
+}
+
+.containerVendedores .valuesWrapper > .values > li > div
+{
+    width: 25%;
+    max-width: 25%;
+    text-align: center;
+}

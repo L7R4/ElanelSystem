@@ -1,4 +1,5 @@
 {% load static %}
+{% load util %}
 
 <!DOCTYPE html>
 <html lang="es">
@@ -7,9 +8,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/molde.css' %}">
+    <link rel="shortcut icon" href="{% static 'images/icons/diamong.png' %}">
+
     {% block css %}
     {% endblock css %}
-    <title>Elanel SYS</title>
+    <title>ElanelSYS</title>
 </head>
 <body>
     <div class="wrapper">
@@ -22,13 +25,18 @@
             </div>
             
             <ul class="list">
-                <li>
-                    <a href="{% url 'sales:resumen' %}" id="resumen">
-                        <img src="{% static 'images/icons/resumen.svg' %}" alt="">
-                        <p>Resumen</p> 
-                    </a>
-                    <div class="check"></div>
-                </li>
+                {% if perms.sales.my_ver_resumen%}
+
+                    <li>
+                        <a href="{% url 'sales:resumen' %}" id="resumen">
+                            <img src="{% static 'images/icons/resumen.svg' %}" alt="">
+                            <p>Resumen</p> 
+                        </a>
+                        <div class="check"></div>
+                    </li>
+
+                {% endif %}
+                
                 <li>
                     <a href="{% url 'users:list_customers' %}" id="clientes">
                         <img src="{% static 'images/icons/clientes.svg' %}" alt="">
@@ -36,11 +44,7 @@
                     </a>
                     <div class="check"></div>
                 </li>
-                {% comment %} <li><a href="{% url 'sales:create_sale' %}" id="ventas">
-                    <img src="{% static 'images/icons/ventas.png' %}" alt="">
-                    <p>Ventas</p> 
-                </a>
-                </li> {% endcomment %}
+
                 <li>
                     <a href="{% url 'sales:caja' %}" id="caja">
                         <img src="{% static 'images/icons/dinero.svg' %}" alt="">
@@ -48,40 +52,63 @@
                     </a>
                     <div class="check"></div>
                 </li>
-                <li>
-                    <a href="#" id="colboradores">
-                        <img src="{% static 'images/icons/colaboradores.svg' %}" alt="">
-                        <p>Colaboradores</p>
-                    </a>
-                    <div class="check"></div>
-                </li>
 
-                <li>
-                    <a href="{% url 'products:planes' %}" id="planes">
-                        <img src="{% static 'images/icons/planes.svg' %}" alt="">
-                        <p>Planes</p>
-                    </a>
-                    <div class="check"></div>
-                </li> 
+                {% if perms.sales.my_ver_planes%}
 
-                <li class="add_user">
-                    <a href="{% url 'users:list_users' %}" id="usuarios">
-                        <img src="{% static 'images/icons/usuarios.svg' %}" alt="">
-                        <p>Usuarios</p>
-                    </a>
-                    <div class="check"></div>
-                </li>
-                
+                    <li>
+                        <a href="{% url 'products:planes' %}" id="planes">
+                            <img src="{% static 'images/icons/planes.svg' %}" alt="">
+                            <p>Planes</p>
+                        </a>
+                        <div class="check"></div>
+                    </li> 
 
-                {% if user.rango == "Admin" or user.rango == "A" %}
-                <li>
-                    <a href="{% url 'users:create_user' %}" id="add_user">
-                        <img src="{% static 'images/icons/mas.svg' %}" alt="">
-                        <p>Agregar usuario</p> 
-                    </a>
-                    <div class="check"></div>
-                </li>
                 {% endif %}
+
+                {% if perms.sales.my_ver_postventa%}
+                    {% obtener_ultima_campania as ultima_campania %}
+                    <li>
+                        <a href="{% url 'sales:postVentaList' ultima_campania %}" id="postVenta">
+                            <img src="{% static 'images/icons/postVenta.png' %}" alt="">
+                            <p>Post venta</p>
+                        </a>
+                        <div class="check"></div>
+                    </li>
+                {% endif %}
+                
+                {% if perms.users.my_ver_colaboradores %}
+                    <li class="add_user">
+                        <a href="{% url 'users:list_users' %}" id="colaboradores">
+                            <img src="{% static 'images/icons/usuarios.svg' %}" alt="">
+                            <p>Colaboradores</p>
+                        </a>
+                        <div class="check"></div>
+                    </li>
+                {% endif %}
+                <li class="">
+                    <a href="{% url 'liquidacion:liquidacionesPanel' %}" id="liquidaciones">
+                        <img src="{% static 'images/icons/porcentaje.png' %}" alt="">
+                        <p>Liquidaciones</p>
+                    </a>
+                    <div class="check"></div>
+                </li>
+                {% if perms.users.my_ver_administracion%}
+                    <li>
+                        <a href="{% url 'users:panelAdmin' %}" id="panelAdmin">
+                            <img src="{% static 'images/icons/administracion.svg' %}" alt="">
+                            <p>Administracion</p> 
+                        </a>
+                        <div class="check"></div>
+                    </li>
+                {% endif %}
+
+                <li>
+                    <a href="{% url 'logout' %}" id="close_session">
+                        <img src="{% static 'images/icons/logout.png' %}" alt="">
+                        <p>Cerrar sesion</p> 
+                    </a>
+                    <div class="check"></div>
+                </li>
             </ul>
         </aside>
 

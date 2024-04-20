@@ -1,0 +1,88 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/panel_permisos.css' %}">
+{% endblock css %}
+
+
+{% block content %}
+    <div class="tittle">
+        <h2>Configuración de grupos y permisos</h2>
+    </div>
+    <div class="containers">
+        <div class="wrapperItem"id="wrapperGrupos">
+            <div class="textContainer">
+                <h3>Grupos</h3>
+            </div>
+            <div class="containerList">
+                <div id="wrapperFormNewGroup">
+                    <form method="POST" id="formNewGroup">
+                        {% csrf_token %}
+                        <div class="formTittle">
+                            <h2>Nuevo grupo</h2>
+                            <img id="closeModalForm" src="{% static 'images/icons/close.svg' %}" alt="">
+                        </div>
+                        <div class="containerInputs">
+                            
+                            <input type="text" name="groupName" id="groupName" placeholder="Escriba el nombre del grupo">
+                            <button type="button" id="saveNewGroup" form="formNewGroup">Crear grupo</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="wrapperButtons">
+                    <div class="buttonAgregarWrapper">
+                        <img id="buttonCreateNewGroup" src="{% static 'images/icons/moreWhite.png' %}" alt="">
+                    </div>
+                </div>
+                <div class="items" id="itemsGrupos">
+                    <ul>
+                        {% for g in grupos %}
+                            <li>{{ g.name }}</li>
+                        {% endfor %}
+                    </ul>
+                    
+                </div>
+            </div>
+        </div>
+        <div class="wrapperItem" id="wrapperPermisos">
+            <div class="textContainer">
+                <h3>Permisos</h3>
+            </div>
+            <form method="POST" id="updatePermisos">
+                <div class="backgroundPermission"></div>
+                {% csrf_token %}
+                <div class="containerList">
+                    <div class="items" id="itemsPermisos">
+                        <ul>
+                            {% for perm in permisos %}
+                                <input type="checkbox" name="{{perm.codename}}" id="{{perm.codename}}" value="{{perm.name}}">
+                                <label for="{{perm.codename}}">{{ perm.name }}</label>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="wrapperSendUpdateGroup">
+            <div class="wrapperMessageSuccess">
+                <h3>¡Grupo: <span></span> actualizado exitosamente!</h3>
+            </div>
+            <button type="button" id="updatePermisosGrupo" form="updatePermisos">Guardar cambios</button>
+        </div>
+    </div>
+    
+    
+{% endblock content %}
+{% block js %}
+<script>
+    var updatePermisosURL = "{% url 'users:updatePermisos'%}"
+    var deleteGrupoURL = "{% url 'users:deleteGroup'%}"
+    var urlCreateNewGroup= "{% url 'users:newGroup'%}"
+    var urlImageDelete = "{% static 'images/icons/eliminar.svg' %}"
+
+</script>
+<script src="{% static 'js/fetchGruposPermisos.js' %}"></script>
+<script src="{% static 'js/createNewGroup.js' %}"></script>
+    
+{% endblock js %}

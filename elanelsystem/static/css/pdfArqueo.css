@@ -1,6 +1,7 @@
 @page {
-    size: Letter; /* Change from the default size of A4 */
-    margin: 1.5cm; /* Set margin on each page */
+    size: landscape; 
+    /* size: Letter; Change from the default size of A4 */
+    margin: 0.3cm;
 }
 @font-face {
   font-family: babapro;
@@ -33,28 +34,43 @@ html {
     font-feature-settings: "pnum" on, "lnum" on;
   }
 
+
+.tittleOfSections{
+    font-size: 2em;
+    color:#000000c7;
+    font-family: raleway-semibold;
+    border-bottom: 1px solid #027df1b0;
+    width: 100%;
+    margin-top: 2rem;
+    padding: 8px;
+    margin-bottom: 2rem;
+}
+
 .arqueoWrapper{
     box-shadow: 0px 0px 20px 2px #027df13b;
-    border: 2px solid #027df14d;
-    height: 93%;
-    width: 100%;
+    border: 3px solid #203555;
+    /* height: rem; */
+    width: 80%;
+    margin: 0 auto;
     border-radius: .8rem;
     overflow:auto;
-    background-color: #203555;
+    /* background-color: #203555; */
 }
 /* -------------------------------------------------------- */
 /* TITULO */
 
 .tittleWrapper{
     width: 100%;
+    border-bottom: 3px solid #203555;
+    
 }
 .tittleWrapper > h1{
     font-size: clamp(1.6rem, 1.4vw, 2rem);
-    color: white;
+    color: #203555;
     font-family: raleway-semibold;
     text-align: center;
     padding: 1rem;
-    background-color: #027df14d;
+    /* background-color: #027df14d; */
 }
 
 /* -------------------------------------------------------- */
@@ -63,7 +79,7 @@ html {
 .subtittleWrapper > ul > .data{
     display: flex;
     justify-content: space-between;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+    border-bottom: 1px solid #027df1b0;
     padding: 0rem 2rem;
 }
 .subtittleWrapper > ul > .data > div{
@@ -71,12 +87,12 @@ html {
 }
 .subtittleWrapper > ul > .data > div > h3{
     font-size: clamp(1.3rem, 1.1vw, 1.5rem);
-    color: white;
+    /* color: white; */
     font-family: raleway-semibold;
     padding: .4rem 0;
 }
 .data > .dataTittle{
-    border-right: 1px solid white;
+    border-right: 1px solid #027df1b0;
     display: flex;
     align-items: center;
 }
@@ -91,10 +107,10 @@ html {
 /* DETALLE */
 
 .tittleEfectivo > h2{
-    border-top: 1px solid white;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+    border-top: 1px solid #203555;
+    border-bottom: 2px solid #203555;
     font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-    color: white;
+    color: #203555;
     font-family: raleway-semibold;
     padding: .5rem 2rem;
     background-color: #ffffff3a;
@@ -109,7 +125,7 @@ html {
 }
 
 .tittlesDetalles > ul > li{
-    color: white;
+    /* color: white; */
     font-size: 1.5rem;
     font-family: raleway-semibold;
     padding: 1rem 0;
@@ -127,8 +143,8 @@ html {
     position: relative;
     padding: .4rem 0;
     width: 100%;
-    color: rgb(241, 237, 237);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+    color: rgba(0, 0, 0, 0.841);
+    border-bottom: 1px solid #027df1b0;
 }
 .valuesWrapper > ul.detalleItems > li > div{
     width: 33.333%;
@@ -145,47 +161,34 @@ html {
     display: flex;
     justify-content: center;
 }
-/* .valuesWrapper > ul.detalleItems > li > div.itemCantidad > p{
-    height: 2rem;
-    width: 4rem;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    background-color: rgba(253,253,253,0.07);
-    border: 1px solid #3d7bd880;
-    border-radius: .5rem;
-    display: flex;
-    align-items: center;
-    padding: 0 .7rem;
-    outline: none;
-    color: white;
-    text-align: center;
-} */
+
+
 .valuesWrapper > ul.detalleTotales {
-    border-top: 1px solid white;
+    border-top: 1px solid #203555;
 }
 .valuesWrapper > ul.detalleTotales > .total{
     display: flex;
     justify-content: space-between;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+    border-bottom: 1px solid #027df1b0;
     padding: 0rem 2rem;
 }
 
 .valuesWrapper > ul.detalleTotales > .total > div{
     width: 50%;
 }
-.valuesWrapper > ul.detalleTotales > .total > div.totalImporte > input{
+.valuesWrapper > ul.detalleTotales > .total > div.totalImporte > .totalImporteValue{
     height: 2rem;
     width: 10rem;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     font-family: raleway-semibold;
-    background-color: rgba(253,253,253,0.07);
+    background-color: #2035552e;
     border: 1px solid #3d7bd880;
     border-radius: .5rem;
     display: flex;
     align-items: center;
     padding: 0 0.7rem;
     outline: none;
-    color: white;
+    /* color: white; */
     margin-left: .6rem;
 }
 .valuesWrapper > ul.detalleTotales > .total > div.totalImporte{
@@ -194,24 +197,23 @@ html {
 }
 .valuesWrapper > ul.detalleTotales > .total > div > p{
     font-size: 1.4rem;
-    color: white;
+    /* color: white; */
     font-family: raleway-semibold;
     padding: .6rem 0;
 }
 .total > .totalTittle{
-    border-right: 1px solid white;
+    border-right: 1px solid #027df1b0;
 }
 .total> .totalImporte{
     margin-left: 2rem;
 }
 
 /* OBSERVACIONES */
-
 .observacionesWrapper > .obsTittle > h2{
-    border-top: 1px solid white;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+    border-top: 1px solid #203555;
+    border-bottom: 1px solid #027df1b0;
     font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-    color: white;
+    /* color: white; */
     font-family: raleway-semibold;
     padding: .5rem 2rem;
     background-color: #ffffff3a;
@@ -223,14 +225,65 @@ html {
     padding: 1rem 0rem;
 }
 .observacionesWrapper > .inputObs > textarea{
-    height: 10rem;
-    width: 55rem;
+    height: 13rem;
+    width: 65rem;
     font-size: 1.3rem;
     font-family: raleway;
-    background-color: rgba(253,253,253,0.07);
-    border: 1px solid #3d7bd880;
+    border: 1px solid #203555;
     border-radius: .5rem;
     padding: .7rem;
     outline: none;
-    color: white;
+    /* color: white; */
+}
+
+/* CIERRE DE CAJA */
+.cierreCaja > table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.cierreCaja th, .cierreCaja td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+.cierreCaja th {
+  background-color: #f2f2f2;
+}
+.cierreCaja th > p{
+    font-size: 1.1rem;
+    font-family: raleway-semibold;
+}
+.cierreCaja td > p{
+    font-size: 1.1rem;
+    font-family: raleway;
+}
+
+/* Resumen de tipo de pagos */
+.resumen{
+    display: flex;
+    width: 60%;
+    /* gap: 4rem; */
+}
+
+
+.resumen > div > h2{
+    background-color: #f2f2f2;
+    /* border: 1px solid #ddd; */
+    padding: 8px;
+    font-size: 1.5rem;
+    font-family: raleway-semibold;
+}
+.resumen > div > h4{
+    font-size: 1.3rem;
+    font-family: raleway;
+    padding: .8rem .4rem;
+    border-bottom: 1px solid #ddd;
+}
+.resum__cuenta__tipoCaja{
+    width: 50%;
+}
+.resum__cuenta__saldo{
+    width: 30%;
+    border: 2px solid #027df1b0
 }

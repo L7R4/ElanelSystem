@@ -178,20 +178,20 @@ toDateNextButton.addEventListener("click", ()=>{
 let datePicked;
 // ------------------ Para el calendario de Inicio ------------------
 let fillDateFromCalendar = (element) =>{
-    datePicked = element.innerHTML + "-" + (fromDateCurrentMonth+1)+"-"+(fromDateCurrentYear);
+    datePicked = (parseInt(element.innerHTML) < 10 ? "0" :"") + element.innerHTML + "/" + ((fromDateCurrentMonth+1) < 10 ? "0" :"") + (fromDateCurrentMonth+1)+"/"+(fromDateCurrentYear);
     LimpiarActiveFromCalendar();
     element.classList.add("active")
     fromDateContent.innerHTML = datePicked;
-    firstDateInput.value = datePicked;
+    firstDateInput.value = datePicked + " 00:00";
 }
 
 // ------------------ Para el calendario de Fin ------------------
 let fillDateToCalendar = (element) =>{
-    datePicked = element.innerHTML + "-" + (toDateCurrentMonth+1)+"-"+(toDateCurrentYear);
+    datePicked = (parseInt(element.innerHTML) < 10 ? "0" :"") + element.innerHTML + "/" + ((toDateCurrentMonth+1) < 10 ? "0" :"") + (toDateCurrentMonth+1)+"/"+(fromDateCurrentYear);
     LimpiarActiveToCalendar();
     element.classList.add("active")
     toDateContent.innerHTML = datePicked;
-    endDateInput.value = datePicked;
+    endDateInput.value = datePicked + " 00:00";
 }
 
 // // LIMPIAR ACTIVES DE LOS LIs PARA MARCAR NUEVOS

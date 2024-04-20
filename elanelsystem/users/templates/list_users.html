@@ -2,109 +2,50 @@
 {% load static %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/list_customers.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_colaboradores.css' %}">
 {% endblock css %}
 
 {% block content %}
-<div class="information">
-    <div class="container_data">
-        <h2>Nombre</h2>
-        <ul>
-          {% for user in users %}
-          {% if user.nombre %}
-          <li>{{user.nombre}}</li>
-          {% else %}
-          <li>---</li>
-          {% endif %}
-          {% endfor %}
-        </ul>
-    </div>
-    <div class="container_data">
-        <h2>Correo</h2>
-        <ul>
-          {% for user in users %}
-          {% if user.email %}
-          <li>{{user.email}}</li>
-          {% else %}
-          <li>---</li>
-          {% endif %}
-          {% endfor %}
-        </ul>
-    </div>
-    <div class="container_data">
-        <h2>Rango</h2>
-        <ul>
-          {% for user in users %}
-          {% if user.rango %}
-          <li>{{user.rango}}</li>
-          {% else %}
-          <li>---</li>
-          {% endif %}
-          {% endfor %}
-        </ul>
-    </div>
-    
-    <div class="container_data">
-        <h2>DNI</h2>
-        <ul>
-          {% for user in users %}
-          {% if user.dni %}
-          <li>{{user.dni}}</li>
-          {% else %}
-          <li>---</li>
-          {% endif %}
-          {% endfor %}
-        </ul>
-    </div>
-    
-    <div class="container_data">
-        <h2>Domicilio</h2>
-        <ul>
-          {% for user in users %}
-          {% if user.domic %}
-          <li>{{user.domic}}</li>
-          {% else %}
-          <li>---</li>
-          {% endif %}
-          {% endfor %}
-        </ul>
-    </div>
-    <div class="container_data">
-        <h2>Provincia</h2>
-        <ul>
-          {% for user in users %}
-          {% if user. %}{% endif %}
-            <li>{{user.prov}}</li>
-          {% endfor %}
-        </ul>
-    </div>
-    <div class="container_data">
-        <h2>Telefono</h2>
-        <ul>
-          {% for user in users %}
-          {% if user. %}{% endif %}
-            <li>{{user.tel}}</li>
-          {% endfor %}
-        </ul>
-    </div>
-    <div class="container_data">
-        <h2>F-Nacimiento</h2>
-        <ul>
-          {% for user in users %}
-          {% if user. %}{% endif %}
-            <li>{{user.fec_nacimiento}}</li>
-          {% endfor %}
-        </ul>
-    </div>
-    <div class="container_data">
-        <h2>F-NACIMIENTO</h2>
-        <ul>
-          {% for user in users %}
-          {% if user. %}{% endif %}
-            <li>{{user.fec_nacimiento}}</li>
-          {% endfor %}
-        </ul>
+<div class="filters">
+    <a href="{% url 'users:create_user' %}" id="create_user">Agregar</a>
+    <div>
+        <input 
+        type="text"
+        class = "user"
+        id="user">
+        <img src="{% static 'images/icons/search.svg' %}" alt="">
     </div>
 </div>
 
+<div class="information">
+    <div class="tittlesWrapper">
+      <ul class="tittles">
+          <li>Nombre</li>
+          <li>DNI</li>
+          <li>Correo</li>
+          <li>Sucursal</li>
+          <li>Telefono</li>
+          <li>Rango</li>
+      </ul>   
+    </div>
+
+    <div class="valuesWrapper">
+        <ul class="values">
+          {% for u in users %}
+            <a class ="item" href="{% url 'users:detailUser' u.id %}">
+              <div><p>{{u.nombre|truncatechars:24}}</p></div>
+              <div><p>{{u.dni}}</p></div>
+              <div><p>{{u.email}}</p></div>
+              <div><p>{{u.sucursal}}</p></div>
+              <div><p>{{u.tel}}</p></div>
+              <div><p>{{u.rango}}</p></div>
+            </a>
+          {% endfor %} 
+        </ul>       
+    </div>
+</div> 
+
 {% endblock content %}
+{% block js %}
+<script src="{% static 'js/inputs_search_users.js' %}"></script>
+{% endblock js %}
