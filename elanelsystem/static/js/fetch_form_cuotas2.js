@@ -28,7 +28,7 @@ const cobradores = document.querySelectorAll(".cobradoresList > li")
 const cobradoresList = document.querySelector(".cobradoresList")
 let inputCobrador = document.getElementById("cobrador")
 let cobradorSelected = document.querySelector(".cobrador")
-const amountParcialInput = document.getElementById("amountParcial") 
+const amountParcialInput = document.getElementById("amountParcial")
 
 const typesPayments = document.querySelectorAll(".typesPayments > label")
 const typesPaymentsWrapper = document.querySelector(".typesPayments")
@@ -60,7 +60,7 @@ function getCookie(name) {
 async function fetchCuotas() {
     const response = await fetch(url, {
         method: 'get',
-        headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
         cache: 'no-store',
     });
     const data = await response.json();
@@ -70,29 +70,28 @@ async function fetchCuotas() {
 let cuotaSelected;
 async function main() {
     const cuotas = await fetchCuotas();
-    console.log(cuotas)
     // COLOCA LOS ESTADOS DE LAS CUOTAS SEGUN EL FETCH
-    changeCheckboxes(cuotas,"Pagado")
-    changeCheckboxes(cuotas,"Atrasado")
-    changeCheckboxes(cuotas,"Parcial")
-    changeCheckboxes(cuotas,"Bloqueado")
-    
+    changeCheckboxes(cuotas, "Pagado")
+    changeCheckboxes(cuotas, "Atrasado")
+    changeCheckboxes(cuotas, "Parcial")
+    changeCheckboxes(cuotas, "Bloqueado")
+
 
 
     // VENTANA DE ABONAR CUOTA
-    cuotasWrapper.forEach(cuota => {    
-        cuota.addEventListener('click',async ()=>{
+    cuotasWrapper.forEach(cuota => {
+        cuota.addEventListener('click', async () => {
             let data = await fetchCuotas()
 
             // ABRE LA VENTANA DE ABONAR CUOTA Y VALIDA SI ESTA PAGADO PARCIALMENTE
-            cuotaSelected = selectCuota(cuota,data)
-            calcularDineroRestante(cuotaSelected.children[2].innerHTML,data)
+            cuotaSelected = selectCuota(cuota, data)
+            calcularDineroRestante(cuotaSelected.children[2].innerHTML, data)
 
 
             // SELECCIONA EL TIPO DE PAGO
             typesPayments.forEach(type => {
-                type.addEventListener("click", ()=>{
-                    selectTypePayment(type,data)
+                type.addEventListener("click", () => {
+                    selectTypePayment(type, data)
                 })
 
             })
@@ -102,60 +101,59 @@ async function main() {
 
 
     // SELECCIONA COBRADOR
-    cobradorSelectedWrapper.addEventListener("click", ()=>{
+    cobradorSelectedWrapper.addEventListener("click", () => {
         cobradoresList.classList.toggle("active");
     });
     cobradores.forEach(cobrador => {
-        cobrador.addEventListener("click",()=>{
+        cobrador.addEventListener("click", () => {
             selectCobrador(cobrador)
         })
     });
 
-    
+
 
     // SELECCIONA EL METODO DE PAGO
-    methodPayments.forEach(method =>{
-        method.addEventListener("click", ()=>{
+    methodPayments.forEach(method => {
+        method.addEventListener("click", () => {
             selectMethodPayment(method)
         })
 
     })
 
     // VALIDA INPUT DINERO PARCIAL
-    amountParcialInput.addEventListener('click', async()=>{
+    amountParcialInput.addEventListener('click', async () => {
         const cuotas = await fetchCuotas();
-        amountParcialInput.addEventListener("input",()=>{
-            validarInputPagoParcial(calcularDineroRestante(cuotaPicked.innerHTML,cuotas))
+        amountParcialInput.addEventListener("input", () => {
+            validarInputPagoParcial(calcularDineroRestante(cuotaPicked.innerHTML, cuotas))
         })
     })
-    
+
     // BOTON PARA ACTIVAR PARA APLICAR DESCUENTO
-    descuentoCuotaButton.addEventListener('click',()=>{
+    descuentoCuotaButton.addEventListener('click', () => {
         descuentoCuotaWrapper.classList.toggle("active")
     })
 }
 main();
 
-inputSubmit.addEventListener("click", async () =>{
+inputSubmit.addEventListener("click", async () => {
     let data = await fetchCuotas()
     let amount = 0;
     let isChecked;
     let cuotaPorAbonar = cuotaPicked
-    console.log(tipoPago.value)
     if (tipoPago.value == "total") {
         isChecked = "Pagado";
         cuotaPorAbonar.previousElementSibling.checked = true
-        let cuota = data.filter(c=> c.cuota === cuotaPorAbonar.innerHTML)
+        let cuota = data.filter(c => c.cuota === cuotaPorAbonar.innerHTML)
         amount = cuota[0]["total"] - cuota[0]["descuento"]
-    }else if(tipoPago.value == "parcial"){
+    } else if (tipoPago.value == "parcial") {
         isChecked = "Parcial";
-        amount =amountParcial.value
+        amount = amountParcial.value
     }
 
-    let post = fetch(url,{
+    let post = fetch(url, {
         method: "POST",
-        body: JSON.stringify({ 
-            cuota: cuotaPorAbonar.innerHTML, 
+        body: JSON.stringify({
+            cuota: cuotaPorAbonar.innerHTML,
             status: isChecked,
             metodoPago: metodoPago.value,
             amountParcial: amount,
@@ -166,92 +164,89 @@ inputSubmit.addEventListener("click", async () =>{
             "X-CSRFToken": getCookie('csrftoken')
         }
     })
-    .then(async response2 => {
-        response2.json()
-        let data = await fetchCuotas();
-        console.log(data)
-        // PARA VALIDAR SI LA CUOTA YA SE PAGO TOTALMENTE O NO
-        let resto = calcularDineroRestante(cuotaPorAbonar.innerHTML,data)
-        testSale(cuotaSelected,isChecked,resto)
-        //---------------------------
-        
-        changeCheckboxes(data,"Atrasado")
+        .then(async response2 => {
+            response2.json()
+            let data = await fetchCuotas();
+            // PARA VALIDAR SI LA CUOTA YA SE PAGO TOTALMENTE O NO
+            let resto = calcularDineroRestante(cuotaPorAbonar.innerHTML, data)
+            testSale(cuotaSelected, isChecked, resto)
+            //---------------------------
 
-        amount = 0
-        isChecked=""
-        
-        cuotaSuccessText.innerHTML = "<strong>" + cuotaPorAbonar.innerHTML +"</strong> ha sido abonada correctamente"
-        setTimeout(()=>{
-            cuotaSuccess.classList.add("active")
-        },"500")
-        typePaymentWindow.classList.remove("active");
-        clearPickedCuota()
+            changeCheckboxes(data, "Atrasado")
 
-        clearPickedClass()
-        setTimeout(()=>{
-            cuotaSuccess.classList.remove("active")
-        },"3000")
-    })
+            amount = 0
+            isChecked = ""
+
+            cuotaSuccessText.innerHTML = "<strong>" + cuotaPorAbonar.innerHTML + "</strong> ha sido abonada correctamente"
+            setTimeout(() => {
+                cuotaSuccess.classList.add("active")
+            }, "500")
+            typePaymentWindow.classList.remove("active");
+            clearPickedCuota()
+
+            clearPickedClass()
+            setTimeout(() => {
+                cuotaSuccess.classList.remove("active")
+            }, "3000")
+        })
 })
 
 // PARA APLICAR DESCUENTO A UNA CUOTA
-inputDescuentoCuota.addEventListener('click', ()=>{
-    let post = fetch(url,{
+inputDescuentoCuota.addEventListener('click', () => {
+    let post = fetch(url, {
         method: "POST",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
             cuota: cuotaPicked.innerHTML,
             descuento: dineroDescuento.value
-            
+
         }),
         headers: {
             "X-CSRFToken": getCookie('csrftoken')
         }
     })
-    .then(async response2 =>{
-        response2.json()
+        .then(async response2 => {
+            response2.json()
 
-        let data = await fetchCuotas()
-        calcularDineroRestante(cuotaPicked.innerHTML,data)
-        descuentoCuotaWrapper.classList.remove("active")
-        dineroDescuento.value = ""
-        cuotaParaDescuento.value =""
-    })
+            let data = await fetchCuotas()
+            calcularDineroRestante(cuotaPicked.innerHTML, data)
+            descuentoCuotaWrapper.classList.remove("active")
+            dineroDescuento.value = ""
+            cuotaParaDescuento.value = ""
+        })
 })
 
-function testSale(cuotaTest,typePayment,resto) {
+function testSale(cuotaTest, typePayment, resto) {
 
-    if(typePayment == "Pagado"){
+    if (typePayment == "Pagado") {
         if (cuotaTest.children[0].classList.contains("atrasado")) {
             cuotaTest.children[0].classList.remove("atrasado")
             cuotaTest.removeChild(cuotaTest.children[3])
-          }
+        }
         cuotaTest.children[0].classList.add("pago")
         cuotaTest.nextElementSibling.classList.remove("pagoBloqueado")
         cuotaTest.nextElementSibling.children[0].classList.remove("pagoBloqueado")
-    }else if(typePayment == "Parcial"){
+    } else if (typePayment == "Parcial") {
         if (cuotaTest.children[0].classList.contains("atrasado")) {
             cuotaTest.children[0].classList.remove("atrasado")
             cuotaTest.removeChild(cuotaTest.children[3])
             cuotaTest.children[0].classList.add("pagoParcial")
         }
-        else if(resto == 0){
-            console.log("weps")
+        else if (resto == 0) {
             cuotaTest.children[0].classList.remove("pagoParcial")
             cuotaTest.children[1].checked = true
             cuotaTest.children[0].classList.add("pago")
             cuotaTest.nextElementSibling.classList.remove("pagoBloqueado")
             cuotaTest.nextElementSibling.children[0].classList.remove("pagoBloqueado")
         }
-        else{
-            console.log("weps2")
+        else {
             cuotaTest.children[0].classList.add("pagoParcial")
         }
     }
 }
 
 
-function selectCuota(target,cuotas) {
-    if(!target.children[0].classList.contains("pago") && !target.children[0].classList.contains("pagoBloqueado")){
+function selectCuota(target, cuotas) {
+    if (!target.children[0].classList.contains("pago") && !target.children[0].classList.contains("pagoBloqueado")) {
         clearPickedCuota() // Limpia todos los valores de los inputs
         clearPickedClass() // Limpia los metodo de pago seleccionado
         validarSubmit() // Resetear los inputs al cerrar
@@ -259,25 +254,25 @@ function selectCuota(target,cuotas) {
 
         let inputCuota = target.children[2].innerHTML
         cuotaPicked.innerHTML = inputCuota
-        if(inputCuota == "Cuota 0" || inputCuota == "Cuota 1"){
+        if (inputCuota == "Cuota 0" || inputCuota == "Cuota 1") {
             descuentoCuotaButton.style.display = "block"
-        }else{
+        } else {
             descuentoCuotaButton.style.display = "none"
         }
         typePaymentWindow.classList.add("active");
-        testCuotaSelected(target,cuotas)
+        testCuotaSelected(target, cuotas)
     }
-    return target    
+    return target
 }
 
-function testCuotaSelected(target,cuotas) {
+function testCuotaSelected(target, cuotas) {
 
     // PARA SOLAMENTE OBTENGA EL TIPO PARCIAL SI YA ESTA PAGADO PARCIALMENTE
     if (target.children[0].classList.contains("pagoParcial")) {
         try {
             let inputCuota = target.children[1]
             cuotaPicked.innerHTML = inputCuota.value
-    
+
             typesPayments[0].previousElementSibling.remove()
             typesPayments[0].remove()
             typesPayments[1].classList.add("active")
@@ -285,14 +280,14 @@ function testCuotaSelected(target,cuotas) {
             typesPayments[1].previousElementSibling.checked = true
             tipoPago.value = typesPayments[1].previousElementSibling.value
             pickedAmount.classList.add("active")
-            calcularDineroRestante(target.children[2].innerHTML,cuotas)
+            calcularDineroRestante(target.children[2].innerHTML, cuotas)
         } catch (error) {
-            
+
         }
     }
-    else if(!target.children[0].classList.contains("pagoParcial") && !typesPaymentsWrapper.contains(pagoTotalLabel)){
-        typesPaymentsWrapper.insertAdjacentElement("afterbegin",pagoTotalLabel)
-        typesPaymentsWrapper.insertAdjacentElement("afterbegin",pagoTotalInput)
+    else if (!target.children[0].classList.contains("pagoParcial") && !typesPaymentsWrapper.contains(pagoTotalLabel)) {
+        typesPaymentsWrapper.insertAdjacentElement("afterbegin", pagoTotalLabel)
+        typesPaymentsWrapper.insertAdjacentElement("afterbegin", pagoTotalInput)
 
         typesPayments[1].style.width = "50%"
         typesPayments[1].previousElementSibling.checked = false
@@ -316,17 +311,17 @@ function selectCobrador(target) {
 }
 
 // SELECCIONA EL TIPO DE PAGO
-function selectTypePayment(target,cuotas) {
+function selectTypePayment(target, cuotas) {
     target.previousElementSibling.checked = true
     tipoPago.value = target.previousElementSibling.value
     clearPickedType()
     validarSubmit()
     target.classList.add("active")
-    if(parcial.checked == true){
+    if (parcial.checked == true) {
         pickedAmount.classList.add("active")
         // calcularDineroRestante(cuotaPicked.innerHTML,cuotas)
 
-    }else{
+    } else {
         pickedAmount.classList.remove("active")
     }
 }
@@ -344,7 +339,7 @@ function selectMethodPayment(target) {
     target.classList.add("picked")
     validarSubmit()
 }
-function clearPickedClass(){
+function clearPickedClass() {
     methodPayments.forEach(element => {
         element.classList.remove("picked")
     });
@@ -352,19 +347,19 @@ function clearPickedClass(){
 
 // VALIDA EL INPUT DE DINERO DE PAGO PARCIAL
 function validarInputPagoParcial(resto) {
-    if(amountParcialInput.value > resto){
+    if (amountParcialInput.value > resto) {
         amountParcialInput.classList.add("invalido")
-    }else{
+    } else {
         amountParcialInput.classList.remove("invalido")
     }
     validarSubmit()
 }
 
 // CALCULA EL DINERO RESTANTE DE LA CUOTA
-function calcularDineroRestante(objetivo,datos){
-    let cuotaSeleccionada = datos.filter(c=> c.cuota === objetivo)
+function calcularDineroRestante(objetivo, datos) {
+    let cuotaSeleccionada = datos.filter(c => c.cuota === objetivo)
     let listPagos = cuotaSeleccionada[0]["pagoParcial"]["amount"]
-    let sumaPagos = listPagos.reduce((acc,num) => acc + num["value"], 0);
+    let sumaPagos = listPagos.reduce((acc, num) => acc + num["value"], 0);
     let resto = cuotaSeleccionada[0]["total"] - (sumaPagos + cuotaSeleccionada[0]["descuento"])
     dineroRestante.innerHTML = "Dinero restante: $" + resto
     return resto
@@ -372,7 +367,7 @@ function calcularDineroRestante(objetivo,datos){
 
 function closeWindowSellCuota() {
     typePaymentWindow.classList.remove("active");
-    cuotaPicked.innerHTML=""
+    cuotaPicked.innerHTML = ""
 }
 
 function clearPickedCuota() {
@@ -380,31 +375,31 @@ function clearPickedCuota() {
     metodoPagoPicked.value = ""
 
     // Limpiar cobrador
-    cobradorSelected.innerHTML ="-----"
+    cobradorSelected.innerHTML = "-----"
     cobrador.value = ""
 
     //Limpiar pago parcial
-    amountParcialInput.innerHTML=""
-    amountParcialInput.value=""
+    amountParcialInput.innerHTML = ""
+    amountParcialInput.value = ""
 
     cuotaPicked.innerHTML = ""
 }
 
-function validarSubmit(){
-    if(tipoPago.value =="total"){
-        if(cobrador.value != "" && metodoPago.value != ""){
+function validarSubmit() {
+    if (tipoPago.value == "total") {
+        if (cobrador.value != "" && metodoPago.value != "") {
             inputSubmit.classList.remove("blocked")
-        }else{
+        } else {
             inputSubmit.classList.add("blocked")
         }
-    }else if(tipoPago.value =="parcial"){
-        if(cobrador.value != "" && metodoPago.value != "" && !amountParcialInput.classList.contains("invalido") && amountParcialInput.value !=""){
+    } else if (tipoPago.value == "parcial") {
+        if (cobrador.value != "" && metodoPago.value != "" && !amountParcialInput.classList.contains("invalido") && amountParcialInput.value != "") {
             inputSubmit.classList.remove("blocked")
-        }else{
+        } else {
             inputSubmit.classList.add("blocked")
         }
     }
-    
+
 }
 
 
@@ -412,7 +407,7 @@ function validarSubmit(){
 
 
 // PARA FILTRAR LAS CUOTAS SEGUN SU ESTADO
-function checkboxsFilter(checkboxes,estado) {
+function checkboxsFilter(checkboxes, estado) {
     let cuotasFiltered = checkboxes.filter(c => c.status === estado)
     // if(estado == "Atrasado"){
     //     cuotasFiltered = checkboxes.filter(c => c.status === estado || c.status === "Pagado")
@@ -420,17 +415,17 @@ function checkboxsFilter(checkboxes,estado) {
     return cuotasFiltered
 }
 
-function changeCheckboxes(lista,estado) {
-    let lista_cuotas = checkboxsFilter(lista,estado)
+function changeCheckboxes(lista, estado) {
+    let lista_cuotas = checkboxsFilter(lista, estado)
     let numberCuota = lista_cuotas.map(item => item.cuota)
-    
+
     checkboxes.forEach(element => {
-        if(numberCuota.includes(element.value) && estado =="Pagado"){
+        if (numberCuota.includes(element.value) && estado == "Pagado") {
             element.checked = true;
             element.previousElementSibling.classList.add("pago");
         }
 
-        else if(numberCuota.includes(element.value) && estado =="Atrasado"){
+        else if (numberCuota.includes(element.value) && estado == "Atrasado") {
             let previousCuota;
             let diasAtrasadostext;
 
@@ -438,32 +433,30 @@ function changeCheckboxes(lista,estado) {
                 if (lista[i]["cuota"] === element.value && lista[i]["status"] === "Atrasado") {
                     previousCuota = lista[i - 1];
                     diasAtrasadostext = "<h4 class='textAtrasado'>" + lista[i]["diasRetraso"] + " dias</h4>"
-                    console.log(lista[i-1])
-                  break;
+                    break;
                 }
             }
-            if(previousCuota["status"] == "Pagado"){
+            if (previousCuota["status"] == "Pagado") {
                 element.previousElementSibling.classList.add("atrasado");
-                element.parentElement.insertAdjacentHTML("beforeend",diasAtrasadostext)
+                element.parentElement.insertAdjacentHTML("beforeend", diasAtrasadostext)
             }
-            else{
+            else {
                 element.previousElementSibling.classList.add("pagoBloqueado");
                 element.parentElement.classList.add("pagoBloqueado");
             }
-            
-            
+
+
         }
-        else if(numberCuota.includes(element.value) && estado =="Parcial"){
+        else if (numberCuota.includes(element.value) && estado == "Parcial") {
             element.previousElementSibling.classList.add("pagoParcial");
-            
+
         }
-        else if(numberCuota.includes(element.value) && estado =="Bloqueado"){
+        else if (numberCuota.includes(element.value) && estado == "Bloqueado") {
             element.previousElementSibling.classList.add("pagoBloqueado");
             element.parentElement.classList.add("pagoBloqueado");
-            
+
         }
-        else if(numberCuota.includes(element.value) && estado =="Pendiente"){
-            console.log("wpes")
+        else if (numberCuota.includes(element.value) && estado == "Pendiente") {
             element.previousElementSibling.classList.remove("pagoBloqueado");
             element.parentElement.classList.remove("pagoBloqueado");
         }
@@ -471,23 +464,22 @@ function changeCheckboxes(lista,estado) {
 }
 
 // LISTENER PARA CERRAR LA LISTA DE COBRADOR (POR AHORA)
-document.addEventListener("click", function(event) {
+document.addEventListener("click", function (event) {
     if (!cobradoresList.contains(event.target) && event.target !== cobradorSelectedWrapper) {
         cobradoresList.classList.remove("active");
     }
-    if (!descuentoCuotaButton.contains(event.target) && 
+    if (!descuentoCuotaButton.contains(event.target) &&
         !descuentoCuotaWrapper.contains(event.target) &&
-        ![...descuentoCuotaWrapper.childNodes].includes(event.target) && 
-        ![...descuentoCuotaWrapper.childNodes[3].childNodes].includes(event.target)) 
-        {
-            descuentoCuotaWrapper.classList.remove("active")
-        }
+        ![...descuentoCuotaWrapper.childNodes].includes(event.target) &&
+        ![...descuentoCuotaWrapper.childNodes[3].childNodes].includes(event.target)) {
+        descuentoCuotaWrapper.classList.remove("active")
+    }
 });
 
 // Esto evita el comportamiento predeterminado del botón "Tab" y el "Enter"
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Tab' || e.key === 'Enter') {
-      e.preventDefault();
+        e.preventDefault();
     }
-  });
+});
 

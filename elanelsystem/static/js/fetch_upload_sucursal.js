@@ -4,7 +4,7 @@ let buttonsDeleteSucursal = document.querySelectorAll(".deleteSucursal")
 // SWITCH BUTTONS
 function editarSucursal(buttons) {
     buttons.forEach(buttonE => {
-        buttonE.addEventListener("click",()=>{
+        buttonE.addEventListener("click", () => {
             let form = buttonE.offsetParent
             let buttonDesable = form.querySelector(".desableForm")
             let buttonUpload = form.querySelector(".uploadForm")
@@ -12,68 +12,67 @@ function editarSucursal(buttons) {
             form.querySelectorAll(".wrapperInput > input").forEach(element => {
                 element.classList.add("open")
             });
-    
-            buttonE.style.display ="none";
-            buttonDelete.style.display ="none";
-            
+
+            buttonE.style.display = "none";
+            buttonDelete.style.display = "none";
+
             buttonDesable.classList.add("active")
             buttonUpload.classList.add("active")
-    
+
             let buttonsDesableForms = document.querySelectorAll(".desableForm")
-            buttonsDesableForms.forEach(buttonD =>{
-                buttonD.addEventListener("click",()=>{
+            buttonsDesableForms.forEach(buttonD => {
+                buttonD.addEventListener("click", () => {
                     form = buttonD.offsetParent
-    
+
                     form.querySelectorAll(".wrapperInput > input").forEach(element => {
                         element.classList.remove("open")
                     });
                     // buttonUpload = form.querySelector(".uploadForm")
                     let enableForm = form.querySelector(".enableForm")
                     buttonDelete = form.querySelector(".deleteSucursal")
-    
-                    if (!form) {return;}
-    
+
+                    if (!form) { return; }
+
                     buttonD.classList.remove("active")
                     buttonD.previousElementSibling.classList.remove("active")
-    
-                    enableForm.style.display ="unset";
-                    buttonDelete.style.display ="unset";
-    
+
+                    enableForm.style.display = "unset";
+                    buttonDelete.style.display = "unset";
+
                 })
             })
-    
+
             let buttonsUpdateForms = document.querySelectorAll(".uploadForm")
-            buttonsUpdateForms.forEach(buttonU =>{
-                buttonU.addEventListener("click",()=>{
+            buttonsUpdateForms.forEach(buttonU => {
+                buttonU.addEventListener("click", () => {
                     form = buttonU.offsetParent
                     let enableForm = form.querySelector(".enableForm")
                     buttonDelete = form.querySelector(".deleteSucursal")
-                    
-                    if (!form) {return;}
-    
+
+                    if (!form) { return; }
+
                     buttonU.classList.remove("active")
                     buttonU.nextElementSibling.classList.remove("active")
-    
-                    enableForm.style.display ="unset";
-                    buttonDelete.style.display ="unset";
-                    
+
+                    enableForm.style.display = "unset";
+                    buttonDelete.style.display = "unset";
+
                     let body = {
                         "sucursalPk": inputID.value,
                         "direccion": inputDireccion.value,
                         "horaApertura": inputHora.value,
                     }
-    
-                    fetchCRUD(body,urlUpdateS).then(data =>{
-                        console.log(data["message"])
+
+                    fetchCRUD(body, urlUpdateS).then(data => {
                         form.querySelectorAll(".wrapperInput > input").forEach(element => {
                             element.classList.remove("open")
                         });
                     })
-                    
+
                 })
             })
         })
-    }); 
+    });
 }
 
 editarSucursal(buttonsEnableForms)
@@ -81,18 +80,17 @@ removeHTMLSucursal(buttonsDeleteSucursal)
 
 // Para eliminar una sucursal - - - - - - - - - - - -
 function removeHTMLSucursal(buttons) {
-    buttons.forEach(buttonD =>{
-        buttonD.addEventListener("click",()=>{
+    buttons.forEach(buttonD => {
+        buttonD.addEventListener("click", () => {
             let pk = buttonD.offsetParent.querySelector("#inputID").value
             let body = {
                 "pk": pk
             }
 
-            fetchCRUD(body,urlRemoveS).then(data =>{
+            fetchCRUD(body, urlRemoveS).then(data => {
                 buttonD.offsetParent.parentElement.remove()
                 buttonsEnableForms = document.querySelectorAll(".enableForm")
                 editarSucursal(buttonsEnableForms)
-                console.log(data["message"])
             })
         })
     })
@@ -100,7 +98,7 @@ function removeHTMLSucursal(buttons) {
 //  - - - - - - - - - - - - - - - - - - - - - -
 
 // Funciones para manejo de DOM - - - - - - - - - - -
-function newSucursal_HTML(csrf){
+function newSucursal_HTML(csrf) {
     let stringForHTML = `
     <div class="sucursalItem new">
         <form method="POST" id="addSucursalForm">
@@ -131,16 +129,16 @@ function newSucursal_HTML(csrf){
 
 }
 function cleanAddSucursal() {
-    if(document.getElementById("addSucursalForm")){
+    if (document.getElementById("addSucursalForm")) {
         document.querySelector(".sucursalItem.new").remove()
     }
 }
 //  - - - - - - - - - - - - - - - - - - - - - - 
 
 // Crear una nueva sucursal  - - - - - - - - - - - - - - - - - - - - - -
-function createNewItemSucursal_HTML(csrf,pk,name,direccion,hora) {
-    let stringForHTML = 
-    `
+function createNewItemSucursal_HTML(csrf, pk, name, direccion, hora) {
+    let stringForHTML =
+        `
         <div class="sucursalItem">
             <h2>${name}</h2>
             <form method="POST" class="formSucursal">
@@ -171,10 +169,10 @@ function createNewItemSucursal_HTML(csrf,pk,name,direccion,hora) {
 
 }
 
-buttonAddSucursal.addEventListener("click",()=>{
+buttonAddSucursal.addEventListener("click", () => {
     newSucursal_HTML(CSRF_TOKEN)
     buttonAddSucursal.classList.add("blocked")
-    buttonConfirmAddSucursal.addEventListener("click",()=>{
+    buttonConfirmAddSucursal.addEventListener("click", () => {
         let body = {
             "provincia": provincia.value,
             "localidad": localidad.value,
@@ -182,9 +180,8 @@ buttonAddSucursal.addEventListener("click",()=>{
             "horaApertura": newHora.value,
         }
 
-        fetchCRUD(body,urlAddS).then(data =>{
-            console.log(data["message"])
-            createNewItemSucursal_HTML(CSRF_TOKEN,data["pk"],data["name"],data["direccion"],data["hora"]);
+        fetchCRUD(body, urlAddS).then(data => {
+            createNewItemSucursal_HTML(CSRF_TOKEN, data["pk"], data["name"], data["direccion"], data["hora"]);
             cleanAddSucursal()
             buttonAddSucursal.classList.remove("blocked")
 
@@ -195,8 +192,8 @@ buttonAddSucursal.addEventListener("click",()=>{
             removeHTMLSucursal(buttonsDeleteSucursal)
         })
     })
-    
-    buttonStopAddSucursal.addEventListener("click",()=>{
+
+    buttonStopAddSucursal.addEventListener("click", () => {
         cleanAddSucursal()
         buttonAddSucursal.classList.remove("blocked")
     })
@@ -221,21 +218,21 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-async function fetchCRUD(body,url) {
-    try{
-        let response = await fetch(url,{
+async function fetchCRUD(body, url) {
+    try {
+        let response = await fetch(url, {
             method: "POST",
             body: JSON.stringify(body),
             headers: {
                 "X-CSRFToken": getCookie('csrftoken'),
             }
         })
-        if(!response.ok){
+        if (!response.ok) {
             throw new Error("Error")
         }
         const data = await response.json();
         return data;
-    }catch(error){
+    } catch (error) {
     }
 }
 // - - - - - - - - - - - - - - - - -

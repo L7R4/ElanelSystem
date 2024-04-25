@@ -49,7 +49,7 @@ class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
         return redirect("users:list_customers")
         
             
-# API FUNCTIONS PARA EL CRM DE RESUMEN
+#region API CRM
 def requestMovimientosCRM(request):
     cuotas_data = requestCuotas(request)
     movimientosExternos = requestMovimientosExternos(request)
@@ -83,9 +83,7 @@ def requestMovimientosCRM(request):
     sumasEgreso_por_mes = [egresos_por_mes.get(mes, 0) for mes in range(1, 13)]
     
     return JsonResponse({"sumasIngreso_por_mes": sumasIngreso_por_mes,"sumasEgreso_por_mes":sumasEgreso_por_mes}, safe=False)
-
-
-# -----------------------------------------------------
+#endregion
     
 class CrearVenta(TestLogin,generic.DetailView):
     model = Cliente
@@ -213,9 +211,6 @@ class CrearVenta(TestLogin,generic.DetailView):
 
                 sale.save()
                 sale.crearCuotas()
-                sale.createBaja()
-                sale.createAdjudicado()
-                sale.initialStatusAuditoria()
                 return redirect("users:cuentaUser",pk= self.get_object().pk)
 
         return render(request, self.template_name, {'form': form, 'object' : self.get_object()})

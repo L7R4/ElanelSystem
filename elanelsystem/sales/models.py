@@ -8,15 +8,17 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from sales.utils import obtener_ultima_campania
 
-
+#region C-LISTA-PRECIOS
 class CoeficientesListadePrecios(models.Model):
     valor_nominal = models.IntegerField("Valor Nominal:")
     cuota = models.IntegerField("Cuotas:")
     porcentage = models.FloatField("Porcentage:")
+#endregion
 
-
+#region VENTAS
 class Ventas(models.Model):
 
+    # Funcion para el siguiente numero de operacion automaticamente
     def returnOperacion():      
         if not Ventas.objects.last():
             numOperacion = 1
@@ -24,61 +26,17 @@ class Ventas(models.Model):
             lastOperacion = Ventas.objects.last()
             numOperacion = int(lastOperacion.nro_operacion) + 1
         return numOperacion
-       
     
-    MODALIDADES = (
-        ('Diario', 'Diario'),
-        ('Semanal', 'Semanal'),
-        ('Quincenal', 'Quincenal'),
-        ('Mensual', 'Mensual'),
-    )
-    PORCENTAJE_ANUALIZADO = 15
-   
-
-    nro_cliente = models.ForeignKey(Cliente,on_delete=models.CASCADE,related_name="ventas_nro_cliente")
-    nro_solicitud = models.CharField("Nro solicitud:",max_length=10,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')],default="")
-    modalidad = models.CharField("Modalidad:",max_length=15, choices=MODALIDADES,default="")
-    nro_cuotas = models.IntegerField()
-    nro_operacion = models.IntegerField(default=returnOperacion)
-    agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
-    auditoria = models.JSONField(default=list)
-    campania = models.IntegerField(default=0)
-
-    cambioTitularidadField = models.JSONField(default=list,blank=True,null=True)
-    # clientes_anteriores = models.ManyToManyField(Cliente, related_name='ventas_anteriores', blank=True)
-
-    adjudicado = models.JSONField(default=dict)
-    deBaja = models.JSONField(default=dict)
-    suspendida = models.BooleanField(default=False)
-
-    importe = models.FloatField("Importe:",default=0)
-    tasa_interes = models.FloatField("Tasa de Interes:",validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')],default=0)
-    primer_cuota =models.FloatField("Primer cuota:",default=0)
-    anticipo =models.IntegerField("Cuota de Inscripcion:",default=0)
-    intereses_generados = models.FloatField("Intereses Gen:",default=0)
-    importe_x_cuota = models.FloatField("Importe x Cuota:",default=0)
-    total_a_pagar = models.FloatField("Total a pagar:",default=0)
-    fecha = models.CharField("Fecha:", max_length=30,default="")
-    tipo_producto = models.CharField(max_length=20,default="")
-    producto = models.ForeignKey(Products,on_delete=models.CASCADE,related_name="ventas_producto",default="")
-    paquete = models.CharField(max_length=20,default="")
-    nro_orden = models.CharField("Nro de Orden:",max_length=10,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')],default="")
-    vendedor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="ventas_ven_usuario",default="",blank=True,null=True)
-    supervisor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="venta_super_usuario",default="",blank=True,null=True)
-    observaciones = models.CharField("Obeservaciones:",max_length=255,blank=True,null=True)
-    cuotas = models.JSONField(default=list)
-
-
+    # Funcion para crear las cuotas cuando se cree una venta 
     def crearCuotas(self):
         cuotas = self.cuotas
-        fechaDeVenta = datetime.datetime.now()
+        fechaDeAlta = datetime.datetime.strptime(self.fecha, "%d/%m/%Y")
+        # Setear la variable fechaDeVencimiento con un tipo fecha
+        fechaDeVencimiento = fechaDeAlta
         contMeses = 0
         contYear = 0
 
-        # if(self.adjudicado):
-        #     fechaDeVenta =  fechaDeVenta  + relativedelta(months=+1)
-
-
+        # Cuota 0
         cuotas.append({"cuota" :f'Cuota 0',
                        "nro_operacion": self.nro_operacion,
                        "status": "Pendiente",
@@ -94,28 +52,58 @@ class Ventas(models.Model):
                        "pagoParcial":{"status": False, "amount": []},
                        })
         
+        # Otras cuotas
         for i in range(1,self.nro_cuotas+1):
-            fechaDeVenta =  fechaDeVenta + self.contarDiasSegunModalidad(self.modalidad)
             contMeses += 1
-            cuotas.append({"cuota" :f'Cuota {i}',
-                           "nro_operacion": self.nro_operacion,
-                           "status": "Bloqueado",
-                           "total": self.importe_x_cuota + (self.importe_x_cuota * (self.PORCENTAJE_ANUALIZADO *contYear))/100,
-                           'pagado': 0,
-                           'cobrador': "",
-                           "fecha_pago": "", 
-                           "hora": "", 
-                           "metodoPago": "",
-                           "descuento": 0,
-                           "fechaDeVencimiento":f'{fechaDeVenta.strftime("%d/%m/%Y")}', 
-                           "diasRetraso": 0,
-                           "pagoParcial":{"status": False, "amount": []}
-                           })
+            
+            #region Bloque para asignar la fecha de vencimiento a la primera cuota (Si es antes o desp del dia 25 del mes) a las ventas con modalidad MENSUAL
+            if(self.modalidad == "Mensual"):
+                if(i == 1):
+                    if fechaDeAlta.day <= 25:
+                        # Fecha de vencimiento es el 15 del próximo mes
+                        fechaDeVencimiento = datetime.datetime(
+                            year=fechaDeAlta.year,
+                            month=fechaDeAlta.month,
+                            day=15
+                        ) + relativedelta(months=1)
+                    else:
+                        # Fecha de vencimiento es el 15 del siguiente mes después del próximo mes
+                        fechaDeVencimiento = datetime.datetime(
+                            year=fechaDeAlta.year,
+                            month=fechaDeAlta.month,
+                            day=15
+                        ) + relativedelta(months=2)
+                        
+                else:
+                    fechaDeVencimiento =  fechaDeVencimiento + self.contarDiasSegunModalidad(self.modalidad,fechaDeVencimiento)
+            #endregion
+
+
+            #region Bloque para asignar la fecha de vencimiento a otras MODALIDADES
+            if(self.modalidad != "Mensual"):
+                fechaDeVencimiento =  fechaDeVencimiento + self.contarDiasSegunModalidad(self.modalidad)
+            #endregion
+
+            cuotas.append({
+                "cuota" :f'Cuota {i}',
+                "nro_operacion": self.nro_operacion,
+                "status": "Bloqueado",
+                "total": self.importe_x_cuota + (self.importe_x_cuota * (self.PORCENTAJE_ANUALIZADO *contYear))/100,
+                'pagado': 0,
+                'cobrador': "",
+                "fecha_pago": "", 
+                "hora": "", 
+                "metodoPago": "",
+                "fechaDeVencimiento" : fechaDeVencimiento.strftime("%d/%m/%Y"),
+                "descuento": 0,
+                "diasRetraso": 0,
+                "pagoParcial":{"status": False, "amount": []}
+            })
+
+
             if(contMeses == 12):
                 contMeses = 0
                 contYear +=1
-
-            self.cuotas = cuotas
 
 
         if(self.adjudicado):
@@ -124,11 +112,75 @@ class Ventas(models.Model):
                 cuota["interesPorMora"] = 0
                 cuota["totalFinal"] = 0
 
+        self.cuotas = cuotas
         self.save()
-
     
-    def contarDiasSegunModalidad(self,modalidad):
-        hoy = datetime.datetime.now()  # Obtén la fecha actual
+    # Modalidades de tiempo de pago
+    MODALIDADES = (
+        ('Diario', 'Diario'),
+        ('Semanal', 'Semanal'),
+        ('Quincenal', 'Quincenal'),
+        ('Mensual', 'Mensual'),
+    )
+    
+    PORCENTAJE_ANUALIZADO = 15
+    
+    # Estados inciales de campos deBaja, adjudicacion, auditorias
+    DEFAULT_STATUS_BAJA ={
+        "status" : False,
+        "motivo" : "",
+        "detalleMotivo" : "",
+        "observacion" : "",
+        "responsable" : ""
+    }
+
+    DEFAULT_STATUS_ADJUDICACION = {
+        "status" : False,
+        "tipo" : ""
+    }
+
+    DEFAULT_STATUS_AUDITORIAS =[{
+            "version":0,
+            "realizada":False,
+            "grade":False,
+            "comentarios":"",
+            "fecha_hora": "",
+        }]
+    
+    #region Campos
+    nro_cliente = models.ForeignKey(Cliente,on_delete=models.CASCADE,related_name="ventas_nro_cliente")
+    nro_solicitud = models.CharField("Nro solicitud:",max_length=10,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')],default="")
+    modalidad = models.CharField("Modalidad:",max_length=15, choices=MODALIDADES,default="")
+    nro_cuotas = models.IntegerField()
+    nro_operacion = models.IntegerField(default=returnOperacion)
+    agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
+    campania = models.IntegerField(default=0)
+    cambioTitularidadField = models.JSONField(default=list,blank=True,null=True)
+    
+    suspendida = models.BooleanField(default=False)
+    importe = models.FloatField("Importe:",default=0)
+    tasa_interes = models.FloatField("Tasa de Interes:",validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')],default=0)
+    primer_cuota =models.FloatField("Primer cuota:",default=0)
+    anticipo =models.IntegerField("Cuota de Inscripcion:",default=0)
+    intereses_generados = models.FloatField("Intereses Gen:",default=0)
+    importe_x_cuota = models.FloatField("Importe x Cuota:",default=0)
+    total_a_pagar = models.FloatField("Total a pagar:",default=0)
+    fecha = models.CharField("Fecha:", max_length=30,default="")
+    tipo_producto = models.CharField(max_length=20,default="")
+    producto = models.ForeignKey(Products,on_delete=models.CASCADE,related_name="ventas_producto",default="")
+    paquete = models.CharField(max_length=20,default="")
+    nro_orden = models.CharField("Nro de Orden:",max_length=10,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')],default="")
+    vendedor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="ventas_ven_usuario",default="",blank=True,null=True)
+    supervisor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="venta_super_usuario",default="",blank=True,null=True)
+    observaciones = models.CharField("Obeservaciones:",max_length=255,blank=True,null=True)
+    auditoria = models.JSONField(default=DEFAULT_STATUS_AUDITORIAS)
+    adjudicado = models.JSONField(default=DEFAULT_STATUS_ADJUDICACION)
+    deBaja = models.JSONField(default=DEFAULT_STATUS_BAJA)
+    cuotas = models.JSONField(default=list)
+    #endregion
+    
+
+    def contarDiasSegunModalidad(self,modalidad,ultimaFechaDevencimiento = ""):
         modalidad = modalidad.lower()
 
         if modalidad == 'diario':
@@ -138,34 +190,15 @@ class Ventas(models.Model):
         elif modalidad == 'quincenal':
             dias_a_sumar = 15
         elif modalidad == 'mensual':
-            # Usa relativedelta para sumar un mes
-            hoy_mas_un_mes = hoy + relativedelta(months=1)
-            # Calcula la diferencia en días
-            dias_a_sumar = (hoy_mas_un_mes - hoy).days
+            # Usa relativedelta para sumar un mes y porque no todos los meses tienen la misma cantidad de dias forzamos el valor de los dias a 15
+            ultimaFecha_mas_un_mes = (ultimaFechaDevencimiento + relativedelta(months=1)).replace(day=15)
+            # # Calcula la diferencia en días
+            dias_a_sumar = (ultimaFecha_mas_un_mes - ultimaFechaDevencimiento).days
         else:
             raise ValueError("Modalidad no válida")
 
         fecha_resultado = relativedelta(days=dias_a_sumar)
         return fecha_resultado
-
-
-    def createBaja(self):
-        bajaField = self.deBaja
-        bajaField["status"] = False
-        bajaField["motivo"] = ""
-        bajaField["detalleMotivo"] = ""
-        bajaField["observacion"] = ""
-        bajaField["responsable"] = ""
-        self.deBaja = bajaField
-        self.save()
-
-
-    def createAdjudicado(self):
-        adjuField = self.adjudicado
-        adjuField["status"] = False
-        adjuField["tipo"] = ""
-        self.adjudicado = adjuField
-        self.save()
 
 
     def createCambioTitularidad(self,lastCuota,user,oldCustomer,newCustomer,pkOldCustomer,pkNewCustomer):
@@ -225,19 +258,7 @@ class Ventas(models.Model):
         self.deBaja["responsable"] = responsable
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y -- %H:%M")
         self.save()
-        
-        
-    def initialStatusAuditoria(self):
-        initialDict = {
-            "version":0,
-            "realizada":False,
-            "grade":False,
-            "comentarios":"",
-            "fecha_hora": "",
-        }
-        self.auditoria.append(initialDict)
-
-        self.save()
+         
         
     def calcularDineroADevolver(self):
         dineroADevolver = 0
@@ -265,11 +286,9 @@ class Ventas(models.Model):
                 contAtrasados +=1
 
         if contAtrasados >= 3:
-            print("La operacion "+ str(self.pk) +" esta suspendida")
             self.suspendida = True
             self.save()
         elif(self.suspendida == True and contAtrasados==0):
-            print("La operacion "+ str(self.pk)+" esta activa nuevamente")
             self.suspendida = False
             self.save()
         elif(self.suspendida==False and contAtrasados < 3):
@@ -286,7 +305,7 @@ class Ventas(models.Model):
 
         self.save()
 
-
+    #region CuotasManagement
     def desbloquearCuota(self,cuota):
         for i in range(0,int(self.nro_cuotas)):
             if (cuota == self.cuotas[i]["cuota"]):
@@ -297,16 +316,18 @@ class Ventas(models.Model):
     
     def pagoTotal(self,cuota,metodoPago,cobrador):
 
-        cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))
-        if(cuotaSeleccionada[0]["status"] != "Pagado"):
-            cuotaSeleccionada[0]["fecha_pago"] = datetime.datetime.now().strftime("%d/%m/%Y")
-            cuotaSeleccionada[0]["status"] = "Pagado"
-            cuotaSeleccionada[0]["pagado"] = cuotaSeleccionada[0]["total"] - cuotaSeleccionada[0]["descuento"]
-            cuotaSeleccionada[0]["cobrador"] = cobrador
-            cuotaSeleccionada[0]["hora"] = datetime.datetime.now().time().strftime("%H:%M")
-            cuotaSeleccionada[0]["metodoPago"] = metodoPago
-            cuotaSeleccionada[0]["campania"] = obtener_ultima_campania()
+        cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))[0]
+        if(cuotaSeleccionada["status"] != "Pagado"):
+            cuotaSeleccionada["fecha_pago"] = datetime.datetime.now().strftime("%d/%m/%Y")
+            cuotaSeleccionada["status"] = "Pagado"
+            cuotaSeleccionada["pagado"] = cuotaSeleccionada[0]["total"] - cuotaSeleccionada[0]["descuento"]
+            cuotaSeleccionada["cobrador"] = cobrador
+            cuotaSeleccionada["hora"] = datetime.datetime.now().time().strftime("%H:%M")
+            cuotaSeleccionada["metodoPago"] = metodoPago
+            cuotaSeleccionada["campania"] = obtener_ultima_campania()
             self.desbloquearCuota(cuota)
+            
+            # Cada vez que se pague una cuota tiene que verificar el estado de la venta, es decir, si se reactiva, se suspende, etc.  
             self.suspenderOperacion()
         else:
             raise ValueError("Esta cuota ya esta pagada")
@@ -315,35 +336,35 @@ class Ventas(models.Model):
                 
 
     def pagoParcial(self,cuota,metodoPago,amount,cobrador):
-        cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))
-        cuotaSeleccionada[0]["pagoParcial"]["status"]= True
-        cuotaSeleccionada[0]["pagoParcial"]["amount"].append({"value": int(amount), 
+        cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))[0]
+        cuotaSeleccionada["pagoParcial"]["status"]= True
+        cuotaSeleccionada["pagoParcial"]["amount"].append({"value": int(amount), 
                                                             "date":datetime.datetime.now().strftime("%d/%m/%Y"),
                                                             "hour": datetime.datetime.now().time().strftime("%H:%M"),
                                                             "metodo":metodoPago,
                                                             "cobrador": cobrador,
                                                             "campania":obtener_ultima_campania()})
         
-        valores_parciales = cuotaSeleccionada[0].get("pagoParcial", {}).get("amount", [])
+        valores_parciales = cuotaSeleccionada.get("pagoParcial", {}).get("amount", [])
         valores_parciales = [item["value"] for item in valores_parciales]
         sumaPagosParciales = sum(valores_parciales)
-        cuotaSeleccionada[0]["pagado"] += sumaPagosParciales
+        cuotaSeleccionada["pagado"] += sumaPagosParciales
         
-        if(sumaPagosParciales < cuotaSeleccionada[0]["total"] - cuotaSeleccionada[0]["descuento"]):
-            cuotaSeleccionada[0]["status"] = "Parcial"
+        if(sumaPagosParciales < cuotaSeleccionada["total"] - cuotaSeleccionada["descuento"]):
+            cuotaSeleccionada["status"] = "Parcial"
             
-        elif(sumaPagosParciales == cuotaSeleccionada[0]["total"] - cuotaSeleccionada[0]["descuento"]):
-            cuotaSeleccionada[0]["status"] = "Pagado"
+        elif(sumaPagosParciales == cuotaSeleccionada["total"] - cuotaSeleccionada["descuento"]):
+            cuotaSeleccionada["status"] = "Pagado"
             self.desbloquearCuota(cuota)
             self.suspenderOperacion()
             
         self.save()
-            
+         
 
     def aplicarDescuento(self,cuota,dinero):
-        cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))
-        if(cuotaSeleccionada[0]["status"] != "Pagado" and (cuotaSeleccionada[0]["cuota"] == "Cuota 0" or cuotaSeleccionada[0]["cuota"] == "Cuota 1")):
-            cuotaSeleccionada[0]["descuento"] += dinero
+        cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))[0]
+        if(cuotaSeleccionada["status"] != "Pagado" and (cuotaSeleccionada["cuota"] == "Cuota 0" or cuotaSeleccionada["cuota"] == "Cuota 1")):
+            cuotaSeleccionada["descuento"] += dinero
         else:
             raise ValueError("Solo se puede aplicar descuento a la cuota 0 y 1. En otro caso, esta cuota está pagada")
         self.save()
@@ -361,7 +382,7 @@ class Ventas(models.Model):
                 diasDeRetraso = self.contarDias(datetime.datetime.strptime(cuota,"%d/%m/%Y"))
                 self.cuotas[i]["diasRetraso"] = diasDeRetraso
         self.save()
-
+    #endregion
 
     def addPorcentajeAdjudicacion(self):
         NOW = datetime.datetime.now()
@@ -393,8 +414,9 @@ class Ventas(models.Model):
             fechaReferente = fechaReferente + relativedelta(days=1)
             contadorDias += 1
         return contadorDias
+#endregion
 
-
+#region ARQUEO
 class ArqueoCaja(models.Model):
     agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     fecha = models.CharField("Fecha", max_length=30)
@@ -405,8 +427,9 @@ class ArqueoCaja(models.Model):
     diferencia = models.FloatField("Diferencia", default=0)
     observaciones = models.TextField()
     detalle = models.JSONField(default=dict)
+#endregion
 
-
+#region MOVsEXTERNOS
 class MovimientoExterno(models.Model):
     TIPOS_MOVIMIENTOS = (
         ('Ingreso', 'Ingreso'),
@@ -475,6 +498,4 @@ class MovimientoExterno(models.Model):
             tipo_monedas_permitidas = [m[0].lower() for m in self.TIPOS_MONEDAS]
             if tipo_moneda and tipo_moneda.lower() not in tipo_monedas_permitidas:
                 raise ValidationError({'tipoMoneda': 'Tipo de moneda no válida'})
-            
-
-   
+#endregion
