@@ -1,32 +1,30 @@
-*{
+* {
     box-sizing: border-box;
 }
-.wrapper_content
-{
+
+.wrapper_content {
     padding-left: 5rem;
 }
 
-.wrapper_tittle
-{
+.wrapper_tittle {
     height: 15%;
     width: 100%;
     display: flex;
     align-items: center;
 }
 
-.wrapper_tittle > h1
-{
-    font-size: clamp(3rem, 3vw, 5rem);;
+.wrapper_tittle>h1 {
+    font-size: clamp(3rem, 3vw, 5rem);
+    ;
     font-family: raleway-bold;
     color: white;
 }
 
-#form_create_user
-{
+#form_create_user {
     width: 100%;
 }
 
-#form_create_user > div{
+#form_create_user>div {
     display: flex;
     width: 100%;
     flex-wrap: wrap;
@@ -34,7 +32,8 @@
     gap: 1rem;
     max-width: 140rem;
 }
-#form_create_user > h2{
+
+#form_create_user>h2 {
     color: white;
     font-family: raleway-semibold;
     font-size: clamp(1.5rem, 1.5vw, 3rem);
@@ -46,7 +45,8 @@
     border-bottom: 2px solid #ffffffa0;
     margin: 1rem 0;
 }
-.inputWrapper{
+
+.inputWrapper {
     position: relative;
     display: flex;
     flex-flow: column;
@@ -56,28 +56,29 @@
     font-size: clamp(1.3rem, 1.1vw, 2rem);
 
 }
-.inputWrapper.grow1
-{
+
+.inputWrapper.grow1 {
     flex: 1 2 14rem;
     max-width: 18rem;
 
 }
-.inputWrapper.grow2
-{
+
+.inputWrapper.grow2 {
     flex: 2 2 20rem;
     max-width: 23rem;
-    
+
 }
-.inputWrapper.grow3
-{
+
+.inputWrapper.grow3 {
     flex: 3 2 25rem;
     max-width: 30rem;
 }
-#xpLaboralWrapper{
+
+#xpLaboralWrapper {
     min-width: 80%;
 }
-.inputWrapper > input
-{
+
+.inputWrapper>input {
     height: 2.9rem;
     width: 100%;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
@@ -92,7 +93,8 @@
     outline: none;
     color: white;
 }
-.inputWrapper > textarea{
+
+.inputWrapper>textarea {
     width: 100%;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     font-family: raleway;
@@ -103,15 +105,18 @@
     outline: none;
     color: white;
 }
-#familiares{
+
+#familiares {
     min-width: 80%;
 }
-#familiares > .familiar {
+
+#familiares>.familiar {
     display: flex;
     gap: 1rem;
     margin-bottom: 1rem;
 }
-#familiares > .familiar > input{
+
+#familiares>.familiar>input {
     height: 2.9rem;
     width: 33%;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
@@ -126,7 +131,8 @@
     outline: none;
     color: white;
 }
-#agregar_familiar_button{
+
+#agregar_familiar_button {
     padding: .8rem 1.1rem;
     color: white;
     font-size: clamp(1.2rem, 1.1vw, 1.5rem);
@@ -140,12 +146,13 @@
     cursor: pointer;
     /* margin-top: 1rem; */
 }
-.inputWrapper > input.selectInput{
+
+.inputWrapper>input.selectInput {
     position: relative;
     z-index: 2;
 }
 
-.inputWrapper > .select{
+.inputWrapper>.select {
     position: absolute;
     height: 0;
     max-height: 20rem;
@@ -154,97 +161,106 @@
     /* left: 3px; */
     transition: all .4s ease;
     width: 100%;
-    z-index:1;
+    z-index: 1;
     background: white;
     border-radius: 0.5rem;
     /* border: 3px solid #3D7CD8; */
 }
-.inputWrapper > .select > li
-{
+
+.inputWrapper>.select>li {
     padding: 1rem;
     font-family: raleway;
     font-size: 1.4rem;
     color: black;
 }
-.inputWrapper > .select > li:first-child{
+
+.inputWrapper>.select>li:first-child {
     padding-top: 3rem;
 }
-.inputWrapper > .select > li:hover
-{
+
+.inputWrapper>.select>li:hover {
     background-color: #3d7bd867;
     cursor: pointer;
 }
-.inputWrapper > .select::-webkit-scrollbar{
+
+.inputWrapper>.select::-webkit-scrollbar {
     width: 4px;
     border-radius: 5px;
 }
-.inputWrapper > input[type=number]::-webkit-outer-spin-button,
-.inputWrapper > input[type=number]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  appearance: none;
-  margin: 0;
+
+.inputWrapper>input[type=number]::-webkit-outer-spin-button,
+.inputWrapper>input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
 }
 
-#form_create_user > div.datosLogisticosWrapper{
+#form_create_user>div.datosLogisticosWrapper {
     display: flex;
 }
-#form_create_user > div.datosLogisticosWrapper > .inputsObligatorios{
+
+#form_create_user>div.datosLogisticosWrapper>.inputsObligatorios {
     display: flex;
     width: 100%;
     flex-wrap: wrap;
     gap: 1rem;
     max-width: 140rem;
 }
-#form_create_user > div.datosLogisticosWrapper > .inputsObligatorios.active{
+
+#form_create_user>div.datosLogisticosWrapper>.inputsObligatorios.active {
     width: 60%;
 }
 
-#form_create_user > div.datosLogisticosWrapper > .inputsObligatorios.supervisorPicked{
+#form_create_user>div.datosLogisticosWrapper>.inputsObligatorios.supervisorPicked {
     width: 60%;
 }
 
 
 
-#vendedoresWrapper{
+#vendedoresWrapper {
     display: none;
     width: 40%;
     max-width: 30rem;
 }
-#vendedoresWrapper.active{
+
+#vendedoresWrapper.active {
     display: unset;
 }
 
-#vendedoresWrapper > .textContainer{
+#vendedoresWrapper>.textContainer {
     margin: 0 auto;
     display: flex;
     justify-content: center;
     margin-bottom: 4%;
 }
 
-.textContainer > h3 {
+.textContainer>h3 {
     color: white;
     font-family: raleway-semibold;
     font-size: clamp(1.3rem, 1.1vw, 2rem);
 }
 
-#vendedoresWrapper > .listVendedores{
+#vendedoresWrapper>.listVendedores {
     height: 20rem;
     background-color: #304361;
     border-radius: .6rem;
     overflow: auto;
 }
-#itemsVendedores> ul{
+
+#itemsVendedores>ul {
     list-style: none;
 }
-#itemsVendedores> ul> li > input{
+
+#itemsVendedores>ul>li>input {
     display: none;
 }
-#itemsVendedores> ul> li > input:checked ~ label{
+
+#itemsVendedores>ul>li>input:checked~label {
     background-color: #1754ed53;
-    
+
 }
 
-#itemsVendedores> ul> li > label{
+#itemsVendedores>ul>li>label {
     color: white;
     display: block;
     width: 100%;
@@ -254,11 +270,11 @@
     font-size: clamp(1.3rem, 1.1vw, 2rem);
 }
 
-#itemsVendedores> ul> li:hover{
+#itemsVendedores>ul>li:hover {
     background-color: #1754ed53;
 }
 
-#saveButton{
+#saveButton {
     padding: 1rem 3rem;
     color: white;
     font-size: 1.6rem;
@@ -270,7 +286,8 @@
     border-color: transparent;
     cursor: pointer;
 }
-#cancelar{
+
+#cancelar {
     padding: 1rem 3rem;
     text-decoration: none;
     font-size: clamp(1.4rem, 1.3vw, 1.6rem);
@@ -282,9 +299,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
 }
-.wrapperButtons{
+
+.wrapperButtons {
     display: flex;
     column-gap: 1rem;
     margin: 3rem;

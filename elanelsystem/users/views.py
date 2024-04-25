@@ -20,7 +20,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 import json
 from django.http import HttpRequest, HttpResponseRedirect, HttpResponse, JsonResponse
 
-# Usuarios - - - - - - - - - - - - - - - - - - - -
+#region Usuarios - - - - - - - - - - - - - - - - - - - -
 class CrearUsuario(TestLogin, generic.View):
     model = Usuario
     form_class = FormCreateUser
@@ -44,7 +44,6 @@ class CrearUsuario(TestLogin, generic.View):
             dni = form.cleaned_data["dni"]
             email = form.cleaned_data["email"]
             sucursal = request.POST.get("sucursal")
-            localidad_buscada, provincia_buscada = map(str.strip, sucursal.split(","))
             tel = form.cleaned_data["tel"]
             rango = form.cleaned_data["rango"]
             password1 = form.cleaned_data["password1"]
@@ -56,7 +55,7 @@ class CrearUsuario(TestLogin, generic.View):
                 rango=rango,
                 password=password2
             )
-            sucursalObject = Sucursal.objects.get(localidad = localidad_buscada, provincia = provincia_buscada)
+            sucursalObject = Sucursal.objects.get(pseudonimo = sucursal)
             new_user.sucursal = sucursalObject
             if not Sucursal.objects.filter(pk=sucursalObject.pk).exists():
                 raise ValidationError('Sucursal inválida')
@@ -188,7 +187,7 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
         return render(request, self.template_name,context)
 
 
-def requestUsuarios(request):
+def requestUsuariosAcargo(request):
     sucursalName = request.GET.get("sucursal",None)
     usuarioPk = request.GET.get("usuario",None)
     usuarioObject = Usuario.objects.get(pk=usuarioPk)
@@ -205,7 +204,22 @@ def requestUsuarios(request):
     
     return JsonResponse({"data":usuarios_filtrados_listDict, "vendedores_a_cargo": usuarioObject.vendedores_a_cargo})
 
+def requestUsuarios(request):
+    sucursalName = request.GET.get("sucursal",None)
     
+    if sucursalName !="":
+        sucursalObject = Sucursal.objects.get(pseudonimo = sucursalName)
+        usuarios_filtrados = Usuario.objects.filter(sucursal = sucursalObject, rango="Vendedor")
+        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
+
+    else:
+        usuarios_filtrados = Usuario.objects.filter(rango = "Vendedor")
+        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
+    
+    
+    return JsonResponse({"data":usuarios_filtrados_listDict})
+
+
 class DetailUser(TestLogin, generic.DetailView):
     model = Usuario
     template_name = "detail_user.html"
@@ -296,9 +310,9 @@ class DetailUser(TestLogin, generic.DetailView):
             return render(request, self.template_name,context)
         return redirect("users:list_users")
     
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
-# Clientes - - - - - - - - - - - - - - - - - - - - - - -
+#region Clientes - - - - - - - - - - - - - - - - - - - - - - -
 class ListaClientes(TestLogin, generic.View):
     model = Cliente
     template_name= "list_customers.html"
@@ -390,9 +404,9 @@ class PanelAdmin(TestLogin,PermissionRequiredMixin,generic.View):
     def get(self,request,*args,**kwargs):
         context= {}
         return render(request, self.template_name, context)
-#  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#endregion  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# Permisos - - - - - - - - - - - - - - - - - - - - - - 
+#region Permisos - - - - - - - - - - - - - - - - - - - - - - 
 class PanelPermisos(TestLogin, generic.View):
     template_name = "panelPermisos.html"
     
@@ -469,9 +483,9 @@ def deleteGrupo(request):
             "message": "toda piola wachin"
         }
         return JsonResponse(context,safe=False)
-#  - - - - - - - - - - - - - - - - - - - - - - - - - 
+#endregion  - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-# Sucursales - - - - - - - - - - - - - - - - - - - 
+#region Sucursales - - - - - - - - - - - - - - - - - - - 
 
 class PanelSucursales(TestLogin, generic.View):
     template_name = "panelSucursales.html"
@@ -539,4 +553,4 @@ def removeSucursal(request):
         response_data = {"message":"Eliminado correctamente"}
         return JsonResponse(response_data)
 
-#  - - - - - - - - - - - - - - - - - - - - - - - -
+#endregion  - - - - - - - - - - - - - - - - - - - - - - - -
