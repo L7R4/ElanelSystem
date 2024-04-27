@@ -103,10 +103,15 @@ def sendEmailPDF(email,pdf_path,sujeto):
 def exportar_excel(request):
     # Crear un nuevo libro de trabajo
     wb = Workbook()
+
     # Seleccionar la primera hoja (automáticamente creada)
     ws = wb.active
     ws.title = "Datos"  # Cambiar el nombre de la hoja
-    
+
+    print("PRINT DEL SESSION: ")
+    print(request.session["informe_data"])
+    [{'cuota': 'Cuota 0', 'nro_operacion': 5, 'nroCliente': 'cli_1', 'nombreCliente': 'Aasdas Asd', 'sucursal': 'Resistencia, Chaco', 'idMov': 1, 'descuento': 0, 'fechaDeVencimiento': '', 'fecha_pago': '27/04/2024 01:22', 'pagado': 20000, 'cobrador': 'Lautaro Rodriguez', 'metodoPago': 'Efectivo', 'tipoMovimiento': 'Ingreso'}]
+
     # Agregar encabezados (opcional)
     ws.append(["ID", "Nombre", "Apellido", "Fecha de nacimiento"])
     

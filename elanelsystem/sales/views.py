@@ -1,9 +1,8 @@
 from django.forms import ValidationError
-from django.shortcuts import render, redirect, HttpResponseRedirect
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseBadRequest
-from django.urls import reverse_lazy
+from django.shortcuts import render, redirect
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views import generic
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from .mixins import TestLogin
 from .models import ArqueoCaja, Ventas,CoeficientesListadePrecios,MovimientoExterno
 from .forms import FormChangePAck, FormCreateVenta, FormCreateAdjudicacion
@@ -14,17 +13,11 @@ from products.models import Products,Plan
 import datetime
 import os
 import json
-
-import random
-import string
 from django.shortcuts import reverse
-from django.core.serializers import serialize
 from dateutil.relativedelta import relativedelta
 import locale
-import requests
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .utils import printPDF, printPDFinformePostVenta, printPDFtitularidad,printPDFarqueo,filterMovs, filtroMovimientos_fecha,printPDFinforme, searchSucursalFromStrings, sendEmailPDF, clearNameSucursal
-from liquidacion.utils import getAdelantos
+from .utils import *
 from collections import defaultdict
 import elanelsystem.settings as settings
 
@@ -36,8 +29,6 @@ class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
     template_name = 'resumen.html'
 
     def get(self,request,*args,**kwargs):
-        print(request.user.get_all_permissions())
-
         ventas = Ventas.objects.all()
         context = {
             "ventas" : ventas,
@@ -48,7 +39,14 @@ class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
     def handle_no_permission(self):
         return redirect("users:list_customers")
         
-            
+
+
+class ReportesView(generic.View):
+    template_name = 'reportes.html'
+
+    def get(self, request,*args, **kwargs):
+
+
 #region API CRM
 def requestMovimientosCRM(request):
     cuotas_data = requestCuotas(request)
@@ -84,7 +82,8 @@ def requestMovimientosCRM(request):
     
     return JsonResponse({"sumasIngreso_por_mes": sumasIngreso_por_mes,"sumasEgreso_por_mes":sumasEgreso_por_mes}, safe=False)
 #endregion
-    
+
+#region Ventas - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 class CrearVenta(TestLogin,generic.DetailView):
     model = Cliente
     template_name = "create_sale.html"
@@ -621,6 +620,192 @@ class ChangePack(TestLogin,generic.DetailView):
         return render(request, self.template_name, context)
 
 
+class ChangeTitularidad(TestLogin,generic.DetailView):
+    template_name = 'changeTitularidad.html'
+    model = Ventas
+
+
+    def get(self,request,*args, **kwargs):
+        self.object = self.get_object()
+        customers = Cliente.objects.all()
+        context = {
+            "customers": customers,
+            "object": self.object,
+        }
+
+        customers_list = []
+        for c in customers:
+            data_customer = {}
+            data_customer["pk"] = c.pk
+            data_customer["nombre"] = c.nombre
+            data_customer["dni"] = c.dni
+            data_customer["tel"] = c.tel
+            data_customer["loc"] = c.loc
+            data_customer["prov"] = c.prov
+            customers_list.append(data_customer)
+        data = json.dumps(customers_list)
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return HttpResponse(data, 'application/json')
+        return render(request, self.template_name,context)
+
+    def post(self,request,*args,**kwargs):
+        self.object = self.get_object()
+
+        if(request.method == 'POST'):
+            try:
+                newCustomer = request.POST.get("newCustomer")
+                dniNewCustomer = Cliente.objects.all().filter(dni=newCustomer)
+
+                # Agrega el antiguo cliente a la lista de clientes anteriores
+                # self.object.clientes_anteriores.asdd(self.object.nro_cliente)
+                
+
+                # Coloca los datos del cambio de titularidad
+                lastCuota = self.object.cuotas_pagadas()
+                self.object.createCambioTitularidad(lastCuota[-1],request.user.nombre,self.object.nro_cliente.nombre,dniNewCustomer[0].nombre,self.object.nro_cliente.pk,dniNewCustomer[0].pk)
+
+                # Actualiza el dueño de la venta
+                self.object.nro_cliente = dniNewCustomer[0]
+
+                self.object.save()
+
+                return redirect("sales:detail_sale",pk= self.get_object().pk)
+            except ValueError as vE:
+                customers = Cliente.objects.all()
+                context = {
+                    "customers": customers,
+                    "object": self.object,
+                    "error": vE,
+                }
+                return render(request,self.template_name,context)
+   
+    
+class CrearUsuarioYCambiarTitu(TestLogin,generic.DetailView):
+    model = Ventas
+    template_name = 'crearclienteycambiar.html'
+    form_class = CreateClienteForm
+
+    def get(self, request,*args, **kwargs):
+        self.object = self.get_object()
+        context = {}
+        context["customer_number"] = Cliente.returNro_Cliente
+        context["object"] = self.object
+        context['form'] = self.form_class
+
+        return render(request, self.template_name, context)
+    
+
+    def post(self,request,*args,**kwargs):
+        form =self.form_class(request.POST)
+        self.object = self.get_object()
+        
+        if form.is_valid():
+                customer = Cliente()
+                customer.nro_cliente = form.cleaned_data["nro_cliente"]
+                customer.nombre = form.cleaned_data['nombre']
+                customer.dni = form.cleaned_data['dni']
+                customer.domic = form.cleaned_data['domic']
+                customer.loc = form.cleaned_data['loc']
+                customer.prov = form.cleaned_data['prov']
+                customer.cod_postal = form.cleaned_data['cod_postal']
+                customer.tel = form.cleaned_data['tel']
+                customer.estado_civil = form.cleaned_data['estado_civil']
+                customer.fec_nacimiento = form.cleaned_data['fec_nacimiento']
+                customer.ocupacion = form.cleaned_data['ocupacion']
+                customer.save()
+
+
+                # Coloca los datos del cambio de titularidad
+                lastCuota = self.object.cuotas_pagadas()
+                self.object.createCambioTitularidad(lastCuota[-1],request.user.nombre,self.object.nro_cliente.nombre,customer.nombre,self.object.nro_cliente.pk,customer.pk)
+                self.object.nro_cliente = customer
+                self.object.save()
+                
+                return redirect("sales:detail_sale",pk= self.get_object().pk)
+
+        else:
+            print(form)
+            context = {}
+            context["customer_number"] = Cliente.returNro_Cliente
+            context["object"] = self.object
+            context['form'] = self.form_class
+            return render(request, self.template_name, context)
+
+
+class PostVenta(TestLogin,generic.View):
+    template_name = 'postVenta.html'
+
+    def get(self,request,campania,*args,**kwargs):
+        ventas = Ventas.objects.filter(campania=campania)
+        sucursalDefault = searchSucursalFromStrings("Sucursal central")
+
+        auditorias_realidas = Ventas.objects.filter(agencia=sucursalDefault,campania=campania,auditoria__0__realizada=True)
+        auditorias_pendientes = Ventas.objects.filter(agencia=sucursalDefault,campania=campania,auditoria__0__realizada=False)
+
+        auditorias_realidas_list = list(auditorias_realidas.values())
+        auditorias_aprobadas = len(list(filter(lambda x: x["auditoria"][-1]["grade"] == True,auditorias_realidas_list)))
+        auditorias_desaprobadas = len(list(filter(lambda x: x["auditoria"][-1]["grade"] == False,auditorias_realidas_list)))
+        
+
+        context = {
+            "ventas": ventas,
+            "amountVentas": ventas.count(),
+            "sucursalDefault": Sucursal.objects.get(pseudonimo="Sucursal central"),
+            "sucursales": Sucursal.objects.all(),
+            "auditorias_pendientes": len(auditorias_pendientes),
+            "auditorias_realizadas": len(auditorias_realidas),
+            "auditorias_aprobadas": auditorias_aprobadas,
+            "auditorias_desaprobadas": auditorias_desaprobadas,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        if(HttpResponse.status_code == 200):
+            response_data = {}
+            grade = request.POST.get("grade")
+            id_venta = request.POST.get("idVenta")
+            venta = Ventas.objects.get(pk=id_venta)
+            comentarios = request.POST.get("comentarioInput")
+
+            new_dict_auditoria = {}
+            ultimaAuditoria = venta.auditoria[-1]
+            if grade == "a":
+                    new_dict_auditoria["grade"] = True
+                    response_data["message"] = "Auditoria aprobada exitosamente"
+                    response_data["status"] = True
+                    response_data["grade"] = True
+                    response_data["gradeString"] = "Aprobada"
+
+            elif grade == "d":
+                new_dict_auditoria["grade"]  = False
+                response_data["message"] = "Auditoria desaprobada exitosamente"
+                response_data["grade"] = False
+                response_data["status"] = True
+                response_data["gradeString"] = "Desaprobada"
+
+            new_dict_auditoria["realizada"] = True
+            new_dict_auditoria["comentarios"] = comentarios
+            new_dict_auditoria["fecha_hora"] = datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
+
+            if ultimaAuditoria["version"] == 0:
+                new_dict_auditoria["version"] = 1
+                venta.auditoria[0] = new_dict_auditoria
+            else:
+                new_dict_auditoria["version"] = ultimaAuditoria["version"] + 1
+                venta.auditoria.append(new_dict_auditoria)
+            venta.save()
+            
+            response_data["comentarioString"] = comentarios
+            response_data["fechaString"] = datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
+            return JsonResponse(response_data, safe=False)
+        else:
+            response_data = {"status": False,"message": "Hubo un error al generar la auditoria"}
+            return JsonResponse(response_data, safe=False)
+
+#endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+#region PDFs - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def viewsPDFBaja(request,pk):
     operacionBaja = Ventas.objects.get(id=pk)
     context ={
@@ -776,91 +961,6 @@ def viewPDFArqueo(request,pk):
         response['Content-Disposition'] = 'inline; filename='+arqueoName+'.pdf'
         return response
 
-def requestMovimientosExternos(request):
-    cuotas_data = requestCuotas(request)
-    movsExternosList = []
-
-    # Obtener movimientos externos
-    movsExternos = MovimientoExterno.objects.all()
-
-    # Obtener la longitud de cuotas_data
-    cuotas_data_length = len(json.loads(cuotas_data.content)) + 1
-    
-    for idx,mov in enumerate(movsExternos):
-        movDict = {
-            "idMov": cuotas_data_length + idx,
-            "tipoMovimiento": mov.movimiento,
-            "tipoComprobante": mov.tipoComprobante,
-            "nroComprobante": mov.nroComprobante,
-            "denominacion": mov.denominacion,
-            "tipoIdentificacion": mov.tipoIdentificacion,
-            "nroIdentificacion": mov.nroIdentificacion,
-            "tipoMoneda": mov.tipoMoneda,
-            "sucursal": mov.agencia.localidad + ", " + mov.agencia.provincia,
-            "pagado": mov.dinero,
-            "metodoPago": mov.metodoPago,
-            "ente": mov.ente,
-            "concepto": mov.concepto,
-            "fecha_pago": mov.fecha+" "+ mov.hora
-            }
-        movsExternosList.append(movDict)
-    return JsonResponse(movsExternosList,safe=False)
-
-def requestCuotas(request):
-    ventas = Ventas.objects.all()
-    cuotas_data = []
-    
-    idMov=0
-    for i in range(int(ventas.count())):
-        for k in range(len(ventas[i].cuotas)):
-            if ventas[i].cuotas[k]["status"] in ["Pagado", "Parcial"]:
-                if(ventas[i].cuotas[k]["pagoParcial"]["status"]):
-                    for j in range (len(ventas[i].cuotas[k]["pagoParcial"]["amount"])):
-                        movimiento_dataParcial ={}
-                        movimiento_dataParcial['cuota'] = ventas[i].cuotas[k]["cuota"]
-                        movimiento_dataParcial['nro_operacion'] = ventas[i].cuotas[k]["nro_operacion"]
-                        nOpe = ventas[i].cuotas[k]["nro_operacion"]
-                        nroCliente = Ventas.objects.filter(nro_operacion = nOpe)
-                        movimiento_dataParcial['nroCliente'] = nroCliente[0].nro_cliente.nro_cliente
-                        movimiento_dataParcial['nombreCliente'] = nroCliente[0].nro_cliente.nombre
-                        movimiento_dataParcial["sucursal"] = ventas[i].agencia.localidad + ", " + ventas[i].agencia.provincia
-
-                        idMov +=1
-                        movimiento_dataParcial["idMov"] =  idMov
-                        movimiento_dataParcial['fecha_pago'] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["date"] + " " + ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["hour"]
-                        movimiento_dataParcial['pagado'] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["value"]
-                        movimiento_dataParcial["cobrador"] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["cobrador"]
-                        movimiento_dataParcial['metodoPago'] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["metodo"]
-                        movimiento_dataParcial['descuento'] = ventas[i].cuotas[k]["descuento"]
-                        movimiento_dataParcial['fechaDeVencimiento'] = ventas[i].cuotas[k]["fechaDeVencimiento"]
-                        movimiento_dataParcial['tipoMovimiento'] = "Ingreso"
-                        cuotas_data.append(movimiento_dataParcial)
-                else:
-                    movimiento_dataTotal = {}
-                    movimiento_dataTotal['cuota'] = ventas[i].cuotas[k]["cuota"]
-                    movimiento_dataTotal['nro_operacion'] = ventas[i].cuotas[k]["nro_operacion"]
-                    nOpe = ventas[i].cuotas[k]["nro_operacion"]
-                    nroCliente = Ventas.objects.filter(nro_operacion = nOpe)
-                    movimiento_dataTotal['nroCliente'] = nroCliente[0].nro_cliente.nro_cliente
-                    movimiento_dataTotal['nombreCliente'] = nroCliente[0].nro_cliente.nombre
-                    movimiento_dataTotal["sucursal"] = ventas[i].agencia.localidad + ", " + ventas[i].agencia.provincia 
-
-                    idMov +=1
-                    movimiento_dataTotal["idMov"] =  idMov
-                    movimiento_dataTotal['descuento'] = ventas[i].cuotas[k]["descuento"]
-                    movimiento_dataTotal['fechaDeVencimiento'] = ventas[i].cuotas[k]["fechaDeVencimiento"]
-                    movimiento_dataTotal['fecha_pago'] = ventas[i].cuotas[k]["fecha_pago"]+ " " + ventas[i].cuotas[k]["hora"]
-                    movimiento_dataTotal['pagado'] = ventas[i].cuotas[k]["pagado"]
-                    movimiento_dataTotal["cobrador"] = ventas[i].cuotas[k]["cobrador"]
-                    movimiento_dataTotal['metodoPago'] = ventas[i].cuotas[k]["metodoPago"]
-                    movimiento_dataTotal['tipoMovimiento'] = "Ingreso"
-                    cuotas_data.append(movimiento_dataTotal)
-
-
-
-    cuotas_data.reverse()
-    return JsonResponse(cuotas_data, safe=False)
-
 def viewsPDFInforme(request):
     # Establece el idioma local en español
     # locale.setlocale(locale.LC_TIME, 'es_AR.utf8')
@@ -917,14 +1017,196 @@ def viewsPDFInforme(request):
         response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
         return response
 
-
 def viewPDFInformeAndSend(request):
     # Para enviar PDF
     fechaYHoraHoy = datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
     sendEmailPDF("valerossi2004@hotmail.com",os.path.join(settings.BASE_DIR, 'pdfs/informe.pdf'),"Informe del: " + fechaYHoraHoy)
     return viewsPDFInforme(request)
 
+def viewsPDFInformePostVenta(request):
+    datos = request.session.get('postVenta_info', {})
+
+    # Para pasar el detalles de los movs
+    datos_modificado = [
+        {
+            "Nro Orden": d.get("nroOrden", "---"),
+            "Camp": d.get("campania","---"),
+            "Cliente": d.get("cliente","---"),
+            "DNI": d.get("dni","---"),
+            "Fec insc": d.get("fec_insc","---"),
+            "Tel": d.get("tel","---"),
+            "CP": d.get("cp", "---"),
+            "Prov": d.get("prov","---"),
+            "Loc": d.get("loc", "---"),
+            "Direc": d.get("direc", "---"),
+            "Vendedor": d.get("vendedor", "---"),
+            "Supervisor": d.get("supervisor", "---"),
+            "Auditoria": d.get("auditoria", "---"),
+        }
+        for d in datos["ventas"]
+    ]
+
+    # CONFIG PARA VER PDF 
+    informeName = "Informe Post-Venta"
+    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "postVentaInforme.pdf")
     
+    printPDFinformePostVenta({"data":datos_modificado},request.build_absolute_uri(),urlPDF)
+
+    
+    with open(urlPDF, 'rb') as pdf_file:
+        response = HttpResponse(pdf_file,content_type="application/pdf")
+        response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
+        return response
+
+#endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+#region Caja - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+class Caja(TestLogin,generic.View):
+    template_name = "caja.html"
+    FILTROS_EXISTENTES = (
+        ("tipoMovimiento","Tipo de movimiento"),
+        ("metodoPago", "Metodo de pago"),
+        ("fecha_inicial","Fecha inicial"),
+        ("fecha_final","Fecha final"),
+        ("cobrador","Cobrador"),
+        ("sucursal","Sucursal"),
+    )
+
+    def get(self,request,*args, **kwargs):
+        context ={}
+        context["cobradores"] = Usuario.objects.all()
+        context["sucursales"] = Sucursal.objects.all()
+        # print(os.path.join(settings.BASE_DIR, "templates/mailPlantilla.html"))
+        paramsDict = (request.GET).dict()
+        clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
+
+        
+        # Extrae las tuplas segun los querys filtrados en clearContext
+        filtros_activados = list(filter(lambda x: x[0] in clearContext, self.FILTROS_EXISTENTES))
+
+        # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
+        # Es lo mismo que decir clearContext["metodoPago"], etc, etc
+        context["filtros"] = list(map(lambda x: {x[1], clearContext[x[0]]}, filtros_activados))
+
+
+        return render(request, self.template_name, context)
+        
+
+class CierreCaja(TestLogin,generic.View):
+
+    template_name = 'cierreDeCaja.html'
+
+    def get(self,request,*args,**kwargs):
+        context = {}
+        json_data = requestMovimientos(request)
+        movsData = json.loads(json_data.content)
+        
+        today = datetime.date.today().strftime("%d/%m/%Y %H:%M")
+        movimientosHoy = filtroMovimientos_fecha(str(today),movsData["data"],str(today))
+
+        # FILTRA LOS MOVIMIENTOS SEGUN SE TIPO DE MOVIMIENTO
+        movimientos_Ingreso_Hoy = list(filter(lambda x: x["tipoMovimiento"] == "Ingreso" and x["metodoPago"] == "Efectivo", movimientosHoy))
+        movimientos_Egreso_Hoy = list(filter(lambda x:x["tipoMovimiento"] == "Egreso" and x["metodoPago"] == "Efectivo", movimientosHoy))
+
+        # SUMA EL TOTAL DE SEGUN EL TIPO DE MOVIMIENTO
+        montoTotal_Ingreso_Hoy = sum([item["pagado"] for item in movimientos_Ingreso_Hoy])
+        montoTotal_Egreso_Hoy = sum([item["pagado"] for item in movimientos_Egreso_Hoy])
+
+        if len(movimientosHoy) == 0:
+            context["movs"] = 0
+        else:
+            context["movs"] = int(montoTotal_Ingreso_Hoy - montoTotal_Egreso_Hoy)
+
+        context["sucursal"] = request.user.sucursal
+        context["sucursales"] = Sucursal.objects.all()
+        context["fecha"] =  datetime.date.today().strftime("%d/%m/%Y")
+        context["admin"]= request.user
+        
+        return render(request, self.template_name, context)
+    
+
+    def post(self,request,*args,**kwargs):
+        context= {}
+        arqueo = ArqueoCaja()
+        BILLETES = [2000,1000,500,200,100,50,20,10,5,2]
+        
+        # OBTIENE LOS DATOS----------------------------------------------------
+        sucursal = request.POST.get("sucursal")
+        localidad_buscada, provincia_buscada = map(str.strip, sucursal.split(","))
+        sucursalObject = Sucursal.objects.get(localidad = localidad_buscada, provincia = provincia_buscada)
+
+        fecha =  datetime.date.today().strftime("%d/%m/%Y")
+        admin = request.user
+        responsable = request.POST.get("responsable")
+        totalSegunDiarioCaja = request.POST.get("saldoSegunCaja")
+        observaciones = request.POST.get("observaciones")
+        
+        total=0
+        for b in BILLETES:
+            billeteCantidad = request.POST.get("p"+ str(b))
+            if(billeteCantidad == ""):
+                billeteCantidad = 0
+            
+            billeteItem = {}
+            billeteItem["cantidad"] = int(billeteCantidad)
+            billeteItem["importeTotal"] = int(billeteCantidad) * b
+            total += int(billeteCantidad) * b
+            arqueo.detalle["p"+ str(b)] = billeteItem
+
+        # ---------------------------------------------------------------------
+
+        # COLOCA LOS DATOS ---------------------------------------------------
+        
+        arqueo.agencia = sucursalObject
+        arqueo.fecha = fecha
+        arqueo.admin = admin
+        arqueo.responsable = responsable
+        arqueo.totalPlanilla = total
+        arqueo.totalSegunDiarioCaja = float(totalSegunDiarioCaja)
+        arqueo.diferencia = total - float(totalSegunDiarioCaja)
+        arqueo.observaciones = observaciones
+        # ---------------------------------------------------------------------
+
+        arqueo.save()
+
+        response_data = {
+            'success': True,
+            'urlPDF': reverse("sales:arqueoPDF", args=[ArqueoCaja.objects.latest('pk').pk]),
+            'urlCaja': reverse("sales:caja")
+        }
+        
+        return JsonResponse(response_data, safe=False)
+
+
+class OldArqueosView(TestLogin,generic.View):
+    model = ArqueoCaja
+    template_name= "listaDeArqueos.html"
+
+    def get(self,request,*args, **kwargs):
+        arqueos = ArqueoCaja.objects.filter(agencia = request.user.sucursal)
+        context = {
+            "arqueos": reversed(arqueos)
+        }
+        arqueos_list = []
+        for a in arqueos:
+            data_arqueo = {}
+            data_arqueo["pk"] = a.pk
+            data_arqueo["sucursal"] = a.agencia
+            data_arqueo["fecha"] = a.fecha
+            data_arqueo["admin"] = a.admin
+            data_arqueo["responsable"] = a.responsable
+            data_arqueo["totalPlanilla"] = a.totalPlanilla
+            arqueos_list.append(data_arqueo)
+
+        arqueos_list.reverse()
+        data = json.dumps(arqueos_list)
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return HttpResponse(data, 'application/json')
+        return render(request, self.template_name,context)
+#endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+#region Specifics Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def requestMovimientos(request):
     cuotas_data = requestCuotas(request)
     movimientosExternos = requestMovimientosExternos(request)
@@ -1051,336 +1333,91 @@ def createNewMov(request):
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'})
 
+def requestMovimientosExternos(request):
+    cuotas_data = requestCuotas(request)
+    movsExternosList = []
 
-class Caja(TestLogin,generic.View):
-    template_name = "caja.html"
-    FILTROS_EXISTENTES = (
-        ("tipoMovimiento","Tipo de movimiento"),
-        ("metodoPago", "Metodo de pago"),
-        ("fecha_inicial","Fecha inicial"),
-        ("fecha_final","Fecha final"),
-        ("cobrador","Cobrador"),
-        ("sucursal","Sucursal"),
-    )
+    # Obtener movimientos externos
+    movsExternos = MovimientoExterno.objects.all()
 
-    def get(self,request,*args, **kwargs):
-        context ={}
-        context["cobradores"] = Usuario.objects.all()
-        context["sucursales"] = Sucursal.objects.all()
-        # print(os.path.join(settings.BASE_DIR, "templates/mailPlantilla.html"))
-        paramsDict = (request.GET).dict()
-        clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
-
-        
-        # Extrae las tuplas segun los querys filtrados en clearContext
-        filtros_activados = list(filter(lambda x: x[0] in clearContext, self.FILTROS_EXISTENTES))
-
-        # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
-        # Es lo mismo que decir clearContext["metodoPago"], etc, etc
-        context["filtros"] = list(map(lambda x: {x[1], clearContext[x[0]]}, filtros_activados))
-
-
-        return render(request, self.template_name, context)
-        
-
-class CierreCaja(TestLogin,generic.View):
-
-    template_name = 'cierreDeCaja.html'
-
-    def get(self,request,*args,**kwargs):
-        context = {}
-        json_data = requestMovimientos(request)
-        movsData = json.loads(json_data.content)
-        
-        today = datetime.date.today().strftime("%d/%m/%Y %H:%M")
-        movimientosHoy = filtroMovimientos_fecha(str(today),movsData["data"],str(today))
-
-        # FILTRA LOS MOVIMIENTOS SEGUN SE TIPO DE MOVIMIENTO
-        movimientos_Ingreso_Hoy = list(filter(lambda x: x["tipoMovimiento"] == "Ingreso" and x["metodoPago"] == "Efectivo", movimientosHoy))
-        movimientos_Egreso_Hoy = list(filter(lambda x:x["tipoMovimiento"] == "Egreso" and x["metodoPago"] == "Efectivo", movimientosHoy))
-
-        # SUMA EL TOTAL DE SEGUN EL TIPO DE MOVIMIENTO
-        montoTotal_Ingreso_Hoy = sum([item["pagado"] for item in movimientos_Ingreso_Hoy])
-        montoTotal_Egreso_Hoy = sum([item["pagado"] for item in movimientos_Egreso_Hoy])
-
-        if len(movimientosHoy) == 0:
-            context["movs"] = 0
-        else:
-            context["movs"] = int(montoTotal_Ingreso_Hoy - montoTotal_Egreso_Hoy)
-
-        context["sucursal"] = request.user.sucursal
-        context["sucursales"] = Sucursal.objects.all()
-        context["fecha"] =  datetime.date.today().strftime("%d/%m/%Y")
-        context["admin"]= request.user
-        
-        return render(request, self.template_name, context)
+    # Obtener la longitud de cuotas_data
+    cuotas_data_length = len(json.loads(cuotas_data.content)) + 1
     
+    for idx,mov in enumerate(movsExternos):
+        movDict = {
+            "idMov": cuotas_data_length + idx,
+            "tipoMovimiento": mov.movimiento,
+            "tipoComprobante": mov.tipoComprobante,
+            "nroComprobante": mov.nroComprobante,
+            "denominacion": mov.denominacion,
+            "tipoIdentificacion": mov.tipoIdentificacion,
+            "nroIdentificacion": mov.nroIdentificacion,
+            "tipoMoneda": mov.tipoMoneda,
+            "sucursal": mov.agencia.localidad + ", " + mov.agencia.provincia,
+            "pagado": mov.dinero,
+            "metodoPago": mov.metodoPago,
+            "ente": mov.ente,
+            "concepto": mov.concepto,
+            "fecha_pago": mov.fecha+" "+ mov.hora
+            }
+        movsExternosList.append(movDict)
+    return JsonResponse(movsExternosList,safe=False)
 
-    def post(self,request,*args,**kwargs):
-        context= {}
-        arqueo = ArqueoCaja()
-        BILLETES = [2000,1000,500,200,100,50,20,10,5,2]
-        
-        # OBTIENE LOS DATOS----------------------------------------------------
-        sucursal = request.POST.get("sucursal")
-        localidad_buscada, provincia_buscada = map(str.strip, sucursal.split(","))
-        sucursalObject = Sucursal.objects.get(localidad = localidad_buscada, provincia = provincia_buscada)
-
-        fecha =  datetime.date.today().strftime("%d/%m/%Y")
-        admin = request.user
-        responsable = request.POST.get("responsable")
-        totalSegunDiarioCaja = request.POST.get("saldoSegunCaja")
-        observaciones = request.POST.get("observaciones")
-        
-        total=0
-        for b in BILLETES:
-            billeteCantidad = request.POST.get("p"+ str(b))
-            if(billeteCantidad == ""):
-                billeteCantidad = 0
-            
-            billeteItem = {}
-            billeteItem["cantidad"] = int(billeteCantidad)
-            billeteItem["importeTotal"] = int(billeteCantidad) * b
-            total += int(billeteCantidad) * b
-            arqueo.detalle["p"+ str(b)] = billeteItem
-
-        # ---------------------------------------------------------------------
-
-        # COLOCA LOS DATOS ---------------------------------------------------
-        
-        arqueo.agencia = sucursalObject
-        arqueo.fecha = fecha
-        arqueo.admin = admin
-        arqueo.responsable = responsable
-        arqueo.totalPlanilla = total
-        arqueo.totalSegunDiarioCaja = float(totalSegunDiarioCaja)
-        arqueo.diferencia = total - float(totalSegunDiarioCaja)
-        arqueo.observaciones = observaciones
-        # ---------------------------------------------------------------------
-
-        arqueo.save()
-
-        response_data = {
-            'success': True,
-            'urlPDF': reverse("sales:arqueoPDF", args=[ArqueoCaja.objects.latest('pk').pk]),
-            'urlCaja': reverse("sales:caja")
-        }
-        
-        return JsonResponse(response_data, safe=False)
-
-
-class ChangeTitularidad(TestLogin,generic.DetailView):
-    template_name = 'changeTitularidad.html'
-    model = Ventas
-
-
-    def get(self,request,*args, **kwargs):
-        self.object = self.get_object()
-        customers = Cliente.objects.all()
-        context = {
-            "customers": customers,
-            "object": self.object,
-        }
-
-        customers_list = []
-        for c in customers:
-            data_customer = {}
-            data_customer["pk"] = c.pk
-            data_customer["nombre"] = c.nombre
-            data_customer["dni"] = c.dni
-            data_customer["tel"] = c.tel
-            data_customer["loc"] = c.loc
-            data_customer["prov"] = c.prov
-            customers_list.append(data_customer)
-        data = json.dumps(customers_list)
-
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return HttpResponse(data, 'application/json')
-        return render(request, self.template_name,context)
-
-    def post(self,request,*args,**kwargs):
-        self.object = self.get_object()
-
-        if(request.method == 'POST'):
-            try:
-                newCustomer = request.POST.get("newCustomer")
-                dniNewCustomer = Cliente.objects.all().filter(dni=newCustomer)
-
-                # Agrega el antiguo cliente a la lista de clientes anteriores
-                # self.object.clientes_anteriores.asdd(self.object.nro_cliente)
-                
-
-                # Coloca los datos del cambio de titularidad
-                lastCuota = self.object.cuotas_pagadas()
-                self.object.createCambioTitularidad(lastCuota[-1],request.user.nombre,self.object.nro_cliente.nombre,dniNewCustomer[0].nombre,self.object.nro_cliente.pk,dniNewCustomer[0].pk)
-
-                # Actualiza el dueño de la venta
-                self.object.nro_cliente = dniNewCustomer[0]
-
-                self.object.save()
-
-                return redirect("sales:detail_sale",pk= self.get_object().pk)
-            except ValueError as vE:
-                customers = Cliente.objects.all()
-                context = {
-                    "customers": customers,
-                    "object": self.object,
-                    "error": vE,
-                }
-                return render(request,self.template_name,context)
-   
+def requestCuotas(request):
+    ventas = Ventas.objects.all()
+    cuotas_data = []
     
-class CrearUsuarioYCambiarTitu(TestLogin,generic.DetailView):
-    model = Ventas
-    template_name = 'crearclienteycambiar.html'
-    form_class = CreateClienteForm
+    idMov=0
+    for i in range(int(ventas.count())):
+        for k in range(len(ventas[i].cuotas)):
+            if ventas[i].cuotas[k]["status"] in ["Pagado", "Parcial"]:
+                if(ventas[i].cuotas[k]["pagoParcial"]["status"]):
+                    for j in range (len(ventas[i].cuotas[k]["pagoParcial"]["amount"])):
+                        movimiento_dataParcial ={}
+                        movimiento_dataParcial['cuota'] = ventas[i].cuotas[k]["cuota"]
+                        movimiento_dataParcial['nro_operacion'] = ventas[i].cuotas[k]["nro_operacion"]
+                        nOpe = ventas[i].cuotas[k]["nro_operacion"]
+                        nroCliente = Ventas.objects.filter(nro_operacion = nOpe)
+                        movimiento_dataParcial['nroCliente'] = nroCliente[0].nro_cliente.nro_cliente
+                        movimiento_dataParcial['nombreCliente'] = nroCliente[0].nro_cliente.nombre
+                        movimiento_dataParcial["sucursal"] = ventas[i].agencia.localidad + ", " + ventas[i].agencia.provincia
 
-    def get(self, request,*args, **kwargs):
-        self.object = self.get_object()
-        context = {}
-        context["customer_number"] = Cliente.returNro_Cliente
-        context["object"] = self.object
-        context['form'] = self.form_class
+                        idMov +=1
+                        movimiento_dataParcial["idMov"] =  idMov
+                        movimiento_dataParcial['fecha_pago'] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["date"] + " " + ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["hour"]
+                        movimiento_dataParcial['pagado'] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["value"]
+                        movimiento_dataParcial["cobrador"] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["cobrador"]
+                        movimiento_dataParcial['metodoPago'] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["metodo"]
+                        movimiento_dataParcial['descuento'] = ventas[i].cuotas[k]["descuento"]
+                        movimiento_dataParcial['fechaDeVencimiento'] = ventas[i].cuotas[k]["fechaDeVencimiento"]
+                        movimiento_dataParcial['tipoMovimiento'] = "Ingreso"
+                        cuotas_data.append(movimiento_dataParcial)
+                else:
+                    movimiento_dataTotal = {}
+                    movimiento_dataTotal['cuota'] = ventas[i].cuotas[k]["cuota"]
+                    movimiento_dataTotal['nro_operacion'] = ventas[i].cuotas[k]["nro_operacion"]
+                    nOpe = ventas[i].cuotas[k]["nro_operacion"]
+                    nroCliente = Ventas.objects.filter(nro_operacion = nOpe)
+                    movimiento_dataTotal['nroCliente'] = nroCliente[0].nro_cliente.nro_cliente
+                    movimiento_dataTotal['nombreCliente'] = nroCliente[0].nro_cliente.nombre
+                    movimiento_dataTotal["sucursal"] = ventas[i].agencia.localidad + ", " + ventas[i].agencia.provincia 
 
-        return render(request, self.template_name, context)
-    
-
-    def post(self,request,*args,**kwargs):
-        form =self.form_class(request.POST)
-        self.object = self.get_object()
-        
-        if form.is_valid():
-                customer = Cliente()
-                customer.nro_cliente = form.cleaned_data["nro_cliente"]
-                customer.nombre = form.cleaned_data['nombre']
-                customer.dni = form.cleaned_data['dni']
-                customer.domic = form.cleaned_data['domic']
-                customer.loc = form.cleaned_data['loc']
-                customer.prov = form.cleaned_data['prov']
-                customer.cod_postal = form.cleaned_data['cod_postal']
-                customer.tel = form.cleaned_data['tel']
-                customer.estado_civil = form.cleaned_data['estado_civil']
-                customer.fec_nacimiento = form.cleaned_data['fec_nacimiento']
-                customer.ocupacion = form.cleaned_data['ocupacion']
-                customer.save()
-
-
-                # Coloca los datos del cambio de titularidad
-                lastCuota = self.object.cuotas_pagadas()
-                self.object.createCambioTitularidad(lastCuota[-1],request.user.nombre,self.object.nro_cliente.nombre,customer.nombre,self.object.nro_cliente.pk,customer.pk)
-                self.object.nro_cliente = customer
-                self.object.save()
-                
-                return redirect("sales:detail_sale",pk= self.get_object().pk)
-
-        else:
-            print(form)
-            context = {}
-            context["customer_number"] = Cliente.returNro_Cliente
-            context["object"] = self.object
-            context['form'] = self.form_class
-            return render(request, self.template_name, context)
+                    idMov +=1
+                    movimiento_dataTotal["idMov"] =  idMov
+                    movimiento_dataTotal['descuento'] = ventas[i].cuotas[k]["descuento"]
+                    movimiento_dataTotal['fechaDeVencimiento'] = ventas[i].cuotas[k]["fechaDeVencimiento"]
+                    movimiento_dataTotal['fecha_pago'] = ventas[i].cuotas[k]["fecha_pago"]+ " " + ventas[i].cuotas[k]["hora"]
+                    movimiento_dataTotal['pagado'] = ventas[i].cuotas[k]["pagado"]
+                    movimiento_dataTotal["cobrador"] = ventas[i].cuotas[k]["cobrador"]
+                    movimiento_dataTotal['metodoPago'] = ventas[i].cuotas[k]["metodoPago"]
+                    movimiento_dataTotal['tipoMovimiento'] = "Ingreso"
+                    cuotas_data.append(movimiento_dataTotal)
 
 
-class OldArqueosView(TestLogin,generic.View):
-    model = ArqueoCaja
-    template_name= "listaDeArqueos.html"
 
-    def get(self,request,*args, **kwargs):
-        arqueos = ArqueoCaja.objects.filter(agencia = request.user.sucursal)
-        context = {
-            "arqueos": reversed(arqueos)
-        }
-        arqueos_list = []
-        for a in arqueos:
-            data_arqueo = {}
-            data_arqueo["pk"] = a.pk
-            data_arqueo["sucursal"] = a.agencia
-            data_arqueo["fecha"] = a.fecha
-            data_arqueo["admin"] = a.admin
-            data_arqueo["responsable"] = a.responsable
-            data_arqueo["totalPlanilla"] = a.totalPlanilla
-            arqueos_list.append(data_arqueo)
+    cuotas_data.reverse()
+    return JsonResponse(cuotas_data, safe=False)
 
-        arqueos_list.reverse()
-        data = json.dumps(arqueos_list)
-
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return HttpResponse(data, 'application/json')
-        return render(request, self.template_name,context)
-    
-
-class PostVenta(TestLogin,generic.View):
-    template_name = 'postVenta.html'
-
-    def get(self,request,campania,*args,**kwargs):
-        ventas = Ventas.objects.filter(campania=campania)
-        sucursalDefault = searchSucursalFromStrings("Sucursal central")
-
-        auditorias_realidas = Ventas.objects.filter(agencia=sucursalDefault,campania=campania,auditoria__0__realizada=True)
-        auditorias_pendientes = Ventas.objects.filter(agencia=sucursalDefault,campania=campania,auditoria__0__realizada=False)
-
-        auditorias_realidas_list = list(auditorias_realidas.values())
-        auditorias_aprobadas = len(list(filter(lambda x: x["auditoria"][-1]["grade"] == True,auditorias_realidas_list)))
-        auditorias_desaprobadas = len(list(filter(lambda x: x["auditoria"][-1]["grade"] == False,auditorias_realidas_list)))
-        
-
-        context = {
-            "ventas": ventas,
-            "amountVentas": ventas.count(),
-            "sucursalDefault": Sucursal.objects.get(pseudonimo="Sucursal central"),
-            "sucursales": Sucursal.objects.all(),
-            "auditorias_pendientes": len(auditorias_pendientes),
-            "auditorias_realizadas": len(auditorias_realidas),
-            "auditorias_aprobadas": auditorias_aprobadas,
-            "auditorias_desaprobadas": auditorias_desaprobadas,
-        }
-        return render(request, self.template_name, context)
-
-    def post(self, request, *args, **kwargs):
-        if(HttpResponse.status_code == 200):
-            response_data = {}
-            grade = request.POST.get("grade")
-            id_venta = request.POST.get("idVenta")
-            venta = Ventas.objects.get(pk=id_venta)
-            comentarios = request.POST.get("comentarioInput")
-
-            new_dict_auditoria = {}
-            ultimaAuditoria = venta.auditoria[-1]
-            if grade == "a":
-                    new_dict_auditoria["grade"] = True
-                    response_data["message"] = "Auditoria aprobada exitosamente"
-                    response_data["status"] = True
-                    response_data["grade"] = True
-                    response_data["gradeString"] = "Aprobada"
-
-            elif grade == "d":
-                new_dict_auditoria["grade"]  = False
-                response_data["message"] = "Auditoria desaprobada exitosamente"
-                response_data["grade"] = False
-                response_data["status"] = True
-                response_data["gradeString"] = "Desaprobada"
-
-            new_dict_auditoria["realizada"] = True
-            new_dict_auditoria["comentarios"] = comentarios
-            new_dict_auditoria["fecha_hora"] = datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
-
-            if ultimaAuditoria["version"] == 0:
-                new_dict_auditoria["version"] = 1
-                venta.auditoria[0] = new_dict_auditoria
-            else:
-                new_dict_auditoria["version"] = ultimaAuditoria["version"] + 1
-                venta.auditoria.append(new_dict_auditoria)
-            venta.save()
-            
-            response_data["comentarioString"] = comentarios
-            response_data["fechaString"] = datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
-            return JsonResponse(response_data, safe=False)
-        else:
-            response_data = {"status": False,"message": "Hubo un error al generar la auditoria"}
-            return JsonResponse(response_data, safe=False)
-
-     
 def requestVentas(request):
     if(request.method == "GET"):
         sucursal = request.GET.get('sucursal')
@@ -1425,37 +1462,6 @@ def requestVentas(request):
 
         return JsonResponse(responseData, safe=False)
     
-def viewsPDFInformePostVenta(request):
-    datos = request.session.get('postVenta_info', {})
+#endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    # Para pasar el detalles de los movs
-    datos_modificado = [
-        {
-            "Nro Orden": d.get("nroOrden", "---"),
-            "Camp": d.get("campania","---"),
-            "Cliente": d.get("cliente","---"),
-            "DNI": d.get("dni","---"),
-            "Fec insc": d.get("fec_insc","---"),
-            "Tel": d.get("tel","---"),
-            "CP": d.get("cp", "---"),
-            "Prov": d.get("prov","---"),
-            "Loc": d.get("loc", "---"),
-            "Direc": d.get("direc", "---"),
-            "Vendedor": d.get("vendedor", "---"),
-            "Supervisor": d.get("supervisor", "---"),
-            "Auditoria": d.get("auditoria", "---"),
-        }
-        for d in datos["ventas"]
-    ]
 
-    # CONFIG PARA VER PDF 
-    informeName = "Informe Post-Venta"
-    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "postVentaInforme.pdf")
-    
-    printPDFinformePostVenta({"data":datos_modificado},request.build_absolute_uri(),urlPDF)
-
-    
-    with open(urlPDF, 'rb') as pdf_file:
-        response = HttpResponse(pdf_file,content_type="application/pdf")
-        response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
-        return response
