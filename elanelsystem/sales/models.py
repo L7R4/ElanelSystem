@@ -320,7 +320,7 @@ class Ventas(models.Model):
         if(cuotaSeleccionada["status"] != "Pagado"):
             cuotaSeleccionada["fecha_pago"] = datetime.datetime.now().strftime("%d/%m/%Y")
             cuotaSeleccionada["status"] = "Pagado"
-            cuotaSeleccionada["pagado"] = cuotaSeleccionada[0]["total"] - cuotaSeleccionada[0]["descuento"]
+            cuotaSeleccionada["pagado"] = cuotaSeleccionada["total"] - cuotaSeleccionada["descuento"]
             cuotaSeleccionada["cobrador"] = cobrador
             cuotaSeleccionada["hora"] = datetime.datetime.now().time().strftime("%H:%M")
             cuotaSeleccionada["metodoPago"] = metodoPago

@@ -10,7 +10,6 @@
 {% block content %}
     <div class="filters">
         <div class="buttonsFilters">
-            <a href="{% url 'sales:exportExcel' %}">Excel</a>
             <a href="{% url 'sales:cierreDeCaja' %}">Cierre de caja</a>
             <button class ="buttonNewMov" id="buttonEgreso" type ="button">Nuevo Egreso</button>
             <button class ="buttonNewMov" id="buttonIngreso" type ="button">Nuevo Ingreso</button>
@@ -218,6 +217,7 @@
             <div class="wrapperButtonInforme">
                 <a href="{% url 'sales:informePDF' %}" target="_blank">Hacer informe</a>
                 <a href="{% url 'sales:informeSend' %}" target="_blank">Hacer informe y enviar</a>
+                <a href="{% url 'sales:exportExcel' %}">Exportar excel</a>
             </div>
         </div>
     </div>
