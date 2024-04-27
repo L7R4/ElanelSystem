@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import *
- 
+from .utils import exportar_excel  # Importa la función de exportación
 app_name="sales"
 
 urlpatterns = [
@@ -21,6 +21,7 @@ urlpatterns = [
     path("ventas/pdf/arqueo/<int:pk>/",viewPDFArqueo,name="arqueoPDF"),
     path('ventas/pdf/informe/', viewsPDFInforme, name='informePDF'),
     path('ventas/pdf/informesend/', viewPDFInformeAndSend, name='informeSend'),
+    path('ventas/excel/exportar/', exportar_excel, name='exportExcel'),
     path("ventas/caja/arqueosanteriores",OldArqueosView.as_view(),name="oldArqueos"),
     path('requestmovs/', requestMovimientos, name='rmovs'),
     path('create_new_mov/', createNewMov, name='create_new_mov'),
