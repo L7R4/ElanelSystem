@@ -6,11 +6,9 @@ import datetime
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.db.models import Max
-
-
-
-
-
+from openpyxl import Workbook
+from django.http import HttpResponse
+#region Funciones para exportar PDFs
 def printPDF(data,url,productoName):
     template = get_template("pdfForBaja.html")
     context = data
@@ -55,7 +53,6 @@ def printPDFinforme(data,url,productoName):
     # print(pdf)
     return pdf
 
-
 def printPDFinformePostVenta(data,url,productoName):
     template = get_template("pdfPostVentaInforme.html")
     context = data
@@ -77,6 +74,64 @@ def printPDFLiquidacion(data,url,liquidacionName):
     pdf = HTML(string=html_template,base_url=url).write_pdf(target=liquidacionName, stylesheets = [CSS(css_url)])
     # print(pdf)
     return pdf
+
+def sendEmailPDF(email,pdf_path,sujeto):
+        try:
+            subject = sujeto
+            from_email =  settings.EMAIL_HOST_USER
+            to_email = [email]
+
+            email = EmailMultiAlternatives(subject, '', from_email, to_email)
+            email.attach_alternative("Se adjunta el PDF.", "text/plain")
+            
+            # Adjuntar el PDF al correo electrónico
+            email.attach_file(pdf_path)
+
+            # Enviar el correo electrónico
+            email.send()
+            response_data = {'success': True}
+            print("weps se envio")
+        except Exception as e:
+            response_data = {'success': False, 'error_message': str(e)}
+            print(e)
+
+        return response_data
+#endregion ---------------------------------------------
+
+
+#region Funciones para exportar .XLSs
+def exportar_excel(request):
+    # Crear un nuevo libro de trabajo
+    wb = Workbook()
+    # Seleccionar la primera hoja (automáticamente creada)
+    ws = wb.active
+    ws.title = "Datos"  # Cambiar el nombre de la hoja
+    
+    # Agregar encabezados (opcional)
+    ws.append(["ID", "Nombre", "Apellido", "Fecha de nacimiento"])
+    
+    # Obtener datos (ejemplo con datos ficticios)
+    datos = [
+        (1, "Juan", "Pérez", datetime.date(1990, 1, 1)),
+        (2, "Ana", "Gómez", datetime.date(1992, 5, 12)),
+    ]
+    
+    # Agregar datos a la hoja
+    for fila in datos:
+        ws.append(fila)
+    
+    # Configurar la respuesta como archivo Excel
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="datos.xlsx"'
+    
+    # Guardar el libro de trabajo en la respuesta
+    wb.save(response)
+    
+    return response
+
+
+
+#endregion 
 
 def filtroMovimientos_fecha(fechaInicio, context ,fechaFinal):
         movimientosFiltrados=[]
@@ -146,35 +201,6 @@ def filterMovs(data,params):
                 selected_values = [item.strip() for item in values.split('-')]
                 data = [item for item in data if any(item.get(key, '').strip() == value for value in selected_values)]
     return data
-
-
-def sendEmailPDF(email,pdf_path,sujeto):
-        try:
-            subject = sujeto
-            from_email =  settings.EMAIL_HOST_USER
-            to_email = [email]
-
-            # Cargar la plantilla de correo electrónico HTML
-            # email_template = get_template(os.path.join(settings.BASE_DIR, "templates/mailPlantilla.html"))
-            # context = {}
-            # email_content = email_template.render(context)
-
-            # email = EmailMultiAlternatives(subject, '', from_email, to_email,bcc=[settings.EMAIL_HOST_USER])
-            email = EmailMultiAlternatives(subject, '', from_email, to_email)
-            email.attach_alternative("Se adjunta el PDF.", "text/plain")
-            
-            # Adjuntar el PDF al correo electrónico
-            email.attach_file(pdf_path)
-
-            # Enviar el correo electrónico
-            email.send()
-            response_data = {'success': True}
-            print("weps se envio")
-        except Exception as e:
-            response_data = {'success': False, 'error_message': str(e)}
-            print(e)
-
-        return response_data
 
 def obtener_ultima_campania():
     # Lo importo aca para evitar el error de dependencias circulares

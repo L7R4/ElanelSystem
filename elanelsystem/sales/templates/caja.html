@@ -10,6 +10,7 @@
 {% block content %}
     <div class="filters">
         <div class="buttonsFilters">
+            <a href="{% url 'sales:exportExcel' %}">Excel</a>
             <a href="{% url 'sales:cierreDeCaja' %}">Cierre de caja</a>
             <button class ="buttonNewMov" id="buttonEgreso" type ="button">Nuevo Egreso</button>
             <button class ="buttonNewMov" id="buttonIngreso" type ="button">Nuevo Ingreso</button>
