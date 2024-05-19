@@ -8,6 +8,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/molde.css' %}">
+    <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
     <link rel="shortcut icon" href="{% static 'images/icons/diamong.png' %}">
 
     {% block css %}
@@ -53,7 +54,7 @@
                     <div class="check"></div>
                 </li>
 
-                {% if perms.sales.my_ver_planes%}
+                {% comment %} {% if perms.sales.my_ver_planes%}
 
                     <li>
                         <a href="{% url 'products:planes' %}" id="planes">
@@ -63,8 +64,14 @@
                         <div class="check"></div>
                     </li> 
 
-                {% endif %}
-
+                {% endif %} {% endcomment %}
+                <li>
+                    <a href="{% url 'reporteView' %}" id="reportes">
+                        <img src="{% static 'images/icons/planes.svg' %}" alt="">
+                        <p>Reportes</p>
+                    </a>
+                    <div class="check"></div>
+                </li> 
                 {% if perms.sales.my_ver_postventa%}
                     {% obtener_ultima_campania as ultima_campania %}
                     <li>

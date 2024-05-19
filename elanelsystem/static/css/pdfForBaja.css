@@ -63,7 +63,7 @@ img{
     margin-bottom: 1.6rem;
 }
 #detalle > h2 > strong{
-    color:#3D7CD8 ;
+    color:var(--third-color) ;
 }
 
 #contrato{

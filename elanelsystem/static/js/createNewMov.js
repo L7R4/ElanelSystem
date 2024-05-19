@@ -6,44 +6,62 @@ const main_modalNewEgresoIngreso = document.querySelector(".main_modalNewEgresoI
 const buttonsNewMov = document.querySelectorAll(".buttonNewMov");
 const closeModalEgresoIngreso = document.getElementById("closeModalEgresoIngreso")
 
-const inputTypeComprobante = document.getElementById("tipoComprobanteMov").parentElement
-const inputNroComprobante = document.getElementById("nroComprobanteMov").parentElement
-const inputTypeID = document.getElementById("tipoIdentificacionMov").parentElement
-const inputNroID = document.getElementById("nroIdentificacionMov").parentElement
-const inputDenominacion = document.getElementById("denominacionMov").parentElement
-const inputTypeMoneda = document.getElementById("tipoMonedaMov").parentElement
-const inputSelectAdelanto_Premio = document.querySelector(".wrapperSelectAdelanto_Premio").parentElement
-const inputsEgresoIngreso = document.querySelectorAll(".inputEgresoIngreso")
+const inputsID_egresos = [
+    "denominacionMov",
+    "nroIdentificacionMov",
+    "tipoID",
+    "tipoComprobante",
+    "nroComprobanteMov",
+    "adelanto",
+    "premio",
+]
 
-buttonsNewMov.forEach(element => {
-    element.addEventListener('click', ()=>{
-        fechaMov.value = dateToday()
-        if(element.id == "buttonEgreso"){
-            tittleModalEgresoIngreso.textContent = "Nuevo egreso"
-            formNewIngresoEgreso.insertBefore(inputDenominacion,formNewIngresoEgreso.children[2])
-            formNewIngresoEgreso.insertBefore(inputNroID,formNewIngresoEgreso.children[2])
-            formNewIngresoEgreso.insertBefore(inputTypeID,formNewIngresoEgreso.children[2])
-            formNewIngresoEgreso.insertBefore(inputNroComprobante,formNewIngresoEgreso.children[2])
-            formNewIngresoEgreso.insertBefore(inputTypeComprobante,formNewIngresoEgreso.children[2])
-            formNewIngresoEgreso.insertAdjacentElement('beforeend',inputSelectAdelanto_Premio)
-            inputTypeMoneda.remove()
-            typeMov.value = "Egreso"
+const inputsID_ingresos = [
+    "tipoMoneda",
+]
 
-        }else if(element.id == "buttonIngreso"){
-            tittleModalEgresoIngreso.textContent = "Nuevo ingreso"
-            inputTypeComprobante.remove()
-            inputTypeID.remove()
-            inputDenominacion.remove()
-            inputNroComprobante.remove()
-            inputNroID.remove()
-            inputSelectAdelanto_Premio.remove()
-            formNewIngresoEgreso.insertBefore(inputTypeMoneda,formNewIngresoEgreso.children[2])
-            typeMov.value = "Ingreso"
-        }
-        main_modalNewEgresoIngreso.classList.add("active")
-        main_modalNewEgresoIngreso.style.opacity = "1"
-    })
-});
+function newEgreso() {
+    
+    tittleModalEgresoIngreso.textContent = "Nuevo egreso"
+    typeMov.value = "Egreso"
+    document.getElementById("fechaMov").value = dateToday()
+
+    inputsID_ingresos.forEach(element => {
+        let inputObject = document.getElementById(element)
+        let wrapper =inputObject.closest('.wrapperInput')
+        wrapper.style.display = "None"
+    });
+    inputsID_egresos.forEach(element => {
+        let inputObject = document.getElementById(element)
+        let wrapper =inputObject.closest('.wrapperInput')
+        wrapper.style.display = "flex"
+    });
+
+    main_modalNewEgresoIngreso.classList.add("active")
+    main_modalNewEgresoIngreso.style.opacity = "1"
+}
+
+function newIngreso() {
+    tittleModalEgresoIngreso.textContent = "Nuevo Ingreso"
+    typeMov.value = "Ingreso"
+    document.getElementById("fechaMov").value = dateToday()
+    
+    inputsID_egresos.forEach(element => {
+        let inputObject = document.getElementById(element)
+        let wrapper =inputObject.closest('.wrapperInput')
+        wrapper.style.display = "None"
+    });
+    inputsID_ingresos.forEach(element => {
+        let inputObject = document.getElementById(element)
+        let wrapper =inputObject.closest('.wrapperInput')
+        wrapper.style.display = "flex"
+    });
+    
+    main_modalNewEgresoIngreso.classList.add("active")
+    main_modalNewEgresoIngreso.style.opacity = "1"
+    
+}
+
 
 // Cierra el modal
 closeModalEgresoIngreso.addEventListener("click",()=>{
@@ -58,7 +76,7 @@ closeModalEgresoIngreso.addEventListener("click",()=>{
 
 
 
-// ENVIA EL FORMULARIO DEL MOVIMIENTO ----------------------------------------------------------------------------
+//#region ENVIA EL FORMULARIO DEL MOVIMIENTO ----------------------------------------------------------------------------
 
 confirmForm.addEventListener("click",()=>{
     makeMov().then(data => {
@@ -87,7 +105,6 @@ async function makeMov() {
     return data;
 }
 
-// -----------------------------------------------------------------------------------------------------------------
 
 function getCookie(name) {
     let cookieValue = null;
@@ -104,13 +121,15 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+//#endregion -----------------------------------------------------------------------------------------------------------------
+
+
 
 function clearInputs() {
-    inputsEgresoIngreso.forEach(element => element.value = "")
-    if(document.querySelector(".wrapperSelectAdelanto_Premio")){
-        let inputsSelectPremio_Adelanto = document.querySelectorAll(".inputSelectPremio_Adelanto")
-        inputsSelectPremio_Adelanto.forEach(element => element.checked = false)   
-    }
+    let inputs = document.querySelectorAll(".wrapperInput input")
+    inputs.forEach(element => element.value = "")
+    let inputsSelectPremio_Adelanto = document.querySelectorAll(".inputSelectPremio_Adelanto")
+    inputsSelectPremio_Adelanto.forEach(element => element.checked = false)
 }
 
 // Colocar la fecha automatica de hoy en el input de "Fecha de emicion"

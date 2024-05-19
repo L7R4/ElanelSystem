@@ -92,7 +92,7 @@ def requestColaboradores(request):
         else:
             colaboradores = colaboradores.filter(rango = tipo_colaborador)
 
-
+    
 
     colaboradores_list = [{"tipo_colaborador":item.rango, "nombre": item.nombre, "id": item.pk, "dni":item.dni,"comisionTotal": getComisionTotal(item,lastCampania,sucursalObject)["total_comisionado"],"detalle": getComisionTotal(item,lastCampania,sucursalObject)["detalle"]} for item in colaboradores if item.rango != "Admin"]
     

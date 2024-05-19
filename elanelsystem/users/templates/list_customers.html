@@ -7,11 +7,11 @@
 
 {% block content %}
 <div class="filters">
-      <a href="{% url 'users:create_customer' %}" id="create_customer">Agregar</a>
+      <a href="{% url 'users:create_customer' %}" class="add-button-default" id="create_customer">Agregar</a>
     <div>
         <input 
         type="text"
-        class = "customer"
+        class = "customer input-read-write-default"
         id="customer">
         <img src="{% static 'images/icons/search.svg' %}" alt="">
     </div>

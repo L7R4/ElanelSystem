@@ -17,7 +17,7 @@
     border-radius: .8rem;
 }
 .wrapperSections:first-child{
-    background-color:#1753ED;
+    background-color:var(--primary-color);
     box-shadow: 0px 0px 10px 1px rgba(255,255,255,0.26);
 }
 .wrapperSections:first-child .tittleWrapper > h4{
@@ -27,7 +27,7 @@
     background: #fff;
 }
 .wrapperSections:first-child .buttonWrapper > a> div > h3{
-    color: #203555;
+    color: var(--background-color);
 }
 .wrapperSections:first-child .buttonWrapper > a> div > img{
     filter: invert(1);
@@ -42,7 +42,7 @@
     display: flex;
     gap: 0.2rem;
     padding: 1rem 1.5rem;
-    background-color: #1753ED;
+    background-color: var(--primary-color);
     text-decoration: none;
     border-radius: 1rem;
     min-width: 5rem;
