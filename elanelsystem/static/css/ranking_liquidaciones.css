@@ -49,7 +49,7 @@
     border-radius: 5px;
 }
 .information::-webkit-scrollbar-thumb{
-    background: #3D7CD8;
+    background: var(--third-color);
     border-radius: 1rem;
 }
 
@@ -62,7 +62,7 @@
 }
 .information > .tittlesWrapper{
     width: 100%;
-    /* background-color: #3D7CD8; */
+    /* background-color: var(--third-color); */
 }
 
 .containerSupervisores .tittlesWrapper > .tittles > li {

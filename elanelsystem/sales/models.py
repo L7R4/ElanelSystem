@@ -377,7 +377,7 @@ class Ventas(models.Model):
 
         for i in range(initial,int(self.nro_cuotas + initial)):
             cuota = self.cuotas[i]["fechaDeVencimiento"]
-            if(datetime.datetime.now() > datetime.datetime.strptime(cuota,"%d/%m/%Y") and (self.cuotas[i]["status"] == "Pendiente" or self.cuotas[i]["status"] == "Bloqueado" )):
+            if(datetime.datetime.now() > datetime.datetime.strptime(cuota,"%d/%m/%Y") and (self.cuotas[i]["status"] == "Pendiente" or self.cuotas[i]["status"] == "Bloqueado" or self.cuotas[i]["status"] == "Parcial")):
                 self.cuotas[i]["status"] = "Atrasado"
                 diasDeRetraso = self.contarDias(datetime.datetime.strptime(cuota,"%d/%m/%Y"))
                 self.cuotas[i]["diasRetraso"] = diasDeRetraso

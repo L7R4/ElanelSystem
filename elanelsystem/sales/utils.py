@@ -6,8 +6,11 @@ import datetime
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.db.models import Max
+import openpyxl
 from openpyxl import Workbook
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
 #region Funciones para exportar PDFs
 def printPDF(data,url,productoName):
     template = get_template("pdfForBaja.html")
@@ -100,7 +103,7 @@ def sendEmailPDF(email,pdf_path,sujeto):
 
 
 #region Funciones para exportar .XLSs
-def exportar_excel(request):
+def exportar_excel(information):
     # Crear un nuevo libro de trabajo
     wb = Workbook()
 
@@ -108,32 +111,53 @@ def exportar_excel(request):
     ws = wb.active
     ws.title = "Datos"  # Cambiar el nombre de la hoja
 
-    print("PRINT DEL SESSION: ")
-    print(request.session["informe_data"])
-    [{'cuota': 'Cuota 0', 'nro_operacion': 5, 'nroCliente': 'cli_1', 'nombreCliente': 'Aasdas Asd', 'sucursal': 'Resistencia, Chaco', 'idMov': 1, 'descuento': 0, 'fechaDeVencimiento': '', 'fecha_pago': '27/04/2024 01:22', 'pagado': 20000, 'cobrador': 'Lautaro Rodriguez', 'metodoPago': 'Efectivo', 'tipoMovimiento': 'Ingreso'}]
+    # Estilo para toda la fila 1
+    bold_font = Font(bold=True)  # Negrita
+    yellow_fill = PatternFill(start_color="546FFF", end_color="546FFF", fill_type="solid")  # Relleno amarillo
+    center_alignment = Alignment(horizontal='center')  # Alineación centrada
+    thin_border = Border(
+        left=Side(border_style="thin"),
+        right=Side(border_style="thin"),
+        top=Side(border_style="thin"),
+        bottom=Side(border_style="thin")
+    )
 
-    # Agregar encabezados (opcional)
-    ws.append(["ID", "Nombre", "Apellido", "Fecha de nacimiento"])
+
+    # Obtener los encabezados a partir de las claves del primer diccionario en la lista
+    if information:
+        information = formatKeys(information)
+        encabezados = list(information[0].keys())
+        
+        ws.append(encabezados)  # Agregar encabezados a la hoja
+
+        # Agregar datos de cada diccionario a la hoja
+        for item in information:
+            fila = []
+            for key in encabezados:
+                valor = item.get(key, "")
+                fila.append(valor)
+            ws.append(fila)
     
-    # Obtener datos (ejemplo con datos ficticios)
-    datos = [
-        (1, "Juan", "Pérez", datetime.date(1990, 1, 1)),
-        (2, "Ana", "Gómez", datetime.date(1992, 5, 12)),
-    ]
+    for cell in ws[1]:  # Obtener todas las celdas de la fila 1
+        cell.font = bold_font
+        cell.fill = yellow_fill
+        cell.alignment = center_alignment
+        cell.border = thin_border
     
-    # Agregar datos a la hoja
-    for fila in datos:
-        ws.append(fila)
-    
+    # Ajustar el ancho de las columnas basado en la fila 1
+    column_widths = [len(cell.value) for cell in ws[1]]  # Ancho basado en el contenido
+
+    for idx, width in enumerate(column_widths, start=1):
+        ws.column_dimensions[openpyxl.utils.get_column_letter(idx)].width = width + 5  # Añadir espacio adicional
+
     # Configurar la respuesta como archivo Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename="datos.xlsx"'
-    
+
     # Guardar el libro de trabajo en la respuesta
     wb.save(response)
     
     return response
-
 
 
 #endregion 
@@ -232,3 +256,168 @@ def searchSucursalFromStrings(sucursal):
         sucursalObject = Sucursal.objects.get(localidad = localidad_buscada, provincia = provincia_buscada)
 
     return sucursalObject
+
+
+def get_ventasBySucursal(sucursal):
+    from sales.models import Ventas
+    if sucursal == "Todas":
+        return Ventas.objects.all()
+    return Ventas.objects.filter(agencia__pseudonimo=sucursal)
+
+#region Data Structures ----------------------------------------------------------
+
+def getInfoBaseCannon(venta, cuota, idContMov):
+    nro_cliente = venta.nro_cliente.nro_cliente
+    return {
+        'id_cont_mov' : idContMov,
+        'cuota' : cuota["cuota"],
+        'nro_operacion': cuota["nro_operacion"],
+        'nro_orden': venta.nro_orden,
+        'nro_cliente' :nro_cliente,
+        'nombre_del_cliente' : nro_cliente.nombre,
+        'sucursal' : venta.agencia.pseudonimo,
+        'tipo_de_movimiento' : "Ingreso",
+        'fecha_de_vencimiento' : cuota['fechaDeVencimiento'],
+        'descuento' : cuota['descuento'],
+        'estado' : cuota['status'],
+        'dias_de_mora' : cuota['diasRetraso'],
+    }
+
+def dataStructureCannons(sucursal):
+    ventas = get_ventasBySucursal(sucursal)
+
+    cuotas_data = []
+    idContMov = 0
+
+    for i in range(int(ventas.count())):
+        venta = ventas[i]
+
+        for k in range(len(ventas[i].cuotas)):
+            cuota = ventas[i].cuota[k]
+
+            if ventas[i].cuotas[k]["status"] in ["Pagado", "Parcial", "Atrasado"]:
+                if(ventas[i].cuotas[k]["pagoParcial"]["status"]):
+
+                    for j in range (len(ventas[i].cuotas[k]["pagoParcial"]["amount"])):
+                        idContMov += 1
+                        pagoParcial = cuota["pagoParcial"]["amount"][j]
+                        movimiento_dataParcial ={
+                            **getInfoBaseCannon(venta,cuota,idContMov),
+                            'fecha' : pagoParcial["date"] + " " + pagoParcial["hour"],
+                            'pagado' : pagoParcial["value"],
+                            "cobrador" : pagoParcial["cobrador"],
+                            'tipo_pago': pagoParcial["metodo"],
+                        }
+                        cuotas_data.append(movimiento_dataParcial)
+
+                else:
+                    idContMov += 1
+                    movimiento_dataTotal = {
+                        **getInfoBaseCannon(venta,cuota,idContMov), # Metodo para desempaquetar un diccionario con **
+                        'fecha' : cuota["fecha_pago"]+ " " + cuota["hora"],
+                        'pagado' : cuota["pagado"],
+                        "cobrador" : cuota["cobrador"],
+                        'tipo_pago': cuota["metodoPago"],
+                    }
+                    cuotas_data.append(movimiento_dataTotal)
+
+
+
+    cuotas_data.reverse()
+    return cuotas_data
+
+
+def dataStructureVentas(sucursal):
+
+    ventas = get_ventasBySucursal(sucursal)
+    
+    ventasList = []
+    for i in range(int(ventas.count())):
+        venta = ventas[i]
+        
+        ventaDict = {
+            'nro_cliente' : venta.nro_cliente.nro_cliente,
+            'nombre_de_cliente' : venta.nro_cliente.nombre,
+            'nro_orden' : venta.nro_orden,
+            'nro_cuotas' : venta.nro_cuotas,
+            'agencia' : venta.agencia.pseudonimo,
+            'campania' : venta.campania,
+            'importe' : venta.importe,
+            'paquete' : venta.paquete,
+            'primer_cuota' : venta.primer_cuota,
+            'suscripcion' : venta.anticipo,
+            'cuota_comercial' : venta.importe_x_cuota,
+            'vendedor' : venta.vendedor.nombre,
+            'supervisor' : venta.supervisor.nombre,
+        }
+
+        # Agregar el campo si la venta esta AUDITADA       
+        if(venta.auditoria[-1]["realizada"]):
+            ventaDict["auditada"] = "Si"
+            ventaDict["ultima_auditoria"] = venta.auditoria[-1]["grade"]
+
+        # Agregar el campo si la venta esta ADJUDICADA
+        if(venta.adjudicado["status"]):
+            ventaDict["adjudicado"] = "Si"
+            ventaDict["tipo_de_adjudicacion"] = venta.adjudicado["tipo"]
+
+        # Agregar el campo si la venta esta DE BAJA
+        if(venta.deBaja["status"]):
+            ventaDict["de_baja"] = "Si"
+            ventaDict["motivo_de_baja"] = venta.deBaja["motivo"]
+            ventaDict["responsable"] = venta.deBaja["responsable"]
+        
+        # Agregar el campo si la venta esta SUSPENDIDA
+        if(venta.suspendida):
+            ventaDict["suspendida"] = "Si"
+
+        
+        ventaDict['observaciones'] = venta.observaciones
+
+        ventasList.append(ventaDict)
+
+    return ventasList
+
+
+def dataStructureMovimientosExternos(sucursal):
+    from sales.models import Ventas
+
+    ventas =""
+    if(sucursal.pseudonimo == "Todas"):
+        ventas = Ventas.objects.all()
+    else:
+        ventas = Ventas.objects.filter(agencia=sucursal)
+
+#endregion
+
+def deleteFieldsInDataStructures(lista_dicts, campos_a_eliminar):
+    # Iterar sobre cada diccionario en la lista
+    for item in lista_dicts:
+        # Eliminar los campos especificados si existen en el diccionario
+        for campo in campos_a_eliminar:
+            if campo in item:
+                del item[campo]
+    return lista_dicts
+
+def formatKeys(lista_dicts):
+    # Nueva lista de diccionarios con claves formateadas
+    lista_formateada = []
+
+    # Iterar sobre cada diccionario en la lista
+    for item in lista_dicts:
+        nuevo_dict = {}
+        for key, value in item.items():
+            # Separar la clave por "_" y capitalizar cada parte
+            partes = key.split("_")
+
+            # Unir las partes con espacios y crear la nueva clave
+            nueva_clave = " ".join(partes)
+            nueva_clave = nueva_clave.capitalize()
+
+            # Añadir al nuevo diccionario
+            nuevo_dict[nueva_clave] = value
+
+        # Añadir el nuevo diccionario a la lista formateada
+        lista_formateada.append(nuevo_dict)
+
+    return lista_formateada

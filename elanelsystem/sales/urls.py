@@ -45,11 +45,6 @@ urlpatterns = [
     path('updatedinero/', updateDinero, name='updateDinero'),
     #endregion --------------------------------------------------------------------------------
 
-    #region Reports ---------------------------------
-    path('ventas/reportes/', ReportesView.as_view(), name='reporteView'),
-    path('ventas/excel/exportar/', exportar_excel, name='exportExcel'),
-    
-    #endregion --------------------------------------
     #region URLS API PARA EL CRM
     path('requestmovscrm/', requestMovimientosCRM, name='requestMovsCRM'),
     #endregion

@@ -20,6 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.views import logout_then_login
 from .views import *
+from sales.utils import exportar_excel
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,4 +30,14 @@ urlpatterns = [
     path("",include("users.urls", namespace="users")),
     path("",include("products.urls", namespace="products")),
     path("",include("liquidacion.urls", namespace="liquidacion")),
+
+    # Path para manejo de filtros
+    # path("data/filter/",filterManage, name="filterManage"),
+
+
+    #region Reports ---------------------------------
+    path('ventas/reportes/', ReportesView.as_view(), name='reporteView'),
+    path('ventas/excel/exportar/', exportar_excel, name='exportExcel'),
+    
+    #endregion --------------------------------------
 ]+ static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

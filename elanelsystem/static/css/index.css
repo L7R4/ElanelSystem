@@ -101,7 +101,7 @@
 
 .form_wrapper > form > input[type=submit]:hover
 {
-background-color: #3D7CD8;
+background-color: var(--third-color);
 }
 
 .wrapper > img{

@@ -38,13 +38,6 @@ class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
     
     def handle_no_permission(self):
         return redirect("users:list_customers")
-        
-
-
-class ReportesView(generic.View):
-    template_name = 'reportes.html'
-
-    def get(self, request,*args, **kwargs):
 
 
 #region API CRM
@@ -224,6 +217,7 @@ class DetailSale(TestLogin,generic.DetailView):
         self.object = self.get_object()
         sale_target = Ventas.objects.get(pk=self.object.id)
         self.object.testVencimientoCuotas()
+        print(self.object.cuotas)
         status_cuotas = self.object.cuotas
         if(self.object.adjudicado):
             self.object.addPorcentajeAdjudicacion()
@@ -1298,35 +1292,31 @@ def createNewMov(request):
     if request.method == 'POST':
         newMov = MovimientoExterno()
         movimiento = request.POST.get("movimiento")
+        newMov.movimiento=movimiento
+        newMov.agencia = request.user.sucursal
+        newMov.metodoPago= request.POST.get('metodoPago')
+        newMov.ente= request.POST.get('ente')
+        newMov.fecha=datetime.datetime.today().strftime("%d/%m/%Y")
+        newMov.hora = datetime.datetime.now().time().strftime("%H:%M")
+        newMov.concepto= request.POST.get('concepto')
+        newMov.metodoPago= request.POST.get('metodoPago')
+        newMov.dinero= float(request.POST.get('dinero'))
+
         if movimiento == 'Ingreso':
-            newMov.movimiento=movimiento
-            newMov.agencia = request.user.sucursal
             newMov.tipoMoneda = request.POST.get('tipoMoneda')
-            newMov.dinero= float(request.POST.get('dinero'))
-            newMov.metodoPago= request.POST.get('metodoPago')
-            newMov.concepto= request.POST.get('concepto')
-            newMov.ente= request.POST.get('ente')
-            newMov.fecha=datetime.datetime.today().strftime("%d/%m/%Y")
-            newMov.hora = datetime.datetime.now().time().strftime("%H:%M")
-        else:
-            newMov.movimiento=movimiento
-            newMov.agencia = request.user.sucursal
+        elif movimiento == 'Egreso':
             newMov.tipoIdentificacion=request.POST.get('tipoIdentificacion')
             newMov.nroIdentificacion=request.POST.get('nroIdentificacion')
             newMov.tipoComprobante=request.POST.get('tipoComprobante')
             newMov.nroComprobante=request.POST.get('nroComprobante')
             newMov.denominacion=request.POST.get('denominacion')
-            newMov.dinero= float(request.POST.get('dinero'))
-            newMov.metodoPago= request.POST.get('metodoPago')
-            newMov.concepto= request.POST.get('concepto')
-            newMov.ente= request.POST.get('ente')
-            newMov.fecha=datetime.datetime.today().strftime("%d/%m/%Y")
-            newMov.hora = datetime.datetime.now().time().strftime("%H:%M")
             if(request.POST.get('adelanto_premio') == "premio"):
                 newMov.premio= True
             elif(request.POST.get('adelanto_premio') == "adelanto"):
                 newMov.adelanto = True
-                
+        else:
+            return HttpResponseBadRequest('Fallo en el servidor', status=405)
+                 
         newMov.save()
         return JsonResponse({'status': 'success', 'message': 'Movimiento creado exitosamente'})
         

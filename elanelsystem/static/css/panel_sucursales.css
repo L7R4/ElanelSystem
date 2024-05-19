@@ -15,7 +15,7 @@
 .sucursalItem > h2{
     font-size: clamp(1.8rem, 1.5vw, 2.2rem);
     font-family: raleway-semibold;
-    color:#1753ED; 
+    color:var(--primary-color); 
 }
 .containerInputs{
     display: flex;
@@ -37,7 +37,7 @@
     font-size: clamp(1.3rem, 1vw, 1.5rem);
     font-family: raleway-semibold;
     margin-bottom: .3rem;
-    /* color:#1753ED;  */
+    /* color:var(--primary-color);  */
 }
 
 .wrapperInput > input{
@@ -47,7 +47,7 @@
     font-family: raleway-semibold;
     background-color: #3043615e;
     color: #000000c2;
-    border: 2px solid #3D7CD8;
+    border: 2px solid var(--third-color);
     border-radius: 0.6rem;
     display: flex;
     align-items: center;
@@ -70,14 +70,14 @@
     font-size: clamp(1.3rem, 1vw, 1.5rem);
     font-family: raleway-semibold;
     margin-bottom: .3rem;
-    /* color:#1753ED;  */
+    /* color:var(--primary-color);  */
 }
 .wrapperInputNew > input{
     width: 100%;
     box-sizing: border-box;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     font-family: raleway-semibold;
-    border: 2px solid #3D7CD8;
+    border: 2px solid var(--third-color);
     background-color: #3043615e;
     color: #000000c2;
     border-radius: 0.6rem;
@@ -112,7 +112,7 @@
     font-family: raleway-semibold;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     color: white;
-    background-color: #3D7CD8;
+    background-color: var(--third-color);
     border-color: transparent;
     border-radius: 0.3rem;
     width: 10%;
@@ -125,7 +125,7 @@
     font-family: raleway-semibold;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     background-color: transparent;
-    border: 2px solid #3D7CD8;
+    border: 2px solid var(--third-color);
     border-radius: 0.3rem;
     width: 10%;
     padding: .3rem .8rem;
@@ -136,7 +136,7 @@
     font-family: raleway-semibold;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     color: white;
-    background-color: #3D7CD8;
+    background-color: var(--third-color);
     border-color: transparent;
     border-radius: 0.3rem;
     width: 20%;
@@ -146,7 +146,7 @@
 #buttonAddSucursal.blocked{
     pointer-events: none;
     color: #ffffffd1;
-    background-color: #3d7cd86e;
+    background-color: var(--third-color)6e;
 }
 .div{
     width: 2rem;

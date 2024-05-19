@@ -94,7 +94,7 @@ html {
 #firmas{
     width: 100%;
     margin-top: 30rem;
-    /* background-color: #3D7CD8; */
+    /* background-color: var(--third-color); */
 }
 #firmas > div{
     width: 70%;

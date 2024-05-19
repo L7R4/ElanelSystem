@@ -30,7 +30,7 @@
     padding: 1rem;
     box-sizing: border-box;
     background-color: #304361;
-    border: 2px solid #3D7CD8;  
+    border: 2px solid var(--third-color);  
     border-radius: .7rem;
     outline: none;
     text-indent: 3.5rem;
@@ -69,7 +69,7 @@
     padding: .6rem;
     box-sizing: border-box;
     background-color: #304361;
-    border: 2px solid #3D7CD8;  
+    border: 2px solid var(--third-color);  
     border-radius: .6rem;
     outline: none;
     width: 100%;
@@ -93,7 +93,7 @@
     z-index: 1;
     background: white;
     border-radius: 0.5rem;
-    /* border: 3px solid #3D7CD8; */
+    /* border: 3px solid var(--third-color); */
 }
 
 .sucursalWrapper > div > #contenedorAgencia > li:first-child {
@@ -137,7 +137,7 @@
     padding: .6rem;
     box-sizing: border-box;
     background-color: #304361;
-    border: 2px solid #3D7CD8;  
+    border: 2px solid var(--third-color);  
     border-radius: .6rem;
     outline: none;
     width: 100%;
@@ -156,13 +156,13 @@
 #filtrar_ventas_button{
     font-size: clamp(1.1rem, 1.1vw, 1.5rem);
     font-family: raleway-semibold;
-    background-color: #1753ED;
+    background-color: var(--primary-color);
     color: white;
     padding: 0rem 3rem;
     text-decoration: none;
     cursor: pointer;
     border-radius: .6rem;
-    border: 2px solid #1753ED;
+    border: 2px solid var(--primary-color);
 }
 
 
@@ -188,7 +188,7 @@
 .buttonsWrapper > #makeInforme{
     font-size: clamp(1rem, 1vw, 1.5rem);
     font-family: raleway-semibold;
-    background-color: #1753ED;
+    background-color: var(--primary-color);
     color: white;
     text-decoration: none;
     min-width: fit-content;
@@ -196,7 +196,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #1753ED;
+    border: 2px solid var(--primary-color);
     border-radius: 0.6rem;
     margin-bottom: .7rem;
 }
@@ -217,7 +217,7 @@
     width: fit-content;
     padding: .3rem .8rem;
     border-radius: .5rem;
-    background-color: #1753ED;
+    background-color: var(--primary-color);
     margin: 0 auto;
     margin-top: .3rem;
 }
@@ -267,7 +267,7 @@
     width: 30%;
 }
 .wrapperInfoAtributte > h1{
-    color: #3D7CD8;
+    color: var(--third-color);
     font-size: clamp(1.3rem, 1.5vw, 2rem);
     font-family: raleway-bold;
 }
@@ -277,7 +277,7 @@
 }
 
 .displayDetailInfoButton{
-    background-color: #3D7CD8;
+    background-color: var(--third-color);
     position: absolute;
     right: 1rem;
     width: 2.5rem;
@@ -418,7 +418,7 @@ button#cancelarGrade{
     border-radius: 50%;
 }
 .dotStatus.pendiente{
-    background-color:#3D7CD8;
+    background-color:var(--third-color);
 }
 .dotStatus.aprobada{
     background-color:rgb(9, 213, 19);
@@ -453,7 +453,7 @@ button#cancelarGrade{
     font-size: clamp(1.1rem, 1.1vw, 1.3rem);
     font-family: raleway;
     border-radius: .6rem;
-    border: #3D7CD8 1px solid;
+    border: var(--third-color) 1px solid;
 }
 .wrapperMessage{
     margin: .6rem 0;
@@ -508,7 +508,7 @@ button#cancelarGrade{
 #auditoriaMessageWrapper > h2{
     font-size: clamp(1.1rem, 1.2vw, 1.4rem);
     font-family: raleway-semibold;
-    color: #3D7CD8;
+    color: var(--third-color);
 }
 
 #auditoriaMessageWrapper.active{
@@ -521,7 +521,7 @@ button#cancelarGrade{
 .containerHistorialAuditorias > .infoCheckWrapper{
     box-sizing: border-box;
     padding: 1rem;
-    border: #3D7CD8 1px solid;
+    border: var(--third-color) 1px solid;
     border-radius: .6rem;
     margin-bottom: .7rem;
     display: flex;
@@ -574,8 +574,8 @@ button#cancelarGrade{
 .containerHistorialAuditorias > .infoCheckWrapper > div.wrapperUltimo > p{
     font-family: raleway-semibold;
     font-size: clamp(1.2rem, 1.2vw, 1.5rem);
-    color: #3D7CD8;
+    color: var(--third-color);
     text-decoration: underline;
-    text-decoration-color: #3D7CD8;
+    text-decoration-color: var(--third-color);
 }
 

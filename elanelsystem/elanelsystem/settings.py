@@ -31,7 +31,7 @@ SECRET_KEY = "0fvkobr34mhu5fc(im)3+#4pyu1p$jc*s5m^4!x@h44sp3gx_u"
 DEBUG = "True"
 
 # ALLOWED_HOSTS = ["25.31.50.25","localhost"]
-ALLOWED_HOSTS = ["192.168.1.107","*"]
+ALLOWED_HOSTS = ["192.168.1.107","192.168.1.104","*"]
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST= "c1611768.ferozo.com"
