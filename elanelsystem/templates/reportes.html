@@ -56,7 +56,7 @@
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
 
-                      <input type="text" name="tipoPago" class = "input-select-custom multipleSelect" id ="tipoDePago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
+                      <input type="text" name="tipo_pago" class = "input-select-custom multipleSelect" id ="tipoDePago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                             <li data-value="Efectivo">Efectivo</li>
                             <li data-value="Banco">Banco</li>
@@ -71,7 +71,7 @@
                     <h3 class="labelFilterElement">Filtrar por sucursal</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="sucursal" class = "multipleSelect input-select-custom" id ="sucursalInput" value="{{user.sucursal.pseudonimo}}"placeholder ="Elija la sucursal" autocomplete="off" readonly>
+                      <input type="text" name="agencia" class = "multipleSelect input-select-custom" id ="sucursalInput" value="{{user.sucursal.pseudonimo}}"placeholder ="Elija la sucursal" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                             <li data-value="Efectivo">Efectivo</li>
                             <li data-value="Banco">Banco</li>
@@ -103,10 +103,10 @@
                 <div id="wrapperRadioEgresoIngreso" class="wrapperTypeFilter">
                     <h3 class="labelFilterElement">Filtrar por:</h3>
                     <div class="selectEgreso_Ingreso inputsRadiosContainer">
-                        <input type="radio" name="tipoMovimiento" id="ingreso" value="Ingreso">
+                        <input type="radio" name="tipo_mov" id="ingreso" value="Ingreso">
                         <label for="ingreso">Ingreso</label>
         
-                        <input type="radio" name="tipoMovimiento" id="egreso" value="Egreso">
+                        <input type="radio" name="tipo_mov" id="egreso" value="Egreso">
                         <label for="egreso">Egreso</label>
                     </div>
                 </div>                  

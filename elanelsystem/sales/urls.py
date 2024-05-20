@@ -39,13 +39,11 @@ urlpatterns = [
     
     #region URLs Specifics Functions ------------------------------------------------------------
     path('ventas/request_ventas/', requestVentas, name='requestVentas'),
-    path('request-cuotas/', requestCuotas, name='rc'),
     path('requestmovs/', requestMovimientos, name='rmovs'),
     path('create_new_mov/', createNewMov, name='create_new_mov'),
-    path('updatedinero/', updateDinero, name='updateDinero'),
     #endregion --------------------------------------------------------------------------------
 
     #region URLS API PARA EL CRM
-    path('requestmovscrm/', requestMovimientosCRM, name='requestMovsCRM'),
+    # path('requestmovscrm/', requestMovimientosCRM, name='requestMovsCRM'),
     #endregion
 ]

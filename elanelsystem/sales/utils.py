@@ -198,39 +198,6 @@ def filtroMovimientos_fecha(fechaInicio, context ,fechaFinal):
                     movimientosFiltrados.append(context[i])
         return movimientosFiltrados
 
-def filterMovs(data,params):
-    paramsDict = params.dict()
-
-    if(len(paramsDict.keys()) > 1):
-        clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
-        # Si algun campo de fecha esta en la busqueda que filtre por la fecha
-        if("fecha_inicial" in clearContext.keys() or "fecha_final" in clearContext.keys()):
-            try:
-                # Por si existen las 2 fechas
-                data = filtroMovimientos_fecha(clearContext["fecha_inicial"],data,clearContext["fecha_final"])
-                
-            except KeyError as e:
-                try:
-                    # Por si solamente se pides de una fecha hacia delante
-                    data = filtroMovimientos_fecha(clearContext["fecha_inicial"],data,"")
-                    
-                except KeyError as e:
-                    # Por si solamente se pide hasta una determinada fecha
-                    data = filtroMovimientos_fecha("",data,clearContext["fecha_final"])
-
-            #Limpar el context del queryDict quitando la fecha inicial y final para que no haya errores para filtrar los otros campos
-            clearContext = {key: value for key, value in clearContext.items() if key not in ('fecha_inicial', 'fecha_final')}
-            # data = [item for item in contextByDateFiltered if all(item[key] == value for key, value in clearContext.items())]
-            
-            for key, values in clearContext.items():
-                selected_values = [item.strip() for item in values.split('-')]
-                data = [item for item in data if any(item.get(key, '').strip() == value for value in selected_values)]
-        else:
-            for key, values in clearContext.items():
-                selected_values = [item.strip() for item in values.split('-')]
-                data = [item for item in data if any(item.get(key, '').strip() == value for value in selected_values)]
-    return data
-
 def obtener_ultima_campania():
     # Lo importo aca para evitar el error de dependencias circulares
     from sales.models import Ventas
@@ -282,6 +249,7 @@ def getInfoBaseCannon(venta, cuota, idContMov):
         'estado' : cuota['status'],
         'dias_de_mora' : cuota['diasRetraso'],
     }
+
 
 def dataStructureCannons(sucursal):
     ventas = get_ventasBySucursal(sucursal)
@@ -380,13 +348,42 @@ def dataStructureVentas(sucursal):
 
 
 def dataStructureMovimientosExternos(sucursal):
-    from sales.models import Ventas
+    from sales.models import MovimientoExterno
+    movs_externos = ""
 
-    ventas =""
     if(sucursal.pseudonimo == "Todas"):
-        ventas = Ventas.objects.all()
+        movs_externos = MovimientoExterno.objects.all()
     else:
-        ventas = Ventas.objects.filter(agencia=sucursal)
+        movs_externos = MovimientoExterno.objects.filter(agencia=sucursal)
+
+    return [
+        {
+            "tipoIdentificacion": movs_externo.tipoIdentificacion,
+            "nroIdentificacion": movs_externo.nroIdentificacion,
+            "tipoComprobante": movs_externo.tipoComprobante,
+            "nroComprobante": movs_externo.nroComprobante,
+            "denominacion": movs_externo.denominacion,
+            "tipoMoneda": movs_externo.tipoMoneda,
+            "tipo_mov": movs_externo.movimiento,
+            "dinero": movs_externo.dinero,
+            "tipo_pago": movs_externo.metodoPago,
+            "agencia": movs_externo.agencia.id if movs_externo.agencia else None,
+            "ente": movs_externo.ente,
+            "fecha": movs_externo.fecha,
+            "campania": movs_externo.campania,
+            "concepto": movs_externo.concepto,
+            "premio": movs_externo.premio,
+            "adelanto": movs_externo.adelanto,
+            "hora": movs_externo.hora
+            } 
+        
+        for movs_externo in movs_externos]
+
+def dataStructureMoviemientosYCannons(sucursal):
+    structureCannons = dataStructureCannons(sucursal)
+    structureMovsExternos = dataStructureMovimientosExternos(sucursal)
+
+    return structureCannons + structureMovsExternos
 
 #endregion
 

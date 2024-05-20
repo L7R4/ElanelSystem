@@ -1,9 +1,9 @@
-.wrapper_content{
+.wrapper_content {
     padding: 3rem;
     box-sizing: border-box;
 }
-.caja
-{
+
+.caja {
     display: flex;
     height: 85%;
     column-gap: 3rem;
@@ -11,28 +11,25 @@
     margin-top: 3rem;
 }
 
-.filters
-{
-    width: 100%;
-    height: 15%;
-    display: flex;
-    justify-content: end;
-    align-items: center;
-}
-.movimientos{
+
+
+/* #region SECTOR DE MOVIMIENTOS DE CAJA */
+
+.movimientos {
     width: 65%;
-    height: 100%;   
+    height: 100%;
 }
-.tittles{
+
+.tittlesWrapper>.tittles {
     display: flex;
     list-style: none;
     width: 100%;
-    justify-content: space-around; 
+    justify-content: space-around;
     align-items: center;
-    height: 100%; 
+    height: 100%;
 }
 
-.tittlesWrapper > .tittles > li {
+.tittlesWrapper>.tittles>li {
     color: var(--third-color);
     font-size: clamp(1.3rem, 1.2vw, 1.5rem);
     font-family: raleway-semibold;
@@ -40,25 +37,28 @@
     width: 15%;
     text-align: center;
 }
-.tittlesWrapper > .tittles > li:nth-child(2){
+
+.tittlesWrapper>.tittles>li:nth-child(2) {
     width: 35%;
 }
-.tittlesWrapper > .tittles > li:nth-child(3){
+
+.tittlesWrapper>.tittles>li:nth-child(3) {
     width: 10%;
 }
 
-.movimientos > .tittlesWrapper{
+.movimientos>.tittlesWrapper {
     width: 100%;
     background-color: var(--fourth-color);
     border-radius: 0.6rem;
     height: 8%;
 }
-.movimientos > .valuesWrapper{
+
+.movimientos>.valuesWrapper {
     overflow-y: auto;
     height: 85%;
 }
-.valuesWrapper > .values > .mov
-{
+
+.valuesWrapper>.values>.mov {
     display: flex;
     font-size: 1.4rem;
     justify-content: space-around;
@@ -71,801 +71,70 @@
     text-decoration: none;
     border-radius: 0.6rem;
 }
-.valuesWrapper > .values > .mov:hover
-{
+
+.valuesWrapper>.values>.mov:hover {
     background-color: #304361;
 }
-.valuesWrapper > .values > .mov > div
-{
+
+.valuesWrapper>.values>.mov>div {
     width: 15%;
     text-align: center;
 }
-.valuesWrapper > .values > .mov > div:nth-child(2)
-{
+
+.valuesWrapper>.values>.mov>div:nth-child(2) {
     width: 35%;
     text-align: center;
 }
-.valuesWrapper > .values > .mov > div:nth-child(3)
-{
+
+.valuesWrapper>.values>.mov>div:nth-child(3) {
     width: 10%;
     text-align: center;
 }
 
-
-.mov > .code{
-    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-    background-color: rgba(240, 248, 255, 0.158);
-    width: 100%;
-    padding: .3rem;
-    text-align: center;
-}
-.mov > h1{
-    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-}
+/* #endregion */
 
 
-
-.resum{
+/* #region SECTOR DE RESUMEN DE ESTADOS DE CUENTA */
+.resum {
     width: 35%;
     height: 100%;
 }
-.resum__cuenta{
+
+.resum__cuenta {
     background-color: var(--third-color);
     width: 80%;
     border-radius: 1rem;
     display: flex;
-    padding:  1rem 0 ;
+    padding: 1rem 0;
     text-align: center;
 
 }
-.resum__cuenta__tipoCaja{
+
+.resum__cuenta__tipoCaja {
     width: 60%;
 
 }
-.resum__cuenta__saldo
-{
+
+.resum__cuenta__saldo {
     width: 40%;
 }
-.resum__cuenta > div > h4{
-    border-top:1px black solid;
+
+.resum__cuenta>div>h4 {
+    border-top: 1px black solid;
     padding: .2rem 2rem;
     font-size: clamp(1.2rem, 1vw, 1.3rem);
     font-family: raleway-semibold;
     padding: .6rem 0;
 
 }
-.resum__cuenta > div > h2{
+
+.resum__cuenta>div>h2 {
     padding: 0rem 2rem .7rem 2rem;
     font-size: clamp(1.3rem, 1.2vw, 1.6rem);
     font-family: raleway-semibold;
-
 }
 
-.modalFilters{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    visibility: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-    z-index: 5;
-    opacity: 0;
-    transition: opacity .3s ease;
-}
-.modalFilters.active
-{
-    visibility: visible;
-
-}
-.modalWrapperFilter{
-    width: 50%;
-    height: 60%;
-    background-color: var(--background-color);
-    position: relative;
-    padding: 5rem 4rem 0rem 4rem;
-    border-radius: 1.5rem;
-}
-
-.buttonsFilters{
-    width: 100%;
-    display: flex;
-    gap: 2rem;
-    justify-content: flex-end;
-    height: 4rem;
-}
-.buttonsFilters > a{
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: white;
-    text-decoration: none;
-    /* height: 75%; */
-    width: 10%;
-    min-width: fit-content;
-    padding: 1% 2%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--primary-color);
-    border-radius: 0.6rem;
-}
-.buttonNewMov{
-    width: 10%;
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: transparent;
-    min-width: fit-content;
-    color: white;
-    outline: none;
-    padding: 1% 2%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-color: transparent;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    border: 2px solid var(--primary-color);
-}
-.buttonFilterWrapper{
-    width: 10%;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-#openFilters{
-    height: 100%;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1% 2%;
-    font-size: clamp(1rem, 1.1vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    color: white;
-    outline: none;
-    border-color: transparent;
-    border-radius: 0.6rem;
-    cursor: pointer;
-}
-
-.buttonsFilters > .buttonFilterWrapper >  a#clear_filters{
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-    font-family: raleway-semibold;
-    margin-top: .3rem;
-    color: rgba(255, 255, 255, 0.856);
-    outline: none;
-    text-align: center;
-    cursor: pointer;
-    margin-right: 1%;
-    position: absolute;
-    display: none;
-    top: 100%;
-}
-.buttonsFilters > .buttonFilterWrapper >  a#clear_filters.show{
-    display: block;
-}
-
-.wrapperselectType,.wrapperSelectIngresoEgreso,.wrapperselectCobrador,.wrapperselectSucursal{
-    width: 40%;
-}
-
-/* CALENDARIO */
-.wrapperCalendario{
-    display: flex;
-    flex-basis: 100%;
-    gap: 1.5rem;
-}
-.calendarFilter{
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: 2rem;
-    row-gap: 5rem;
-    align-items: center;
-    position: relative;
-}
-
-.fromDate,.toDate{
-    width: 35%;
-    position: relative;
-}
-.calendar_button
-{
-    background-color: white;
-    border-radius: .6rem;
-    height: 3rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 .8rem;
-    cursor: pointer;
-    /* margin: 0 auto; */
-}
-.fromDate > h3,.toDate > h3
-{
-    font-family: raleway-semibold;
-    font-size: 1.4rem;
-    color: white;
-    margin-bottom: .4rem;
-    margin-left: .2rem;
-}
-#fromMonth_year, #toMonth_year
-{
-    font-family: raleway-semibold;
-    font-size: 1.4rem; 
-}
-.calendar_button > img{
-    width: 2rem;
-    height: 2rem;
-}
-.calendar_button > h3{
-    font-family: raleway-semibold;
-    font-size: clamp(1.2rem, 1vw, 1.3rem);
-}
-.calendar
-{
-    border-radius: 1rem;
-    width: 22rem;
-    position: absolute;
-    margin-top: .4rem;
-    overflow: hidden;
-    height: 0rem;
-    background-color: white;
-}
-
-
-.fromDate > .calendar
-{
-    z-index: 8;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, 10%);
-}
-.toDate > .calendar
-{
-    z-index: 7;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, 10%);
-}
-
-.calendar.active
-{
-    padding: 0.2rem 1.3rem;
-    height: fit-content;
-    min-height: 24rem;
-}
-.mes
-{
-    display: flex;
-    justify-content: space-between;
-    
-    margin-top: 1rem;
-    font-size: 1.4rem;
-    align-items: center;
-}
-.button__change_month > button
-{
-    border: none;
-    background-color: transparent;
-    font-size: 1.4rem;
-    border-radius: 1rem;
-    cursor: pointer;
-}
-.button__change_month > button > img{
-    width: 2.3rem;
-    height: 2.3rem;
-}
-.dias
-{
-    margin-top: 1rem;
-}
-.dias > ul > li{
-    width: calc(100% / 7);
-    text-align: center;
-    padding-top: .7rem;
-    position: relative;
-    height: 2rem;
-    cursor: pointer;
-    font-family: raleway-semibold;
-}
-
-.dias > .fromDatenumbers > li::before,
-.dias > .toDatenumbers > li::before
-{
-    content: "";
-    position: absolute;
-    width: 80%;
-    height: 90%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    border-radius: .6rem;
-    z-index: -1;
-}
-
-
-.dias > .fromDatenumbers > li:hover::before,
-.dias > .toDatenumbers > li:hover::before
-{
-    background-color: rgba(0, 0, 0, 0.336);
-}
-
-
-.dias > .fromDatenumbers > li.active::before,
-.dias > .toDatenumbers > li.active::before
-{
-    background-color: rgba(19, 16, 224, 0.575);
-}
-
-
-.tags
-{
-    font-size: 1.1rem;
-    display: flex;
-    list-style: none;
-    justify-content: space-around;
-}
-
-.fromDatenumbers,.toDatenumbers
-{
-    font-size: 1.1rem;
-    display: flex;
-    list-style: none;
-    font-family: raleway-semibold;
-    flex-wrap: wrap;
-}
-
-#submitFilter
-{
-    width: 20%;
-    height: 3rem;
-    position: absolute;
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    color: white;
-    outline: none;
-    border-color: transparent;
-    border-radius: .6rem;
-    cursor: pointer;
-    top: 125%;
-}
-#submitFilter > img{
-    width: 2rem;
-    height: 2rem;
-    /* filter: invert(1); */
-}
-
-
-
-/* FIltro por ingreso y egreso */
-.wrapperSelectIngresoEgreso{
-    width: 35%;
-}
-.wrapperSelectIngresoEgreso > h3{
-    font-family: raleway-semibold;
-    font-size: 1.4rem;
-    color: white;
-    margin-bottom: 0.4rem;
-    margin-left: 0.2rem;
-}
-.selectEgreso_Ingreso
-{
-    display: flex;
-    gap: 1rem;
-    align-self: flex-end;
-}
-.selectEgreso_Ingreso > input{
-    display: none;
-}
-.selectEgreso_Ingreso > label{
-    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-    padding: 0 0.8rem;
-    height: 3rem;
-    border-radius: 0.6rem;
-    min-width: 7rem;
-    width: 40%;
-    text-align: center;
-    font-family: raleway-semibold;
-    background-color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.selectEgreso_Ingreso > label.active{
-    background-color: var(--third-color);
-    color: white;
-}
-.selectTypePayments > input{
-    z-index: 6;
-}
-.selectTypePayments > .options{
-    z-index: 5;
-}
-
-.selectCobrador > input{
-    z-index: 4;
-}
-.selectCobrador > .options{
-    z-index: 3;
-}
-
-.selectSucursal > input{
-    z-index: 2;
-}
-.selectSucursal > .options{
-    z-index: 1;
-}
-
-/* FIlTROS SELECTS */
-.selectInputFilter{
-    position: relative;
-}
-.selectInputFilter > h3{
-    font-family: raleway-semibold;
-    font-size: 1.4rem;
-    color: white;
-    margin-bottom: 0.4rem;
-    margin-left: 0.2rem;
-}
-.selectInputFilter > input{
-    background-color: white;
-    font-family: raleway-semibold;
-    font-size: 1.3rem;
-    border-radius: 0.6rem;
-    position: relative;
-    height: 3rem;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    outline: none;
-    text-indent: 1rem;
-    border: none;
-}
-.selectInputFilter > .options{
-    list-style: none;
-    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-    padding-top: 1rem;
-    font-family: raleway-semibold;
-    width: 100%;
-    background-color: rgba(255, 255, 255, 0.952);
-    height: 0rem;
-    /* max-height: 13rem; */
-    overflow: hidden;
-    position: absolute;
-    top: 75%;
-    border-bottom-left-radius: 0.6rem;
-    border-bottom-right-radius: 0.6rem;
-    transition: .2s height ease;
-    overflow-y: auto;
-}
-.selectInputFilter > .options.active
-{
-    height: 13rem ;
-}
-
-.selectInputFilter > .options > li{
-    cursor: pointer;
-    width: 100%;
-    padding: 1rem 0;
-    padding-left: 0.8rem;
-
-}
-.selectInputFilter > .options > li:hover{
-    background: #30436127;
-}
-.selectInputFilter > .options > li.itemPicked{
-    background: #30436127;
-}
-
-
-
-/* MODAL CUOTA */
-.main_modalCuota{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    visibility: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-    z-index: 5;
-    opacity: 0;
-    transition: opacity .3s ease;
-}
-.main_modalCuota.active{
-    visibility: visible;
-}
-.background
-{
-    background-color: rgba(0, 0, 0, 0.5);
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-}
-
-.modal{
-    width: 50%;
-    /* height: 50%; */
-    background-color:#fff;
-    border-radius: 1rem;
-    position: absolute;
-    visibility: hidden;
-}
-
-.modal > .tittleModal{
-    display: flex;
-    padding: 1.5rem 2rem;
-    justify-content: space-between;
-    align-items: center;
-}
-.modal > .tittleModal > h3{
-    font-size: clamp(2rem, 1.7vw, 3rem);
-    font-family: raleway-semibold;
-    color: var(--third-color);
-}
-.modal > .tittleModal > button{
-    outline: none;
-    border-color: transparent;
-    background-color: transparent;
-    cursor: pointer;
-}
-.modal > .tittleModal > button > img{
-    width: 3rem;
-    /* filter: invert(1); */
-}
-
-.modal > .modal_information{
-    display: flex;
-    width: 100%;
-    flex-wrap: wrap;
-    column-gap:1rem ;
-    row-gap: .8rem;
-    padding: 1.5rem 2rem;
-    padding-top: 0;
-}
-.modal > .modal_information > .wrapperData{
-    width: 30%;
-}
-
-
-.wrapperData > .backgroundInput{
-    height: 3rem;
-    background-color: rgba(253,253,253,0.07);
-    border: 1.3px solid var(--third-color);
-    border-radius: 1rem;
-    display: flex;
-    align-items: center;
-    width: 80%;
-    padding: 0rem 2rem 0rem 1rem;
-}
-.wrapperData > h2{
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: 'raleway-semibold';
-    margin-bottom: .3rem;
-    margin-left: .3rem;
-}
-.wrapperData > .backgroundInput > h2{
-    font-size: clamp(1.2rem, 1.2vw, 1.3rem);
-    font-family: 'raleway-semibold';
-    color: rgba(0, 0, 0, 0.93);
-}
-
-/* TEXTO DE FILTROS */
-.wrapperFiltroTexto{
-    width: 80%;
-    margin: 0 auto;
-    margin-top: 2rem;
-}
-.wrapperFiltroTexto > h3{
-    color: white;
-    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
-    font-family: 'raleway-semibold';
-}
-.wrapperFiltroTexto > ul{
-    list-style: none;
-    margin-top: 1rem;
-}
-
-.wrapperFiltroTexto .fitroItem{
-    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: rgba(255, 255, 255, 0.756);
-    margin-bottom: .7rem;
-}
-
-.wrapperFiltroTexto .fitroItem > strong{
-    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: white;
-}
-
-
-
-
-/* PAGINACION DE MOVIMIENTOS */
-#pagination_container{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
-}
-
-
-#pagination_container > button
-{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: .5% 3%;
-    font-size: clamp(1rem, 1.1vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: transparent;
-    color: white;
-    outline: none;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    border: 2px solid var(--primary-color);
-}
-#pagination_container > button.blocked{
-    background-color: #3f4653d4!important;
-    pointer-events: none;
-    border: 0px solid transparent;
-}
-
-#pagination_container > .cuotasPages{
-    color: white;
-    font-size: 1.6rem;
-    font-family: raleway-semibold;
-}
-
-
-/* #region MODAL DE NUEVO INGRESO O EGRESO ---------------------------------------------------------------- */
- .main_modalNewEgresoIngreso{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    visibility:hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-    z-index: 5;
-    opacity: 0;
-    transition: opacity .3s ease;
-}
-
-.main_modalNewEgresoIngreso.active{
-    visibility: visible;
-}
-.background__newEgresoIngreso
-{
-    background-color: rgba(0, 0, 0, 0.5);
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-}
-
-.modal_newEgresoIngreso{
-    width: 60%;
-    max-width: 100rem;
-    max-height: 80%;
-    background-color:var(--third-color);
-    border-radius: 1rem;
-    position: absolute;
-    padding: 3rem;
-    box-sizing: border-box;
-
-}
-
-.modal_newEgresoIngreso > .tittleModal{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.modal_newEgresoIngreso > .tittleModal > h3{
-    font-size: clamp(2rem, 1.7vw, 3rem);
-    font-family: raleway-semibold;
-    color: var(--third-color);
-}
-.modal_newEgresoIngreso > .tittleModal > button{
-    outline: none;
-    border-color: transparent;
-    background-color: transparent;
-    cursor: pointer;
-}
-.modal_newEgresoIngreso > .tittleModal > button > img{
-    width: 3rem;
-}
-
-#formNewIngresoEgreso{
-    display: flex;
-    width: 100%;
-    flex-wrap: wrap;
-    column-gap:1.5rem ;
-    row-gap: 1rem;
-}
-
-#formNewIngresoEgreso > .wrapperInput{
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    width: 30%;
-    min-width: 20rem;
-    max-width: 48%;
-}
-#formNewIngresoEgreso > .wrapperInput > .input-read-write-default{
-    background-color: var(--third-color);
-}
-#formNewIngresoEgreso .input-select-custom{
-    background-color: var(--third-color);
-}
-.modal_newEgresoIngreso > #confirmMovimiento{
-    width: unset;
-    padding: 1rem 3rem;
-    margin-left: auto;
-    margin-top: 1rem;
-}
-.labelInput{
-    font: clamp(1.2rem, 1.2vw, 1.6rem) 'raleway-semibold';
-    color: var(--background-color);
-}
-#formNewIngresoEgreso #tipoComprobanteIconDisplay{
-    z-index: 10;
-}
-#formNewIngresoEgreso #tipoComprobante{
-    z-index: 9;
-}
-#formNewIngresoEgreso #tipoComprobante + ul.list-select-custom{
-    z-index: 8;
-}
-#formNewIngresoEgreso #tipoIDIconDisplay{
-    z-index: 7;
-}
-#formNewIngresoEgreso #tipoID{
-    z-index: 6;
-}
-#formNewIngresoEgreso #tipoID + ul.list-select-custom{
-    z-index: 5;
-}
-#formNewIngresoEgreso #tipoMonedaIconDisplay{
-    z-index: 6;
-    
-}
-#formNewIngresoEgreso #tipoMoneda{
-    z-index: 5;
-    
-}
-#formNewIngresoEgreso #tipoMoneda + ul.list-select-custom{
-    z-index: 4;
-}
-
-#formNewIngresoEgreso #tipoPagoIconDisplay{
-    z-index: 3;
-    
-}
-#formNewIngresoEgreso #tipoDePago{
-    z-index: 2;
-    
-}
-#formNewIngresoEgreso #tipoDePago + ul.list-select-custom{
-    z-index: 1;
-}
-
-.wrapperButtonInforme > a{
+.wrapperButtonInforme>a {
     font-size: clamp(1rem, 1vw, 1.5rem);
     font-family: raleway-semibold;
     background-color: var(--primary-color);
@@ -879,25 +148,449 @@
     justify-content: center;
     border: 2px solid var(--primary-color);
     border-radius: 0.6rem;
+    margin: 1rem 0;
+}
+
+/* #endregion */
+
+
+/* #region HEADER BUTTONS */
+.buttonsFilters {
+    width: 100%;
+    display: flex;
+    gap: 2rem;
+    justify-content: flex-end;
+    height: 4rem;
+}
+
+.buttonsFilters>a {
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: white;
+    text-decoration: none;
+    width: 10%;
+    min-width: fit-content;
+    padding: 1% 2%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--primary-color);
+    border-radius: 0.6rem;
+}
+
+.buttonsFilters>.buttonNewMov {
+    width: 10%;
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: transparent;
+    min-width: fit-content;
+    color: white;
+    outline: none;
+    padding: 1% 2%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-color: transparent;
+    border-radius: 0.6rem;
+    cursor: pointer;
+    border: 2px solid var(--primary-color);
+}
+
+.buttonsFilters>.buttonFilterWrapper {
+    width: 10%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#openFilters {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1% 2%;
+    font-size: clamp(1rem, 1.1vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: var(--primary-color);
+    color: white;
+    outline: none;
+    border-color: transparent;
+    border-radius: 0.6rem;
+    cursor: pointer;
+}
+
+.buttonsFilters>.buttonFilterWrapper>a#clear_filters {
+    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+    font-family: raleway-semibold;
+    margin-top: .3rem;
+    color: rgba(255, 255, 255, 0.856);
+    outline: none;
+    text-align: center;
+    cursor: pointer;
+    margin-right: 1%;
+    position: absolute;
+    display: none;
+    top: 100%;
+}
+
+.buttonsFilters>.buttonFilterWrapper>a#clear_filters.show {
+    display: block;
+}
+
+/* #endregion */
+
+
+/* #region MODAL CUOTA INFORMATION*/
+.main_modalCuota {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+
+.main_modalCuota.active {
+    visibility: visible;
+}
+
+.background {
+    background-color: rgba(0, 0, 0, 0.5);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.modal {
+    width: 50%;
+    background-color: var(--third-color);
+    border-radius: 1rem;
+    position: absolute;
+    box-sizing: border-box;
+    visibility: hidden;
+    padding: 3rem 4rem;
+
+}
+
+.modal>.tittleModal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal>.tittleModal>h3 {
+    font-size: clamp(2rem, 1.7vw, 3rem);
+    font-family: raleway-semibold;
+    color: var(--fourth-color);
+}
+
+.modal>.tittleModal>button {
+    outline: none;
+    border-color: transparent;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.modal>.tittleModal>button>img {
+    width: 3rem;
+}
+
+.modal>.modal_information {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    column-gap: 1rem;
+    row-gap: .8rem;
+    margin-top: .6rem;
+}
+
+.modal>.modal_information>.wrapperData {
+    width: 30%;
+}
+
+
+.wrapperData>.input-read-only-default {
+    background-color: var(--third-color);
+    border-radius: 1rem;
+    display: flex;
+    font: unset;
+    align-items: center;
+    width: 80%;
+    padding: .8rem;
+    height: fit-content;
+    min-height: unset;
+}
+
+.wrapperData>h2 {
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: 'raleway-semibold';
+    margin-bottom: .3rem;
+    margin-left: .3rem;
+    color: var(--background-color);
+}
+
+.wrapperData>.input-read-only-default>h2 {
+    font-size: clamp(1.2rem, 1.3vw, 1.4rem);
+    font-family: 'raleway';
+    color: var(--background-color);
+}
+
+/* #endregion */
+
+
+/* #region TEXTO DE FILTROS DE MOVIMIENTOS */
+.wrapperFiltroTexto {
+    width: 80%;
+    margin: 0 auto;
+    margin-top: 2rem;
+}
+
+.wrapperFiltroTexto>h3 {
+    color: white;
+    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+    font-family: 'raleway-semibold';
+}
+
+.wrapperFiltroTexto>ul {
+    list-style: none;
+    margin-top: 1rem;
+}
+
+.wrapperFiltroTexto .fitroItem {
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: rgba(255, 255, 255, 0.756);
     margin-bottom: .7rem;
+}
+
+.wrapperFiltroTexto .fitroItem>strong {
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: white;
+}
+
+/* #endregion */
+
+
+/* #region PAGINACION DE MOVIMIENTOS */
+#pagination_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+}
+
+
+#pagination_container>button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: .5% 3%;
+    font-size: clamp(1rem, 1.1vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: transparent;
+    color: white;
+    outline: none;
+    border-radius: 0.6rem;
+    cursor: pointer;
+    border: 2px solid var(--primary-color);
+}
+
+#pagination_container>button.blocked {
+    background-color: #3f4653d4 !important;
+    pointer-events: none;
+    border: 0px solid transparent;
+}
+
+#pagination_container>.cuotasPages {
+    color: white;
+    font-size: 1.6rem;
+    font-family: raleway-semibold;
+}
+
+/* #endregion */
+
+
+/* #region MODAL DE NUEVO INGRESO O EGRESO */
+.main_modalNewEgresoIngreso {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+
+.main_modalNewEgresoIngreso.active {
+    visibility: visible;
+}
+
+.background__newEgresoIngreso {
+    background-color: rgba(0, 0, 0, 0.5);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.modal_newEgresoIngreso {
+    width: 60%;
+    max-width: 100rem;
+    max-height: 80%;
+    background-color: var(--third-color);
+    border-radius: 1rem;
+    position: absolute;
+    padding: 3rem;
+    box-sizing: border-box;
+
+}
+
+.modal_newEgresoIngreso>.tittleModal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal_newEgresoIngreso>.tittleModal>h3 {
+    font-size: clamp(2rem, 1.7vw, 3rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
+}
+
+.modal_newEgresoIngreso>.tittleModal>button {
+    outline: none;
+    border-color: transparent;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.modal_newEgresoIngreso>.tittleModal>button>img {
+    width: 3rem;
+}
+
+#formNewIngresoEgreso {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    column-gap: 1.5rem;
+    row-gap: 1rem;
+}
+
+#formNewIngresoEgreso>.wrapperInput {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    width: 30%;
+    min-width: 20rem;
+    max-width: 48%;
+}
+
+#formNewIngresoEgreso>.wrapperInput>.input-read-write-default {
+    background-color: var(--third-color);
+}
+
+#formNewIngresoEgreso .input-select-custom {
+    background-color: var(--third-color);
+}
+
+.modal_newEgresoIngreso>#confirmMovimiento {
+    width: unset;
+    padding: 1rem 3rem;
+    margin-left: auto;
+    margin-top: 1rem;
+}
+
+.labelInput {
+    font: clamp(1.2rem, 1.2vw, 1.6rem) 'raleway-semibold';
+    color: var(--background-color);
+}
+
+#formNewIngresoEgreso #tipoComprobanteIconDisplay {
+    z-index: 10;
+}
+
+#formNewIngresoEgreso #tipoComprobante {
+    z-index: 9;
+}
+
+#formNewIngresoEgreso #tipoComprobante+ul.list-select-custom {
+    z-index: 8;
+}
+
+#formNewIngresoEgreso #tipoIDIconDisplay {
+    z-index: 7;
+}
+
+#formNewIngresoEgreso #tipoID {
+    z-index: 6;
+}
+
+#formNewIngresoEgreso #tipoID+ul.list-select-custom {
+    z-index: 5;
+}
+
+#formNewIngresoEgreso #tipoMonedaIconDisplay {
+    z-index: 6;
+
+}
+
+#formNewIngresoEgreso #tipoMoneda {
+    z-index: 5;
+
+}
+
+#formNewIngresoEgreso #tipoMoneda+ul.list-select-custom {
+    z-index: 4;
+}
+
+#formNewIngresoEgreso #tipoPagoIconDisplay {
+    z-index: 3;
+
+}
+
+#formNewIngresoEgreso #tipoDePago {
+    z-index: 2;
+
+}
+
+#formNewIngresoEgreso #tipoDePago+ul.list-select-custom {
+    z-index: 1;
 }
 
 
 /* #region INPUTs radios */
-#formNewIngresoEgreso > .wrapperInput#wrapperSelectAdelanto_Premio{
+#formNewIngresoEgreso>.wrapperInput#wrapperSelectAdelanto_Premio {
     min-width: 100%;
     margin-top: .3rem;
 }
-#wrapperSelectAdelanto_Premio > div{
+
+#wrapperSelectAdelanto_Premio>div {
     display: flex;
     column-gap: 1.3rem;
 }
 
-#wrapperSelectAdelanto_Premio > div > div.inputsRadiosContainer > input{
+#wrapperSelectAdelanto_Premio>div>div.inputsRadiosContainer>input {
     display: none;
 }
 
-#wrapperSelectAdelanto_Premio > div > div.inputsRadiosContainer > label{
+#wrapperSelectAdelanto_Premio>div>div.inputsRadiosContainer>label {
     padding: .3rem 2rem;
     font: clamp(1.2rem, 1.2vw, 1.6rem) 'raleway-semibold';
     border: 2px solid var(--fourth-color);
@@ -905,7 +598,8 @@
     cursor: pointer;
     background-color: transparent;
 }
-#wrapperSelectAdelanto_Premio > div > div.inputsRadiosContainer > input:checked + label{
+
+#wrapperSelectAdelanto_Premio>div>div.inputsRadiosContainer>input:checked+label {
     background-color: var(--fourth-color);
     color: var(--third-color);
 }
