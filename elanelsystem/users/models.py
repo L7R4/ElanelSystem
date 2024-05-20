@@ -66,7 +66,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     lugar_nacimiento = models.CharField("Lugar de nacimiento",max_length=100, default ="")
     fec_nacimiento = models.CharField("Fecha de nacimiento", max_length = 10, default ="")
     estado_civil = models.CharField("Estado civil", max_length =30,default ="")
-    xp_laboral = models.TextField("Experiencia laboral", default ="")
+    xp_laboral = models.TextField("Experiencia laboral", default ="Vacio")
     datos_familiares = models.JSONField("Datos familiares", default=list,blank=True,null=True)
     vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
     faltas_tardanzas = models.JSONField("Faltas o tardanzas", default=list,blank=True,null=True)

@@ -51,7 +51,7 @@
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
 
-                      <input type="text" name="tipoPago" class = "input-select-custom multipleSelect" id ="tipoDePago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
+                      <input type="text" name="tipo_pago" class = "input-select-custom multipleSelect" id ="tipoDePago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                             <li data-value="Efectivo">Efectivo</li>
                             <li data-value="Banco">Banco</li>
@@ -66,7 +66,7 @@
                     <h3 class="labelInput">Filtrar por sucursal</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="sucursal" class = "multipleSelect input-select-custom" id ="sucursalInput" value="{{user.sucursal.pseudonimo}}"placeholder ="Elija la sucursal" autocomplete="off" readonly>
+                      <input type="text" name="agencia" class = "multipleSelect input-select-custom" id ="sucursalInput" value="{{user.sucursal.pseudonimo}}"placeholder ="Elija la sucursal" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                             <li data-value="Efectivo">Efectivo</li>
                             <li data-value="Banco">Banco</li>
@@ -98,10 +98,10 @@
                 <div id="wrapperRadioEgresoIngreso" class="wrapperTypeFilter">
                     <h3 class="labelInput">Filtrar por:</h3>
                     <div class="selectEgreso_Ingreso inputsRadiosContainer">
-                        <input type="radio" name="tipoMovimiento" id="ingreso" value="Ingreso">
+                        <input type="radio" name="tipo_mov" id="ingreso" value="Ingreso">
                         <label for="ingreso">Ingreso</label>
         
-                        <input type="radio" name="tipoMovimiento" id="egreso" value="Egreso">
+                        <input type="radio" name="tipo_mov" id="egreso" value="Egreso">
                         <label for="egreso">Egreso</label>
                     </div>
                 </div>                  
@@ -141,6 +141,7 @@
                 
             </div>
         </div>
+
         <div class="resum">
             <div class="resum__cuenta">
                 <div class="resum__cuenta__tipoCaja">
@@ -169,13 +170,12 @@
                 <div class="wrapperFiltroTexto">
                     <h3>Filtrado por: </h3>
                     <ul>
-                        
                     </ul>
                 </div>
             {% endif %}
             <div class="wrapperButtonInforme">
                 <a href="{% url 'sales:informePDF' %}" target="_blank">Hacer informe</a>
-                <a href="{% url 'sales:informeSend' %}" target="_blank">Hacer informe y enviar</a>
+                {% comment %} <a href="{% url 'sales:informeSend' %}" target="_blank">Hacer informe y enviar</a> {% endcomment %}
                 {% comment %} <a href="{% url 'sales:exportExcel' %}">Exportar excel</a> {% endcomment %}
             </div>
         </div>
@@ -187,58 +187,58 @@
         <div class="modal"id="modalForCuotas">
             <div class="tittleModal">
                 <h3>Detalle de cuota</h3>
-                <button type="button" class="closeModal">
-                    <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                <button type="button" class="closeModalCuotaInformation">
+                    <img src="{% static 'images/icons/close.svg' %}" alt="">
                 </button>
             </div>
             <div class="modal_information">
                 <div class="wrapperData">
                     <h2>N° de Operacion</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div  class="input-read-only-default">
                         <h2 id="numeroVenta"></h2>
                     </div>
                 </div>
                 <div class="wrapperData">
                     <h2>Metodo de pago</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="metodoPago"></h2>
                     </div>
                 </div>
                 <div class="wrapperData">
                     <h2>Fecha de pago</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="fechaPago"></h2>
                     </div>
                 </div>
                 <div class="wrapperData">
                     <h2>N° de Cuota</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="numeroCuota"></h2>
                     </div>
                 </div>
                 <div class="wrapperData">
                     <h2>Dinero</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="dinero"></h2>
                     </div>
                 </div>
                 <div class="wrapperData">
                     <h2>N° de Cliente</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="numeroCliente"></h2>
                     </div>
                 </div>
                 
                 <div class="wrapperData">
                     <h2>Cobrador</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="cobrador"></h2>
                     </div>
                 </div>
                 
                 <div class="wrapperData">
                     <h2>Sucursal</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="sucursal"></h2>
                     </div>
                 </div>
@@ -247,76 +247,81 @@
         <div class="modal" id="modalForMovsExternos">
              <div class="tittleModal">
                 <h3>Detalle de movimiento</h3>
-                <button type="button" class="closeModal">
-                    <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                <button type="button" class="closeModalCuotaInformation">
+                    <img src="{% static 'images/icons/close.svg' %}" alt="">
                 </button>
             </div>
             <div class="modal_information">
                 <div class="wrapperData onlyEgreso">
                     <h2>Tipo de comprobante</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="tipoComprobanteMovExterno"></h2>
                     </div>
                 </div>
                 <div class="wrapperData onlyEgreso">
                     <h2>Nro de comprobante</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="nroComprobanteMovExterno"></h2>
                     </div>
                 </div>
                 <div class="wrapperData onlyEgreso">
                     <h2>Tipo de Identificacion</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="tipoIdentificaionMovExterno"></h2>
                     </div>
                 </div>
                 <div class="wrapperData onlyEgreso">
                     <h2>Nro de identificacion</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="nroIdentificacionMovExterno"></h2>
                     </div>
                 </div>
 
                 <div class="wrapperData onlyEgreso">
                     <h2>Denominacion</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="denominacionMovExterno"></h2>
                     </div>
                 </div>
-                <div class="wrapperData">
+
+                <div class="wrapperData onlyIngreso">
                     <h2>Tipo moneda</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="tipoMonedaMovExterno"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData">
-                    <h2>Importe</h2>
-                    <div class="backgroundInput input-read-write-default">
-                        <h2 id="dineroMovExterno"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData">
-                    <h2>Metodo de pago</h2>
-                    <div class="backgroundInput input-read-write-default">
-                        <h2 id="metodoPagoMovExterno"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData">
-                    <h2>Fecha de emicion</h2>
-                    <div class="backgroundInput input-read-write-default">
-                        <h2 id="fechaMovExterno"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData">
-                    <h2>Ente recaudador</h2>
-                    <div class="backgroundInput input-read-write-default">
-                        <h2 id="enteMovExterno"></h2>
                     </div>
                 </div>
                 
                 <div class="wrapperData">
+                    <h2>Importe</h2>
+                    <div class="input-read-only-default">
+                        <h2 id="dineroMovExterno"></h2>
+                    </div>
+                </div>
+
+                <div class="wrapperData">
+                    <h2>Metodo de pago</h2>
+                    <div class="input-read-only-default">
+                        <h2 id="metodoPagoMovExterno"></h2>
+                    </div>
+                </div>
+
+                <div class="wrapperData">
+                    <h2>Fecha de emicion</h2>
+                    <div class="input-read-only-default">
+                        <h2 id="fechaMovExterno"></h2>
+                    </div>
+                </div>
+
+                <div class="wrapperData">
+                    <h2>Ente recaudador</h2>
+                    <div class="input-read-only-default">
+                        <h2 id="enteMovExterno"></h2>
+                    </div>
+                </div>
+        
+                <div class="wrapperData">
                     <h2>Concepto</h2>
-                    <div class="backgroundInput input-read-write-default">
+                    <div class="input-read-only-default">
                         <h2 id="conceptoMovExterno"></h2>
                     </div>
                 </div>
@@ -420,7 +425,7 @@
 
                 <div class="wrapperInput">
                     <h3 class="labelInput">Fecha de emicion</h3>
-                    <input name="fecha" id="fechaMov" class="input-read-write-default inputEgresoIngreso">
+                    <input name="fecha" id="fechaMov" class="input-read-only-default inputEgresoIngreso" readonly>
                 </div>
 
                 <div class="wrapperInput">
@@ -463,9 +468,6 @@
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
  <!-- ------------------------------------------------------------------------------------------  -->
 
-<script src="{% static 'js/parseQueryToString.js' %}"></script>
 <script src="{% static 'js/fillMovimientos.js' %}"></script>
-{% comment %} <script src="{% static 'js/filterCajaEgresoIngreso.js' %}"></script> {% endcomment %}
 <script src="{% static 'js/createNewMov.js' %}"></script>
-{% comment %} <script src="{% static 'js/clearClasses.js' %}"></script> {% endcomment %}
 {% endblock js %}

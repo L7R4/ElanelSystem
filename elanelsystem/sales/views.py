@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views import generic
 from django.contrib.auth.mixins import PermissionRequiredMixin
+
 from .mixins import TestLogin
 from .models import ArqueoCaja, Ventas,CoeficientesListadePrecios,MovimientoExterno
 from .forms import FormChangePAck, FormCreateVenta, FormCreateAdjudicacion
@@ -20,6 +21,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .utils import *
 from collections import defaultdict
 import elanelsystem.settings as settings
+from elanelsystem.views import filterMainManage
 
 
 
@@ -41,39 +43,39 @@ class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
 
 
 #region API CRM
-def requestMovimientosCRM(request):
-    cuotas_data = requestCuotas(request)
-    movimientosExternos = requestMovimientosExternos(request)
+# def requestMovimientosCRM(request):
+#     cuotas_data = requestCuotas(request)
+#     movimientosExternos = requestMovimientosExternos(request)
     
-    # Combinar datos de cuotas y movimientos externos
-    all_movimientos = json.loads(cuotas_data.content) + json.loads(movimientosExternos.content)
-    all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha_pago'], '%d/%m/%Y %H:%M'),reverse=True)
+#     # Combinar datos de cuotas y movimientos externos
+#     all_movimientos = json.loads(cuotas_data.content) + json.loads(movimientosExternos.content)
+#     all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha_pago'], '%d/%m/%Y %H:%M'),reverse=True)
    
-    response_data ={
-        "request": request.GET,
-        "movs": all_movimientosTidy
-    }
-    movs = filterMovs(response_data["movs"],response_data["request"])
+#     response_data ={
+#         "request": request.GET,
+#         "movs": all_movimientosTidy
+#     }
+#     movs = filterMovs(response_data["movs"],response_data["request"])
     
-    # Crear un diccionario por mes y sumar los ingresos
-    ingresos_por_mes = defaultdict(float)
-    egresos_por_mes = defaultdict(float)
-    for mov in movs:
-        tipo_movimiento = mov.get('tipoMovimiento')
-        monto_pagado = mov.get('pagado', 0)
-        fecha_pago = mov.get('fecha_pago')
+#     # Crear un diccionario por mes y sumar los ingresos
+#     ingresos_por_mes = defaultdict(float)
+#     egresos_por_mes = defaultdict(float)
+#     for mov in movs:
+#         tipo_movimiento = mov.get('tipoMovimiento')
+#         monto_pagado = mov.get('pagado', 0)
+#         fecha_pago = mov.get('fecha_pago')
 
-        if tipo_movimiento == 'Ingreso' and fecha_pago:
-            mes = int(fecha_pago.split('-')[1])
-            ingresos_por_mes[mes] += monto_pagado
-        elif tipo_movimiento == 'Egreso' and fecha_pago:
-            mes = int(fecha_pago.split('-')[1])
-            egresos_por_mes[mes] += monto_pagado
-    # Crear la lista final de sumas por mes
-    sumasIngreso_por_mes = [ingresos_por_mes.get(mes, 0) for mes in range(1, 13)]
-    sumasEgreso_por_mes = [egresos_por_mes.get(mes, 0) for mes in range(1, 13)]
+#         if tipo_movimiento == 'Ingreso' and fecha_pago:
+#             mes = int(fecha_pago.split('-')[1])
+#             ingresos_por_mes[mes] += monto_pagado
+#         elif tipo_movimiento == 'Egreso' and fecha_pago:
+#             mes = int(fecha_pago.split('-')[1])
+#             egresos_por_mes[mes] += monto_pagado
+#     # Crear la lista final de sumas por mes
+#     sumasIngreso_por_mes = [ingresos_por_mes.get(mes, 0) for mes in range(1, 13)]
+#     sumasEgreso_por_mes = [egresos_por_mes.get(mes, 0) for mes in range(1, 13)]
     
-    return JsonResponse({"sumasIngreso_por_mes": sumasIngreso_por_mes,"sumasEgreso_por_mes":sumasEgreso_por_mes}, safe=False)
+#     return JsonResponse({"sumasIngreso_por_mes": sumasIngreso_por_mes,"sumasEgreso_por_mes":sumasEgreso_por_mes}, safe=False)
 #endregion
 
 #region Ventas - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -868,13 +870,13 @@ def viewPDFArqueo(request,pk):
     arqueo = ArqueoCaja.objects.get(id=pk)
 
     # Para pasar los movimientos del dia
-    cuotas_data = requestCuotas(request)
-    movimientosExternos = requestMovimientosExternos(request)
-    
-    # Combinar datos de cuotas y movimientos externos
-    all_movimientos = json.loads(cuotas_data.content) + json.loads(movimientosExternos.content)
-    all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha_pago'], '%d/%m/%Y %H:%M'),reverse=True)
+    #region Logica para obtener los movimientos segun los filtros aplicados 
+    agencia = "Todas" if not request.GET.get("agencia") else request.GET.get("agencia")
+    all_movimientos = dataStructureMoviemientosYCannons(agencia)
+    all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha'], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
    
+    
+    #endregion
     movsToday = list(filter(lambda x: x["fecha_pago"][:10] == arqueo.fecha,all_movimientosTidy))
 
     movsDetalles = [
@@ -1202,28 +1204,28 @@ class OldArqueosView(TestLogin,generic.View):
 
 #region Specifics Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def requestMovimientos(request):
-    cuotas_data = requestCuotas(request)
-    movimientosExternos = requestMovimientosExternos(request)
-    # Combinar datos de cuotas y movimientos externos
-    all_movimientos = json.loads(cuotas_data.content) + json.loads(movimientosExternos.content)
-    all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha_pago'], '%d/%m/%Y %H:%M'),reverse=True)
+    #region Logica para obtener los movimientos segun los filtros aplicados 
+    agencia = "Todas" if not request.GET.get("agencia") else request.GET.get("agencia")
+    agencia = Sucursal.objects.get(pseudonimo = agencia)
+    all_movimientos = dataStructureMoviemientosYCannons(agencia)
+    all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha'], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
    
     response_data ={
         "request": request.GET,
         "movs": all_movimientosTidy
     }
-    movs = filterMovs(response_data["movs"],response_data["request"])
-
-
-    # PARA PASAR LOS FILTROS ACTIVADOS
+    
+    movs = filterMainManage(response_data["request"], response_data["movs"])
+    #endregion
+    
+    #region Logica para pasar al template los filtros aplicados a los movimientos
     paramsDict = (request.GET).dict()
     FILTROS_EXISTENTES = (
-        ("tipoMovimiento","Tipo de movimiento"),
-        ("metodoPago", "Metodo de pago"),
-        ("fecha_inicial","Fecha inicial"),
-        ("fecha_final","Fecha final"),
+        ("tipo_mov","Tipo de movimiento"),
+        ("tipo_pago", "Metodo de pago"),
+        ("fecha", "Fecha"),
         ("cobrador","Cobrador"),
-        ("sucursal","Sucursal"),
+        ("agencia","Agencia"),
     )
     clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
 
@@ -1233,10 +1235,30 @@ def requestMovimientos(request):
     # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
     # Es lo mismo que decir clearContext["metodoPago"], etc, etc
     filtros = list(map(lambda x: {x[1]: clearContext[x[0]]}, filtros_activados))
+    #endregion
+    
     request.session["informe_data"] = movs
-   
+    
+    # region Logica para obtener el resumen de cuenta de los diferentes tipos de pagos
+    resumenEstadoCuenta={}
+    tiposDePago = {"efectivo":"Efectivo",
+                   "banco":"Banco", 
+                   "posnet":"Posnet", 
+                   "merPago":"Mercado Pago", 
+                   "transferencia":"Transferencia"}  
 
-    # Paginación
+    montoTotal = 0
+    for clave in tiposDePago.keys():
+        itemsTypePayment = list(filter(lambda x: x['tipo_pago'] == tiposDePago[clave], movs))
+        montoTypePaymentEgreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipoMovimiento'] == 'Egreso'])
+        montoTypePaymentIngreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipoMovimiento'] == 'Ingreso'])
+        montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso  
+        montoTotal += montoTypePayment 
+        resumenEstadoCuenta[clave] = montoTypePayment
+    resumenEstadoCuenta["total"] = montoTotal
+    #endregion
+
+    #region Paginación
     page = request.GET.get('page')
     items_per_page = 10  # Número de elementos por página
     paginator = Paginator(movs, items_per_page)
@@ -1247,47 +1269,11 @@ def requestMovimientos(request):
         movs = paginator.page(1)
     except EmptyPage:
         movs = paginator.page(paginator.num_pages)
-    #-----------------------------------------------------
+    #endregion -----------------------------------------------------
 
-    return JsonResponse({"data": list(movs), "numbers_pages": paginator.num_pages,"filtros":filtros}, safe=False)
+    return JsonResponse({"data": list(movs), "numbers_pages": paginator.num_pages,"filtros":filtros,"estadoCuenta":resumenEstadoCuenta}, safe=False)
 
-def updateDinero(request):
-    if request.method == "GET":
-        cuotas_data = requestCuotas(request)
-        movimientosExternos = requestMovimientosExternos(request)
-       
-        # Combinar datos de cuotas y movimientos externos
-        all_movimientos = json.loads(cuotas_data.content) + json.loads(movimientosExternos.content)
-        all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha_pago'], '%d/%m/%Y %H:%M'),reverse=True)
-    
-        response_data ={
-            "request": request.GET,
-            "movs": all_movimientosTidy
-        }
-        movs = filterMovs(response_data["movs"],response_data["request"])
-
-
-        context={}
-        tiposDePago = {"efectivo":"Efectivo",
-                       "banco":"Banco", 
-                       "posnet":"Posnet", 
-                       "merPago":"Mercado Pago", 
-                       "transferencia":"Transferencia"}  
-        
-        montoTotal = 0
-        for clave in tiposDePago.keys():
-            itemsTypePayment = list(filter(lambda x: x['metodoPago'] == tiposDePago[clave], movs))
-            montoTypePaymentEgreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipoMovimiento'] == 'Egreso'])
-            montoTypePaymentIngreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipoMovimiento'] == 'Ingreso'])
-            montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso
-
-            montoTotal += montoTypePayment 
-            context[clave] = montoTypePayment
-        context["total"] = montoTotal
-
-
-        return JsonResponse(context, safe=False)
-
+# Funcion para crear un nuevo movimiento externo
 def createNewMov(request):
     if request.method == 'POST':
         newMov = MovimientoExterno()
@@ -1299,13 +1285,13 @@ def createNewMov(request):
         newMov.fecha=datetime.datetime.today().strftime("%d/%m/%Y")
         newMov.hora = datetime.datetime.now().time().strftime("%H:%M")
         newMov.concepto= request.POST.get('concepto')
-        newMov.metodoPago= request.POST.get('metodoPago')
+        newMov.metodoPago= request.POST.get('tipoPago')
         newMov.dinero= float(request.POST.get('dinero'))
 
         if movimiento == 'Ingreso':
             newMov.tipoMoneda = request.POST.get('tipoMoneda')
         elif movimiento == 'Egreso':
-            newMov.tipoIdentificacion=request.POST.get('tipoIdentificacion')
+            newMov.tipoIdentificacion=request.POST.get('tipoID')
             newMov.nroIdentificacion=request.POST.get('nroIdentificacion')
             newMov.tipoComprobante=request.POST.get('tipoComprobante')
             newMov.nroComprobante=request.POST.get('nroComprobante')
@@ -1323,91 +1309,7 @@ def createNewMov(request):
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'})
 
-def requestMovimientosExternos(request):
-    cuotas_data = requestCuotas(request)
-    movsExternosList = []
-
-    # Obtener movimientos externos
-    movsExternos = MovimientoExterno.objects.all()
-
-    # Obtener la longitud de cuotas_data
-    cuotas_data_length = len(json.loads(cuotas_data.content)) + 1
-    
-    for idx,mov in enumerate(movsExternos):
-        movDict = {
-            "idMov": cuotas_data_length + idx,
-            "tipoMovimiento": mov.movimiento,
-            "tipoComprobante": mov.tipoComprobante,
-            "nroComprobante": mov.nroComprobante,
-            "denominacion": mov.denominacion,
-            "tipoIdentificacion": mov.tipoIdentificacion,
-            "nroIdentificacion": mov.nroIdentificacion,
-            "tipoMoneda": mov.tipoMoneda,
-            "sucursal": mov.agencia.localidad + ", " + mov.agencia.provincia,
-            "pagado": mov.dinero,
-            "metodoPago": mov.metodoPago,
-            "ente": mov.ente,
-            "concepto": mov.concepto,
-            "fecha_pago": mov.fecha+" "+ mov.hora
-            }
-        movsExternosList.append(movDict)
-    return JsonResponse(movsExternosList,safe=False)
-
-def requestCuotas(request):
-    ventas = Ventas.objects.all()
-    cuotas_data = []
-    
-    idMov=0
-    for i in range(int(ventas.count())):
-        for k in range(len(ventas[i].cuotas)):
-            if ventas[i].cuotas[k]["status"] in ["Pagado", "Parcial"]:
-                if(ventas[i].cuotas[k]["pagoParcial"]["status"]):
-                    for j in range (len(ventas[i].cuotas[k]["pagoParcial"]["amount"])):
-                        movimiento_dataParcial ={}
-                        movimiento_dataParcial['cuota'] = ventas[i].cuotas[k]["cuota"]
-                        movimiento_dataParcial['nro_operacion'] = ventas[i].cuotas[k]["nro_operacion"]
-                        nOpe = ventas[i].cuotas[k]["nro_operacion"]
-                        nroCliente = Ventas.objects.filter(nro_operacion = nOpe)
-                        movimiento_dataParcial['nroCliente'] = nroCliente[0].nro_cliente.nro_cliente
-                        movimiento_dataParcial['nombreCliente'] = nroCliente[0].nro_cliente.nombre
-                        movimiento_dataParcial["sucursal"] = ventas[i].agencia.localidad + ", " + ventas[i].agencia.provincia
-
-                        idMov +=1
-                        movimiento_dataParcial["idMov"] =  idMov
-                        movimiento_dataParcial['fecha_pago'] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["date"] + " " + ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["hour"]
-                        movimiento_dataParcial['pagado'] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["value"]
-                        movimiento_dataParcial["cobrador"] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["cobrador"]
-                        movimiento_dataParcial['metodoPago'] = ventas[i].cuotas[k]["pagoParcial"]["amount"][j]["metodo"]
-                        movimiento_dataParcial['descuento'] = ventas[i].cuotas[k]["descuento"]
-                        movimiento_dataParcial['fechaDeVencimiento'] = ventas[i].cuotas[k]["fechaDeVencimiento"]
-                        movimiento_dataParcial['tipoMovimiento'] = "Ingreso"
-                        cuotas_data.append(movimiento_dataParcial)
-                else:
-                    movimiento_dataTotal = {}
-                    movimiento_dataTotal['cuota'] = ventas[i].cuotas[k]["cuota"]
-                    movimiento_dataTotal['nro_operacion'] = ventas[i].cuotas[k]["nro_operacion"]
-                    nOpe = ventas[i].cuotas[k]["nro_operacion"]
-                    nroCliente = Ventas.objects.filter(nro_operacion = nOpe)
-                    movimiento_dataTotal['nroCliente'] = nroCliente[0].nro_cliente.nro_cliente
-                    movimiento_dataTotal['nombreCliente'] = nroCliente[0].nro_cliente.nombre
-                    movimiento_dataTotal["sucursal"] = ventas[i].agencia.localidad + ", " + ventas[i].agencia.provincia 
-
-                    idMov +=1
-                    movimiento_dataTotal["idMov"] =  idMov
-                    movimiento_dataTotal['descuento'] = ventas[i].cuotas[k]["descuento"]
-                    movimiento_dataTotal['fechaDeVencimiento'] = ventas[i].cuotas[k]["fechaDeVencimiento"]
-                    movimiento_dataTotal['fecha_pago'] = ventas[i].cuotas[k]["fecha_pago"]+ " " + ventas[i].cuotas[k]["hora"]
-                    movimiento_dataTotal['pagado'] = ventas[i].cuotas[k]["pagado"]
-                    movimiento_dataTotal["cobrador"] = ventas[i].cuotas[k]["cobrador"]
-                    movimiento_dataTotal['metodoPago'] = ventas[i].cuotas[k]["metodoPago"]
-                    movimiento_dataTotal['tipoMovimiento'] = "Ingreso"
-                    cuotas_data.append(movimiento_dataTotal)
-
-
-
-    cuotas_data.reverse()
-    return JsonResponse(cuotas_data, safe=False)
-
+# Funcion para devolver las ventas (Utilizada en el sector de auditorias)
 def requestVentas(request):
     if(request.method == "GET"):
         sucursal = request.GET.get('sucursal')
@@ -1451,7 +1353,7 @@ def requestVentas(request):
         request.session["postVenta_info"] = responseData
 
         return JsonResponse(responseData, safe=False)
-    
+   
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 

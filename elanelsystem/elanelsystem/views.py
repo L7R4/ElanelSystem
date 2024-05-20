@@ -101,7 +101,7 @@ def filterMainManage(request,dataStructure):
     
     # Limpiamos los parámetros para eliminar campos vacíos y otros no relevantes
     # Claves a excluir del filtrado
-    keys_to_exclude = {"typeReporte", "csrfmiddlewaretoken"}
+    keys_to_exclude = {"page","typeReporte", "csrfmiddlewaretoken"}
     params_dict_clear = {
         key: value
         for key, value in params_dict.items()
@@ -125,13 +125,10 @@ def filterMainManage(request,dataStructure):
     # Aplicamos los filtros en el orden que se reciban en los parámetros
 
     filtered_data = dataStructure  # Usamos la estructura inicial
-    # print("Estado inicial del filteredData")
-    # print(filtered_data)
+
     for filter_name, filter_func in possible_filters.items():
         if filter_name in params_dict_clear:
             filter_value = params_dict_clear[filter_name]
-            # print("Valor del paramentro:")
-            # print(filter_value)
             try:
                 filtered_data = filter_func(filtered_data, filter_value)
             except Exception as e:
@@ -179,6 +176,7 @@ def filterDataBy_date(data_structure, fecha):
 
     return data_filtered
 
+
 def filterDataBy_typePayments(dataStructure, typePayment):
     return list(filter(lambda item:item["tipo_pago"] == typePayment,dataStructure))
 
@@ -196,10 +194,8 @@ def filterDataBy_cannonsMora(dataStructure, *args):
     return list(filter(lambda item:item["status"] == "Atrasado",dataStructure))
 
 
-
 def filterDataBy_seller(dataStructure, seller):
     return list(filter(lambda item:item["vendedor"] == seller,dataStructure))
-
 
 
 def filterDataBy_suspendedSales(dataStructure, *args):

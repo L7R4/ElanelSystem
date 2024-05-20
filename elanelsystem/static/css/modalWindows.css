@@ -1,4 +1,4 @@
-.modalFilterContainer{
+.modalFilterContainer {
 
     position: fixed;
     width: 100vw;
@@ -13,37 +13,38 @@
     visibility: hidden;
     transition: opacity .3s ease;
 }
-.modalFilterContainer.active{
+
+.modalFilterContainer.active {
     visibility: visible;
 }
-.background{
+
+.background {
     position: absolute;
     top: 0;
     left: 0;
-    background-color:rgba(6, 29, 49, 0.226);
+    background-color: rgba(6, 29, 49, 0.226);
     width: 100%;
     height: 100%;
-    pointer-events: auto; 
+    pointer-events: auto;
 }
-.windowModal{
+
+.windowModal {
     box-sizing: border-box;
     width: 50%;
     background-color: var(--third-color);
     z-index: 102;
     border-radius: 1rem;
     padding: 4rem;
-    min-height: 50%;
     max-height: 80%;
 }
 
-.filterForm
-{
+.filterForm {
     display: flex;
     flex-wrap: wrap;
-    gap:3rem;
+    gap: 3rem;
 }
 
-.filterForm > div.wrapperTypeFilter{
+.filterForm>div.wrapperTypeFilter {
     width: 40%;
     height: 20%;
     min-width: 22rem;
@@ -53,11 +54,11 @@
     row-gap: .6rem;
 }
 
-.filterForm .labelFilterElement{
+.filterForm .labelFilterElement {
     font: clamp(1.2rem, 1.2vw, 1.6rem) 'raleway-semibold';
 }
 
-#filterForm > div > div > .filterInput{
+#filterForm>div>div>.filterInput {
     background-color: var(--third-color);
     border: 2px solid var(--primary-color);
     height: 3rem;
@@ -65,7 +66,7 @@
     font-feature-settings: "pnum" on, "lnum" on;
 }
 
-.windowModal > #submitFilter{
+.windowModal>#submitFilter {
     width: 20%;
     min-width: 10rem;
     border-radius: .6rem;
@@ -73,7 +74,7 @@
     margin-left: auto;
 }
 
-#closeFormFilter{
+#closeFormFilter {
     width: 3rem;
     height: 3rem;
     margin-left: auto;
@@ -83,25 +84,27 @@
     cursor: pointer;
 
 }
-#closeFormFilter:hover
-{
+
+#closeFormFilter:hover {
     transform: scale(1.05);
     transition: all .1s ease;
 }
-#closeFormFilter > img{
+
+#closeFormFilter>img {
     width: 100%;
 }
 
 /* #region INPUTs radios */
-#wrapperRadioEgresoIngreso > .selectEgreso_Ingreso{
+#wrapperRadioEgresoIngreso>.selectEgreso_Ingreso {
     display: flex;
     column-gap: 1rem;
 }
-#wrapperRadioEgresoIngreso > div > input{
+
+#wrapperRadioEgresoIngreso>div>input {
     display: none;
 }
 
-#wrapperRadioEgresoIngreso > div > label{
+#wrapperRadioEgresoIngreso>div>label {
     padding: .3rem 2rem;
     font: clamp(1.2rem, 1.2vw, 1.6rem) 'raleway-semibold';
     border: 2px solid var(--primary-color);
@@ -109,44 +112,52 @@
     cursor: pointer;
     background-color: transparent;
 }
-#wrapperRadioEgresoIngreso > div > input:checked + label{
+
+#wrapperRadioEgresoIngreso>div>input:checked+label {
     background-color: var(--primary-color);
     color: var(--third-color);
 }
+
 /* #endregion */
 
 
 
 /* CONFIGURACION DEL Z-INDEX */
-#selectWrapperSelectTypePayments > .containerInputAndOptions > .iconDesplegar{
+#selectWrapperSelectTypePayments>.containerInputAndOptions>.iconDesplegar {
     z-index: 18;
 }
-#selectWrapperSelectTypePayments > .containerInputAndOptions > input{
+
+#selectWrapperSelectTypePayments>.containerInputAndOptions>input {
     z-index: 17;
 }
-#selectWrapperSelectTypePayments > .containerInputAndOptions > ul.options{
+
+#selectWrapperSelectTypePayments>.containerInputAndOptions>ul.options {
     z-index: 16;
 }
 
 
-#selectWrapperSelectAgency > .containerInputAndOptions > .iconDesplegar{
+#selectWrapperSelectAgency>.containerInputAndOptions>.iconDesplegar {
     z-index: 15;
 }
-#selectWrapperSelectAgency > .containerInputAndOptions > input{
+
+#selectWrapperSelectAgency>.containerInputAndOptions>input {
     z-index: 14;
 }
-#selectWrapperSelectAgency.selectWrapperSelectAgency > ul.options{
+
+#selectWrapperSelectAgency.selectWrapperSelectAgency>ul.options {
     z-index: 13;
 }
 
 
-#selectWrapperSelectCobrador > .containerInputAndOptions > .iconDesplegar{
-    z-index:12;
+#selectWrapperSelectCobrador>.containerInputAndOptions>.iconDesplegar {
+    z-index: 12;
 }
-#selectWrapperSelectCobrador > .containerInputAndOptions > input{
+
+#selectWrapperSelectCobrador>.containerInputAndOptions>input {
     z-index: 11;
 }
-#selectWrapperSelectCobrador.containerInputAndOptions > ul.options{
+
+#selectWrapperSelectCobrador.containerInputAndOptions>ul.options {
     z-index: 10;
 }
 
@@ -155,11 +166,13 @@
 
 
 /* #region Filtro Calendario block */
-.vanilla-calendar_to-input{
+.vanilla-calendar_to-input {
     z-index: 105;
 }
-.vanilla-calendar_to-input  *{
+
+.vanilla-calendar_to-input * {
     font: clamp(1.2rem, 1vw, 1.4rem) 'raleway-semibold';
     font-feature-settings: "pnum" on, "lnum" on;
 }
+
 /* #endregion */

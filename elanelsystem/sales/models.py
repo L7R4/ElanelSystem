@@ -471,7 +471,7 @@ class MovimientoExterno(models.Model):
 
     def clean(self):
         cleaned_data = super().clean()
-
+        print(cleaned_data)
         movimiento = cleaned_data.get('movimiento')
 
         if movimiento != 'Ingreso':

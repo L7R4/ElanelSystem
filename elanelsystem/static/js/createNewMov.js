@@ -1,7 +1,7 @@
 const formEgresoIngreso = document.getElementById('formNewIngresoEgreso');
 const confirmForm = document.getElementById('confirmMovimiento')
 
-// CONTROLA EL MODAL ---------------------------------------------------------------------------------------
+//#region CONTROLA EL MODAL ---------------------------------------------------------------------------------------
 const main_modalNewEgresoIngreso = document.querySelector(".main_modalNewEgresoIngreso")
 const buttonsNewMov = document.querySelectorAll(".buttonNewMov");
 const closeModalEgresoIngreso = document.getElementById("closeModalEgresoIngreso")
@@ -21,19 +21,22 @@ const inputsID_ingresos = [
 ]
 
 function newEgreso() {
-    
+
     tittleModalEgresoIngreso.textContent = "Nuevo egreso"
     typeMov.value = "Egreso"
     document.getElementById("fechaMov").value = dateToday()
 
+    // Esconde todos los inputs que son solamente para crear un INGRESO
     inputsID_ingresos.forEach(element => {
         let inputObject = document.getElementById(element)
-        let wrapper =inputObject.closest('.wrapperInput')
+        let wrapper = inputObject.closest('.wrapperInput')
         wrapper.style.display = "None"
     });
+
+    // Muestra todos los inputs que son solamente para crear un EGRESO
     inputsID_egresos.forEach(element => {
         let inputObject = document.getElementById(element)
-        let wrapper =inputObject.closest('.wrapperInput')
+        let wrapper = inputObject.closest('.wrapperInput')
         wrapper.style.display = "flex"
     });
 
@@ -45,50 +48,50 @@ function newIngreso() {
     tittleModalEgresoIngreso.textContent = "Nuevo Ingreso"
     typeMov.value = "Ingreso"
     document.getElementById("fechaMov").value = dateToday()
-    
+
+    // Esconde todos los inputs que son solamente para crear un EGRESO
     inputsID_egresos.forEach(element => {
         let inputObject = document.getElementById(element)
-        let wrapper =inputObject.closest('.wrapperInput')
+        let wrapper = inputObject.closest('.wrapperInput')
         wrapper.style.display = "None"
     });
+    // Muestra todos los inputs que son solamente para crear un INGRESO
     inputsID_ingresos.forEach(element => {
         let inputObject = document.getElementById(element)
-        let wrapper =inputObject.closest('.wrapperInput')
+        let wrapper = inputObject.closest('.wrapperInput')
         wrapper.style.display = "flex"
     });
-    
+
     main_modalNewEgresoIngreso.classList.add("active")
     main_modalNewEgresoIngreso.style.opacity = "1"
-    
+
 }
 
 
 // Cierra el modal
-closeModalEgresoIngreso.addEventListener("click",()=>{
+closeModalEgresoIngreso.addEventListener("click", () => {
     main_modalNewEgresoIngreso.style.opacity = "0"
-    setTimeout(()=>{
+    setTimeout(() => {
         main_modalNewEgresoIngreso.classList.remove("active")
         clearInputs()
-    },300)
+    }, 300)
 })
 
-// ----------------------------------------------------------------------------------------------------------
-
+//#endregion ----------------------------------------------------------------------------------------------------------
 
 
 //#region ENVIA EL FORMULARIO DEL MOVIMIENTO ----------------------------------------------------------------------------
-
-confirmForm.addEventListener("click",()=>{
+confirmForm.addEventListener("click", () => {
     makeMov().then(data => {
         updateMovs(currentPage);
         updateResumenDinero(currentPage);
         main_modalNewEgresoIngreso.style.opacity = "0"
-        setTimeout(()=>{
+        setTimeout(() => {
             main_modalNewEgresoIngreso.classList.remove("active")
-        },300)
+        }, 300)
         clearInputs()
     })
-    .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error:', error));
 })
 
 
@@ -122,8 +125,6 @@ function getCookie(name) {
     return cookieValue;
 }
 //#endregion -----------------------------------------------------------------------------------------------------------------
-
-
 
 function clearInputs() {
     let inputs = document.querySelectorAll(".wrapperInput input")
