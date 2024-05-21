@@ -10,6 +10,8 @@ import openpyxl
 from openpyxl import Workbook
 from django.http import HttpResponse, JsonResponse
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from users.models import Cliente
+
 
 #region Funciones para exportar PDFs
 def printPDF(data,url,productoName):
@@ -209,9 +211,6 @@ def obtener_ultima_campania():
     else:
         return ultima_campania
 
-def clearNameSucursal(sucursal):
-    return sucursal.localidad +", "+ sucursal.provincia
-
 def searchSucursalFromStrings(sucursal):
     from users.models import Sucursal
     sucursalObject = ""
@@ -234,16 +233,16 @@ def get_ventasBySucursal(sucursal):
 #region Data Structures ----------------------------------------------------------
 
 def getInfoBaseCannon(venta, cuota, idContMov):
-    nro_cliente = venta.nro_cliente.nro_cliente
+    cliente = Cliente.objects.get(nro_cliente = venta.nro_cliente.nro_cliente)
     return {
         'id_cont_mov' : idContMov,
         'cuota' : cuota["cuota"],
         'nro_operacion': cuota["nro_operacion"],
         'nro_orden': venta.nro_orden,
-        'nro_cliente' :nro_cliente,
-        'nombre_del_cliente' : nro_cliente.nombre,
+        'nro_cliente' :cliente.nro_cliente,
+        'nombre_del_cliente' : cliente.nombre,
         'sucursal' : venta.agencia.pseudonimo,
-        'tipo_de_movimiento' : "Ingreso",
+        'tipo_mov' : "Ingreso",
         'fecha_de_vencimiento' : cuota['fechaDeVencimiento'],
         'descuento' : cuota['descuento'],
         'estado' : cuota['status'],
@@ -261,7 +260,7 @@ def dataStructureCannons(sucursal):
         venta = ventas[i]
 
         for k in range(len(ventas[i].cuotas)):
-            cuota = ventas[i].cuota[k]
+            cuota = ventas[i].cuotas[k]
 
             if ventas[i].cuotas[k]["status"] in ["Pagado", "Parcial", "Atrasado"]:
                 if(ventas[i].cuotas[k]["pagoParcial"]["status"]):
@@ -347,17 +346,19 @@ def dataStructureVentas(sucursal):
     return ventasList
 
 
-def dataStructureMovimientosExternos(sucursal):
+def dataStructureMovimientosExternos(sucursal,lastIndexOfMov):
     from sales.models import MovimientoExterno
     movs_externos = ""
-
-    if(sucursal.pseudonimo == "Todas"):
+    indexMov= lastIndexOfMov
+    print(f'- - - - Indexx: {indexMov}')
+    if(sucursal == "Todas"):
         movs_externos = MovimientoExterno.objects.all()
     else:
-        movs_externos = MovimientoExterno.objects.filter(agencia=sucursal)
+        movs_externos = MovimientoExterno.objects.filter(agencia__pseudonimo=sucursal)
 
     return [
         {
+            'id_cont_mov' : indexMov + 1,
             "tipoIdentificacion": movs_externo.tipoIdentificacion,
             "nroIdentificacion": movs_externo.nroIdentificacion,
             "tipoComprobante": movs_externo.tipoComprobante,
@@ -365,7 +366,7 @@ def dataStructureMovimientosExternos(sucursal):
             "denominacion": movs_externo.denominacion,
             "tipoMoneda": movs_externo.tipoMoneda,
             "tipo_mov": movs_externo.movimiento,
-            "dinero": movs_externo.dinero,
+            "pagado": movs_externo.dinero,
             "tipo_pago": movs_externo.metodoPago,
             "agencia": movs_externo.agencia.id if movs_externo.agencia else None,
             "ente": movs_externo.ente,
@@ -374,14 +375,14 @@ def dataStructureMovimientosExternos(sucursal):
             "concepto": movs_externo.concepto,
             "premio": movs_externo.premio,
             "adelanto": movs_externo.adelanto,
-            "hora": movs_externo.hora
             } 
         
         for movs_externo in movs_externos]
 
 def dataStructureMoviemientosYCannons(sucursal):
     structureCannons = dataStructureCannons(sucursal)
-    structureMovsExternos = dataStructureMovimientosExternos(sucursal)
+    lastIndeceDeCannons = len(structureCannons)
+    structureMovsExternos = dataStructureMovimientosExternos(sucursal,lastIndeceDeCannons)
 
     return structureCannons + structureMovsExternos
 

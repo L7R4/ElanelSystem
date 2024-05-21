@@ -49,7 +49,11 @@ class UserManager(BaseUserManager):
 
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
-
+    TIPOS_RANGOS_PARA_ACCESO_TODAS_SUCURSALES = (
+        ('Admin', 'Admin'),
+        ('Administracion', 'Administracion'), 
+        ('Dueños', 'Dueños'), 
+    )
     nombre = models.CharField("Nombre Completo",max_length=100)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
@@ -72,7 +76,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     faltas_tardanzas = models.JSONField("Faltas o tardanzas", default=list,blank=True,null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
-
+    accesosTodasSucursales = models.BooleanField(default=False)
     objects = UserManager()
 
 

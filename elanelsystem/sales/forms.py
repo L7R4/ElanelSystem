@@ -119,7 +119,8 @@ class FormCreateVenta(forms.Form):
         
         # Si es necesario, puedes devolver la fecha como objeto datetime
         # return fecha_valida
-        return fecha_input
+        hora = datetime.now().strftime(" %H:%M")
+        return fecha_input + hora
 
 
     def clean_vendedor(self):

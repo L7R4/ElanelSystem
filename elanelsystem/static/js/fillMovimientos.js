@@ -20,6 +20,9 @@ async function movsGet(page) {
         headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
         cache: 'no-store',
     });
+    if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+    }
     const data = await response.json();
     return data;
 }
@@ -53,7 +56,7 @@ async function updateMovs(page) {
         // Crea un nuevo elemento <li>
         const nuevoElementoLi = document.createElement("li");
         nuevoElementoLi.classList.add("mov");
-        nuevoElementoLi.id = `${element.idMov}`;
+        nuevoElementoLi.id = `${element.id_cont_mov}`;
 
         nuevoElementoLi.innerHTML = createItemSegunMovimiento(element) // Establece el contenido HTML del <li> con un string
 
@@ -65,7 +68,7 @@ async function updateMovs(page) {
         cuota.addEventListener('click', () => {
             mainModal.classList.add("active")
             mainModal.style.opacity = "1"
-            let movSelected = dataMovs["data"].filter(c => c.idMov == cuota.id)
+            let movSelected = dataMovs["data"].filter(c => c.id_cont_mov == cuota.id)
             let typeMov = "concepto" in movSelected[0]
             fillModalWithMovData(movSelected[0], typeMov)
         })
@@ -104,8 +107,11 @@ closeModalMovsButtons.forEach(element => {
 
 
 
+
+
+
 function createItemSegunMovimiento(mov) {
-    let fechaRecortada = mov.fecha_pago.slice(0, 10)
+    let fechaRecortada = mov.fecha.slice(0, 10)
 
     let stringForHTML = `<div><p class="fecha">${fechaRecortada}</p></div>`
     if ("concepto" in mov) {
@@ -114,19 +120,19 @@ function createItemSegunMovimiento(mov) {
         <div><p class="concept">${conceptoStringRecortado}</p></div>
         <div><p class="nCuotas"> - </p></div>
         `;
-        if ("Ingreso" == mov["tipoMovimiento"]) {
+        if ("Ingreso" == mov["tipo_mov"]) {
             stringForHTML += `
             <div><p class="monto">$${mov.pagado}</p></div>
             <div><p class="monto"> - </p></div>
             `;
-        } else if ("Egreso" == mov["tipoMovimiento"]) {
+        } else if ("Egreso" == mov["tipo_mov"]) {
             stringForHTML += `
             <div><p class="monto"> - </p></div>
             <div><p class="monto">$${mov.pagado}</p></div>
             `;
         }
     } else {
-        let conceptoStringRecortado = mov.nombreCliente.slice(0, 18);
+        let conceptoStringRecortado = mov.nombre_del_cliente.slice(0, 18);
         let cuotaStringRecortada = mov.cuota.slice(5)
         stringForHTML += `
         <div><p class="concept">${conceptoStringRecortado}</p></div>
@@ -139,6 +145,7 @@ function createItemSegunMovimiento(mov) {
 }
 
 function fillModalWithMovData(mov, movSelected) {
+    console.log(mov)
     if (movSelected) {
         if (mov["tipoMovimiento"] == "Ingreso") {
             inputsOnlyEgreso.forEach(element => element.style.display = "none");
@@ -156,8 +163,8 @@ function fillModalWithMovData(mov, movSelected) {
         denominacionMovExterno.innerHTML = mov["denominacion"]
         tipoMonedaMovExterno.innerHTML = mov["tipoMoneda"]
         dineroMovExterno.innerHTML = mov["pagado"]
-        metodoPagoMovExterno.innerHTML = mov["metodoPago"]
-        fechaMovExterno.innerHTML = mov["fecha_pago"]
+        metodoPagoMovExterno.innerHTML = mov["tipo_pago"]
+        fechaMovExterno.innerHTML = mov["fecha"]
         enteMovExterno.innerHTML = mov["ente"]
         conceptoMovExterno.innerHTML = mov["concepto"]
 
@@ -165,13 +172,54 @@ function fillModalWithMovData(mov, movSelected) {
         modalForCuotas.style.visibility = "visible"
 
         numeroVenta.innerHTML = mov["nro_operacion"]
-        numeroCliente.innerHTML = mov["nroCliente"]
+        numeroCliente.innerHTML = mov["nro_cliente"]
         numeroCuota.innerHTML = mov["cuota"]
         dinero.innerHTML = mov["pagado"]
-        metodoPago.innerHTML = mov["metodoPago"]
+        metodoPago.innerHTML = mov["tipo_pago"]
         cobrador.innerHTML = mov["cobrador"]
-        fechaPago.innerHTML = mov["fecha_pago"]
-        horaPago.innerHTML = mov["hora"]
+        fechaPago.innerHTML = mov["fecha"]
+        sucursal.innerHTML = mov["sucursal"]
+
+    }
+
+}
+
+// Actualiza rellena el modal de acuerdo al tipo de 
+
+function fillModalWithMovData(mov, movSelected) {
+    console.log(mov)
+    if (movSelected) {
+        if (mov["tipoMovimiento"] == "Ingreso") {
+            inputsOnlyEgreso.forEach(element => element.style.display = "none");
+            inputsOnlyIngreso.forEach(element => element.style.display = "unset");
+        } else {
+            inputsOnlyIngreso.forEach(element => element.style.display = "none");
+            inputsOnlyEgreso.forEach(element => element.style.display = "unset");
+        }
+        modalForMovsExternos.style.visibility = "visible"
+
+        tipoComprobanteMovExterno.innerHTML = mov["tipoComprobante"]
+        nroComprobanteMovExterno.innerHTML = mov["nroComprobante"]
+        tipoIdentificaionMovExterno.innerHTML = mov["tipoIdentificacion"]
+        nroIdentificacionMovExterno.innerHTML = mov["nroIdentificacion"]
+        denominacionMovExterno.innerHTML = mov["denominacion"]
+        tipoMonedaMovExterno.innerHTML = mov["tipoMoneda"]
+        dineroMovExterno.innerHTML = mov["pagado"]
+        metodoPagoMovExterno.innerHTML = mov["tipo_pago"]
+        fechaMovExterno.innerHTML = mov["fecha"]
+        enteMovExterno.innerHTML = mov["ente"]
+        conceptoMovExterno.innerHTML = mov["concepto"]
+
+    } else {
+        modalForCuotas.style.visibility = "visible"
+
+        numeroVenta.innerHTML = mov["nro_operacion"]
+        numeroCliente.innerHTML = mov["nro_cliente"]
+        numeroCuota.innerHTML = mov["cuota"]
+        dinero.innerHTML = mov["pagado"]
+        metodoPago.innerHTML = mov["tipo_pago"]
+        cobrador.innerHTML = mov["cobrador"]
+        fechaPago.innerHTML = mov["fecha"]
         sucursal.innerHTML = mov["sucursal"]
 
     }
@@ -183,9 +231,7 @@ function textFilters(dicc) {
     let stringForHTML = ""
 
     if (dicc.length != 0) {
-        console.log(dicc)
         const wrapperFiltroTexto = document.querySelector(".wrapperFiltroTexto > ul")
-        console.log(wrapperFiltroTexto)
         for (var i = 0; i < dicc.length; i++) {
             for (let clave in dicc[i]) {
                 stringForHTML += `<li class="fitroItem">${clave}: <strong>${dicc[i][clave]}</strong></li>`;
