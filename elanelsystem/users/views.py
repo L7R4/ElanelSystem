@@ -72,7 +72,7 @@ class CrearUsuario(TestLogin, generic.View):
             new_user.fec_ingreso = form.cleaned_data["fec_ingreso"]
             new_user.estado_civil = form.cleaned_data["estado_civil"]
             new_user.xp_laboral = form.cleaned_data["xp_laboral"]
-
+            new_user.accesosTodasSucursales = True if(rango in Usuario.TIPOS_RANGOS_PARA_ACCESO_TODAS_SUCURSALES) else False
             # Para guardar los familiares en caso que haya
             familiares = []
             for key, value in request.POST.items():

@@ -89,13 +89,13 @@ class CrearVenta(TestLogin,generic.DetailView):
 
         customers = Cliente.objects.all()
         products = Products.objects.all()
-        sucursalString = clearNameSucursal(request.user.sucursal)  
+        sucursalString = request.user.sucursal.pseudonimo  
         usuarios = ""
 
-        if(sucursalString == "Todas, Todas"):
+        if(sucursalString == "Todas" and request.user.accesosTodasSucursales):
             usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor"])
         else:
-            usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor"],sucursal = request.user.sucursal)
+            usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor"],sucursal__pseudonimo = sucursalString)
             
         intereses = CoeficientesListadePrecios.objects.all()
         planes = Plan.objects.all()
@@ -877,7 +877,7 @@ def viewPDFArqueo(request,pk):
    
     
     #endregion
-    movsToday = list(filter(lambda x: x["fecha_pago"][:10] == arqueo.fecha,all_movimientosTidy))
+    movsToday = list(filter(lambda x: x["fecha"][:10] == arqueo.fecha,all_movimientosTidy))
 
     movsDetalles = [
         {
@@ -893,7 +893,7 @@ def viewPDFArqueo(request,pk):
             "Metodo de pago": d.get("metodoPago", "-"),
             "Ente recau.": d.get("ente", "-"),
             "Concepto": d.get("concepto", "-"),
-            "Fecha": d.get("fecha_pago", "-"),
+            "Fecha": d.get("fecha", "-"),
         }
         for d in movsToday
     ]
@@ -978,7 +978,7 @@ def viewsPDFInforme(request):
             "Metodo de pago": d.get("metodoPago", "-"),
             "Ente recau.": d.get("ente", "-"),
             "Concepto": d.get("concepto", "-"),
-            "Fecha": d.get("fecha_pago", "-"),
+            "Fecha": d.get("fecha", "-"),
         }
         for d in datos
     ]
@@ -1060,12 +1060,11 @@ def viewsPDFInformePostVenta(request):
 class Caja(TestLogin,generic.View):
     template_name = "caja.html"
     FILTROS_EXISTENTES = (
-        ("tipoMovimiento","Tipo de movimiento"),
-        ("metodoPago", "Metodo de pago"),
-        ("fecha_inicial","Fecha inicial"),
-        ("fecha_final","Fecha final"),
+        ("tipo_mov","Tipo de movimiento"),
+        ("tipo_pago", "Metodo de pago"),
+        ("fecha", "Fecha"),
         ("cobrador","Cobrador"),
-        ("sucursal","Sucursal"),
+        ("agencia","Agencia"),
     )
 
     def get(self,request,*args, **kwargs):
@@ -1101,8 +1100,8 @@ class CierreCaja(TestLogin,generic.View):
         movimientosHoy = filtroMovimientos_fecha(str(today),movsData["data"],str(today))
 
         # FILTRA LOS MOVIMIENTOS SEGUN SE TIPO DE MOVIMIENTO
-        movimientos_Ingreso_Hoy = list(filter(lambda x: x["tipoMovimiento"] == "Ingreso" and x["metodoPago"] == "Efectivo", movimientosHoy))
-        movimientos_Egreso_Hoy = list(filter(lambda x:x["tipoMovimiento"] == "Egreso" and x["metodoPago"] == "Efectivo", movimientosHoy))
+        movimientos_Ingreso_Hoy = list(filter(lambda x: x["tipo_mov"] == "Ingreso" and x["tipo_pago"] == "Efectivo", movimientosHoy))
+        movimientos_Egreso_Hoy = list(filter(lambda x:x["tipo_mov"] == "Egreso" and x["tipo_pago"] == "Efectivo", movimientosHoy))
 
         # SUMA EL TOTAL DE SEGUN EL TIPO DE MOVIMIENTO
         montoTotal_Ingreso_Hoy = sum([item["pagado"] for item in movimientos_Ingreso_Hoy])
@@ -1131,7 +1130,7 @@ class CierreCaja(TestLogin,generic.View):
         localidad_buscada, provincia_buscada = map(str.strip, sucursal.split(","))
         sucursalObject = Sucursal.objects.get(localidad = localidad_buscada, provincia = provincia_buscada)
 
-        fecha =  datetime.date.today().strftime("%d/%m/%Y")
+        fecha =  datetime.date.today().strftime("%d/%m/%Y %H:%M")
         admin = request.user
         responsable = request.POST.get("responsable")
         totalSegunDiarioCaja = request.POST.get("saldoSegunCaja")
@@ -1205,11 +1204,10 @@ class OldArqueosView(TestLogin,generic.View):
 #region Specifics Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def requestMovimientos(request):
     #region Logica para obtener los movimientos segun los filtros aplicados 
-    agencia = "Todas" if not request.GET.get("agencia") else request.GET.get("agencia")
-    agencia = Sucursal.objects.get(pseudonimo = agencia)
+    agencia = "Todas" if not request.GET.get("sucursal") else request.GET.get("sucursal")
     all_movimientos = dataStructureMoviemientosYCannons(agencia)
     all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha'], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
-   
+    print(request.GET)
     response_data ={
         "request": request.GET,
         "movs": all_movimientosTidy
@@ -1250,8 +1248,8 @@ def requestMovimientos(request):
     montoTotal = 0
     for clave in tiposDePago.keys():
         itemsTypePayment = list(filter(lambda x: x['tipo_pago'] == tiposDePago[clave], movs))
-        montoTypePaymentEgreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipoMovimiento'] == 'Egreso'])
-        montoTypePaymentIngreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipoMovimiento'] == 'Ingreso'])
+        montoTypePaymentEgreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Egreso'])
+        montoTypePaymentIngreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Ingreso'])
         montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso  
         montoTotal += montoTypePayment 
         resumenEstadoCuenta[clave] = montoTypePayment
@@ -1282,8 +1280,7 @@ def createNewMov(request):
         newMov.agencia = request.user.sucursal
         newMov.metodoPago= request.POST.get('metodoPago')
         newMov.ente= request.POST.get('ente')
-        newMov.fecha=datetime.datetime.today().strftime("%d/%m/%Y")
-        newMov.hora = datetime.datetime.now().time().strftime("%H:%M")
+        newMov.fecha=datetime.datetime.today().strftime("%d/%m/%Y %M:%M")
         newMov.concepto= request.POST.get('concepto')
         newMov.metodoPago= request.POST.get('tipoPago')
         newMov.dinero= float(request.POST.get('dinero'))

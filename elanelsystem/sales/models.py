@@ -43,8 +43,7 @@ class Ventas(models.Model):
                        "total": self.primer_cuota,
                        'pagado': 0,
                        'cobrador': "",
-                       "fecha_pago": "", 
-                       "hora": "", 
+                       "fecha_pago": "",
                        "metodoPago": "",
                        "descuento": 0,
                        "fechaDeVencimiento":"", 
@@ -91,8 +90,7 @@ class Ventas(models.Model):
                 "total": self.importe_x_cuota + (self.importe_x_cuota * (self.PORCENTAJE_ANUALIZADO *contYear))/100,
                 'pagado': 0,
                 'cobrador': "",
-                "fecha_pago": "", 
-                "hora": "", 
+                "fecha_pago": "",
                 "metodoPago": "",
                 "fechaDeVencimiento" : fechaDeVencimiento.strftime("%d/%m/%Y"),
                 "descuento": 0,
@@ -213,7 +211,7 @@ class Ventas(models.Model):
                        "change" :True,
                        "id": idDelCambio,
                        "lastCuota": lastCuota,
-                       "fecha": datetime.datetime.now().strftime("%d/%m/%Y"),
+                       "fecha": datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),
                        "user": user,
                        "oldCustomer":oldCustomer,
                        "pkOldCustomer": pkOldCustomer,
@@ -228,7 +226,7 @@ class Ventas(models.Model):
                        "change" :True,
                        "id": idDelCambio,
                        "lastCuota": lastCuota,
-                       "fecha": datetime.datetime.now().strftime("%d/%m/%Y"),
+                       "fecha": datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),
                        "user": user,
                        "oldCustomer":oldCustomer,
                        "pkOldCustomer": pkOldCustomer,
@@ -256,7 +254,7 @@ class Ventas(models.Model):
         self.deBaja["observacion"] = observacion
         self.deBaja["detalleMotivo"] = detalleMotivo
         self.deBaja["responsable"] = responsable
-        self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y -- %H:%M")
+        self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         self.save()
          
         
@@ -318,11 +316,10 @@ class Ventas(models.Model):
 
         cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))[0]
         if(cuotaSeleccionada["status"] != "Pagado"):
-            cuotaSeleccionada["fecha_pago"] = datetime.datetime.now().strftime("%d/%m/%Y")
+            cuotaSeleccionada["fecha_pago"] = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
             cuotaSeleccionada["status"] = "Pagado"
             cuotaSeleccionada["pagado"] = cuotaSeleccionada["total"] - cuotaSeleccionada["descuento"]
             cuotaSeleccionada["cobrador"] = cobrador
-            cuotaSeleccionada["hora"] = datetime.datetime.now().time().strftime("%H:%M")
             cuotaSeleccionada["metodoPago"] = metodoPago
             cuotaSeleccionada["campania"] = obtener_ultima_campania()
             self.desbloquearCuota(cuota)
@@ -339,8 +336,7 @@ class Ventas(models.Model):
         cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))[0]
         cuotaSeleccionada["pagoParcial"]["status"]= True
         cuotaSeleccionada["pagoParcial"]["amount"].append({"value": int(amount), 
-                                                            "date":datetime.datetime.now().strftime("%d/%m/%Y"),
-                                                            "hour": datetime.datetime.now().time().strftime("%H:%M"),
+                                                            "date":datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),
                                                             "metodo":metodoPago,
                                                             "cobrador": cobrador,
                                                             "campania":obtener_ultima_campania()})
@@ -377,9 +373,9 @@ class Ventas(models.Model):
 
         for i in range(initial,int(self.nro_cuotas + initial)):
             cuota = self.cuotas[i]["fechaDeVencimiento"]
-            if(datetime.datetime.now() > datetime.datetime.strptime(cuota,"%d/%m/%Y") and (self.cuotas[i]["status"] == "Pendiente" or self.cuotas[i]["status"] == "Bloqueado" or self.cuotas[i]["status"] == "Parcial")):
+            if(datetime.datetime.now() > datetime.datetime.strptime(cuota,"%d/%m/%Y %H:%M") and (self.cuotas[i]["status"] == "Pendiente" or self.cuotas[i]["status"] == "Bloqueado" or self.cuotas[i]["status"] == "Parcial")):
                 self.cuotas[i]["status"] = "Atrasado"
-                diasDeRetraso = self.contarDias(datetime.datetime.strptime(cuota,"%d/%m/%Y"))
+                diasDeRetraso = self.contarDias(datetime.datetime.strptime(cuota,"%d/%m/%Y %H:%M"))
                 self.cuotas[i]["diasRetraso"] = diasDeRetraso
         self.save()
     #endregion
@@ -395,7 +391,7 @@ class Ventas(models.Model):
 
         for i in range(initial,int(self.nro_cuotas + initial)):
             fechaVencimiento = cuotas[i]["fechaDeVencimiento"]
-            fechaVencimientoFormated = datetime.datetime.strptime(fechaVencimiento,"%d/%m/%Y")
+            fechaVencimientoFormated = datetime.datetime.strptime(fechaVencimiento,"%d/%m/%Y %H:%M")
             fechaInicioDeCuota = fechaVencimientoFormated + relativedelta(months=-1)
             
             if(NOW > fechaInicioDeCuota + relativedelta(days=+15)):
@@ -409,8 +405,8 @@ class Ventas(models.Model):
 
     def contarDias(self,fechaReferente):
         contadorDias = 0
-        fechaHoy = datetime.datetime.now().strftime("%d/%m/%Y")
-        while fechaReferente != datetime.datetime.strptime(fechaHoy,"%d/%m/%Y"):
+        fechaHoy = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+        while fechaReferente != datetime.datetime.strptime(fechaHoy,"%d/%m/%Y %H:%M"):
             fechaReferente = fechaReferente + relativedelta(days=1)
             contadorDias += 1
         return contadorDias
@@ -462,12 +458,11 @@ class MovimientoExterno(models.Model):
     metodoPago = models.CharField("Metodo de pago:",max_length=30)
     agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     ente = models.CharField("Ente:",max_length=40)
-    fecha = models.CharField("Fecha:",max_length=10)
+    fecha = models.CharField("Fecha:",max_length=16)
     campania = models.IntegerField("Campaña:",default=0)
     concepto = models.CharField("Concepto:",max_length=200)
     premio = models.BooleanField("Premio:", default=False)
     adelanto = models.BooleanField("Adelanto:",default=False)
-    hora = models.CharField("Hora:",max_length=6)
 
     def clean(self):
         cleaned_data = super().clean()

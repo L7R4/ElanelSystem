@@ -67,7 +67,7 @@ class ReportesView(generic.View):
         if(typeReporte == "Cannons"):
             dataStructure = dataStructureCannons(sucursal_pseudonimo)
 
-            filteredInformation = filterMainManage(request,dataStructure)
+            filteredInformation = filterMainManage(querys,dataStructure)
             if isinstance(filteredInformation, HttpResponseBadRequest):
                 print(filteredInformation.content.decode())
             else:
@@ -97,8 +97,8 @@ class ReportesView(generic.View):
 
 def filterMainManage(request,dataStructure):
     # Obtenemos los parámetros del POST y la estructura de datos de la sesión
-    params_dict = request.POST
-    
+    print(request)
+    params_dict = request
     # Limpiamos los parámetros para eliminar campos vacíos y otros no relevantes
     # Claves a excluir del filtrado
     keys_to_exclude = {"page","typeReporte", "csrfmiddlewaretoken"}
@@ -107,8 +107,6 @@ def filterMainManage(request,dataStructure):
         for key, value in params_dict.items()
         if value.strip() and key not in keys_to_exclude
     }
-    print("Parametros Limpios")
-    print(params_dict_clear)
 
     # Mapeo de filtros a funciones
     possible_filters = {

@@ -34,8 +34,8 @@
                 <img src="{% static 'images/icons/close.svg' %}" alt="">
             </button>
 
-            <form method="POST" id="filterForm" class="filterForm">
-                {% csrf_token %}
+            <form method="GET" id="filterForm" class="filterForm">
+                {% comment %} {% csrf_token %} {% endcomment %}
                 <input type="hidden" name="typeReporte" value="Cannons">
 
                 <div class="wrapperCalendario wrapperTypeFilter">
