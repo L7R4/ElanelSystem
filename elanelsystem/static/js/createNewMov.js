@@ -84,7 +84,6 @@ closeModalEgresoIngreso.addEventListener("click", () => {
 confirmForm.addEventListener("click", () => {
     makeMov().then(data => {
         updateMovs(currentPage);
-        updateResumenDinero(currentPage);
         main_modalNewEgresoIngreso.style.opacity = "0"
         setTimeout(() => {
             main_modalNewEgresoIngreso.classList.remove("active")
