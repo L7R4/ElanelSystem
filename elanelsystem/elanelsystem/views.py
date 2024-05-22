@@ -133,7 +133,9 @@ def filterMainManage(request,dataStructure):
                 # Manejo de errores para filtros
                 print(f"Error applying filter {filter_name}: {str(e)}")
                 return HttpResponseBadRequest(f"Error applying filter {filter_name}: {str(e)}")
-
+            
+    # print("wepssssssssssssssssss")
+    # print(filtered_data)
     return filtered_data
 
 
@@ -150,7 +152,7 @@ def filterDataBy_date(data_structure, fecha):
         fechas = fecha.split("—")
         fecha_inicio_str = fechas[0].strip() + " 00:00"
         fecha_final_str = fechas[1].strip() + " 00:00" if len(fechas) > 1 else None
-
+        # print(f'- - - - - - -Fecha final: {fecha_final_str}')
         fecha_inicio = datetime.datetime.strptime(fecha_inicio_str, "%d/%m/%Y %H:%M")
         fecha_final = datetime.datetime.strptime(fecha_final_str, "%d/%m/%Y %H:%M") if fecha_final_str else None
     except ValueError:
@@ -171,7 +173,7 @@ def filterDataBy_date(data_structure, fecha):
         else:
             if fecha_obj.date() >= fecha_inicio.date():
                 data_filtered.append(item)
-
+                
     return data_filtered
 
 
@@ -180,7 +182,7 @@ def filterDataBy_typePayments(dataStructure, typePayment):
 
 
 def filterDataBy_typeMovements(dataStructure, typeMovement):
-    return list(filter(lambda item:item["tipo_de_movimiento"] == typeMovement, dataStructure))
+    return list(filter(lambda item:item["tipo_mov"] == typeMovement, dataStructure))
 
 
 

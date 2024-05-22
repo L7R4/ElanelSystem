@@ -232,10 +232,9 @@ def get_ventasBySucursal(sucursal):
 
 #region Data Structures ----------------------------------------------------------
 
-def getInfoBaseCannon(venta, cuota, idContMov):
+def getInfoBaseCannon(venta, cuota):
     cliente = Cliente.objects.get(nro_cliente = venta.nro_cliente.nro_cliente)
     return {
-        'id_cont_mov' : idContMov,
         'cuota' : cuota["cuota"],
         'nro_operacion': cuota["nro_operacion"],
         'nro_orden': venta.nro_orden,
@@ -254,7 +253,6 @@ def dataStructureCannons(sucursal):
     ventas = get_ventasBySucursal(sucursal)
 
     cuotas_data = []
-    idContMov = 0
 
     for i in range(int(ventas.count())):
         venta = ventas[i]
@@ -266,10 +264,9 @@ def dataStructureCannons(sucursal):
                 if(ventas[i].cuotas[k]["pagoParcial"]["status"]):
 
                     for j in range (len(ventas[i].cuotas[k]["pagoParcial"]["amount"])):
-                        idContMov += 1
                         pagoParcial = cuota["pagoParcial"]["amount"][j]
                         movimiento_dataParcial ={
-                            **getInfoBaseCannon(venta,cuota,idContMov),
+                            **getInfoBaseCannon(venta,cuota),
                             'fecha' : pagoParcial["date"] + " " + pagoParcial["hour"],
                             'pagado' : pagoParcial["value"],
                             "cobrador" : pagoParcial["cobrador"],
@@ -278,9 +275,8 @@ def dataStructureCannons(sucursal):
                         cuotas_data.append(movimiento_dataParcial)
 
                 else:
-                    idContMov += 1
                     movimiento_dataTotal = {
-                        **getInfoBaseCannon(venta,cuota,idContMov), # Metodo para desempaquetar un diccionario con **
+                        **getInfoBaseCannon(venta,cuota), # Metodo para desempaquetar un diccionario con **
                         'fecha' : cuota["fecha_pago"]+ " " + cuota["hora"],
                         'pagado' : cuota["pagado"],
                         "cobrador" : cuota["cobrador"],
@@ -346,11 +342,10 @@ def dataStructureVentas(sucursal):
     return ventasList
 
 
-def dataStructureMovimientosExternos(sucursal,lastIndexOfMov):
+def dataStructureMovimientosExternos(sucursal):
     from sales.models import MovimientoExterno
     movs_externos = ""
-    indexMov= lastIndexOfMov
-    print(f'- - - - Indexx: {indexMov}')
+
     if(sucursal == "Todas"):
         movs_externos = MovimientoExterno.objects.all()
     else:
@@ -358,7 +353,6 @@ def dataStructureMovimientosExternos(sucursal,lastIndexOfMov):
 
     return [
         {
-            'id_cont_mov' : indexMov + 1,
             "tipoIdentificacion": movs_externo.tipoIdentificacion,
             "nroIdentificacion": movs_externo.nroIdentificacion,
             "tipoComprobante": movs_externo.tipoComprobante,
@@ -379,12 +373,19 @@ def dataStructureMovimientosExternos(sucursal,lastIndexOfMov):
         
         for movs_externo in movs_externos]
 
+
 def dataStructureMoviemientosYCannons(sucursal):
     structureCannons = dataStructureCannons(sucursal)
-    lastIndeceDeCannons = len(structureCannons)
-    structureMovsExternos = dataStructureMovimientosExternos(sucursal,lastIndeceDeCannons)
+    structureMovsExternos = dataStructureMovimientosExternos(sucursal)
+    structureMovimientos_Generales = structureCannons + structureMovsExternos
 
-    return structureCannons + structureMovsExternos
+    # Logica para colocar un ID de indice a cada movimiento
+    id_cont = 0
+    for mov in structureMovimientos_Generales:
+        id_cont += 1
+        mov["id_cont"] = id_cont
+
+    return structureMovimientos_Generales
 
 #endregion
 

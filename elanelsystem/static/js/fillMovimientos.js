@@ -56,7 +56,7 @@ async function updateMovs(page) {
         // Crea un nuevo elemento <li>
         const nuevoElementoLi = document.createElement("li");
         nuevoElementoLi.classList.add("mov");
-        nuevoElementoLi.id = `${element.id_cont_mov}`;
+        nuevoElementoLi.id = `${element.id_cont}`;
 
         nuevoElementoLi.innerHTML = createItemSegunMovimiento(element) // Establece el contenido HTML del <li> con un string
 
@@ -68,7 +68,7 @@ async function updateMovs(page) {
         cuota.addEventListener('click', () => {
             mainModal.classList.add("active")
             mainModal.style.opacity = "1"
-            let movSelected = dataMovs["data"].filter(c => c.id_cont_mov == cuota.id)
+            let movSelected = dataMovs["data"].filter(c => c.id_cont == cuota.id)
             let typeMov = "concepto" in movSelected[0]
             fillModalWithMovData(movSelected[0], typeMov)
         })
@@ -144,52 +144,12 @@ function createItemSegunMovimiento(mov) {
     return stringForHTML;
 }
 
-function fillModalWithMovData(mov, movSelected) {
-    console.log(mov)
-    if (movSelected) {
-        if (mov["tipoMovimiento"] == "Ingreso") {
-            inputsOnlyEgreso.forEach(element => element.style.display = "none");
-            inputsOnlyIngreso.forEach(element => element.style.display = "unset");
-        } else {
-            inputsOnlyIngreso.forEach(element => element.style.display = "none");
-            inputsOnlyEgreso.forEach(element => element.style.display = "unset");
-        }
-        modalForMovsExternos.style.visibility = "visible"
-
-        tipoComprobanteMovExterno.innerHTML = mov["tipoComprobante"]
-        nroComprobanteMovExterno.innerHTML = mov["nroComprobante"]
-        tipoIdentificaionMovExterno.innerHTML = mov["tipoIdentificacion"]
-        nroIdentificacionMovExterno.innerHTML = mov["nroIdentificacion"]
-        denominacionMovExterno.innerHTML = mov["denominacion"]
-        tipoMonedaMovExterno.innerHTML = mov["tipoMoneda"]
-        dineroMovExterno.innerHTML = mov["pagado"]
-        metodoPagoMovExterno.innerHTML = mov["tipo_pago"]
-        fechaMovExterno.innerHTML = mov["fecha"]
-        enteMovExterno.innerHTML = mov["ente"]
-        conceptoMovExterno.innerHTML = mov["concepto"]
-
-    } else {
-        modalForCuotas.style.visibility = "visible"
-
-        numeroVenta.innerHTML = mov["nro_operacion"]
-        numeroCliente.innerHTML = mov["nro_cliente"]
-        numeroCuota.innerHTML = mov["cuota"]
-        dinero.innerHTML = mov["pagado"]
-        metodoPago.innerHTML = mov["tipo_pago"]
-        cobrador.innerHTML = mov["cobrador"]
-        fechaPago.innerHTML = mov["fecha"]
-        sucursal.innerHTML = mov["sucursal"]
-
-    }
-
-}
-
 // Actualiza rellena el modal de acuerdo al tipo de 
 
 function fillModalWithMovData(mov, movSelected) {
     console.log(mov)
     if (movSelected) {
-        if (mov["tipoMovimiento"] == "Ingreso") {
+        if (mov["tipo_mov"] == "Ingreso") {
             inputsOnlyEgreso.forEach(element => element.style.display = "none");
             inputsOnlyIngreso.forEach(element => element.style.display = "unset");
         } else {

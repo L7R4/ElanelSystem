@@ -35,9 +35,6 @@
             </button>
 
             <form method="GET" id="filterForm" class="filterForm">
-                {% comment %} {% csrf_token %} {% endcomment %}
-                <input type="hidden" name="typeReporte" value="Cannons">
-
                 <div class="wrapperCalendario wrapperTypeFilter">
                     <h3 class="labelInput">Filtrar por fecha</h3>
                     <div class="containerCalendario">
@@ -66,13 +63,13 @@
                     <h3 class="labelInput">Filtrar por sucursal</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="agencia" class = "multipleSelect input-select-custom" id ="sucursalInput" value="{{user.sucursal.pseudonimo}}"placeholder ="Elija la sucursal" autocomplete="off" readonly>
+                      <input type="text" name="agencia" class = "multipleSelect input-select-custom" id ="sucursalInput" value=""placeholder ="Elija la sucursal" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
-                            <li data-value="Efectivo">Efectivo</li>
-                            <li data-value="Banco">Banco</li>
-                            <li data-value="Mercado Pago">Mercado Pago</li>
-                            <li data-value="Posnet">Posnet</li>
-                            <li data-value="Transferencia">Transferencia</li>
+                        {% for  agencia in agencias %}
+
+                            <li data-value="agencia.pseudonimo">{{agencia.pseudonimo}}</li>
+
+                        {% endfor %}
                       </ul>
                     </div>
                 </div>

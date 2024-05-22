@@ -1070,7 +1070,7 @@ class Caja(TestLogin,generic.View):
     def get(self,request,*args, **kwargs):
         context ={}
         context["cobradores"] = Usuario.objects.all()
-        context["sucursales"] = Sucursal.objects.all()
+        context["agencias"] = Sucursal.objects.all()
         # print(os.path.join(settings.BASE_DIR, "templates/mailPlantilla.html"))
         paramsDict = (request.GET).dict()
         clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
@@ -1204,16 +1204,19 @@ class OldArqueosView(TestLogin,generic.View):
 #region Specifics Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def requestMovimientos(request):
     #region Logica para obtener los movimientos segun los filtros aplicados 
-    agencia = "Todas" if not request.GET.get("sucursal") else request.GET.get("sucursal")
+    agencia = "Todas" if not request.GET.get("agencia") else request.GET.get("agencia")
     all_movimientos = dataStructureMoviemientosYCannons(agencia)
+    print(" - - - - - - - - - - - - - -")
+
     all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha'], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
-    print(request.GET)
+  
     response_data ={
         "request": request.GET,
         "movs": all_movimientosTidy
     }
     
     movs = filterMainManage(response_data["request"], response_data["movs"])
+    print(len(movs))
     #endregion
     
     #region Logica para pasar al template los filtros aplicados a los movimientos
@@ -1254,6 +1257,8 @@ def requestMovimientos(request):
         montoTotal += montoTypePayment 
         resumenEstadoCuenta[clave] = montoTypePayment
     resumenEstadoCuenta["total"] = montoTotal
+
+    print(resumenEstadoCuenta)
     #endregion
 
     #region Paginación
@@ -1280,7 +1285,7 @@ def createNewMov(request):
         newMov.agencia = request.user.sucursal
         newMov.metodoPago= request.POST.get('metodoPago')
         newMov.ente= request.POST.get('ente')
-        newMov.fecha=datetime.datetime.today().strftime("%d/%m/%Y %M:%M")
+        newMov.fecha=datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
         newMov.concepto= request.POST.get('concepto')
         newMov.metodoPago= request.POST.get('tipoPago')
         newMov.dinero= float(request.POST.get('dinero'))
