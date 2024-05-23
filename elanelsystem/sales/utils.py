@@ -267,7 +267,7 @@ def dataStructureCannons(sucursal):
                         pagoParcial = cuota["pagoParcial"]["amount"][j]
                         movimiento_dataParcial ={
                             **getInfoBaseCannon(venta,cuota),
-                            'fecha' : pagoParcial["date"] + " " + pagoParcial["hour"],
+                            'fecha' : pagoParcial["date"],
                             'pagado' : pagoParcial["value"],
                             "cobrador" : pagoParcial["cobrador"],
                             'tipo_pago': pagoParcial["metodo"],
@@ -277,7 +277,7 @@ def dataStructureCannons(sucursal):
                 else:
                     movimiento_dataTotal = {
                         **getInfoBaseCannon(venta,cuota), # Metodo para desempaquetar un diccionario con **
-                        'fecha' : cuota["fecha_pago"]+ " " + cuota["hora"],
+                        'fecha' : cuota["fecha_pago"],
                         'pagado' : cuota["pagado"],
                         "cobrador" : cuota["cobrador"],
                         'tipo_pago': cuota["metodoPago"],

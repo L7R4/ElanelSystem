@@ -217,6 +217,7 @@ class DetailSale(TestLogin,generic.DetailView):
     def get(self,request,*args,**kwargs):
         context ={}
         self.object = self.get_object()
+        request.session["ventaPK"] = self.object.pk
         sale_target = Ventas.objects.get(pk=self.object.id)
         self.object.testVencimientoCuotas()
         print(self.object.cuotas)
@@ -343,6 +344,16 @@ class DetailSale(TestLogin,generic.DetailView):
             self.object.aplicarDescuento(cuota,int(descuento))
 
         return redirect('sales:detail_sale',self.object.id)
+    
+
+# Aplica el descuento a una cuota
+def aplicarDescuentoCuota(request):
+    if request.method == 'POST':
+        cuota = request.POST.get('cuota')
+        descuento = request.POST.get('descuento')
+
+        venta = Ventas.objects.get(pk =request.session['ventaPK'])
+        venta.aplicarDescuento(cuota,int(descuento))
 
 
 class CreateAdjudicacion(TestLogin,generic.DetailView):
@@ -1206,7 +1217,6 @@ def requestMovimientos(request):
     #region Logica para obtener los movimientos segun los filtros aplicados 
     agencia = "Todas" if not request.GET.get("agencia") else request.GET.get("agencia")
     all_movimientos = dataStructureMoviemientosYCannons(agencia)
-    print(" - - - - - - - - - - - - - -")
 
     all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha'], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
   
@@ -1216,7 +1226,6 @@ def requestMovimientos(request):
     }
     
     movs = filterMainManage(response_data["request"], response_data["movs"])
-    print(len(movs))
     #endregion
     
     #region Logica para pasar al template los filtros aplicados a los movimientos

@@ -20,7 +20,6 @@ const cuotaSuccessText = document.querySelector(".cuotaPagada")
 const descuentoCuotaButton = document.getElementById("descuentoCuota")
 
 const descuentoCuotaWrapper = document.querySelector(".descuentoCuota")
-const inputDescuentoCuota = document.getElementById("submitDescuento")
 
 
 const cobradorSelectedWrapper = document.querySelector(".cobradorSelectedWrapper")
@@ -78,7 +77,7 @@ async function main() {
 
 
 
-    // VENTANA DE ABONAR CUOTA
+    //#region VENTANA DE ABONAR CUOTA
     cuotasWrapper.forEach(cuota => {
         cuota.addEventListener('click', async () => {
             let data = await fetchCuotas()
@@ -97,10 +96,10 @@ async function main() {
             })
         })
     });
+    //#endregion 
     closeWindowSell.addEventListener("click", closeWindowSellCuota)
 
-
-    // SELECCIONA COBRADOR
+    //#region SELECCIONA COBRADOR
     cobradorSelectedWrapper.addEventListener("click", () => {
         cobradoresList.classList.toggle("active");
     });
@@ -109,29 +108,34 @@ async function main() {
             selectCobrador(cobrador)
         })
     });
+    //#endregion 
 
 
-
-    // SELECCIONA EL METODO DE PAGO
+    //#region SELECCIONA EL METODO DE PAGO
     methodPayments.forEach(method => {
         method.addEventListener("click", () => {
             selectMethodPayment(method)
         })
 
     })
-
-    // VALIDA INPUT DINERO PARCIAL
+    //#endregion 
+    
+    
+    //#region VALIDA INPUT DINERO PARCIAL
     amountParcialInput.addEventListener('click', async () => {
         const cuotas = await fetchCuotas();
         amountParcialInput.addEventListener("input", () => {
             validarInputPagoParcial(calcularDineroRestante(cuotaPicked.innerHTML, cuotas))
         })
     })
+    //#endregion
+    
 
-    // BOTON PARA ACTIVAR PARA APLICAR DESCUENTO
+    //#region BOTON PARA ACTIVAR PARA APLICAR DESCUENTO
     descuentoCuotaButton.addEventListener('click', () => {
         descuentoCuotaWrapper.classList.toggle("active")
     })
+    //#endregion
 }
 main();
 
@@ -191,7 +195,7 @@ inputSubmit.addEventListener("click", async () => {
         })
 })
 
-// PARA APLICAR DESCUENTO A UNA CUOTA
+//#region PARA APLICAR DESCUENTO A UNA CUOTA
 inputDescuentoCuota.addEventListener('click', () => {
     let post = fetch(url, {
         method: "POST",
@@ -214,7 +218,7 @@ inputDescuentoCuota.addEventListener('click', () => {
             cuotaParaDescuento.value = ""
         })
 })
-
+//#endregion 
 function testSale(cuotaTest, typePayment, resto) {
 
     if (typePayment == "Pagado") {
@@ -332,7 +336,7 @@ function clearPickedType() {
 }
 
 
-// SELECCIONA EL METODO DE PAGO
+//#region SELECCIONA EL METODO DE PAGO
 function selectMethodPayment(target) {
     metodoPagoPicked.value = target.innerHTML
     clearPickedClass()
@@ -344,8 +348,10 @@ function clearPickedClass() {
         element.classList.remove("picked")
     });
 }
+//#endregion
 
-// VALIDA EL INPUT DE DINERO DE PAGO PARCIAL
+
+//#region VALIDA EL INPUT DE DINERO DE PAGO PARCIAL
 function validarInputPagoParcial(resto) {
     if (amountParcialInput.value > resto) {
         amountParcialInput.classList.add("invalido")
@@ -354,8 +360,10 @@ function validarInputPagoParcial(resto) {
     }
     validarSubmit()
 }
+//#endregion 
 
-// CALCULA EL DINERO RESTANTE DE LA CUOTA
+
+//#region CALCULA EL DINERO RESTANTE DE LA CUOTA
 function calcularDineroRestante(objetivo, datos) {
     let cuotaSeleccionada = datos.filter(c => c.cuota === objetivo)
     let listPagos = cuotaSeleccionada[0]["pagoParcial"]["amount"]
@@ -364,6 +372,8 @@ function calcularDineroRestante(objetivo, datos) {
     dineroRestante.innerHTML = "Dinero restante: $" + resto
     return resto
 }
+// #endregion
+
 
 function closeWindowSellCuota() {
     typePaymentWindow.classList.remove("active");
@@ -406,7 +416,7 @@ function validarSubmit() {
 
 
 
-// PARA FILTRAR LAS CUOTAS SEGUN SU ESTADO
+//#region PARA FILTRAR LAS CUOTAS SEGUN SU ESTADO
 function checkboxsFilter(checkboxes, estado) {
     let cuotasFiltered = checkboxes.filter(c => c.status === estado)
     // if(estado == "Atrasado"){
@@ -414,6 +424,7 @@ function checkboxsFilter(checkboxes, estado) {
     // }
     return cuotasFiltered
 }
+
 
 function changeCheckboxes(lista, estado) {
     let lista_cuotas = checkboxsFilter(lista, estado)
@@ -462,8 +473,9 @@ function changeCheckboxes(lista, estado) {
         }
     });
 }
+//#endregion
 
-// LISTENER PARA CERRAR LA LISTA DE COBRADOR (POR AHORA)
+//#region LISTENER PARA CERRAR LA LISTA DE COBRADOR (POR AHORA)
 document.addEventListener("click", function (event) {
     if (!cobradoresList.contains(event.target) && event.target !== cobradorSelectedWrapper) {
         cobradoresList.classList.remove("active");
@@ -475,10 +487,12 @@ document.addEventListener("click", function (event) {
         descuentoCuotaWrapper.classList.remove("active")
     }
 });
+// #endregion
+
 
 // Esto evita el comportamiento predeterminado del botón "Tab" y el "Enter"
 document.addEventListener('keydown', function (e) {
-    if (e.key === 'Tab' || e.key === 'Enter') {
+    if (e.key === 'Enter') {
         e.preventDefault();
     }
 });
