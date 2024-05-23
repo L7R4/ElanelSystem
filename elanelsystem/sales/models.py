@@ -30,7 +30,7 @@ class Ventas(models.Model):
     # Funcion para crear las cuotas cuando se cree una venta 
     def crearCuotas(self):
         cuotas = self.cuotas
-        fechaDeAlta = datetime.datetime.strptime(self.fecha, "%d/%m/%Y")
+        fechaDeAlta = datetime.datetime.strptime(self.fecha, '%d/%m/%Y %H:%M')
         # Setear la variable fechaDeVencimiento con un tipo fecha
         fechaDeVencimiento = fechaDeAlta
         contMeses = 0
@@ -92,7 +92,7 @@ class Ventas(models.Model):
                 'cobrador': "",
                 "fecha_pago": "",
                 "metodoPago": "",
-                "fechaDeVencimiento" : fechaDeVencimiento.strftime("%d/%m/%Y"),
+                "fechaDeVencimiento" : fechaDeVencimiento.strftime('%d/%m/%Y %H:%M'),
                 "descuento": 0,
                 "diasRetraso": 0,
                 "pagoParcial":{"status": False, "amount": []}

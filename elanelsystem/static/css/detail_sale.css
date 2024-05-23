@@ -1,9 +1,115 @@
 .wrapper_content
 {
-    display: flex;
     overflow: hidden;
+    box-sizing: border-box;
+    padding: 2rem;
+}
+
+/*#region HEADER BUTTONS  */
+.wrapperButtonManageVenta{
+    width: 100%;
+    display: flex;
+    height: 7%;
+    column-gap: 2rem;
+    justify-content: flex-end;
+}
+
+/* #region Estilos de boton de baja */
+.wrapperButtonManageVenta > .buttonDeBaja > #baja{
+    box-sizing: border-box;
+    padding: 1rem 2.3rem;
+    font-family: raleway-semibold;
+    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+    background-color: #ed1717;
+    color: white;
+    border: none;
+    border-radius: .6rem;
+    outline: none;
+    cursor: pointer;
+}
+/* #endregion */
+
+/*#region Estilos de boton adjudicacion */
+
+.wrapperButtonManageVenta > .selectAdjudicacion{
+    position: relative;
+}
+.wrapperButtonManageVenta > .selectAdjudicacion > .selectedOption
+{
+    box-sizing: border-box;
+    padding: 1rem 2.3rem;
+    background-color: var(--primary-color);
+    gap: 1rem;
+    width: 100%;
+    border-radius: .6rem;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+.wrapperButtonManageVenta > .selectAdjudicacion > .selectedOption > h2{
+    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
 
 }
+.wrapperButtonManageVenta >  .selectAdjudicacion > .options
+{
+    list-style: none;
+    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 1);
+    max-height: 0rem;    
+    overflow: hidden;  
+    position:absolute;
+    top: 75%;
+    z-index: 1;
+    border-bottom-left-radius: .6rem;
+    border-bottom-right-radius: .6rem;
+}
+.wrapperButtonManageVenta > .selectAdjudicacion > .options.active{
+    max-height: none;
+}
+.wrapperButtonManageVenta > .selectAdjudicacion > .options > a
+{
+    margin-left: .8rem;
+    cursor: pointer;
+    width: 100%;
+    text-decoration: none;
+    color: #000;
+    display: block;
+    padding: 1rem 0;
+}
+.wrapperButtonManageVenta > .selectAdjudicacion > .options> a:first-child
+{
+    margin-top: 1rem;
+}
+.wrapperButtonManageVenta > .selectAdjudicacion > .options > a:hover
+{
+    color: var(--third-color);
+}
+/* #endregion */
+
+/* #region Estilos de demas botones */
+.wrapperButtonManageVenta > .buttonChangePack, .wrapperButtonManageVenta > .buttonChangeTitularidad{
+    padding: .8rem 2.3rem;
+    box-sizing: border-box;
+} 
+.buttonChangePack > a, .buttonChangeTitularidad > a{
+    text-decoration: none;
+    color: var(--third-color);
+    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+    font-family: raleway-semibold;
+}
+.buttonChangePack:hover, .buttonChangeTitularidad:hover{
+    background-color: rgba(23, 84, 237, 0.07);
+}
+
+/* #endregion */
+/* #endregion */
 
 /* WRAPPER INFORMATION */
 .wrapper_information
@@ -189,8 +295,8 @@
 
 .descuentoCuota
 {
-    position: absolute;
-    right: 105%;
+    position: fixed;
+    /* right: 105%; */
     top: 0;
     padding: 1rem;
     width: 80%;
@@ -688,16 +794,16 @@
     justify-content: space-between;
     position: relative;
 }
-.selectAdjudicacion{
+/* .selectAdjudicacion{
     width: 55%;
-}
+} */
 
 .buttonChangePack{
     border: 2px solid var(--primary-color);
-    width: 45%;
+    /* width: 45%; */
     height: 90%;
     border-radius: 0.6rem;
-    position: absolute;
+    /* position: absolute; */
     z-index: 2;
     right: 105%;
     cursor: pointer;
@@ -706,28 +812,13 @@
     align-items: center;
 }
 
-.buttonChangePack > a, .buttonChangeTitularidad > a{
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: white;
-    text-decoration: none;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.buttonChangePack:hover, .buttonChangeTitularidad:hover{
-    background-color: rgba(23, 84, 237, 0.07);
-
-}
 
 .buttonChangeTitularidad{
     border: 2px solid var(--primary-color);
-    width: 55%;
+    /* width: 55%; */
     height: 90%;
     border-radius: 0.6rem;
-    position: absolute;
+    /* position: absolute; */
     z-index: 2;
     right: 157%;
     cursor: pointer;
@@ -736,11 +827,11 @@
     align-items: center;
 }
 
-.buttonDeBaja{
+/* .buttonDeBaja{
     width: 40%;
     height: 100%;
     position: relative;
-}
+} */
 .buttonDeBaja > .formConfirmWrapper.block::after{
     content: "";
     width: 100%;
@@ -965,85 +1056,14 @@
     margin-left: 0.2rem;
 }
 
-.selectedOption
-{
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    gap: 1rem;
-    width: 100%;
-    color: white;
-    height: 100%;
-    border-radius: .6rem;
-    position: relative;
-    z-index: 2;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-#baja{
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-    font-family: raleway-semibold;
-    height: 100%;
-    background-color: #ed1717;
-    color: white;
-    width: 100%;
-    border-radius: .6rem;
-    border-color: transparent;
-    outline: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
-.selectedOption >h2{
-    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;  
-}
+
 
 .selectedOption >img{
    width: 2rem;
    filter: invert(1);
 }
-.wrapperSelectAdjudicacion > .options
-{
-    list-style: none;
-    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    width: 97.5%;
-    background-color: rgba(255, 255, 255, 1);
-    max-height: 0rem;    
-    overflow: hidden;  
-    position:absolute;
-    top: 75%;
-    z-index: 1;
-    border-bottom-left-radius: .6rem;
-    border-bottom-right-radius: .6rem;
-}
-.wrapperSelectAdjudicacion > .options.active{
-    max-height: none;
-    border: 2px solid var(--primary-color);
-}
-.wrapperSelectAdjudicacion > .options > a
-{
-    margin-left: .8rem;
-    cursor: pointer;
-    width: 100%;
-    text-decoration: none;
-    color: #000;
-    display: block;
-    padding: 1rem 0;
-}
-.wrapperSelectAdjudicacion > .options > a:first-child
-{
-    margin-top: 1rem;
-}
-.wrapperSelectAdjudicacion > .options > a:hover
-{
-    color: var(--third-color);
-}
+
 
 .changeTitularidadWrapper{
     width: 100%;
