@@ -10,6 +10,17 @@
 {% block content %}
 
 <div class="wrapperButtonManageVenta">
+    <div class="selectAdjudicacion">
+        <div class="selectedOption">
+            <h2>Adjudicar</h2>
+            <img src="{% static 'images/icons/iconMore.png' %}" alt="">
+        </div>
+        <ul class="options">
+            <a href="{% url 'sales:adjSorteo' object.id%}">Por sorteo</a>
+            <a href="{% url 'sales:adjNegociacion' object.id%}">Por negociacion</a>
+        </ul>
+    </div>
+
     <div class="buttonDeBaja">
         <button type="button" id="baja"> Dar baja </button>
         <div class="formConfirmWrapper">
@@ -75,17 +86,6 @@
         </div>
     </div>
     
-    <div class="selectAdjudicacion">
-        <div class="selectedOption">
-            <h2>Adjudicar</h2>
-            <img src="{% static 'images/icons/iconMore.png' %}" alt="">
-        </div>
-        <ul class="options">
-            <a href="{% url 'sales:adjSorteo' object.id%}">Por sorteo</a>
-            <a href="{% url 'sales:adjNegociacion' object.id%}">Por negociacion</a>
-        </ul>
-    </div>
-
     <div class="buttonChangePack">
         <a href="{% url 'sales:cambioPack' object.id %}">Cambiar pack</a>
     </div>
@@ -270,91 +270,119 @@
 
             {% else %}
 
+                <div class="wrapperTittleCuotas">
+                    <h3>N° Cuotas: {{object.nro_cuotas}}</h3>
+                </div>
+
                 <div class="wrapperDetalleEstadoVenta">
-                    <h3>N° Cuotas {{object.nro_cuotas}}</h3>
-                    <div id="wrapperCuotasList">
+                    <div class="wrapperCuotasList">
                         <ul class="cuotas_list">
                             {% for cuota in cuotas %}
-                            <div class ="cuota">
-                                <div class="marca">
-                                    <img src="{% static 'images/icons/iconBloqueado.png' %}" alt="">
-                                </div>
-                                <input type="checkbox" name="cuota" id="{{cuota}}" value ="{{cuota}}">
-                                <label for="{{cuota}}">{{cuota}}</label>
+                            <div id="{{cuota.cuota}}" class ="cuota">
+                                {% if cuota.status == "Bloqueado" %}
+                                    <div class="marca pagoBloqueado">
+                                        <img src="{% static 'images/icons/iconBloqueado.png' %}" alt="">
+                                    </div>
+                                {% endif %}
+
+                                {% if cuota.status == "Atrasado" %}
+                                    <div class="marca atrasado"></div>
+                                {% endif %}
+
+                                {% if cuota.status == "Parcial" %}
+                                    <div class="marca pagoParcial"></div>
+                                {% endif %}
+
+                                {% if cuota.status == "Pagado" %}
+                                    <div class="marca pago"></div>
+                                {% endif %}
+
+                                {% if cuota.status == "Pendiente" %}
+                                    <div class="marca"></div>
+                                {% endif %}
+
+                                <h4>{{cuota.cuota}}</h4>
                             </div>
                             
                             {% endfor %}
                         </ul>
+                    </div>
 
-                        <form id="payCuotaForm" method ="POST" class="containerDetalleCuota">
-                            {% csrf_token %}
-                            <input type="hidden" name="tipodePago" id="tipoPago" value="">
-                            <input type="hidden" name="metodoPago" id="metodoPago" value="">
-                            <input type="hidden" name="cobrador" id="cobrador" value="">
+                    <form id="payCuotaForm" method ="POST" class="containerDetalleCuota">
+                        {% csrf_token %}
+                        <input type="hidden" name="tipodePago" id="tipoPago" value="">
+                        <input type="hidden" name="metodoPago" id="metodoPago" value="">
+                        <input type="hidden" name="cobrador" id="cobrador" value="">
 
-                            <div class="buttonsActions" >
-                                <button type="button" id="closeTipoPago"><img src="{% static 'images/icons/eliminar.svg' %}" alt=""></button>
-                                <button type="button" id="btnDescuentoCuota"><img src="{% static 'images/icons/descuentoIcon.png' %}" alt=""></button>
-                            </div>
+                        <div class="buttonsActions" >
+                            <button type="button" class="" id="btnDescuentoCuota"><img src="{% static 'images/icons/descuentoIcon.png' %}" alt=""></button>
+                            <button type="button" id="closeTipoPago"><img src="{% static 'images/icons/close.svg' %}" alt=""></button>
+                        </div>
 
-                            <h4 class ="cuotaPicked"></h4>
+                        <h4 class ="cuotaPicked">Cuota 0</h4>
 
-                            <div class="typesPayments">
-                                <h3>Elija el tipo de pago</h3>
-                                <div class="wrapperChoices">
+                        <div class="typesPayments">
+                            <h3>Elija el tipo de pago</h3>
+                            <div class="wrapperChoices">
+                                <div class="choice" id="choiceTotal">
+                                    <input type="radio" name="types_payments" id="total" value="total" checked>
+                                    <label class="active" for="total">Abonar total</label>
+                                </div>
+                                <div class="choice"  id="choiceParcial">
                                     <input type="radio" name="types_payments" id="total" value="total">
                                     <label class="active" for="total">Abonar total</label>
-                                    <input type="radio" name="types_payments" id="parcial" value="parcial">
-                                    <label for="parcial">Abonar parcial</label>
                                 </div>
                             </div>
-
-                            <div class="pickedAmount">
-                                <h4>Monto a abonar:</h4>
-                                <input type="text" name="amountParcial" id="amountParcial">
-                                <h5 id="dineroRestante"></h5>
-                            </div>
-
-                            <div id="selectWrapperSelectTypePayments" class="wrapperTypePayment">
-                                <h3 class="labelInput">Filtrar por tipo de pago</h3>
-                                <div class="containerInputAndOptions">
-                                    <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                                    <input type="text" name="tipo_pago" class = "input-select-custom multipleSelect" id ="tipoDePago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
-                                    <ul class="list-select-custom options">
-                                            {% for cobrador in cobradores %}
-                                                <li data-value="{{cobrador.nombre}}">{{cobrador.nombre}}</li>
-                                            {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div id="selectWrapperSelectTypePayments" class="wrapperTypePayment">
-                                <h3 class="labelInput">Filtrar por tipo de pago</h3>
-                                <div class="containerInputAndOptions">
-                                    <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                                    <input type="text" name="tipo_pago" class = "input-select-custom multipleSelect" id ="tipoDePago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
-                                    <ul class="list-select-custom options">
-                                            <li data-value="Efectivo">Efectivo</li>
-                                            <li data-value="Banco">Banco</li>
-                                            <li data-value="Mercado Pago">Mercado Pago</li>
-                                            <li data-value="Posnet">Posnet</li>
-                                            <li data-value="Transferencia">Transferencia</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                        </form>
-                    
-                        <div class="wrapperButtonPayCuota">
-                            <button type="button" name="sendPayment" form="payCuotaForm"id="sendPayment" class="blocked">Abonar</button>
+                            
                         </div>
+
+                        <div class="pickedAmount">
+                            <h4>Monto a abonar</h4>
+                            <input type="text" class="input-select-custom" name="amountParcial" id="amountParcial" placeholder="Ingrese el dinero">
+                            <p id="dineroRestante"></p>
+                        </div>
+
+                        <div id="selectWrapperSelectCobrador" class="wrapperSelect">
+                            <h3 class="labelInput">Cobrador</h3>
+                            <div class="containerInputAndOptions">
+                                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                                <input type="text" name="cobrador" class = "input-select-custom onlySelect" id ="tipoDePago" placeholder ="Elija el cobrador" autocomplete="off" readonly>
+                                <ul class="list-select-custom options">
+                                        {% for cobrador in cobradores %}
+                                            <li data-value="{{cobrador.nombre}}">{{cobrador.nombre}}</li>
+                                        {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div id="selectWrapperSelectTypePayments" class="wrapperSelect">
+                            <h3 class="labelInput">Metodo de pago</h3>
+                            <div class="containerInputAndOptions">
+                                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                                <input type="text" name="tipo_pago" class = "input-select-custom onlySelect" id ="tipoDePago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
+                                <ul class="list-select-custom options">
+                                        <li data-value="Efectivo">Efectivo</li>
+                                        <li data-value="Banco">Banco</li>
+                                        <li data-value="Mercado Pago">Mercado Pago</li>
+                                        <li data-value="Posnet">Posnet</li>
+                                        <li data-value="Transferencia">Transferencia</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="wrapperButtonPayCuota">
+                            <button type="button" name="sendPayment" form="payCuotaForm"id="sendPayment" class="add-button-default blocked">Abonar</button>      
+                        </div>
+                    </form>
+
+                    <div class="payCuotaStatus">
+                        <img src="{% static 'images/icons/checkMark.png' %}" alt="">
+                        {% comment %} <img src="{% static 'images/icons/checkMark.png' %}" alt=""> {% endcomment %}
+                        <h2 class="infoCuotaStatus"></h2>
                     </div>
                 </div>
 
-                <div class="cuotaSuccess">
-                    <img src="{% static 'images/icons/checkMark.png' %}" alt="">
-                    <h2 class="cuotaPagada"></h2>
-                </div>
+                
 
             {% endif %}  
 
@@ -369,8 +397,8 @@
 {% endblock content %}
 
 {% block js %}
-<script src="{% static 'js/fetch_form_cuotas2.js' %}"></script>
-<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+ <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+
 <script src="{% static 'js/selectAdjudicacion.js' %}"></script>
 <script src="{% static 'js/buttonBaja.js' %}"></script>
 <script src="{% static 'js/redirectBajaPDF.js' %}"></script>
