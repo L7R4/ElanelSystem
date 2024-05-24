@@ -1,12 +1,13 @@
-.wrapper_content
-{
+.wrapper_content {
     overflow: hidden;
     box-sizing: border-box;
-    padding: 2rem;
+    padding: 3vh;
 }
 
+
+
 /*#region HEADER BUTTONS  */
-.wrapperButtonManageVenta{
+.wrapperButtonManageVenta {
     width: 100%;
     display: flex;
     height: 7%;
@@ -14,8 +15,12 @@
     justify-content: flex-end;
 }
 
+.wrapperButtonManageVenta>div {
+    height: fit-content;
+}
+
 /* #region Estilos de boton de baja */
-.wrapperButtonManageVenta > .buttonDeBaja > #baja{
+.wrapperButtonManageVenta>.buttonDeBaja>#baja {
     box-sizing: border-box;
     padding: 1rem 2.3rem;
     font-family: raleway-semibold;
@@ -27,15 +32,16 @@
     outline: none;
     cursor: pointer;
 }
+
 /* #endregion */
 
 /*#region Estilos de boton adjudicacion */
 
-.wrapperButtonManageVenta > .selectAdjudicacion{
+.wrapperButtonManageVenta>.selectAdjudicacion {
     position: relative;
 }
-.wrapperButtonManageVenta > .selectAdjudicacion > .selectedOption
-{
+
+.wrapperButtonManageVenta>.selectAdjudicacion>.selectedOption {
     box-sizing: border-box;
     padding: 1rem 2.3rem;
     background-color: var(--primary-color);
@@ -49,32 +55,34 @@
     justify-content: space-around;
     align-items: center;
 }
-.wrapperButtonManageVenta > .selectAdjudicacion > .selectedOption > h2{
+
+.wrapperButtonManageVenta>.selectAdjudicacion>.selectedOption>h2 {
     font-size: clamp(1.4rem, 1.3vw, 1.6rem);
     font-family: raleway-semibold;
     color: var(--third-color);
 
 }
-.wrapperButtonManageVenta >  .selectAdjudicacion > .options
-{
+
+.wrapperButtonManageVenta>.selectAdjudicacion>.options {
     list-style: none;
     font-size: clamp(1.4rem, 1.2vw, 1.5rem);
     font-family: raleway-semibold;
     width: 100%;
     background-color: rgba(255, 255, 255, 1);
-    max-height: 0rem;    
-    overflow: hidden;  
-    position:absolute;
+    max-height: 0rem;
+    overflow: hidden;
+    position: absolute;
     top: 75%;
     z-index: 1;
     border-bottom-left-radius: .6rem;
     border-bottom-right-radius: .6rem;
 }
-.wrapperButtonManageVenta > .selectAdjudicacion > .options.active{
+
+.wrapperButtonManageVenta>.selectAdjudicacion>.options.active {
     max-height: none;
 }
-.wrapperButtonManageVenta > .selectAdjudicacion > .options > a
-{
+
+.wrapperButtonManageVenta>.selectAdjudicacion>.options>a {
     margin-left: .8rem;
     cursor: pointer;
     width: 100%;
@@ -83,136 +91,499 @@
     display: block;
     padding: 1rem 0;
 }
-.wrapperButtonManageVenta > .selectAdjudicacion > .options> a:first-child
-{
+
+.wrapperButtonManageVenta>.selectAdjudicacion>.options>a:first-child {
     margin-top: 1rem;
 }
-.wrapperButtonManageVenta > .selectAdjudicacion > .options > a:hover
-{
+
+.wrapperButtonManageVenta>.selectAdjudicacion>.options>a:hover {
     color: var(--third-color);
 }
+
 /* #endregion */
 
 /* #region Estilos de demas botones */
-.wrapperButtonManageVenta > .buttonChangePack, .wrapperButtonManageVenta > .buttonChangeTitularidad{
+.wrapperButtonManageVenta>.buttonChangePack,
+.wrapperButtonManageVenta>.buttonChangeTitularidad {
     padding: .8rem 2.3rem;
     box-sizing: border-box;
-} 
-.buttonChangePack > a, .buttonChangeTitularidad > a{
+
+}
+
+.buttonChangePack>a,
+.buttonChangeTitularidad>a {
     text-decoration: none;
     color: var(--third-color);
     font-size: clamp(1.4rem, 1.3vw, 1.6rem);
     font-family: raleway-semibold;
 }
-.buttonChangePack:hover, .buttonChangeTitularidad:hover{
+
+.buttonChangePack:hover,
+.buttonChangeTitularidad:hover {
     background-color: rgba(23, 84, 237, 0.07);
 }
 
 /* #endregion */
+
 /* #endregion */
 
-/* WRAPPER INFORMATION */
-.wrapper_information
-{
-    width: 65%;
-    padding-left: 6rem ;
+
+.wrapperBase {
+    display: flex;
+    flex-wrap: wrap;
+    height: 93%;
+    box-sizing: border-box;
+    margin-top: 4rem;
 }
-.information
-{
+
+/*#region  WRAPPER INFORMATION */
+.wrapper_information {
+    width: 70%;
+    box-sizing: border-box;
+}
+
+.information {
     display: flex;
     width: 100%;
     flex-wrap: wrap;
     gap: 1.4rem;
-    margin-top: 5rem;
-}
-.wrapper_information > h1{
-    color: white;
-    font-size:clamp(3rem, 3vw, 5rem);
-    font-family: raleway-bold;
-    margin: 2.3rem 2rem;
-    margin-bottom: .8rem;
-    margin-left: 0;
+    box-sizing: border-box;
+
 }
 
-.inputs > h2
-{
+.wrapper_information>h1 {
     color: white;
-    font-size: 1.3rem;
+    font-size: clamp(3rem, 3vw, 5rem);
+    font-family: raleway-bold;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+
+}
+
+.inputs>h2 {
+    color: var(--third-color);
+    font-size: clamp(1.2rem, 1vw, 1.6rem);
     font-family: raleway-semibold;
     margin-bottom: .3rem;
+    box-sizing: border-box;
 }
 
 
 /* INPUTS */
-#n_solicitud,#n_orden
-{
-    flex-basis:23%;
+#n_solicitud,
+#n_orden {
+    flex-basis: 23%;
 }
 
 
-#supervisor,#vendedor,#producto,#paquete{
+#supervisor,
+#vendedor,
+#producto,
+#paquete {
     flex-basis: 48%;
 }
 
 
 
-#anticipo,#fec_inscripcion,#primer_cuota,#total_pagar,#montoXCuota,#modalidad
-{
+#anticipo,
+#fec_inscripcion,
+#primer_cuota,
+#total_pagar,
+#montoXCuota,
+#modalidad {
     flex-basis: 23%;
 }
 
 
-.inputs > div{
-    height: 3rem;
-    background-color: rgba(253,253,253,0.07);
+.inputs>div {
+    box-sizing: border-box;
+    padding: .8rem 1.5rem;
+    background-color: rgba(253, 253, 253, 0.07);
     border: 2px solid var(--third-color);
     border-radius: 1rem;
     display: flex;
     align-items: center;
-    padding: 0rem 2rem 0rem 1rem;
-    /* min-width: clamp(15rem, 9vw, 19rem);   */
 }
 
 
-.inputs > div > h3{
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+.inputs>div>h3 {
+    font-size: clamp(1.2rem, 1.2vw, 1.8rem);
     font-family: 'raleway-semibold';
     color: white;
 }
 
+/* #endregion */
 
 
-.wrapper_cuotas
-{
-    width: 35%;
+/* #region WRAPPER CUOTAS */
+.wrapper_cuotas {
+    width: 30%;
+    height: 90%;
+    min-height: 35rem;
+    max-height: 65rem;
     display: flex;
     align-items: center;
     position: relative;
     flex-direction: column;
+    overflow: hidden;
 }
-.wrapper_cuotas.adjudicado{
+
+.wrapper_cuotas>.wrapperTittleCuotas {
+    margin-bottom: .6rem
+}
+
+.wrapper_cuotas>.wrapperTittleCuotas>h3 {
+    font-size: clamp(2rem, 1.8vw, 3rem);
+    font-family: raleway-bold;
+    color: var(--third-color);
+}
+
+.wrapper_cuotas.adjudicado,
+.wrapper_cuotas.enBaja {
     justify-content: center;
 }
-.wrapper_cuotas.enBaja{
+
+.wrapperDetalleEstadoVenta {
+    box-sizing: border-box;
+    width: 100%;
+    height: 95%;
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
+}
+
+
+.wrapperCuotasList {
+    color: var(--third-color);
+    position: relative;
+    background-color: var(--third-color);
+    height: 100%;
+    overflow-y: auto;
+}
+
+.wrapperCuotasList::-webkit-scrollbar {
+    width: 4px;
+    border-radius: 5px;
+}
+
+.wrapperCuotasList::-webkit-scrollbar-thumb {
+    background: #000000c0;
+    border-radius: 1rem;
+}
+
+.wrapperCuotasList>.cuotas_list {
+    list-style: none;
+    padding: .8rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    row-gap: 1rem;
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota {
+    display: flex;
+    column-gap: 2rem;
+    box-sizing: border-box;
+    width: 100%;
+    padding: .6rem 0;
+    align-items: center;
+    border-radius: .8rem;
+    position: relative;
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota:hover {
+    background-color: rgba(0, 0, 0, 0.137);
+    cursor: pointer;
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota.pagoBloqueado:hover {
+    cursor: default;
+    pointer-events: none;
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota.pagoBloqueado>label {
+    cursor: default;
+    pointer-events: none;
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota.pagoBloqueado {
+    background-color: rgb(54 53 51 / 18%);
+
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota>input {
+    display: none;
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota>h4 {
+    color: var(--background-color);
+    font-size: clamp(1.4rem, 1.2vw, 1.8rem);
+    font-family: raleway-semibold;
+    cursor: pointer;
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota>.marca {
+    width: 9%;
+    /* Esto hace que sea un cuadrado  */
+    aspect-ratio: 1 / 1;
+    background-color: rgb(248, 244, 10);
+    border-radius: .5rem;
+    margin-left: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota>.marca>img {
+    width: 100%;
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota>.marca.pago {
+    background-color: rgb(7, 240, 7);
+
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota>.marca.atrasado {
+    background-color: rgb(240, 7, 7);
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota>.marca.pagoParcial {
+    background-color: rgb(240, 139, 7);
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota>.marca.pagoBloqueado {
+    background-color: transparent;
+
+}
+
+.wrapperCuotasList>.cuotas_list>.cuota>.marca.pagoBloqueado>img {
+    display: unset;
+}
+
+/* #endregion */
+
+/* #region FORM PAY CUOTA */
+
+#payCuotaForm {
+    padding: 1.5rem;
+    box-sizing: border-box;
+    position: absolute;
+    overflow-y: auto;
+    left: 0%;
+    top: 0;
+    background-color: var(--third-color);
+    height: 100%;
+    width: 100%;
+    transition: all 1s ease-in-out;
+    /* display: none; */
+}
+
+#payCuotaForm::-webkit-scrollbar {
+    width: 4px;
+    border-radius: 5px;
+}
+
+#payCuotaForm::-webkit-scrollbar-thumb {
+    background: #000000c0;
+    border-radius: 1rem;
+}
+
+#payCuotaForm.active {
+    left: 0%;
+}
+
+
+.buttonsActions {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.buttonsActions>button {
+    background-color: transparent;
+    outline: none;
+    border: none;
+    width: 3rem;
+    height: 3rem;
+    cursor: pointer;
+}
+
+.buttonsActions>button>img {
+    width: 100%;
+}
+
+#payCuotaForm>.cuotaPicked {
+    font-size: clamp(2.2rem, 1.9vw, 3rem);
+    font-family: raleway-bold;
+    color: var(--secundary-color);
+    margin-top: 2rem;
+    margin-bottom: .4rem;
+    text-align: center;
+}
+
+#payCuotaForm>.typesPayments>h3 {
+    font-size: clamp(1.4rem, 1.4vw, 2rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+    text-align: center;
+}
+
+#payCuotaForm>.typesPayments>.wrapperChoices {
+    display: flex;
+    column-gap: 1rem;
+    margin-top: .5rem;
     justify-content: center;
 }
-.wrapper_cuotas.enBaja >.cuotas{
+
+#payCuotaForm>.typesPayments>.wrapperChoices>.choice {
+    width: 50%;
+    box-sizing: border-box;
+    padding: .6rem 0rem;
+    border-radius: .6rem;
+    border: 1px solid var(--secundary-color);
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+    font-family: raleway-semibold;
+    text-align: center;
+    cursor: pointer;
+}
+
+#payCuotaForm>.typesPayments>.wrapperChoices>label {
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+}
+
+#payCuotaForm>.typesPayments>.wrapperChoices>.choice>label:hover {
+    cursor: pointer;
+}
+
+
+#payCuotaForm>.typesPayments>.wrapperChoices>.choice:hover {
+    background-color: var(--secundary-color);
+    color: var(--third-color);
+}
+
+#payCuotaForm>.typesPayments>.choice.active {
+    background-color: var(--secundary-color);
+    color: var(--third-color);
+}
+
+#payCuotaForm>.typesPayments>.wrapperChoices>.choice>input {
+    display: none;
+}
+
+#payCuotaForm>.pickedAmount {
+    position: relative;
+    margin-top: 1rem;
+    margin: 0 auto;
+    margin-top: 1rem;
+    width: 80%;
+    /* display: none; */
+}
+
+#payCuotaForm>.pickedAmount.active {
+    display: unset;
+}
+
+#payCuotaForm>.pickedAmount>h4 {
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+}
+
+#payCuotaForm>.pickedAmount>input {
+    width: 100%;
+}
+
+#payCuotaForm>.wrapperSelect {
+    width: 80%;
+    margin: 0 auto;
+}
+
+#payCuotaForm>.wrapperSelect>h3 {
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+    margin-top: 1rem;
+}
+
+#payCuotaForm>#selectWrapperSelectCobrador>.containerInputAndOptions>img {
+    z-index: 6;
+}
+
+#payCuotaForm>#selectWrapperSelectCobrador>.containerInputAndOptions>input {
+    z-index: 5;
+}
+
+#payCuotaForm>#selectWrapperSelectCobrador>.containerInputAndOptions>.options {
+    z-index: 4;
+}
+
+#payCuotaForm>#selectWrapperSelectTypePayments>.containerInputAndOptions>img {
+    z-index: 3;
+}
+
+#payCuotaForm>#selectWrapperSelectTypePayments>.containerInputAndOptions>input {
+    z-index: 2;
+}
+
+#payCuotaForm>#selectWrapperSelectTypePayments>.containerInputAndOptions>.options {
+    z-index: 1;
+}
+
+.wrapperButtonPayCuota {
+    box-sizing: border-box;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: 3rem;
+    left: 0;
+}
+
+.wrapperButtonPayCuota>button#sendPayment {
+    padding: .8rem 4rem;
+    width: fit-content;
+    height: fit-content;
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+    font-family: raleway-semibold;
+}
+
+/* .wrapperButtonPayCuota>#sendPayment {} */
+
+.payCuotaStatus {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: .8rem;
+    position: absolute;
+    bottom: 0;
+    display: none;
+}
+
+/* #endregion */
+
+
+/* .wrapper_cuotas.enBaja>.cuotas {
     height: 70%;
     width: 80%;
     background-color: rgb(247 245 241 / 93%);
     border-radius: 1rem;
     display: flex;
     justify-content: center;
-    align-items:center ;
+    align-items: center;
 }
-.wrapper_cuotas.enBaja >.cuotas > h1{
+
+.wrapper_cuotas.enBaja>.cuotas>h1 {
     font-size: clamp(1.8rem, 1.6vw, 2.5rem);
     font-family: raleway-bold;
     text-align: center;
     color: var(--third-color);
 
 }
-.wrapper_cuotas.enBaja >.cuotas > h2{
+
+.wrapper_cuotas.enBaja>.cuotas>h2 {
     font-size: clamp(1.4rem, 1.3vw, 2.2rem);
     font-family: raleway-bold;
     text-align: center;
@@ -220,83 +591,17 @@
     margin-top: .5rem;
 }
 
-.checkAdj{
+.checkAdj {
     color: white;
     font-size: clamp(2rem, 2vw, 3rem);
     font-family: raleway-bold;
-    /* margin: 2.3rem 2rem; */
     margin-left: 0;
 }
-#cuotasForm
-{
-    background-color: white;
-    width: 80%;
-    border-radius: 1rem;
-    height: 45rem;
-    position: relative;
-}
+ */
 
 
-
-
-.tipo_pago
-{
-    width: 100%;
-    height: 100%;
-    position:absolute;
-    z-index: -1;
-    top: 0;
-    left: 0;
-    background-color: white;
-}
-.tipo_pago.active
-{
-    z-index: 2;
-    border-radius: 1rem;
-}
-.containerDetalleCuota
-{
-    position: relative;
-    text-align: center;
-    padding: 1.3rem 0;
-    font-size: clamp(1.2rem, 1.4vw, 1.6rem);
-    font-family: raleway;
-}
-
-#closeTipoPago{
-    position: absolute;
-    top: .5rem;
-    right: .9rem;
-    background-color: transparent;
-    border-color: transparent;
-    outline: none;
-    height: fit-content;
-    cursor: pointer;
-
-}
-#closeTipoPago:hover{
-    transform: scale(0.95);
-}
-#descuentoCuota{
-    position: absolute;
-    top: .5rem;
-    left: .9rem;
-    background-color: transparent;
-    border-color: transparent;
-    outline: none;
-    height: fit-content;
-    cursor: pointer;
-    display: none;
-
-}
-#descuentoCuota:hover{
-    transform: scale(0.95);
-}
-
-.descuentoCuota
-{
+/* .descuentoCuota {
     position: fixed;
-    /* right: 105%; */
     top: 0;
     padding: 1rem;
     width: 80%;
@@ -304,18 +609,18 @@
     border-radius: 0.6rem;
     display: none;
 }
-.descuentoCuota.active
-{
+
+.descuentoCuota.active {
     display: unset;
 }
-.wrapperDescuentoCuota
-{
+
+.wrapperDescuentoCuota {
     display: flex;
     gap: .5rem;
     align-items: center;
 }
-.descuentoCuota > h3
-{
+
+.descuentoCuota>h3 {
     text-align: start;
     font-size: clamp(1rem, 1.3vw, 1.5rem);
     margin-bottom: .4rem;
@@ -323,8 +628,8 @@
     font-family: raleway-semibold;
 
 }
-.wrapperDescuentoCuota > input
-{
+
+.wrapperDescuentoCuota>input {
     background-color: white;
     width: 70%;
     height: 1.5rem;
@@ -336,14 +641,13 @@
     outline: none;
 }
 
-.wrapperDescuentoCuota > input[type="number"]::-webkit-inner-spin-button,
-.wrapperDescuentoCuota > input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.wrapperDescuentoCuota>input[type="number"]::-webkit-inner-spin-button,
+.wrapperDescuentoCuota>input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
-.wrapperDescuentoCuota > button
-{
+.wrapperDescuentoCuota>button {
     width: 40%;
     height: 3rem;
     color: white;
@@ -355,162 +659,22 @@
     letter-spacing: .04rem;
     cursor: pointer;
 }
+ */
 
 
-
-.cuotaPicked{
-    font-size: clamp(1.2rem, 1.8vw, 3rem);
-    font-family: raleway-bold;
-    color: var(--third-color);
-    margin-top:2rem;
-    margin-bottom: .4rem;
-}
-
-.typesPayments{
-    display: flex;
-    min-height: 4rem;
-    border: 2px solid var(--third-color);
-    border-radius: .3rem;
-
-}
-.typesPayments > label
-{
-    width: 50%;
-    font-size: clamp(1.2rem, 1.1vw, 2rem);
-    font-family: raleway-semibold;
-    min-height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-}
-
-.typesPayments > label.active
-{
-    background-color: var(--third-color);
-    color: white;
-}
-
-.typesPayments > input
-{
-    display: none;
-}
-
-.methodPayments{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.methodPayments > ul{
-    list-style: none;
-    width: 100%;
-    text-align: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-}
-.methodPayments > ul > li{
-    padding: 0.8rem;
-    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-    font-family: raleway-semibold;
-    border: 2px solid #3d7bd8d5;
-    border-radius: 0.6rem;
-}
-.methodPayments > ul > li.picked{
-    animation: escalar 0.1s linear; 
-    background-color: #3d7bd860;
-
-}
-
-.methodPayments > ul > li:hover{
-    background-color: #3d7bd860;
-    cursor: pointer;
-}
-.selectCobradorWrapper
-{
-    width: 100%;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
-    margin: 1rem 0;
-}
-.selectCobradorWrapper >h4{
-    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-    font-family: raleway-semibold;
-    margin-bottom: .2rem;
-}
-.cobradorSelectedWrapper
-{
-    background-color: white;
-    width: 70%;
-    height: 1.5rem;
-    display: flex;
-    align-items: center;
-    padding: .6rem;
-    font-size: clamp(1rem, 1vw, 1.2rem);
-    font-family: raleway-semibold;
-    border: 2px solid #3d7bd8d5;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    position: relative;
-    z-index: 2;
-}
-.cobradoresList
-{
-    width: 75%;
-    padding-top: .6rem;
-    margin: 0 auto;
-    list-style: none;
-    background-color: white;
-    border-radius: 0.6rem;
-    position: absolute;
-    top: 80%;
-    height: 0rem;
-    overflow: auto;
-    /* transition: .3s height ease; */
-    z-index: 1;
-}
-.cobradoresList::-webkit-scrollbar{
-    width: 4px;
-    border-radius: 5px;
-}
-.cobradoresList::-webkit-scrollbar-thumb{
-  background: #585858;
-  border-radius: 1rem;
-}
-
-.cobradoresList.active
-{
-    border: 2px solid #3d7bd8d5;
-    height: 9rem;
-}
-
-.cobradoresList > li
-{
-    font-size: clamp(1rem, 1vw, 1.2rem);
-    font-family: raleway-semibold;
-    padding: .7rem .6rem;
-    cursor: pointer;
-}
-.cobradoresList > li:hover
-{
-    background-color: #3043615d;
-}
-.selectMotivoWrapper{
+.selectMotivoWrapper {
     width: 100%;
     position: relative;
     margin: 1rem 0;
 }
-.selectMotivoWrapper > h4{
+
+.selectMotivoWrapper>h4 {
     font-family: raleway-semibold;
     font-size: 1.3rem;
     margin-bottom: 0.3rem;
 }
 
-.motivoSelectedWrapper{
+.motivoSelectedWrapper {
     background-color: white;
     width: 90%;
     height: 1.5rem;
@@ -525,7 +689,8 @@
     position: relative;
     z-index: 2;
 }
-.motivosList{
+
+.motivosList {
     width: 90%;
     /* padding: 1rem; */
     padding: 0.6rem;
@@ -540,220 +705,102 @@
     /* transition: .3s height ease; */
     z-index: 1;
 }
-.motivosList > li:first-child{
+
+.motivosList>li:first-child {
     padding-top: 1.5rem;
 
 }
-.motivosList > li{
+
+.motivosList>li {
     font-size: clamp(1rem, 1vw, 1.2rem);
     font-family: raleway-semibold;
-    padding:  .5rem 0;
+    padding: .5rem 0;
     cursor: pointer;
 }
-.motivosList > li:hover{
-    color:var(--third-color);
+
+.motivosList>li:hover {
+    color: var(--third-color);
 
 }
 
 
-.motivosList.active{
+.motivosList.active {
     border: 1px solid #3d7bd8d5;
     height: 9rem;
 }
 
-.pickedAmount
-{
-    width: 100%;
-    margin-bottom: 1.4rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    display: none;
-}
-.pickedAmount.active
-{
-    display: flex;
-}
-
-.pickedAmount > h4{
-    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-    font-family: raleway-semibold;
-    margin-bottom: 0.2rem;
-}
-
-.pickedAmount > input
-{
-    background-color: white;
-    width: 70%;
-    height: 1.5rem;
-    padding: 0.6rem;
-    font-size: clamp(1rem, 1vw, 1.2rem);
-    font-family: raleway-semibold;
-    border: 2px solid #3d7bd8d5;
-    border-radius: 0.6rem;
-    outline: none;
-}
 
 
-.buttonSubmitWrapper
-{
+.buttonSubmitWrapper {
     width: 100%;
     display: flex;
-    justify-content: center;    
+    justify-content: center;
     margin-top: 2rem;
 }
 
-#sendPayment.blocked
-{
+#sendPayment.blocked {
     pointer-events: none;
     background-color: rgba(0, 0, 0, 0.445);
 }
 
-#amountParcial.invalido{
+#amountParcial.invalido {
     border: 2px solid rgba(255, 0, 0, 0.616);
 }
-.errorMessageSendBaja{
+
+.errorMessageSendBaja {
     font-family: raleway-semibold;
     font-size: 1.3rem;
     color: #ed1717;
     margin-top: .5rem;
 }
 
-#dineroRestante
-{
+#dineroRestante {
     font-size: clamp(1.2rem, 1vw, 1.2rem);
     font-family: raleway-semibold;
     color: rgba(255, 0, 0, 0.726);
     margin-top: 0.2rem;
 }
-#sendPayment
-{
-    width: 50%;
-    height: 3rem;
-    color: white;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    border-radius: .5rem;
-    border-color: transparent;
-    letter-spacing: .04rem;
-    cursor:pointer;
-}
-#sendPayment:hover{
+
+#sendPayment:hover {
     transition: .1s all ease;
     transform: scale(1.02);
 }
 
-.cuotas_list{
-    list-style: none;
-    max-height: 100%;
-    overflow-y: auto;
-}
-.cuotas_list::-webkit-scrollbar{
-    width: 4px;
-    border-radius: 5px;
-}
-.cuotas_list::-webkit-scrollbar-thumb{
-    background: #0b386289;
-    border-radius: 1rem;
-}
-.cuota{
-    display: flex;
-    width: 100%;
-    height: 4rem;
-    padding: .3rem 0;
-    align-items: center;
-    border-bottom: 1px solid var(--third-color);
-    position: relative;
-    
-}
 
-.cuota:hover{
-    background-color: rgba(0, 0, 0, 0.137);
-    cursor: pointer;
-}
-.cuota.pagoBloqueado:hover{
-    cursor:default;
-    pointer-events: none;
-}
-.cuota.pagoBloqueado > label
-{
-    cursor: default;
-    pointer-events: none;
-}
 
-.marca{
-    width: 12%;
-    height: 80%;
-    background-color: rgb(248, 244, 10);
-    border-radius: .5rem;
-    margin-left: 1rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.marca > img{
-    width: 2.5rem;
-    height: 2.5rem;
-    display: none;
-}
-.marca.pago{
-    background-color: rgb(7, 240, 7);
-    
-}
-.marca.atrasado{
-    background-color: rgb(240, 7, 7);
-}
-.marca.pagoParcial{
-    background-color: rgb(240, 139, 7);
-}
-.marca.pagoBloqueado{
-    background-color: transparent;
 
-}
-.marca.pagoBloqueado > img{
-    display: unset;
-}
-.cuota.pagoBloqueado{
-    background-color: rgb(54 53 51 / 18%);
-    
-}
 
-.textAtrasado
-{
+
+
+
+
+.textAtrasado {
     font-size: clamp(1.2rem, 1vw, 1.6rem);
     font-family: raleway-bold;
     color: rgb(240, 7, 7);
     margin-left: 1.3rem;
 }
 
-.cuota > input{
-   display:none;
-}
-.cuotas{
+
+
+.cuotas {
     width: 100%;
     display: flex;
     align-items: center;
     flex-flow: column;
     max-width: 38rem;
 }
-.cuotas > h3 
-{
+
+.cuotas>h3 {
     color: white;
     font-size: 2rem;
     font-family: raleway-bold;
     margin-bottom: 1rem;
 }
-.cuota > label{
-    color:black;
-    font-size: 1.5rem;
-    font-family: raleway-semibold;
-    padding-left: 2rem;
-    cursor: pointer;
-}
 
-.cuotaSuccess
-{
+
+
+.cuotaSuccess {
     position: absolute;
     bottom: 2rem;
     display: flex;
@@ -766,26 +813,29 @@
     transition: 1s all ease;
 
 }
-.cuotaSuccess.active{
+
+.cuotaSuccess.active {
     left: -20%;
 }
-.cuotaSuccess > img{
+
+.cuotaSuccess>img {
     width: 3rem;
     margin-right: 1.5rem;
 }
-.cuotaPagada
-{
+
+.cuotaPagada {
     font-size: clamp(1.2rem, 1.3vw, 1.6rem);
     font-family: raleway-semibold;
     white-space: nowrap
 }
-.cuotaPagada > strong{
+
+.cuotaPagada>strong {
     color: var(--primary-color);
 }
 
 
 /* Boton de status */
-.buttonStatusVentas{
+.buttonStatusVentas {
     margin: 2.3rem 2rem;
     display: flex;
     gap: 1rem;
@@ -794,11 +844,12 @@
     justify-content: space-between;
     position: relative;
 }
+
 /* .selectAdjudicacion{
     width: 55%;
 } */
 
-.buttonChangePack{
+.buttonChangePack {
     border: 2px solid var(--primary-color);
     /* width: 45%; */
     height: 90%;
@@ -813,7 +864,7 @@
 }
 
 
-.buttonChangeTitularidad{
+.buttonChangeTitularidad {
     border: 2px solid var(--primary-color);
     /* width: 55%; */
     height: 90%;
@@ -832,7 +883,7 @@
     height: 100%;
     position: relative;
 } */
-.buttonDeBaja > .formConfirmWrapper.block::after{
+.buttonDeBaja>.formConfirmWrapper.block::after {
     content: "";
     width: 100%;
     height: 100%;
@@ -842,7 +893,8 @@
     top: 0;
     left: 0;
 }
-.buttonDeBaja > .formConfirmWrapper{
+
+.buttonDeBaja>.formConfirmWrapper {
     position: absolute;
     background-color: #fff;
     z-index: 6;
@@ -854,7 +906,8 @@
     display: none;
     height: auto;
 }
-.buttonDeBaja > .formClave{
+
+.buttonDeBaja>.formClave {
     position: absolute;
     background-color: #fff;
     z-index: 6;
@@ -866,44 +919,54 @@
     border-radius: .5rem;
     display: none;
 }
-.buttonDeBaja > .formConfirmWrapper.active{
+
+.buttonDeBaja>.formConfirmWrapper.active {
     display: block;
 }
-.buttonDeBaja > .formClave.active{
+
+.buttonDeBaja>.formClave.active {
     display: block;
 }
-.buttonDeBaja > .formConfirmWrapper > form > .inputPorcentajeWrapper{
+
+.buttonDeBaja>.formConfirmWrapper>form>.inputPorcentajeWrapper {
     display: flex;
     width: 100%;
     margin-bottom: 1rem;
 }
-.buttonDeBaja > .formConfirmWrapper > form > .inputPorcentajeWrapper > .input{
+
+.buttonDeBaja>.formConfirmWrapper>form>.inputPorcentajeWrapper>.input {
     width: 100%;
 }
-.inputPorcentajeWrapper > .input  p{
+
+.inputPorcentajeWrapper>.input p {
     font-family: raleway-semibold;
     font-size: 1.4rem;
 }
- .input > #inputPorcentaje{
+
+.input>#inputPorcentaje {
     margin-top: 0.3rem;
     display: flex;
     width: 80%;
     gap: 2rem;
     align-items: center;
 }
-.input > #inputPorcentaje > div{
+
+.input>#inputPorcentaje>div {
     position: relative;
     width: 25%;
 }
-.input > #inputPorcentaje > div> p{
+
+.input>#inputPorcentaje>div>p {
     position: absolute;
     top: 16%;
     right: 0;
 }
-.input > #inputPorcentaje > div.editPorcentajeWrapper{
+
+.input>#inputPorcentaje>div.editPorcentajeWrapper {
     width: 50%;
 }
-.input > #inputPorcentaje > div.editPorcentajeWrapper > button{
+
+.input>#inputPorcentaje>div.editPorcentajeWrapper>button {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -916,15 +979,17 @@
     padding: 0.2rem 1rem;
     cursor: pointer;
 }
-.input > #inputPorcentaje > div.editPorcentajeWrapper > button > img{
+
+.input>#inputPorcentaje>div.editPorcentajeWrapper>button>img {
     width: 1.8rem;
 }
-.input > #inputPorcentaje >div>input[type="number"]::-webkit-inner-spin-button{
-  -webkit-appearance: none;
-  margin: 0;
+
+.input>#inputPorcentaje>div>input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
-.input > #inputPorcentaje > div>input{
+.input>#inputPorcentaje>div>input {
     font-family: raleway-semibold;
     font-size: 1.3rem;
     border: var(--primary-color) .8px solid;
@@ -937,7 +1002,7 @@
     cursor: default;
 }
 
-#formBaja > .motivoBaja > textarea{
+#formBaja>.motivoBaja>textarea {
     width: 90%;
     resize: none;
     outline: none;
@@ -948,23 +1013,25 @@
     font-size: 1.2rem;
     margin-bottom: .8rem;
 }
-#formBaja > .motivoBaja > h3
-{
+
+#formBaja>.motivoBaja>h3 {
     font-family: raleway-semibold;
     font-size: 1.3rem;
     margin-bottom: 0.3rem;
 }
 
 
-.buttonDeBaja > .formConfirmWrapper > form > .confirmWrapper{
+.buttonDeBaja>.formConfirmWrapper>form>.confirmWrapper {
     height: 100%;
 }
-.buttonDeBaja > .formConfirmWrapper > form > .confirmWrapper > h3{
+
+.buttonDeBaja>.formConfirmWrapper>form>.confirmWrapper>h3 {
     font-family: raleway-semibold;
     font-size: 1.3rem;
     margin-bottom: .6rem;
 }
-.buttonDeBaja > .formConfirmWrapper > form > .confirmWrapper > #yesConfirm{
+
+.buttonDeBaja>.formConfirmWrapper>form>.confirmWrapper>#yesConfirm {
     font-family: raleway-semibold;
     font-size: 1.4rem;
     background-color: transparent;
@@ -975,7 +1042,8 @@
     height: 2rem;
     cursor: pointer;
 }
-.buttonDeBaja > .formConfirmWrapper > form > .confirmWrapper > #noConfirm{
+
+.buttonDeBaja>.formConfirmWrapper>form>.confirmWrapper>#noConfirm {
     font-family: raleway-semibold;
     font-size: 1.4rem;
     color: white;
@@ -988,22 +1056,24 @@
     cursor: pointer;
 }
 
-.inputClaveWrapper > p{
+.inputClaveWrapper>p {
     font-family: raleway-semibold;
     font-size: 1.4rem;
 }
-.inputClaveWrapper > #inputClave{
-    width:85%;
+
+.inputClaveWrapper>#inputClave {
+    width: 85%;
     margin: .5rem 0;
 
 }
-.inputClaveWrapper > #inputClave > p{
+
+.inputClaveWrapper>#inputClave>p {
     font-family: raleway-semibold;
     font-size: 1.3rem;
     color: #ed1717;
 }
 
-.inputClaveWrapper > #inputClave > input{
+.inputClaveWrapper>#inputClave>input {
     font-family: raleway-semibold;
     font-size: 1.3rem;
     border: var(--primary-color) 0.8px solid;
@@ -1014,11 +1084,12 @@
     height: 1.7rem;
 }
 
-.inputClaveWrapper > #inputClave>input[type="number"]::-webkit-inner-spin-button{
+.inputClaveWrapper>#inputClave>input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
-  }
-.confirmClaveWrapper >#confirm{
+}
+
+.confirmClaveWrapper>#confirm {
     font-size: clamp(1.1rem, 1vw, 1.3rem);
     font-family: raleway-semibold;
     background-color: var(--primary-color);
@@ -1030,7 +1101,8 @@
     padding: .4rem .8rem;
     min-width: 8rem;
 }
-.confirmClaveWrapper >#notConfirm{
+
+.confirmClaveWrapper>#notConfirm {
     font-size: clamp(1.1rem, 1vw, 1.3rem);
     font-family: raleway-semibold;
     background-color: #ed1717;
@@ -1043,12 +1115,12 @@
     min-width: 8rem;
 }
 
-.wrapperSelectAdjudicacion
-{
+.wrapperSelectAdjudicacion {
     position: relative;
     height: 100%;
 }
-.wrapperSelectAdjudicacion > h3{
+
+.wrapperSelectAdjudicacion>h3 {
     font-family: raleway-semibold;
     font-size: 1.4rem;
     color: white;
@@ -1059,13 +1131,13 @@
 
 
 
-.selectedOption >img{
-   width: 2rem;
-   filter: invert(1);
+.selectedOption>img {
+    width: 2rem;
+    filter: invert(1);
 }
 
 
-.changeTitularidadWrapper{
+.changeTitularidadWrapper {
     width: 100%;
     border-top: 1px #ffffff85 solid;
     margin-top: 1rem;
@@ -1073,15 +1145,17 @@
     overflow: auto;
 }
 
-.changeTitularidadWrapper::-webkit-scrollbar{
+.changeTitularidadWrapper::-webkit-scrollbar {
     width: 4px;
     border-radius: 5px;
 }
-.changeTitularidadWrapper::-webkit-scrollbar-thumb{
-  background: #585858;
-  border-radius: 1rem;
+
+.changeTitularidadWrapper::-webkit-scrollbar-thumb {
+    background: #585858;
+    border-radius: 1rem;
 }
-.changeTitularidadWrapper > h2{
+
+.changeTitularidadWrapper>h2 {
     font-size: clamp(1.6rem, 1.5vw, 2.1rem);
     font-family: raleway-semibold;
     color: white;
@@ -1089,7 +1163,8 @@
     margin-bottom: .9rem;
     margin-top: 1.5rem;
 }
-.changeItem{
+
+.changeItem {
     background-color: rgb(41 40 40 / 91%);
     display: flex;
     width: 90%;
@@ -1099,28 +1174,30 @@
     min-height: fit-content;
     margin-bottom: 1rem;
 }
-.changeItem > .names >img{
+
+.changeItem>.names>img {
     width: 3rem;
     transform: rotate(180deg);
 }
 
-.changeItem > .names > a{
+.changeItem>.names>a {
     color: white;
     text-decoration: none;
     font-size: clamp(1.4rem, 1.2vw, 1.5rem);
     font-family: raleway-semibold;
     width: fit-content;
 }
-.changeItem > .names > a:hover{
+
+.changeItem>.names>a:hover {
     transition: .1s all ease;
     transform: scale(0.98);
 }
 
-.changeItem > .names > a:last-child{
+.changeItem>.names>a:last-child {
     color: rgba(255, 255, 255, 0.464);
 }
 
-.changeItem > .names{
+.changeItem>.names {
     width: 30%;
     min-height: 100%;
     display: flex;
@@ -1132,26 +1209,29 @@
 
 
 
-.changeItem > .changeItemInformation{
+.changeItem>.changeItemInformation {
     width: 60%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     position: relative;
 }
-.changeItem > .changeItemInformation > h3{
+
+.changeItem>.changeItemInformation>h3 {
     color: var(--third-color);
 
     font-size: clamp(1.4rem, 1.2vw, 1.5rem);
     font-family: raleway-semibold;
     margin-bottom: .4rem;
 }
-.changeItem > .changeItemInformation > h3 > strong{
+
+.changeItem>.changeItemInformation>h3>strong {
     color: white;
 
     margin-left: .5rem;
 }
-#verPDFTitularidad{
+
+#verPDFTitularidad {
     position: absolute;
     right: 2rem;
     top: .2rem;
@@ -1159,13 +1239,14 @@
     font-family: raleway-semibold;
     color: white;
     padding-bottom: .1rem;
-    text-decoration:none;
+    text-decoration: none;
     border-bottom: 1px solid white;
 }
-#verPDFTitularidad:hover{
-    color:var(--primary-color);
+
+#verPDFTitularidad:hover {
+    color: var(--primary-color);
     border-bottom: 1px solid var(--primary-color);
-    
+
 }
 
 
@@ -1174,12 +1255,14 @@
 /* ANIMATIONS */
 @keyframes escalar {
     0% {
-      transform: scale(1);
+        transform: scale(1);
     }
+
     50% {
-      transform: scale(0.94);
+        transform: scale(0.94);
     }
+
     100% {
-      transform: scale(1);
+        transform: scale(1);
     }
-  }
+}

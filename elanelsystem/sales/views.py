@@ -220,25 +220,17 @@ class DetailSale(TestLogin,generic.DetailView):
         request.session["ventaPK"] = self.object.pk
         sale_target = Ventas.objects.get(pk=self.object.id)
         self.object.testVencimientoCuotas()
+
         print(self.object.cuotas)
         status_cuotas = self.object.cuotas
+
         if(self.object.adjudicado):
             self.object.addPorcentajeAdjudicacion()
 
-        
-
-        cuotas = []
-
-        initial = 0
-        if(self.object.adjudicado["status"] == True):
-            initial = 1
-        for i in range (initial,int(sale_target.nro_cuotas+1)):
-            cuota = "Cuota " + str(i) 
-            cuotas.append(cuota)
-        lenght = 5 # Cambia esto a la cantidad de caracteres que deseas generar
+    
         
         context["changeTitularidad"] = list(reversed(self.object.cambioTitularidadField))
-        context['cuotas'] = cuotas
+        context['cuotas'] = sale_target.cuotas
         context['cobradores'] = Usuario.objects.all()
         context["object"] = self.object
         context["nro_cuotas"] = sale_target.nro_cuotas

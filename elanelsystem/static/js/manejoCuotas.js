@@ -1,6 +1,6 @@
 const cuotasWrapper = document.querySelectorAll(".cuota")
 const btnDescuentoCuota = document.getElementById("btnDescuentoCuota")
-
+const payCuotaForm = document.getElementById("payCuotaForm")
 
 //#region Funcion del formulario FETCH
 function getCookie(name) {
@@ -19,7 +19,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
-async function formPOST(form,url){
+async function formPOST(form, url) {
     try {
         const res = await fetch(url, {
             method: 'POST',
@@ -28,7 +28,7 @@ async function formPOST(form,url){
             },
             body: new FormData(form)
         })
-        if (!res.ok){
+        if (!res.ok) {
             throw new Error("Error")
         }
         const data = await res.json()
@@ -63,8 +63,8 @@ function formHTMLDescuento() {
 }
 
 btnDescuentoCuota.addEventListener('click', () => {
-    let form = document.getElementById(btnDescuentoCuota.form) 
-    formPOST(form,"ventas/detalle_venta/descuento_cuota/").then(async response => {
+    let form = document.getElementById(btnDescuentoCuota.form)
+    formPOST(form, "ventas/detalle_venta/descuento_cuota/").then(async response => {
         let data = await fetchCuotas()
         calcularDineroRestante(cuotaPicked.innerHTML, data)
         descuentoCuotaWrapper.classList.remove("active")
@@ -81,7 +81,8 @@ cuotasWrapper.forEach(cuota => {
         let data = await fetchGETCuotas()
 
         // ABRE LA VENTANA DE ABONAR CUOTA Y VALIDA SI ESTA PAGADO PARCIALMENTE
-        cuotaSelected = selectCuota(cuota, data)
+        showFormCuotas(cuota.id)
+
         calcularDineroRestante(cuotaSelected.children[2].innerHTML, data)
 
         // // SELECCIONA EL TIPO DE PAGO
@@ -94,61 +95,26 @@ cuotasWrapper.forEach(cuota => {
     })
 });
 
-function selectCuota(target, cuotas) {
-    if (!target.children[0].classList.contains("pago") && !target.children[0].classList.contains("pagoBloqueado")) {
-        clearPickedCuota() // Limpia todos los valores de los inputs
-        clearPickedClass() // Limpia los metodo de pago seleccionado
-        validarSubmit() // Resetear los inputs al cerrar
 
 
-        let inputCuota = target.children[2].innerHTML
-        cuotaPicked.innerHTML = inputCuota
-        if (inputCuota == "Cuota 0" || inputCuota == "Cuota 1") {
-            descuentoCuotaButton.style.display = "block"
-        } else {
-            descuentoCuotaButton.style.display = "none"
-        }
-        typePaymentWindow.classList.add("active");
-        testCuotaSelected(target, cuotas)
-    }
-    return target
-}
-
-function testCuotaSelected(target, cuotas) {
+function testCuotaSelected(cuota, cuotas) {
+    let marcaStatusCuota = cuota.querySelector(".marca")
+    let typesPayments = payCuotaForm.querySelector(".typesPayments > wrapperChoices")
 
     // PARA SOLAMENTE OBTENGA EL TIPO PARCIAL SI YA ESTA PAGADO PARCIALMENTE
-    if (target.children[0].classList.contains("pagoParcial")) {
-        try {
-            let inputCuota = target.children[1]
-            cuotaPicked.innerHTML = inputCuota.value
+    if (marcaStatusCuota.classList.contains("pagoParcial")) {
+        // Escondemos el tipo de pago total
+        typesPayments.querySelector("#choiceTotal").style.display = "none"
 
-            typesPayments[0].previousElementSibling.remove()
-            typesPayments[0].remove()
-            typesPayments[1].classList.add("active")
-            typesPayments[1].style.width = "100%"
-            typesPayments[1].previousElementSibling.checked = true
-            tipoPago.value = typesPayments[1].previousElementSibling.value
-            pickedAmount.classList.add("active")
-            calcularDineroRestante(target.children[2].innerHTML, cuotas)
-        } catch (error) {
+        // Marcamos como check el tipo de pago parcial para que quede como obligatorio
+        typesPayments.querySelector("#choiceParcial > input").checked = true
 
-        }
-    }
-    else if (!target.children[0].classList.contains("pagoParcial") && !typesPaymentsWrapper.contains(pagoTotalLabel)) {
-        typesPaymentsWrapper.insertAdjacentElement("afterbegin", pagoTotalLabel)
-        typesPaymentsWrapper.insertAdjacentElement("afterbegin", pagoTotalInput)
+        // Mostramos el input del dinero a colocar
+        pickedAmount.classList.add("active")
 
-        typesPayments[1].style.width = "50%"
-        typesPayments[1].previousElementSibling.checked = false
-        typesPayments[0].previousElementSibling.checked = true
-        typesPayments[0].classList.add("active")
+        // Calculamos el dinero faltante
+        calcularDineroRestante(cuota.id, cuotas)
 
-
-        typesPayments[1].classList.remove("active")
-        pickedAmount.classList.remove("active")
-        inputSubmit.classList.add("blocked")
-
-        tipoPago.value = typesPayments[0].previousElementSibling.value
     }
 }
 //#endregion  
@@ -179,5 +145,44 @@ function clearPickedCuota() {
     amountParcialInput.value = ""
 
     cuotaPicked.innerHTML = ""
+}
+
+function showFormCuotas(cuotaSelected) {
+
+    let tittleCuotaSelected = document.querySelector("#payCuotaForm > .cuotaPicked")
+    tittleCuotaSelected.innerHTML = cuotaSelected
+
+    validarSiAplicaDescuento(cuotaSelected)
+
+
+
+    payCuotaForm.classList.add("active")
+}
+
+// Funcion para verificar si son las cuotas 0 o 1 para disponer del boton para aplicar descuentos
+function validarSiAplicaDescuento(cuota) {
+    if (cuota == "Cuota 0" || cuota == "Cuota 1") {
+        descuentoCuotaButton.style.display = "block"
+    } else {
+        descuentoCuotaButton.style.display = "none"
+    }
+}
+
+function selectCuota(target, cuotas) {
+    if (!target.children[0].classList.contains("pago") && !target.children[0].classList.contains("pagoBloqueado")) {
+        clearPickedCuota() // Limpia todos los valores de los inputs
+        clearPickedClass() // Limpia los metodo de pago seleccionado
+        validarSubmit() // Resetear los inputs al cerrar
+
+
+
+        typePaymentWindow.classList.add("active");
+        testCuotaSelected(target, cuotas)
+    }
+    return target
+}
+
+function hideFormCuotas() {
+
 }
 //#endregion  
