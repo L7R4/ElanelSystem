@@ -341,11 +341,63 @@ class DetailSale(TestLogin,generic.DetailView):
 # Aplica el descuento a una cuota
 def aplicarDescuentoCuota(request):
     if request.method == 'POST':
-        cuota = request.POST.get('cuota')
-        descuento = request.POST.get('descuento')
+        try:
+            data = json.loads(request.body)
+            cuota = data.get('cuota')
+            venta = Ventas.objects.get(pk=int(data.get('ventaID')))
+            descuento = data.get('descuento')
 
-        venta = Ventas.objects.get(pk =request.session['ventaPK'])
-        venta.aplicarDescuento(cuota,int(descuento))
+            venta.aplicarDescuento(cuota,int(descuento))
+            return JsonResponse({"status": True,"message":"Descuento aplicado correctamente"}, safe=False)
+
+        except Exception as error:   
+            return JsonResponse({"status": False,"message":"Descuento fallido","detalleError":str(error)}, safe=False)
+
+
+# Obtenemos una cuota
+def getUnaCuotaDeUnaVenta(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            venta = Ventas.objects.get(pk=int(data.get("ventaID")))
+            cuotas = venta.cuotas
+            cuotaRequest = data.get("cuota")
+            
+            cuotaEncontrada = ""
+            for cuota in cuotas:
+                if cuota["cuota"] == cuotaRequest:
+                    cuotaEncontrada = cuota
+                    break
+            return JsonResponse(cuotaEncontrada, safe=False)
+        except Exception as error:
+            return JsonResponse({"status": False,"message":"Error al obtener la cuota","detalleError":str(error)}, safe=False)
+
+
+# Pagar una cuota
+def pagarCuota(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            venta = Ventas.objects.get(pk=int(data.get("ventaID")))
+            cuotaRequest = data.get("cuota")
+            metodoPago = data.get("metodoPago")
+            formaPago = data.get("typePayment") # Si es parcial o total
+            cobrador = data.get('cobrador')
+
+            if(formaPago =="total"):
+                print("Entro total")
+                venta.pagoTotal(cuotaRequest,metodoPago,cobrador) #Funcion que paga el total
+            elif(formaPago =="parcial"):
+                print("Entro parcial")
+                amountParcial = data.get('valorParcial')
+                venta.pagoParcial(cuotaRequest,metodoPago,amountParcial,cobrador) #Funcion que paga parcialmente
+                
+            return JsonResponse({"status": True,"message":f"Pago de {cuotaRequest.lower()} exitosa"}, safe=False)
+        except Exception as error:
+            print(error)
+            return JsonResponse({"status": False,"message":f"Error en el pago de {cuotaRequest.lower()}","detalleError":str(error)}, safe=False)
+
+        
 
 
 class CreateAdjudicacion(TestLogin,generic.DetailView):

@@ -19,21 +19,23 @@ let inputSelectMultipleCustom = document.querySelectorAll(".containerInputAndOpt
 
 
 inputSelectMultipleCustom.forEach(input => {
-        let optionsList = input.nextElementSibling;
-        let options = optionsList.querySelectorAll("li");
-        
-        toggleOptionsList(input, optionsList);
+    let optionsList = input.nextElementSibling;
+    let options = optionsList.querySelectorAll("li");
 
-        options.forEach(option => {
-            option.addEventListener("click", () => {
-                toggleOption(input, option)
+    toggleOptionsList(input, optionsList);
 
-            });
+    options.forEach(option => {
+        option.addEventListener("click", () => {
+            toggleOption(input, option)
+
+            // Disparar el evento "input" en el input después de seleccionar una opción
+            input.dispatchEvent(new Event('input'));
         });
     });
+});
 
 // Funcion que controla la seleccion de las opciones del menu select
-function toggleOption(input,option) {
+function toggleOption(input, option) {
     // Obtenemos las opciones actualmente seleccionadas del valor del input, separadas por comas
     let selectedOptions = input.value.split('-').map(option => option.trim());
 
@@ -70,17 +72,17 @@ function toggleOptionsList(input, optionsList) {
     let iconDisplay = input.previousElementSibling
     iconDisplay.addEventListener("click", () => {
 
-        if(iconDisplay.classList.contains("open")){
+        if (iconDisplay.classList.contains("open")) {
             iconDisplay.classList.remove("open")
             optionsList.classList.remove("open"); // Cierra la lista 
-        }else{
+        } else {
             optionsList.classList.add("open");
             iconDisplay.classList.add("open");
         }
     });
 
     // Cerrar la lista si se hace clic fuera
-    document.addEventListener("click", function(event) {
+    document.addEventListener("click", function (event) {
         if (!input.contains(event.target) && !optionsList.contains(event.target) && !iconDisplay.contains(event.target)) {
             optionsList.classList.remove("open"); // Cierra la lista si se hace clic fuera
             iconDisplay.classList.remove("open"); // Cierra la lista si se hace clic fuera
