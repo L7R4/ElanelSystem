@@ -278,27 +278,26 @@
                     <div class="wrapperCuotasList">
                         <ul class="cuotas_list">
                             {% for cuota in cuotas %}
-                            <div id="{{cuota.cuota}}" class ="cuota">
+                            <div id="{{cuota.cuota}}" class ="cuota {{cuota.status}}">
                                 {% if cuota.status == "Bloqueado" %}
-                                    <div class="marca pagoBloqueado">
-                                        <img src="{% static 'images/icons/iconBloqueado.png' %}" alt="">
-                                    </div>
+                                <div class="marca {{cuota.status}}" style="background-image: url('{% static 'images/icons/iconBloqueado.png' %}')">
+                                </div>
                                 {% endif %}
 
                                 {% if cuota.status == "Atrasado" %}
-                                    <div class="marca atrasado"></div>
+                                    <div class="marca {{cuota.status}}"></div>
                                 {% endif %}
 
                                 {% if cuota.status == "Parcial" %}
-                                    <div class="marca pagoParcial"></div>
+                                    <div class="marca {{cuota.status}}"></div>
                                 {% endif %}
 
                                 {% if cuota.status == "Pagado" %}
-                                    <div class="marca pago"></div>
+                                    <div class="marca {{cuota.status}}"></div>
                                 {% endif %}
 
                                 {% if cuota.status == "Pendiente" %}
-                                    <div class="marca"></div>
+                                    <div class="marca {{cuota.status}}"></div>
                                 {% endif %}
 
                                 <h4>{{cuota.cuota}}</h4>
@@ -310,27 +309,26 @@
 
                     <form id="payCuotaForm" method ="POST" class="containerDetalleCuota">
                         {% csrf_token %}
-                        <input type="hidden" name="tipodePago" id="tipoPago" value="">
-                        <input type="hidden" name="metodoPago" id="metodoPago" value="">
-                        <input type="hidden" name="cobrador" id="cobrador" value="">
+                        <input type="hidden" name="ventaID" id="ventaID"value="{{object.id}}">
+                        <input type="hidden" name="cuota" id="cuotaID">
 
                         <div class="buttonsActions" >
                             <button type="button" class="" id="btnDescuentoCuota"><img src="{% static 'images/icons/descuentoIcon.png' %}" alt=""></button>
-                            <button type="button" id="closeTipoPago"><img src="{% static 'images/icons/close.svg' %}" alt=""></button>
+                            <button type="button" id="closeFormCuota"><img src="{% static 'images/icons/close.svg' %}" alt=""></button>
                         </div>
 
-                        <h4 class ="cuotaPicked">Cuota 0</h4>
+                        <h4 class ="cuotaPicked"></h4>
 
                         <div class="typesPayments">
                             <h3>Elija el tipo de pago</h3>
                             <div class="wrapperChoices">
                                 <div class="choice" id="choiceTotal">
-                                    <input type="radio" name="types_payments" id="total" value="total" checked>
-                                    <label class="active" for="total">Abonar total</label>
+                                    <input type="radio" name="typePayment" id="total" value="total" checked>
+                                    <h3 for="total">Abonar total</h3>
                                 </div>
                                 <div class="choice"  id="choiceParcial">
-                                    <input type="radio" name="types_payments" id="total" value="total">
-                                    <label class="active" for="total">Abonar total</label>
+                                    <input type="radio" name="typePayment" id="parcial" value="parcial">
+                                    <h3 for="total">Abonar parcial</h3>
                                 </div>
                             </div>
                             
@@ -346,7 +344,7 @@
                             <h3 class="labelInput">Cobrador</h3>
                             <div class="containerInputAndOptions">
                                 <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                                <input type="text" name="cobrador" class = "input-select-custom onlySelect" id ="tipoDePago" placeholder ="Elija el cobrador" autocomplete="off" readonly>
+                                <input type="text" value="" name="cobrador" class = "input-select-custom onlySelect" id ="cobrador" placeholder ="Elija el cobrador" autocomplete="off" readonly>
                                 <ul class="list-select-custom options">
                                         {% for cobrador in cobradores %}
                                             <li data-value="{{cobrador.nombre}}">{{cobrador.nombre}}</li>
@@ -359,7 +357,7 @@
                             <h3 class="labelInput">Metodo de pago</h3>
                             <div class="containerInputAndOptions">
                                 <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                                <input type="text" name="tipo_pago" class = "input-select-custom onlySelect" id ="tipoDePago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
+                                <input type="text" value="" name="metodoPago" class = "input-select-custom onlySelect" id="metodoPago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
                                 <ul class="list-select-custom options">
                                         <li data-value="Efectivo">Efectivo</li>
                                         <li data-value="Banco">Banco</li>
@@ -376,8 +374,8 @@
                     </form>
 
                     <div class="payCuotaStatus">
-                        <img src="{% static 'images/icons/checkMark.png' %}" alt="">
-                        {% comment %} <img src="{% static 'images/icons/checkMark.png' %}" alt=""> {% endcomment %}
+                        <img id="okPostPagoImg" src="{% static 'images/icons/checkMark.png' %}"  alt="">
+                        <img id="failedPostPagoImg" src="{% static 'images/icons/error_icon.png' %}"  alt="">
                         <h2 class="infoCuotaStatus"></h2>
                     </div>
                 </div>
@@ -397,8 +395,9 @@
 {% endblock content %}
 
 {% block js %}
- <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 
+<script src="{% static 'js/manejoCuotas.js' %}"></script>
 <script src="{% static 'js/selectAdjudicacion.js' %}"></script>
 <script src="{% static 'js/buttonBaja.js' %}"></script>
 <script src="{% static 'js/redirectBajaPDF.js' %}"></script>

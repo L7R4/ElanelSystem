@@ -28,6 +28,8 @@ inputSelectOnlyCustom.forEach(input => {
         option.addEventListener("click", () => {
             toggleOption(input, option)
 
+            // Disparar el evento "input" en el input después de seleccionar una opción
+            input.dispatchEvent(new Event('input'));
         });
     });
 });
