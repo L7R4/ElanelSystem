@@ -46,29 +46,68 @@ function formHTMLDescuento() {
         <div>
             <h3>Coloque el dinero</h3>
             <form id="descuentoCuotaForm" method="POST" class="wrapperDescuentoCuota">
-                <input type="hidden" name="cuotaParaDescuento" id="cuotaParaDescuento" value="">
-                <input type="number" id="dineroDescuento" name ="dineroDescuento" value="0">
-                <button form="descuentoCuotaForm" type="button" id="submitDescuento" name="aplicarDescuento">Aplicar</button>
+                <input type="number" id="dineroDescuento" name ="dineroDescuento" class="input-read-write-default" placeholder="Ingrese el dinero">
+                <div class="buttonsActionsDescuentoWrapper">
+                    <button form="descuentoCuotaForm" type="button" id="submitDescuento" class="add-button-default" name="aplicarDescuento">Aplicar</button>
+                    <button type="button" class="button-default-style" id="closeFormDescuento">Cancelar</button>
+                </div>
             </form>
         </div>
     </div>`
     return stringForHTML
 }
-btnDescuentoCuota.addEventListener('click',()=>{
-    let buttonContainer = btnDescuentoCuota.parentElement
-    buttonContainer.insertAdjacentHTML('beforebegin',formHTMLDescuento());
-})
-// btnDescuentoCuota.addEventListener('click', () => {
-    
-//     formPOST(form, "ventas/detalle_venta/descuento_cuota/").then(async response => {
-//         let data = await fetchCuotas()
-//         calcularDineroRestante(cuotaPicked.innerHTML, data)
-//         descuentoCuotaWrapper.classList.remove("active")
-//         dineroDescuento.value = ""
-//         cuotaParaDescuento.value = ""
-//     })
-// })
 
+btnDescuentoCuota.addEventListener('click', () => {
+    if (!document.querySelector('.descuentoWrapperBackground')) {
+        payCuotaForm.insertAdjacentHTML('beforebegin', formHTMLDescuento());
+    }
+
+    // Selecciona el botón de cerrar dentro del formulario recién agregado
+    const closeFormDescuento = document.querySelector('.descuentoWrapperBackground #closeFormDescuento');
+    // Remover cualquier listener anterior del botón de cerrar
+    closeFormDescuento.removeEventListener('click', closeFormDescuentoHandler);
+    // Añadir el listener para el botón de cerrar
+    closeFormDescuento.addEventListener('click', closeFormDescuentoHandler);
+
+
+    const submitFormDescuento = document.querySelector('.descuentoWrapperBackground #submitDescuento');
+    // Remover cualquier listener anterior del botón de enviar
+    submitFormDescuento.removeEventListener('click', aplicarDescuentoCuota);
+    // Añadir el listener para el botón de enviar
+    submitFormDescuento.addEventListener('click', aplicarDescuentoCuota);
+})
+
+// Funcion para cerrar el formulario de descuento de la cuota 1 o 0
+function closeFormDescuentoHandler() {
+    let wrapperDescuento = document.querySelector(".wrapperDetalleEstadoVenta > .descuentoWrapperBackground");
+    if (wrapperDescuento) {
+        wrapperDescuento.remove();
+    }
+}
+
+async function aplicarDescuentoCuota() {
+    try {
+
+        // Aplica el descuento a la cuota
+        let formdescuento = { "ventaID": ventaID.value, "cuota": cuotaID.value, "descuento": dineroDescuento.value };
+        let responseDescuento = await formFETCH(formdescuento, "/ventas/detalle_venta/descuento_cuota/");
+
+        // Solicita la cuota actualizada luego del descuento y la actualiza en el HTML
+        let formCuota = { "ventaID": ventaID.value, "cuota": cuotaID.value };
+        let responseCuota = await formFETCH(formCuota, "/ventas/detalle_venta/get_specific_cuota/");
+        console.log(responseCuota)
+        calcularDineroRestante(responseCuota);
+
+        // Elimina el formulario de descuento
+        let wrapperDescuento = document.querySelector(".wrapperDetalleEstadoVenta > .descuentoWrapperBackground");
+        wrapperDescuento.remove();
+
+        console.log(responseDescuento["message"])
+
+    } catch (error) {
+        console.error("Error al aplicar el descuento de cuota:", error);
+    }
+}
 //#endregion  
 
 
@@ -97,7 +136,7 @@ btnPayCuota.addEventListener("click", () => {
 
         actualizarEstadoCuota(cuotaID.value) //Primero actualizamos la cuota operada
         desbloquearProximaCuota(cuotaID.value) // Desbloqueamos la siguiente cuota
-        
+
         displayMensajePostCuotaPagada(data.status, data.message)
         hideFormCuotas()
     })
@@ -121,10 +160,10 @@ function hideFormCuotas() {
 
 // Funcion que verifica que forma de pago (Pago total o parcial) esta permitida para mostrar en el formulario  
 function verificarEstadoDeLaCuenta(cuota) {
-    if(cuota["status"] === "Parcial") {
-        
+    if (cuota["status"] === "Parcial") {
+
         return true // Retorna verdadero si el estado es parcial
-    }else{
+    } else {
         return false // Retorna falso si el estado no es parcial
     }
 }
@@ -151,7 +190,7 @@ function validarMontoParcial(resto) {
 
 
 // Funcion para calcular el dinero restante al pagar parcialmente
-function calcularDineroRestante(cuota) { 
+function calcularDineroRestante(cuota) {
     let dineroRestanteHTML = payCuotaForm.querySelector("#dineroRestante")
     let listPagos = cuota["pagoParcial"]["amount"]
     let sumaPagos = listPagos.reduce((acc, num) => acc + num["value"], 0);
@@ -176,26 +215,26 @@ function activeFormCuotas(cuotaSelected) {
     let todasFormasDePago = payCuotaForm.querySelectorAll(".wrapperChoices > .choice")
 
     // Verificamos que forma de pago tiene permitida
-    if(verificarEstadoDeLaCuenta(cuotaSelected)){ // Retorna verdadero si es parcial
+    if (verificarEstadoDeLaCuenta(cuotaSelected)) { // Retorna verdadero si es parcial
         todasFormasDePago[0].style.display = "none"
         setearInputAFormaDePago(todasFormasDePago[1]) // [1] significa que la forma de pago es la parcial
-    }else{
+    } else {
         setearInputAFormaDePago(todasFormasDePago[0]) // [0] significa que la forma de pago es la total
         todasFormasDePago[0].style.display = "block"
-        
+
         todasFormasDePago.forEach(choice => {
             choice.addEventListener("click", () => {
                 setearInputAFormaDePago(choice)
             })
         });
     }
-    
+
     let resto = calcularDineroRestante(cuotaSelected)
 
-    checkFormValid(validarInputsRellenados(),validarMontoParcial(resto))
+    checkFormValid(validarInputsRellenados(), validarMontoParcial(resto))
     payCuotaForm.querySelectorAll("input").forEach(field => {
         field.addEventListener('input', () => {
-            checkFormValid(validarInputsRellenados(),validarMontoParcial(resto))
+            checkFormValid(validarInputsRellenados(), validarMontoParcial(resto))
         });
     });
 
@@ -260,7 +299,7 @@ function displayMensajePostCuotaPagada(status, message) {
 function setearInputAFormaDePago(choice) {
     let inputsFormaDePago = payCuotaForm.querySelectorAll(".wrapperChoices > .choice")
     let montoDeFormaParcial = payCuotaForm.querySelector(".pickedAmount")
-    
+
     // Limpiamos todos los demas inputs
     inputsFormaDePago.forEach(c => c.classList.remove("active"));
     payCuotaForm.reset(); // Se resetean los campos
@@ -281,10 +320,10 @@ function setearInputAFormaDePago(choice) {
 
 // Funcion para habilitar el boton de submit del formulario
 function checkFormValid(inputsRellanados, inputMontoParcialValido) {
-    if(inputsRellanados && inputMontoParcialValido){
+    if (inputsRellanados && inputMontoParcialValido) {
         btnPayCuota.disabled = false;
         btnPayCuota.classList.toggle('blocked', false);
-    }else{
+    } else {
         btnPayCuota.disabled = true;
         btnPayCuota.classList.toggle('blocked', true);
     }
@@ -298,7 +337,7 @@ function validarInputsRellenados() {
     requiredFields.forEach(field => { if (field.value !== "") { contInputs++ } });
 
     if (formaPagoSeleccionada.id == "choiceParcial" && contInputs == 3) {
-       return true;
+        return true;
 
     } else if (formaPagoSeleccionada.id == "choiceTotal" && contInputs == 2) {
         return true;
@@ -325,7 +364,7 @@ async function actualizarEstadoCuota(cuota) {
             // Colocamos el estado actual
             c.classList.add(data["status"])
             c.children[0].classList.add(data["status"]);
-            if(data["status"] !== "Bloqueado"){
+            if (data["status"] !== "Bloqueado") {
                 c.children[0].removeAttribute("style"); // Por si se encuentra bloqueado
             }
 
