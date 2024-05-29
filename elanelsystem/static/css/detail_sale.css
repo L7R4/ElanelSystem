@@ -331,10 +331,12 @@
     background-color: rgb(248, 244, 10);
 
 }
-.wrapperCuotasList>.cuotas_list>.cuota.Pagado{
+
+.wrapperCuotasList>.cuotas_list>.cuota.Pagado {
     cursor: default;
     pointer-events: none;
 }
+
 .wrapperCuotasList>.cuotas_list>.cuota>.marca.Pagado {
     background-color: rgb(7, 240, 7);
 }
@@ -399,7 +401,7 @@
     right: 0%;
 }
 
-.descuentoWrapperBackground{
+.descuentoWrapperBackground {
     position: absolute;
     width: 100%;
     z-index: 20;
@@ -409,13 +411,52 @@
     top: 0;
     background-color: #00000058;
 }
-.descuentoWrapperBackground > div{
-    height: 15%;
-    padding: 1rem;
+
+.descuentoWrapperBackground>div {
+    padding: 2rem;
     box-sizing: border-box;
     border-bottom: 2px solid var(--secundary-color);
     background-color: var(--third-color);
 }
+
+.descuentoWrapperBackground>div>h3 {
+    font-size: clamp(1.2rem, 1.1vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+    margin-bottom: .4rem;
+}
+
+.descuentoWrapperBackground>div>#descuentoCuotaForm>.buttonsActionsDescuentoWrapper {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.descuentoWrapperBackground>div>#descuentoCuotaForm>#dineroDescuento {
+    width: 80%;
+
+}
+
+.descuentoWrapperBackground>div>#descuentoCuotaForm>#dineroDescuento::-webkit-inner-spin-button,
+.descuentoWrapperBackground>div>#descuentoCuotaForm>#dineroDescuento::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#descuentoCuotaForm>.buttonsActionsDescuentoWrapper>#closeFormDescuento {
+    color: var(--background-color);
+    font-size: clamp(1.1rem, 1vw, 1.5rem);
+    padding: .8rem 1.5rem;
+
+}
+
+#descuentoCuotaForm>.buttonsActionsDescuentoWrapper>#submitDescuento {
+    font-size: clamp(1.1rem, 1vw, 1.5rem);
+    padding: .8rem 1.5rem;
+}
+
 .buttonsActions {
     box-sizing: border-box;
     display: flex;
