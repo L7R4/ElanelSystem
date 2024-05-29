@@ -42,30 +42,36 @@ async function formFETCH(form, url) {
 
 //#region Creacion de descuento en cuotas
 function formHTMLDescuento() {
-    let stringForHTML = `<div>
-        <h3>Coloque el dinero</h3>
-        <form id="descuentoCuotaForm" method="POST" class="wrapperDescuentoCuota">
-            <input type="hidden" name="cuotaParaDescuento" id="cuotaParaDescuento" value="">
-            <input type="number" id="dineroDescuento" name ="dineroDescuento" value="0">
-            <button form="descuentoCuotaForm" type="button" id="submitDescuento" name="aplicarDescuento">Aplicar</button>
-        </form>
+    let stringForHTML = `<div class="descuentoWrapperBackground">
+        <div>
+            <h3>Coloque el dinero</h3>
+            <form id="descuentoCuotaForm" method="POST" class="wrapperDescuentoCuota">
+                <input type="hidden" name="cuotaParaDescuento" id="cuotaParaDescuento" value="">
+                <input type="number" id="dineroDescuento" name ="dineroDescuento" value="0">
+                <button form="descuentoCuotaForm" type="button" id="submitDescuento" name="aplicarDescuento">Aplicar</button>
+            </form>
+        </div>
     </div>`
-
     return stringForHTML
 }
-
-btnDescuentoCuota.addEventListener('click', () => {
-    let form = document.getElementById(btnDescuentoCuota.form)
-    formPOST(form, "ventas/detalle_venta/descuento_cuota/").then(async response => {
-        let data = await fetchCuotas()
-        calcularDineroRestante(cuotaPicked.innerHTML, data)
-        descuentoCuotaWrapper.classList.remove("active")
-        dineroDescuento.value = ""
-        cuotaParaDescuento.value = ""
-    })
+btnDescuentoCuota.addEventListener('click',()=>{
+    let buttonContainer = btnDescuentoCuota.parentElement
+    buttonContainer.insertAdjacentHTML('beforebegin',formHTMLDescuento());
 })
+// btnDescuentoCuota.addEventListener('click', () => {
+    
+//     formPOST(form, "ventas/detalle_venta/descuento_cuota/").then(async response => {
+//         let data = await fetchCuotas()
+//         calcularDineroRestante(cuotaPicked.innerHTML, data)
+//         descuentoCuotaWrapper.classList.remove("active")
+//         dineroDescuento.value = ""
+//         cuotaParaDescuento.value = ""
+//     })
+// })
 
 //#endregion  
+
+
 // Proceso de seleccion de cuota
 cuotasWrapper.forEach(cuota => {
     cuota.addEventListener('click', async () => {
@@ -77,7 +83,6 @@ cuotasWrapper.forEach(cuota => {
         let form = { "ventaID": ventaID.value, "cuota": cuota.id }
         let data = await formFETCH(form, "/ventas/detalle_venta/get_specific_cuota/")
         activeFormCuotas(data)
-        console.log(data)
     })
 });
 
@@ -89,7 +94,10 @@ btnPayCuota.addEventListener("click", () => {
 
     formFETCH(form, "/ventas/detalle_venta/pay_cuota/").then(data => {
         console.log(data.message, data.detalleError)
-        desbloquearProximaCuota(cuotaID.value)
+
+        actualizarEstadoCuota(cuotaID.value) //Primero actualizamos la cuota operada
+        desbloquearProximaCuota(cuotaID.value) // Desbloqueamos la siguiente cuota
+        
         displayMensajePostCuotaPagada(data.status, data.message)
         hideFormCuotas()
     })
@@ -111,52 +119,39 @@ function hideFormCuotas() {
 
 }
 
-// Funcion para ver si la cuota esta parcialmente pagada
-function vericarSiEsParcial(cuota) {
-    let cuotaHTML = ""
-    cuotasWrapper.forEach(c => {
-        if (c.querySelector("h4").textContent === cuota["cuota"]) {
-            cuotaHTML = c
-        }
-    });
-
-    let marcaStatusCuota = cuotaHTML.querySelector(".marca")
-    let typesPayments = payCuotaForm.querySelector(".typesPayments > .wrapperChoices")
-
-    if (marcaStatusCuota.classList.contains("Parcial")) {
-        // Escondemos el tipo de pago total
-        typesPayments.querySelector("#choiceTotal").style.display = "none"
-
-        // Marcamos como check el tipo de pago parcial para que quede como obligatorio
-        setearInputAFormaDePago(typesPayments.querySelector("#choiceParcial"))
-
-        // // Mostramos el input del dinero a colocar
-        // let amountWrapper = payCuotaForm.querySelector(".pickedAmount")
-        // amountWrapper.classList.add("active")
-
-        // Calculamos el dinero faltante
-        calcularDineroRestante(cuota)
+// Funcion que verifica que forma de pago (Pago total o parcial) esta permitida para mostrar en el formulario  
+function verificarEstadoDeLaCuenta(cuota) {
+    if(cuota["status"] === "Parcial") {
+        
+        return true // Retorna verdadero si el estado es parcial
+    }else{
+        return false // Retorna falso si el estado no es parcial
     }
 }
 
 // Funcion para ver si el monto parcial colocado es correcto al monto que se debe
-function validarMontoParcial(resto, monto) {
+function validarMontoParcial(resto) {
+    let monto = payCuotaForm.querySelector("#amountParcial").value
 
     if (monto > resto) {
+        console.log("If del monto parcial")
+
         btnPayCuota.disabled = true;
         btnPayCuota.classList.toggle('blocked', true);
         amountParcial.style.border = "2px solid rgba(255, 0, 0, 0.726)"
+        return false
     } else {
+        console.log("Else del monto parcial")
         btnPayCuota.disabled = false;
         btnPayCuota.classList.toggle('blocked', false);
-        amountParcial.style.border = "2px solid var(--secundary-color);"
-
+        amountParcial.style.border = "2px solid var(--secundary-color)"
+        return true
     }
 }
 
 
 // Funcion para calcular el dinero restante al pagar parcialmente
-function calcularDineroRestante(cuota) {
+function calcularDineroRestante(cuota) { 
     let dineroRestanteHTML = payCuotaForm.querySelector("#dineroRestante")
     let listPagos = cuota["pagoParcial"]["amount"]
     let sumaPagos = listPagos.reduce((acc, num) => acc + num["value"], 0);
@@ -169,43 +164,42 @@ function calcularDineroRestante(cuota) {
 // Funcion para actualizar la cuota que vamos a gestionar
 function activeFormCuotas(cuotaSelected) {
 
-
+    // Seteamos el valor del titulo de la cuota que se abrio el form
     let tittleCuotaSelected = payCuotaForm.querySelector(".cuotaPicked")
     tittleCuotaSelected.innerHTML = cuotaSelected["cuota"]
 
+    // Seteamos el valor del input hidden de la cuota que se abrio el form
     let cuotaInput = payCuotaForm.querySelector("#cuotaID")
     cuotaInput.value = cuotaSelected["cuota"]
 
-    // validarSiAplicaDescuento(cuotaSelected)
-    let resto = calcularDineroRestante(cuotaSelected)
 
+    let todasFormasDePago = payCuotaForm.querySelectorAll(".wrapperChoices > .choice")
 
-
-
-
-    let inputsFormaDePago = payCuotaForm.querySelectorAll(".choice")
-    if (!vericarSiEsParcial(cuotaSelected)) {
-        let formaDePago = setearInputAFormaDePago(inputsFormaDePago[0])
-        inputsFormaDePago.forEach(choice => {
+    // Verificamos que forma de pago tiene permitida
+    if(verificarEstadoDeLaCuenta(cuotaSelected)){ // Retorna verdadero si es parcial
+        todasFormasDePago[0].style.display = "none"
+        setearInputAFormaDePago(todasFormasDePago[1]) // [1] significa que la forma de pago es la parcial
+    }else{
+        setearInputAFormaDePago(todasFormasDePago[0]) // [0] significa que la forma de pago es la total
+        todasFormasDePago[0].style.display = "block"
+        
+        todasFormasDePago.forEach(choice => {
             choice.addEventListener("click", () => {
-                formaDePago = setearInputAFormaDePago(choice)
+                setearInputAFormaDePago(choice)
             })
         });
     }
-    vericarSiEsParcial(cuotaSelected)
+    
+    let resto = calcularDineroRestante(cuotaSelected)
 
-
-
-    checkFormCompletion(formaDePago);
+    checkFormValid(validarInputsRellenados(),validarMontoParcial(resto))
     payCuotaForm.querySelectorAll("input").forEach(field => {
         field.addEventListener('input', () => {
-            console.log("Evento input")
-            checkFormCompletion(formaDePago)
-            if (field.id == "amountParcial") {
-                validarMontoParcial(resto, field.value)
-            }
+            checkFormValid(validarInputsRellenados(),validarMontoParcial(resto))
         });
     });
+
+
 }
 
 
@@ -222,17 +216,18 @@ function validarSiAplicaDescuento(cuota) {
 
 // Funcion para desbloquear la proxima cuota
 function desbloquearProximaCuota(cuota) {
+    console.log("Desbloqueando cuota . . .")
     const numeroCuota = parseInt(cuota.split(" ")[1]);
     // Incrementar el número de cuota en 1
     const nuevoNumeroCuota = numeroCuota + 1;
 
     // Volver a unir la cadena con el nuevo número de cuota
     const cuotaADesbloquear = "Cuota " + nuevoNumeroCuota;
-    console.log('Cuota a desbloquear')
+
+    console.log("Cuota a desbloquer")
     console.log(cuotaADesbloquear)
 
-    actualizarEstadoCuota(cuota) //Primero actualizamos la cuota operada
-    actualizarEstadoCuota(cuotaADesbloquear) // Luego actualizamos la proxima cuota
+    actualizarEstadoCuota(cuotaADesbloquear) // Actualizamos la proxima cuota
 }
 
 
@@ -263,44 +258,56 @@ function displayMensajePostCuotaPagada(status, message) {
 
 // Funcion para que cuando este una forma de pago (parcial o total) elegida se aplique un estilo diferente y haga el checked del input
 function setearInputAFormaDePago(choice) {
-    console.log(choice)
     let inputsFormaDePago = payCuotaForm.querySelectorAll(".wrapperChoices > .choice")
     let montoDeFormaParcial = payCuotaForm.querySelector(".pickedAmount")
-
+    
     // Limpiamos todos los demas inputs
     inputsFormaDePago.forEach(c => c.classList.remove("active"));
+    payCuotaForm.reset(); // Se resetean los campos
 
-    choice.children[0].checked = true
+
     choice.classList.add("active")
+    choice.children[0].checked = true
 
     if (choice.id == "choiceParcial") {
         montoDeFormaParcial.style.display = "block"
     } else {
+        // typesPayments.querySelector("#choiceTotal").style.display = "block"
         montoDeFormaParcial.style.display = "none"
         montoDeFormaParcial.children[1].value = ""
     }
-    checkFormCompletion(choice.id)
-    return choice.id
 }
 
 
 // Funcion para habilitar el boton de submit del formulario
-function checkFormCompletion(formaPago) {
-    let requiredFields = payCuotaForm.querySelectorAll("input:not([type='hidden']):not([type='radio'])");
-
-    let contInputs = 0
-    requiredFields.forEach(field => { if (field.value !== "") { contInputs++ } });
-    if (formaPago == "choiceParcial" && contInputs == 3) {
+function checkFormValid(inputsRellanados, inputMontoParcialValido) {
+    if(inputsRellanados && inputMontoParcialValido){
         btnPayCuota.disabled = false;
         btnPayCuota.classList.toggle('blocked', false);
-    } else if (formaPago == "choiceTotal" && contInputs == 2) {
-        btnPayCuota.disabled = false;
-        btnPayCuota.classList.toggle('blocked', false);
-    } else {
+    }else{
         btnPayCuota.disabled = true;
         btnPayCuota.classList.toggle('blocked', true);
     }
 }
+
+
+function validarInputsRellenados() {
+    let requiredFields = payCuotaForm.querySelectorAll("input:not([type='hidden']):not([type='radio'])");
+    let formaPagoSeleccionada = payCuotaForm.querySelector(".typesPayments > .wrapperChoices > .choice.active")
+    let contInputs = 0
+    requiredFields.forEach(field => { if (field.value !== "") { contInputs++ } });
+
+    if (formaPagoSeleccionada.id == "choiceParcial" && contInputs == 3) {
+       return true;
+
+    } else if (formaPagoSeleccionada.id == "choiceTotal" && contInputs == 2) {
+        return true;
+
+    } else {
+        return false;
+    }
+}
+
 
 // Funcion para actualizar el estado de una cuota
 async function actualizarEstadoCuota(cuota) {
@@ -308,8 +315,8 @@ async function actualizarEstadoCuota(cuota) {
     let form = { "ventaID": ventaID.value, "cuota": cuota }
     let data = await formFETCH(form, "/ventas/detalle_venta/get_specific_cuota/")
 
-    cuotasWrapper.forEach(async (c, i) => {
-        if (c.querySelector("h4").textContent === data["cuota"]) {
+    cuotasWrapper.forEach((c, i) => {
+        if (c.id === data["cuota"]) {
 
             // Elimnamos el estado anterior
             removeSpecificClasses(c)
@@ -318,13 +325,14 @@ async function actualizarEstadoCuota(cuota) {
             // Colocamos el estado actual
             c.classList.add(data["status"])
             c.children[0].classList.add(data["status"]);
-
-            if (c.querySelector("h4").textContent != "Cuota 0" && cuotasWrapper[i - 1].classList.contains("Pagado")) {
+            if(data["status"] !== "Bloqueado"){
                 c.children[0].removeAttribute("style"); // Por si se encuentra bloqueado
             }
+
         }
     });
 }
+
 
 // Funcion helper para remover las clases de bloqueado, pendiente, atrasado, etc para visualizar en el HTML
 function removeSpecificClasses(elementHTML) {
