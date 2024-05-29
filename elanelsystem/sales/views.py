@@ -399,7 +399,6 @@ def pagarCuota(request):
 
         
 
-
 class CreateAdjudicacion(TestLogin,generic.DetailView):
     model = Ventas
     template_name = "create_adjudicacionSorteo.html"
