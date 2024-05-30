@@ -56,8 +56,7 @@ function formHTMLDescuento() {
     </div>`
     return stringForHTML
 }
-
-btnDescuentoCuota.addEventListener('click', () => {
+function descuentoCuotaManagement() {
     if (!document.querySelector('.descuentoWrapperBackground')) {
         payCuotaForm.insertAdjacentHTML('beforebegin', formHTMLDescuento());
     }
@@ -75,7 +74,8 @@ btnDescuentoCuota.addEventListener('click', () => {
     submitFormDescuento.removeEventListener('click', aplicarDescuentoCuota);
     // Añadir el listener para el botón de enviar
     submitFormDescuento.addEventListener('click', aplicarDescuentoCuota);
-})
+}
+
 
 // Funcion para cerrar el formulario de descuento de la cuota 1 o 0
 function closeFormDescuentoHandler() {
@@ -84,7 +84,7 @@ function closeFormDescuentoHandler() {
         wrapperDescuento.remove();
     }
 }
-
+let resto = 0;
 async function aplicarDescuentoCuota() {
     try {
 
@@ -95,14 +95,14 @@ async function aplicarDescuentoCuota() {
         // Solicita la cuota actualizada luego del descuento y la actualiza en el HTML
         let formCuota = { "ventaID": ventaID.value, "cuota": cuotaID.value };
         let responseCuota = await formFETCH(formCuota, "/ventas/detalle_venta/get_specific_cuota/");
-        console.log(responseCuota)
-        calcularDineroRestante(responseCuota);
+        resto = calcularDineroRestante(responseCuota);
 
         // Elimina el formulario de descuento
         let wrapperDescuento = document.querySelector(".wrapperDetalleEstadoVenta > .descuentoWrapperBackground");
         wrapperDescuento.remove();
-
         console.log(responseDescuento["message"])
+        checkFormValid(validarInputsRellenados(), validarMontoParcial(resto))
+
 
     } catch (error) {
         console.error("Error al aplicar el descuento de cuota:", error);
@@ -194,7 +194,7 @@ function calcularDineroRestante(cuota) {
     let dineroRestanteHTML = payCuotaForm.querySelector("#dineroRestante")
     let listPagos = cuota["pagoParcial"]["amount"]
     let sumaPagos = listPagos.reduce((acc, num) => acc + num["value"], 0);
-    let resto = cuota["total"] - (sumaPagos + cuota["descuento"])
+    resto = cuota["total"] - (sumaPagos + cuota["descuento"])
     dineroRestanteHTML.innerHTML = "Dinero restante: $" + resto
     return resto;
 }
@@ -229,7 +229,11 @@ function activeFormCuotas(cuotaSelected) {
         });
     }
 
-    let resto = calcularDineroRestante(cuotaSelected)
+    resto = calcularDineroRestante(cuotaSelected)
+
+    // Elimina todo listener antes de abrir otro para que no haya muchos listener si se cierra y se vuelve a abrir el form varias veces
+    btnDescuentoCuota.removeEventListener('click', descuentoCuotaManagement);
+    btnDescuentoCuota.addEventListener('click', descuentoCuotaManagement)
 
     checkFormValid(validarInputsRellenados(), validarMontoParcial(resto))
     payCuotaForm.querySelectorAll("input").forEach(field => {
@@ -237,6 +241,8 @@ function activeFormCuotas(cuotaSelected) {
             checkFormValid(validarInputsRellenados(), validarMontoParcial(resto))
         });
     });
+
+
 
 
 }
