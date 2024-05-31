@@ -22,68 +22,70 @@
     </div>
 
     <div class="buttonDeBaja">
-        <button type="button" id="baja"> Dar baja </button>
-        <div class="formConfirmWrapper">
-            <form id="formBaja"  method="POST">
-                {% csrf_token %}
-                <div class="inputPorcentajeWrapper">
-                    <div class="input">
-                        <p>Porcentaje</p>
-                        <div id="inputPorcentaje">
-                            <div>
-                                <input name='porcentage' id='porcentage' type='text' value ='{{porcetageDefault}}' onkeypress='return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 8 || event.charCode == 13 || (event.charCode >= 37 && event.charCode <= 40)' readonly>
-                                <p>%</p>
-                            </div>
-                            
-                            <div class="editPorcentajeWrapper">
-                        
-                                <button type="button" id="editPorcentaje">Editar
+        <button type="button" id="bajaBtn"> Dar baja </button>
+        <div class="formConfirmBajaWrapper">
+            <div class="formsContainer">
+                <form id="formBaja"  method="POST">
+                    {% csrf_token %}
+                    <div class="porcentajeWrapper">
+                        <div>
+                            <p>Porcentaje</p>
+                            <div class="porcentajeContainer">
+                                <div class="inputPorcentajeContainer">
+                                    <input name='porcentage' id='porcentage' type='text' value ='{{porcetageDefault}}' onkeypress='return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 8 || event.charCode == 13 || (event.charCode >= 37 && event.charCode <= 40)'>
+                                    <p>%</p>
+                                </div>
+                                
+                                <button class="porcentajeBtn" type="button" id="porcentajeBtn">Editar
                                     <img src="{% static "images/icons/editar.svg" %}" alt="iconEditar">
                                 </button>
+                                
                             </div>
                         </div>
                     </div>
-                    
-                </div>
-                <div class="selectMotivoWrapper">
-                    <h4>Motivo de la baja:</h4>
-                    <input type="hidden" value="Motivos personales" id="motivo" name="motivo">
-                    <div class="motivoSelectedWrapper">
-                        <h3 class="motivoText">Motivos personales</h3>
+
+                    <div id="selectMotivoWrapper" class="wrapperInput">
+                        <h3 class="labelInput">Motivo de la baja</h3>
+                        <div class="containerInputAndOptions">
+                            <img id="motivoIconDisplay" class="iconDesplegar open" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                            <input name="motivo" id="motivo" class="input-select-custom onlySelect" placeholder="Elegir" autocomplete="off" readonly="">
+                            <ul class="list-select-custom options">
+                                <li data-value ="Motivos personales">Motivos personales</li>
+                                <li data-value ="Defuncion">Defuncion </li>
+                                <li data-value ="Otro">Otro</li>
+                            </ul>
+                        </div>
                     </div>
-                    <ul class="motivosList">
-                        <li>Motivos personales</li>
-                        <li>Defuncion </li>
-                        <li>Otro...</li>
-                    </ul>
-                </div>  
-                <div class="motivoBaja">
-                    <h3>Observaciones:</h3>
-                    <textarea rows="3" name="observacion" id="bajaObservacion"></textarea>
-                </div>
-                <div class="confirmWrapper">
-                    <h3>¿Estás seguro que quieres dar de baja esta operación?</h3>
-                    <button id="yesConfirm" type="button">Si</button>
-                    <button id="noConfirm" type="button">No</button>
-                </div>
-            </form>
-        </div>
-        <div class="formClave">
-            <form method="POST" id="formPassword">
-                {% csrf_token %}
-                <div class="inputClaveWrapper">
-                    <p>Ingrese la clave</p>
-                    <div id="inputClave">
-                        <input name="clave" type="number" id="clave">
+    
+                    <div class="motivoBaja">
+                        <h3>Observaciones:</h3>
+                        <textarea rows="4" name="observacion" id="bajaObservacion"></textarea>
                     </div>
-                    
-                </div>
-                <div class="confirmClaveWrapper">
-                    <button id="confirm" type="button" name="confirmClave">Confirmar</button>
-                    <button id="notConfirm" type="button">Cancelar</button>
-                </div>
-            </form>
+    
+                    <div class="confirmWrapper">
+                        <h3>¿Estás seguro que quieres dar de baja esta operación?</h3>
+                        <div>
+                            <button id="yesConfirm" class="delete-button-default" type="button">Si</button>
+                            <button id="noConfirm" class="add-button-default" type="button">No</button>
+                        </div>
+                    </div>
+
+                </form>
+                <form method="POST" id="formPassword">
+                        {% csrf_token %}
+                        <div class="inputClaveWrapper">
+                            <p>Ingrese la clave</p>
+                            <input name="clave" type="password" id="clave">
+                        </div>
+                        <div class="confirmClaveWrapper">
+                            <button id="confirmPass" class="add-button-default" type="button" name="confirmClave">Confirmar</button>
+                            <button id="notConfirmPass" class="delete-button-default" type="button">Cancelar</button>
+                        </div>
+                </form>
+            </div>
+            
         </div>
+        
     </div>
     
     <div class="buttonChangePack">
@@ -395,6 +397,12 @@
 {% endblock content %}
 
 {% block js %}
+
+<script>
+    
+    var venta_id = {{object.id}}
+
+</script>
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 
 <script src="{% static 'js/manejoCuotas.js' %}"></script>

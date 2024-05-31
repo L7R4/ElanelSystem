@@ -1,5 +1,5 @@
 from django.forms import ValidationError
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views import generic
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -220,8 +220,8 @@ class DetailSale(TestLogin,generic.DetailView):
         request.session["ventaPK"] = self.object.pk
         sale_target = Ventas.objects.get(pk=self.object.id)
         self.object.testVencimientoCuotas()
+        request.session["statusKeyPorcentajeBaja"] = False
 
-        print(self.object.cuotas)
         status_cuotas = self.object.cuotas
 
         if(self.object.adjudicado):
@@ -235,7 +235,7 @@ class DetailSale(TestLogin,generic.DetailView):
         context["object"] = self.object
         context["nro_cuotas"] = sale_target.nro_cuotas
         context["urlRedirectPDF"] = reverse("sales:bajaPDF",args=[self.object.pk])
-
+        context['urlUser'] = reverse("users:cuentaUser", args=[self.object.pk])
         try:
             if len(self.object.cuotas_pagadas()) >= 6:
                 context["porcetageDefault"] = 50
@@ -380,8 +380,33 @@ def pagarCuota(request):
 
 
 #Dar de baja una venta
-def darBaja(request):
-    pass
+def darBaja(request,pk):
+    if(request.method == "POST"):
+        try:
+            # Obtenemos el formulario
+            porcentage = json.loads(request.body)["porcentage"]
+            motivoDetalle = json.loads(request.body)["motivo"]
+            motivoDescripcion = json.loads(request.body)["motivoDescripcion"]
+            responsable = request.user.nombre
+
+
+            venta = get_object_or_404(Ventas, id=pk)
+            porcentajeEsperado = venta.porcentajeADevolver() #El porcentaje valido sin modificaciones HABILITADAS
+            porcentajeDeBajaHabilitado = porcentage if request.session["statusKeyPorcentajeBaja"] else porcentajeEsperado
+            print(porcentajeDeBajaHabilitado)
+            
+            # Damos la baja 
+            venta.darBaja("cliente",porcentajeDeBajaHabilitado,motivoDetalle,motivoDescripcion,responsable)
+            response_data = {
+                'status': True,
+                'urlPDF': reverse("sales:bajaPDF", args=[pk]),
+                'urlUser': reverse("users:cuentaUser", args=[venta.nro_cliente.pk])
+            }
+            request.session["statusKeyPorcentajeBaja"] = False
+            return JsonResponse(response_data, safe=False)
+        except Exception as error:
+            return JsonResponse({'status': False, 'message':str(error)}, safe=False)
+            
         
 
 class CreateAdjudicacion(TestLogin,generic.DetailView):
@@ -852,20 +877,21 @@ def viewsPDFBaja(request,pk):
                 "producto": operacionBaja.producto.nombre,
                 "cantCuotasPagadas" : len(operacionBaja.cuotas_pagadas()),
                 "cuotas" : operacionBaja.nro_cuotas,
+                "agencia" : f'{operacionBaja.agencia.localidad}, {operacionBaja.agencia.provincia}',
                 "motivo" : operacionBaja.deBaja["detalleMotivo"],
                 "observacion" : operacionBaja.deBaja["observacion"],
                 "dineroDevolver" : operacionBaja.calcularDineroADevolver(),
                 "fecha" : operacionBaja.deBaja["fecha"],
             }
             
-    productoName = str(operacionBaja.producto.nombre)
+    bajaName = f'baja_venta_nro_contrato_{str(context["nroContrato"])}'
     urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "baja.pdf")
     
-    printPDF(context,request.build_absolute_uri(),urlPDF)
+    printPDFBaja(context,request.build_absolute_uri(),urlPDF)
 
     with open(urlPDF, 'rb') as pdf_file:
         response = HttpResponse(pdf_file,content_type="application/pdf")
-        response['Content-Disposition'] = 'inline; filename='+productoName+'.pdf'
+        response['Content-Disposition'] = 'inline; filename='+bajaName+'.pdf'
         return response
 
 def viewPDFTitularidad(request,pk,idCambio):

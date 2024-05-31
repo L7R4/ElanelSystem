@@ -119,6 +119,7 @@ class Cliente(models.Model):
     
 class Key(models.Model):
     motivo = models.CharField(max_length=20, default="")
+    descripcion = models.CharField(max_length=255, default="")
     password = models.IntegerField()
 
     def __str__(self):

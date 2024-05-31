@@ -15,6 +15,7 @@ urlpatterns = [
     path("ventas/detalle_venta/descuento_cuota/",aplicarDescuentoCuota,name="descCuota"),
     path("ventas/detalle_venta/get_specific_cuota/",getUnaCuotaDeUnaVenta,name="getCuota"),
     path("ventas/detalle_venta/pay_cuota/",pagarCuota,name="payCuota"),
+    path("ventas/detalle_venta/<int:pk>/dar_baja/",darBaja,name="darBaja"),
     path("ventas/<int:pk>/adjudicacion/sorteo/",CreateAdjudicacion.as_view(),name="adjSorteo"),
     path("ventas/<int:pk>/adjudicacion/negociacion/",CreateAdjudicacion.as_view(),name="adjNegociacion"),
     path("ventas/<int:pk>/cambiopack",ChangePack.as_view(),name="cambioPack"),

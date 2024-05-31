@@ -71,7 +71,6 @@ html {
 
 /* --------------------------------------------------
    > Botones para CANCELAR una operacion
-   > Cerrar modales
    --------------------------------------------------*/
 .cancel-icon-default {}
 
@@ -83,7 +82,26 @@ html {
    --------------------------------------------------*/
 .delete-icon-default {}
 
-.delete-button-default {}
+.delete-button-default {
+   color: var(--third-color);
+   cursor: pointer;
+   font-family: raleway-semibold;
+   box-sizing: border-box;
+   padding: 1rem 1.5rem;
+   background-color: #ed1717;
+   text-decoration: none;
+   border-radius: .6rem;
+   letter-spacing: .04rem;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   outline: none;
+   border: none;
+   max-height: 3.5rem;
+   min-height: 2.8rem;
+   max-width: 25rem;
+   min-width: fit-content;
+}
 
 
 /* --------------------------------------------------

@@ -31,6 +31,7 @@ urlpatterns = [
     path("usuario/administracion/updatepermisos/",updatePermisosAGrupo,name="updatePermisos"),
     path("usuario/administracion/createnewgroup/",createNewGroup,name="newGroup"),
     path("usuario/administracion/deletenewgroup/",deleteGrupo,name="deleteGroup"),
+    path("usuario/administracion/requestkey/",requestKey,name="requestKey"),
     #endregion  - - - - - - - - - - - - - - - - - - - - - - - -
 
     path("usuario/pdf/ficha_creacion/<int:pk>",viewsPDFNewUser,name="newUserPDF"),
