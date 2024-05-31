@@ -316,25 +316,6 @@ class DetailSale(TestLogin,generic.DetailView):
                 return JsonResponse(response_data, safe=False)
             else:
                 return HttpResponseBadRequest('WEPSSSSSSSSSSSS', status=406)
-            
-        elif request.method == 'POST' and "descuento" not in json.loads(request.body):
-            data = json.loads(request.body)
-            status = data.get('status')
-            cuota = data.get('cuota')
-            cobrador = data.get('cobrador')
-            metodoPago = data.get('metodoPago')
-            if status == "Pagado":
-                self.object.pagoTotal(cuota,metodoPago,cobrador)
-            elif status == "Parcial":
-                amountParcial = data.get('amountParcial')
-                self.object.pagoParcial(cuota,metodoPago,amountParcial,cobrador)
-
-        elif(request.method == 'POST' and "descuento" in json.loads(request.body)):
-            data = json.loads(request.body)
-            cuota = data.get('cuota')
-            descuento = data.get('descuento')
-            self.object.aplicarDescuento(cuota,int(descuento))
-
         return redirect('sales:detail_sale',self.object.id)
     
 
@@ -397,6 +378,10 @@ def pagarCuota(request):
             print(error)
             return JsonResponse({"status": False,"message":f"Error en el pago de {cuotaRequest.lower()}","detalleError":str(error)}, safe=False)
 
+
+#Dar de baja una venta
+def darBaja(request):
+    pass
         
 
 class CreateAdjudicacion(TestLogin,generic.DetailView):

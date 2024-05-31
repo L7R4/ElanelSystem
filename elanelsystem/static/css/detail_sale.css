@@ -17,6 +17,7 @@
 
 .wrapperButtonManageVenta>div {
     height: fit-content;
+    position: relative;
 }
 
 /* #region Estilos de boton de baja */
@@ -24,7 +25,7 @@
     box-sizing: border-box;
     padding: 1rem 2.3rem;
     font-family: raleway-semibold;
-    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+    font-size: clamp(1rem, 1vw, 1.5rem);
     background-color: #ed1717;
     color: white;
     border: none;
@@ -57,15 +58,20 @@
 }
 
 .wrapperButtonManageVenta>.selectAdjudicacion>.selectedOption>h2 {
-    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+    font-size: clamp(1rem, 1vw, 1.5rem);
     font-family: raleway-semibold;
     color: var(--third-color);
 
 }
 
+.wrapperButtonManageVenta>.selectAdjudicacion>.selectedOption>img {
+    filter: invert(1);
+    width: 1.5rem;
+}
+
 .wrapperButtonManageVenta>.selectAdjudicacion>.options {
     list-style: none;
-    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+    font-size: clamp(1rem, 1vw, 1.5rem);
     font-family: raleway-semibold;
     width: 100%;
     background-color: rgba(255, 255, 255, 1);
@@ -83,13 +89,13 @@
 }
 
 .wrapperButtonManageVenta>.selectAdjudicacion>.options>a {
-    margin-left: .8rem;
     cursor: pointer;
     width: 100%;
     text-decoration: none;
     color: #000;
     display: block;
-    padding: 1rem 0;
+    padding: 1rem;
+    box-sizing: border-box;
 }
 
 .wrapperButtonManageVenta>.selectAdjudicacion>.options>a:first-child {
@@ -97,7 +103,7 @@
 }
 
 .wrapperButtonManageVenta>.selectAdjudicacion>.options>a:hover {
-    color: var(--third-color);
+    color: var(--secundary-color);
 }
 
 /* #endregion */
@@ -114,7 +120,7 @@
 .buttonChangeTitularidad>a {
     text-decoration: none;
     color: var(--third-color);
-    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+    font-size: clamp(1rem, 1vw, 1.5rem);
     font-family: raleway-semibold;
 }
 
@@ -471,6 +477,9 @@
     width: 3rem;
     height: 3rem;
     cursor: pointer;
+}
+.buttonsActions>button#closeFormCuota{
+    margin-left: auto;
 }
 
 .buttonsActions>button>img {
@@ -946,44 +955,6 @@
     position: relative;
 }
 
-/* .selectAdjudicacion{
-    width: 55%;
-} */
-
-.buttonChangePack {
-    border: 2px solid var(--primary-color);
-    /* width: 45%; */
-    height: 90%;
-    border-radius: 0.6rem;
-    /* position: absolute; */
-    z-index: 2;
-    right: 105%;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-
-
-.buttonChangeTitularidad {
-    border: 2px solid var(--primary-color);
-    /* width: 55%; */
-    height: 90%;
-    border-radius: 0.6rem;
-    /* position: absolute; */
-    z-index: 2;
-    right: 157%;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-
-/* .buttonDeBaja{
-    width: 40%;
-    height: 100%;
-    position: relative;
-} */
 .buttonDeBaja>.formConfirmWrapper.block::after {
     content: "";
     width: 100%;

@@ -50,6 +50,15 @@ def organizarPorFecha(valor):
 
     return json_data_ordenado
 
+
+@register.filter(name='format_dd_mm_yyyy')
+def format_dd_mm_yyyy(valor):
+    fechaRequest= datetime.datetime.strptime(valor, '%d/%m/%Y %H:%M')
+    fechaFormated = fechaRequest.strftime('%d/%m/%Y')
+
+    return fechaFormated
+
+
 @register.simple_tag
 def obtener_ultima_campania():
     # Obtener el número de campaña más alto
