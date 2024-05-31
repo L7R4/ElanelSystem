@@ -211,6 +211,7 @@ function activeFormCuotas(cuotaSelected) {
     let cuotaInput = payCuotaForm.querySelector("#cuotaID")
     cuotaInput.value = cuotaSelected["cuota"]
 
+    validarSiAplicaDescuento(cuotaSelected)
 
     let todasFormasDePago = payCuotaForm.querySelectorAll(".wrapperChoices > .choice")
 
@@ -252,9 +253,9 @@ function activeFormCuotas(cuotaSelected) {
 function validarSiAplicaDescuento(cuota) {
     cuota = cuota["cuota"]
     if (cuota == "Cuota 0" || cuota == "Cuota 1") {
-        descuentoCuotaButton.style.display = "block"
+        btnDescuentoCuota.style.display = "block"
     } else {
-        descuentoCuotaButton.style.display = "none"
+        btnDescuentoCuota.style.display = "none"
     }
 }
 
