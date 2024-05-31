@@ -14,16 +14,14 @@ from users.models import Cliente
 
 
 #region Funciones para exportar PDFs
-def printPDF(data,url,productoName):
+def printPDFBaja(data,url,productoName):
     template = get_template("pdfForBaja.html")
-    context = data
-    html_template = template.render(context)
+    html_template = template.render(data)
     css_url = os.path.join(settings.BASE_DIR, "static/css/pdfForBaja.css")
     if not os.path.exists(settings.PDF_STORAGE_DIR):
         os.makedirs(settings.PDF_STORAGE_DIR)
-    pdf = HTML(string=html_template,base_url=url).write_pdf(target=productoName, stylesheets = [CSS(css_url)])
-    # print(pdf)
-    return pdf
+    HTML(string=html_template,base_url=url).write_pdf(target=productoName, stylesheets = [CSS(css_url)])
+    
 
 def printPDFtitularidad(data,url,productoName):
     template = get_template("pdfForTitu.html")

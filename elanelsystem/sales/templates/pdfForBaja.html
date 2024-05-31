@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baja contrato N°{{nroContrato}}</title>
+
 </head>
 <body>
     <img src="{% static 'images/logoElanelPDF.png' %}" alt="">
@@ -11,7 +13,7 @@
     </div>
     <div id="subtittle">
         <h2>Solicitud de baja</h2>
-        <h2>Agencia Corrientes</h2>
+        <h2>{{agencia}}</h2>
     </div>
     <div id ="detalle">
         <h2>Numero de contraro: <strong>{{nroContrato}}</strong></h2>
@@ -43,3 +45,5 @@
     </div>
 </body>
 </html>
+
+

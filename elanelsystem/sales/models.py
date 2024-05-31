@@ -257,7 +257,16 @@ class Ventas(models.Model):
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         self.save()
          
-        
+    
+    def porcentajeADevolver(self):
+        porcentageValido = 0
+        if len(self.cuotas_pagadas()) >= 6:
+            porcentageValido = 50
+        else:
+            porcentageValido = 0
+        return porcentageValido
+
+
     def calcularDineroADevolver(self):
         dineroADevolver = 0
         cuotasPagadasCant = len(self.cuotas_pagadas())

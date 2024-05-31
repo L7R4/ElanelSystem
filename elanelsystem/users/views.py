@@ -9,7 +9,7 @@ from django.views import generic
 
 from users.utils import printPDFNewUSer
 
-from .models import Usuario,Cliente,Sucursal
+from .models import Usuario,Cliente,Sucursal,Key
 from sales.models import Ventas
 from .forms import CreateClienteForm, FormCreateUser, UsuarioUpdateForm
 from django.urls import reverse_lazy
@@ -473,16 +473,31 @@ def createNewGroup(request):
     
     return JsonResponse({'error': 'La solicitud debe ser de tipo POST.'}, safe=False ,status=400)
 
+
 def deleteGrupo(request):
     if request.method =="POST":
         groupRequest = json.loads(request.body)["grupo"]
         group = Group.objects.get(name=groupRequest)
         group.delete()
 
-        context = {
-            "message": "toda piola wachin"
-        }
+        context = {}
         return JsonResponse(context,safe=False)
+
+
+def requestKey(request):
+    if request.method =="POST":
+        keyPassaword = json.loads(request.body)["pass"]
+        motivo = json.loads(request.body)["motivo"]
+        key = Key.objects.get(motivo = motivo)
+
+        if(key.password == int(keyPassaword)): 
+            request.session["statusKeyPorcentajeBaja"] = True
+            return JsonResponse({'status': True, 'message': 'Contraseña correcta'},safe=False)
+        else:
+            request.session["statusKeyPorcentajeBaja"] = False
+            return JsonResponse({'status': False, 'message': 'Contraseña incorrecta'},safe=False)
+            
+
 #endregion  - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 #region Sucursales - - - - - - - - - - - - - - - - - - - 

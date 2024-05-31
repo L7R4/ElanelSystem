@@ -21,7 +21,12 @@
 }
 
 /* #region Estilos de boton de baja */
-.wrapperButtonManageVenta>.buttonDeBaja>#baja {
+.wrapperButtonManageVenta>.buttonDeBaja {
+    display: flex;
+    justify-content: center;
+}
+
+.wrapperButtonManageVenta>.buttonDeBaja>#bajaBtn {
     box-sizing: border-box;
     padding: 1rem 2.3rem;
     font-family: raleway-semibold;
@@ -33,6 +38,262 @@
     outline: none;
     cursor: pointer;
 }
+
+.buttonDeBaja>.formConfirmBajaWrapper {
+    position: absolute;
+    z-index: 6;
+    width: 15vw;
+    max-width: 30rem;
+    min-width: 23rem;
+    top: 130%;
+    border-radius: .5rem;
+    border: 2px solid #ed1717;
+    display: none;
+}
+
+.buttonDeBaja>.formConfirmBajaWrapper.active {
+    display: unset;
+}
+
+.buttonDeBaja>.formConfirmBajaWrapper>.formsContainer {
+    position: relative;
+}
+
+
+/* #region Form baja */
+#formBaja {
+    padding: 2rem;
+    background-color: var(--third-color);
+    box-sizing: border-box;
+}
+
+#formBaja>.backgroundBlockForm {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: #00000083;
+    z-index: 10;
+}
+
+
+#formBaja>.porcentajeWrapper>div>p {
+    font-family: 'raleway-semibold';
+    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+    color: var(--background-color);
+}
+
+#formBaja .porcentajeContainer {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    box-sizing: border-box;
+    margin-top: .6rem;
+}
+
+#formBaja .porcentajeContainer>.inputPorcentajeContainer {
+    width: 30%;
+    max-width: 7rem;
+    min-width: 3rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+
+}
+
+#formBaja .porcentajeContainer>.inputPorcentajeContainer>* {
+    font-family: 'raleway-semibold';
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    color: var(--background-color);
+}
+
+
+
+#formBaja .porcentajeContainer>.inputPorcentajeContainer>input {
+    width: 100%;
+    border: 1px solid var(--background-color);
+    box-sizing: border-box;
+    border-radius: 0.5rem;
+    padding: .2rem .5rem;
+    pointer-events: none;
+    background-color: #00000027;
+}
+
+#formBaja .porcentajeContainer>.inputPorcentajeContainer>input.enable {
+    background-color: transparent;
+    pointer-events: all;
+}
+
+#formBaja .porcentajeContainer>.inputPorcentajeContainer>input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#formBaja .porcentajeContainer>#porcentajeBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    font-family: 'raleway-semibold';
+    color: var(--background-color);
+    background-color: transparent;
+    border-radius: 0.5rem;
+    outline: none;
+    box-sizing: border-box;
+    border: 1px solid #3d7bd8d5;
+    padding: 0.2rem 1rem;
+    cursor: pointer;
+}
+
+#formBaja .porcentajeContainer>#porcentajeBtn>img {
+    width: 1.5rem;
+}
+
+
+#formBaja>.motivoBaja>h3 {
+    font-family: raleway-semibold;
+    font-size: 1.3rem;
+    margin-bottom: 0.3rem;
+}
+
+#formBaja>#selectMotivoWrapper {
+    margin-top: 1rem;
+}
+
+#formBaja>#selectMotivoWrapper>h3 {
+    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+    font-family: 'raleway-semibold';
+    color: var(--background-color);
+    margin-bottom: .3rem;
+}
+
+#formBaja>#selectMotivoWrapper>.containerInputAndOptions>input {
+    border: 1px solid #3d7bd8d5;
+    font-size: clamp(1rem, 1vw, 1.4rem);
+    font-family: 'raleway';
+    border-radius: .6rem;
+    color: var(--background-color);
+    z-index: 5
+}
+
+#formBaja>#selectMotivoWrapper>.containerInputAndOptions>.options {
+    z-index: 4
+}
+
+#formBaja>.motivoBaja {
+    margin-top: 1rem;
+}
+
+#formBaja>.motivoBaja>h3 {
+    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+    font-family: 'raleway-semibold';
+    color: var(--background-color);
+}
+
+#formBaja>.motivoBaja>textarea {
+    width: 100%;
+    resize: none;
+    outline: none;
+    padding: .5rem;
+    box-sizing: border-box;
+    border-radius: .6rem;
+    border: 1px solid #3d7bd8d5;
+    font-size: clamp(1rem, 1vw, 1.4rem);
+    font-family: 'raleway';
+    color: var(--background-color);
+}
+
+
+#formBaja>.confirmWrapper {
+    margin-top: 1rem;
+}
+
+#formBaja>.confirmWrapper>h3 {
+    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+    font-family: 'raleway-semibold';
+    color: var(--background-color);
+}
+
+#formBaja>.confirmWrapper>div {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: .4rem;
+}
+
+#formBaja>.confirmWrapper>div>#yesConfirm,
+#formBaja>.confirmWrapper>div>#noConfirm {
+    padding: .4rem 3rem;
+}
+
+/* #endregion */
+
+/* #region Form descuento baja */
+.buttonDeBaja>.formConfirmBajaWrapper>.formsContainer>#formPassword {
+    position: absolute;
+    top: 0;
+    right: 115%;
+    width: 100%;
+    background-color: var(--third-color);
+    box-sizing: border-box;
+    padding: 2rem;
+    border-radius: .6rem;
+    min-width: fit-content;
+    display: none;
+}
+
+.buttonDeBaja>.formConfirmBajaWrapper>.formsContainer>#formPassword.active {
+    display: unset;
+}
+
+#formPassword>.inputClaveWrapper>p {
+    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+    font-family: 'raleway-semibold';
+    color: var(--background-color);
+}
+
+#formPassword>.inputClaveWrapper>#clave {
+    width: 100%;
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    font-family: 'raleway-semibold';
+    color: var(--background-color);
+    border: 1px solid #3d7bd8d5;
+    border-radius: .4rem;
+    padding: .2rem 1rem;
+    box-sizing: border-box;
+    outline: none;
+    margin-top: .3rem;
+}
+
+#formPassword>.inputClaveWrapper>#clave::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#formPassword>.confirmClaveWrapper {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: .6rem;
+}
+
+#formPassword>.confirmClaveWrapper>#confirmPass,
+#formPassword>.confirmClaveWrapper>#notConfirmPass {
+    padding: .4rem 2rem;
+    font-size: clamp(1rem, 1vw, 1.3rem);
+
+}
+
+#formPassword>.messageErrorPass {
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    font-family: 'raleway-semibold';
+    color: #ed1717;
+    margin-top: .6rem;
+}
+
+/* #endregion */
+
 
 /* #endregion */
 
@@ -478,7 +739,8 @@
     height: 3rem;
     cursor: pointer;
 }
-.buttonsActions>button#closeFormCuota{
+
+.buttonsActions>button#closeFormCuota {
     margin-left: auto;
 }
 
@@ -778,12 +1040,6 @@
     margin: 1rem 0;
 }
 
-.selectMotivoWrapper>h4 {
-    font-family: raleway-semibold;
-    font-size: 1.3rem;
-    margin-bottom: 0.3rem;
-}
-
 .motivoSelectedWrapper {
     background-color: white;
     width: 90%;
@@ -944,248 +1200,6 @@
 }
 
 
-/* Boton de status */
-.buttonStatusVentas {
-    margin: 2.3rem 2rem;
-    display: flex;
-    gap: 1rem;
-    width: 80%;
-    height: 3.6rem;
-    justify-content: space-between;
-    position: relative;
-}
-
-.buttonDeBaja>.formConfirmWrapper.block::after {
-    content: "";
-    width: 100%;
-    height: 100%;
-    background-color: #00000083;
-    position: absolute;
-    z-index: 3;
-    top: 0;
-    left: 0;
-}
-
-.buttonDeBaja>.formConfirmWrapper {
-    position: absolute;
-    background-color: #fff;
-    z-index: 6;
-    width: 23rem;
-    padding: .8rem 2rem;
-    right: 110%;
-    top: -10%;
-    border-radius: .5rem;
-    display: none;
-    height: auto;
-}
-
-.buttonDeBaja>.formClave {
-    position: absolute;
-    background-color: #fff;
-    z-index: 6;
-    width: 18rem;
-    padding: .8rem 2rem;
-    padding-right: .5rem;
-    right: 350%;
-    top: -10%;
-    border-radius: .5rem;
-    display: none;
-}
-
-.buttonDeBaja>.formConfirmWrapper.active {
-    display: block;
-}
-
-.buttonDeBaja>.formClave.active {
-    display: block;
-}
-
-.buttonDeBaja>.formConfirmWrapper>form>.inputPorcentajeWrapper {
-    display: flex;
-    width: 100%;
-    margin-bottom: 1rem;
-}
-
-.buttonDeBaja>.formConfirmWrapper>form>.inputPorcentajeWrapper>.input {
-    width: 100%;
-}
-
-.inputPorcentajeWrapper>.input p {
-    font-family: raleway-semibold;
-    font-size: 1.4rem;
-}
-
-.input>#inputPorcentaje {
-    margin-top: 0.3rem;
-    display: flex;
-    width: 80%;
-    gap: 2rem;
-    align-items: center;
-}
-
-.input>#inputPorcentaje>div {
-    position: relative;
-    width: 25%;
-}
-
-.input>#inputPorcentaje>div>p {
-    position: absolute;
-    top: 16%;
-    right: 0;
-}
-
-.input>#inputPorcentaje>div.editPorcentajeWrapper {
-    width: 50%;
-}
-
-.input>#inputPorcentaje>div.editPorcentajeWrapper>button {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: clamp(1.2rem, 1vw, 1.4rem);
-    font-family: 'raleway-semibold';
-    background-color: transparent;
-    border-radius: 0.5rem;
-    border: 1px solid var(--third-color);
-    outline: none;
-    padding: 0.2rem 1rem;
-    cursor: pointer;
-}
-
-.input>#inputPorcentaje>div.editPorcentajeWrapper>button>img {
-    width: 1.8rem;
-}
-
-.input>#inputPorcentaje>div>input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.input>#inputPorcentaje>div>input {
-    font-family: raleway-semibold;
-    font-size: 1.3rem;
-    border: var(--primary-color) .8px solid;
-    border-radius: .3rem;
-    padding: .2rem;
-    width: 100%;
-    outline: none;
-    height: 1.7rem;
-    background-color: rgb(54 53 51 / 18%);
-    cursor: default;
-}
-
-#formBaja>.motivoBaja>textarea {
-    width: 90%;
-    resize: none;
-    outline: none;
-    padding: 0.3rem .7rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--third-color);
-    font-family: raleway-semibold;
-    font-size: 1.2rem;
-    margin-bottom: .8rem;
-}
-
-#formBaja>.motivoBaja>h3 {
-    font-family: raleway-semibold;
-    font-size: 1.3rem;
-    margin-bottom: 0.3rem;
-}
-
-
-.buttonDeBaja>.formConfirmWrapper>form>.confirmWrapper {
-    height: 100%;
-}
-
-.buttonDeBaja>.formConfirmWrapper>form>.confirmWrapper>h3 {
-    font-family: raleway-semibold;
-    font-size: 1.3rem;
-    margin-bottom: .6rem;
-}
-
-.buttonDeBaja>.formConfirmWrapper>form>.confirmWrapper>#yesConfirm {
-    font-family: raleway-semibold;
-    font-size: 1.4rem;
-    background-color: transparent;
-    /* border-color: transparent; */
-    border: #00000083 .7px solid;
-    border-radius: .3rem;
-    width: 30%;
-    height: 2rem;
-    cursor: pointer;
-}
-
-.buttonDeBaja>.formConfirmWrapper>form>.confirmWrapper>#noConfirm {
-    font-family: raleway-semibold;
-    font-size: 1.4rem;
-    color: white;
-    background-color: #ed1717;
-    border-color: transparent;
-    /* border: #000000ab .5px solid; */
-    border-radius: .3rem;
-    width: 30%;
-    height: 2rem;
-    cursor: pointer;
-}
-
-.inputClaveWrapper>p {
-    font-family: raleway-semibold;
-    font-size: 1.4rem;
-}
-
-.inputClaveWrapper>#inputClave {
-    width: 85%;
-    margin: .5rem 0;
-
-}
-
-.inputClaveWrapper>#inputClave>p {
-    font-family: raleway-semibold;
-    font-size: 1.3rem;
-    color: #ed1717;
-}
-
-.inputClaveWrapper>#inputClave>input {
-    font-family: raleway-semibold;
-    font-size: 1.3rem;
-    border: var(--primary-color) 0.8px solid;
-    border-radius: 0.3rem;
-    padding: 0.2rem;
-    width: 100%;
-    outline: none;
-    height: 1.7rem;
-}
-
-.inputClaveWrapper>#inputClave>input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.confirmClaveWrapper>#confirm {
-    font-size: clamp(1.1rem, 1vw, 1.3rem);
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    width: 40%;
-    color: white;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    border-color: transparent;
-    padding: .4rem .8rem;
-    min-width: 8rem;
-}
-
-.confirmClaveWrapper>#notConfirm {
-    font-size: clamp(1.1rem, 1vw, 1.3rem);
-    font-family: raleway-semibold;
-    background-color: #ed1717;
-    width: 40%;
-    color: white;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    border-color: transparent;
-    padding: .4rem .8rem;
-    min-width: 8rem;
-}
 
 .wrapperSelectAdjudicacion {
     position: relative;
@@ -1319,22 +1333,4 @@
     color: var(--primary-color);
     border-bottom: 1px solid var(--primary-color);
 
-}
-
-
-
-
-/* ANIMATIONS */
-@keyframes escalar {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(0.94);
-    }
-
-    100% {
-        transform: scale(1);
-    }
 }
