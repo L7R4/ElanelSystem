@@ -262,16 +262,12 @@ function validarSiAplicaDescuento(cuota) {
 
 // Funcion para desbloquear la proxima cuota
 function desbloquearProximaCuota(cuota) {
-    console.log("Desbloqueando cuota . . .")
     const numeroCuota = parseInt(cuota.split(" ")[1]);
     // Incrementar el número de cuota en 1
     const nuevoNumeroCuota = numeroCuota + 1;
 
     // Volver a unir la cadena con el nuevo número de cuota
     const cuotaADesbloquear = "Cuota " + nuevoNumeroCuota;
-
-    console.log("Cuota a desbloquer")
-    console.log(cuotaADesbloquear)
 
     actualizarEstadoCuota(cuotaADesbloquear) // Actualizamos la proxima cuota
 }
@@ -364,15 +360,16 @@ async function actualizarEstadoCuota(cuota) {
     cuotasWrapper.forEach((c, i) => {
         if (c.id === data["cuota"]) {
 
-            // Elimnamos el estado anterior
-            removeSpecificClasses(c)
-            removeSpecificClasses(c.children[0])
-
-            // Colocamos el estado actual
-            c.classList.add(data["status"])
-            c.children[0].classList.add(data["status"]);
-            if (data["status"] !== "Bloqueado") {
-                c.children[0].removeAttribute("style"); // Por si se encuentra bloqueado
+            
+            if (!data["bloqueada"]) {
+                // Elimnamos el estado anterior
+                removeSpecificClasses(c)
+                removeSpecificClasses(c.children[0])
+                
+                // Colocamos el estado actual
+                c.classList.add(data["status"])
+                c.children[0].classList.add(data["status"]);
+                c.children[0].removeAttribute("style");
             }
 
         }

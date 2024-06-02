@@ -366,10 +366,8 @@ def pagarCuota(request):
             cobrador = data.get('cobrador')
 
             if(formaPago =="total"):
-                print("Entro total")
                 venta.pagoTotal(cuotaRequest,metodoPago,cobrador) #Funcion que paga el total
             elif(formaPago =="parcial"):
-                print("Entro parcial")
                 amountParcial = data.get('valorParcial')
                 venta.pagoParcial(cuotaRequest,metodoPago,amountParcial,cobrador) #Funcion que paga parcialmente
                 
