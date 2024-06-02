@@ -9,6 +9,8 @@
 
 {% block content %}
 
+{% if not object.deBaja.status %}
+
 <div class="wrapperButtonManageVenta">
     <div class="selectAdjudicacion">
         <div class="selectedOption">
@@ -88,16 +90,16 @@
         
     </div>
     
-    <div class="buttonChangePack">
+    <div class="buttonChangePack button-default-style">
         <a href="{% url 'sales:cambioPack' object.id %}">Cambiar pack</a>
     </div>
     
-    <div class="buttonChangeTitularidad">
+    <div class="buttonChangeTitularidad button-default-style">
         <a href="{% url 'sales:changeTitu' object.pk %}">Cambiar titularidad</a>
     </div>
 </div>
 
-
+{% endif %}
 <div class="wrapperBase">
     <div class="wrapper_information">
         <h1>Operacion n° {{object.nro_operacion}}</h1>
@@ -280,31 +282,36 @@
                     <div class="wrapperCuotasList">
                         <ul class="cuotas_list">
                             {% for cuota in cuotas %}
-                            <div id="{{cuota.cuota}}" class ="cuota {{cuota.status}}">
-                                {% if cuota.status == "Bloqueado" %}
-                                <div class="marca {{cuota.status}}" style="background-image: url('{% static 'images/icons/iconBloqueado.png' %}')">
-                                </div>
-                                {% endif %}
+                                {% if cuota.bloqueada %}
+                                <div id="{{cuota.cuota}}" class ="cuota Bloqueado">
 
-                                {% if cuota.status == "Atrasado" %}
-                                    <div class="marca {{cuota.status}}"></div>
-                                {% endif %}
+                                    <div class="marca Bloqueado" style="background-image: url('{% static 'images/icons/iconBloqueado.png' %}')">
+                                    </div>
+                                {% else %}
+                                <div id="{{cuota.cuota}}" class ="cuota {{cuota.status}}">
 
-                                {% if cuota.status == "Parcial" %}
-                                    <div class="marca {{cuota.status}}"></div>
-                                {% endif %}
+                                    {% if cuota.status == "Atrasado" %}
+                                        <div class="marca {{cuota.status}}"></div>
+                                    {% endif %}
 
-                                {% if cuota.status == "Pagado" %}
-                                    <div class="marca {{cuota.status}}"></div>
-                                {% endif %}
+                                    {% if cuota.status == "Parcial" %}
+                                        <div class="marca {{cuota.status}}"></div>
+                                    {% endif %}
 
-                                {% if cuota.status == "Pendiente" %}
-                                    <div class="marca {{cuota.status}}"></div>
-                                {% endif %}
+                                    {% if cuota.status == "Pagado" %}
+                                        <div class="marca {{cuota.status}}"></div>
+                                    {% endif %}
 
+                                    {% if cuota.status == "Pendiente" %}
+                                        <div class="marca {{cuota.status}}"></div>
+                                    {% endif %}
+
+                                {% endif %}
                                 <h4>{{cuota.cuota}}</h4>
-                            </div>
-                            
+                                {% if cuota.status == "Atrasado" %}
+                                <h5>{{cuota.diasRetraso}} dias atrasada</h5>
+                                {% endif %}
+                                </div>
                             {% endfor %}
                         </ul>
                     </div>
@@ -381,8 +388,6 @@
                         <h2 class="infoCuotaStatus"></h2>
                     </div>
                 </div>
-
-                
 
             {% endif %}  
 
