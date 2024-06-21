@@ -250,74 +250,7 @@ class DetailSale(TestLogin,generic.DetailView):
         return render(request,self.template_name,context)
     
 
-    
-    def post(self,request,*args,**kwargs):
-        self.object = self.get_object()
-        porcentageValido = 0
-        try:
-            if len(self.object.cuotas_pagadas()) >= 6:
-                porcentageValido = 50
-            else:
-                porcentageValido = 0
-        except IndexError as e:
-            porcentageValido = 0
-        
-        requestKey=""
-        try:
-            requestKey = json.loads(request.body)["c"]
-        except KeyError:
-            pass
 
-        
-
-        # PARA VALIDAR LA CLAVE DE LA INPUT DE PORCENTAJE DE BAJA
-        if(request.method == 'POST' and "clave" in str(request.body)):
-            clave = json.loads(request.body)
-
-            correctPassw = Key.objects.all().filter(motivo="baja")[0].password
-            passw = int(clave.get("clave"))
-           
-            if correctPassw == passw: 
-                return JsonResponse({'ok': "OK",'c':'LpOim'}, safe=False)
-
-            else:
-                return HttpResponseBadRequest('Contraseña invalida', status=406)
-        
-
-        # PARA GENERAR EL PDF CON LA BAJA DESPUES DE LA CLAVE
-        elif(request.method == 'POST' and ("porcentageLpOim" == requestKey)):
-            porcentage = json.loads(request.body)["porcentage"]
-            motivoDetalle = json.loads(request.body)["motivo"]
-            motivoObservacion = json.loads(request.body)["observacion"]
-            responsable = request.user.nombre
-            self.object.darBaja("cliente",porcentage,motivoDetalle,motivoObservacion,responsable)
-            response_data = {
-                'success': True,
-                'urlPDF': reverse("sales:bajaPDF", args=[self.object.pk]),
-                'urlUser': reverse("users:cuentaUser", args=[self.object.nro_cliente.pk])
-            }
-           
-            return JsonResponse(response_data, safe=False)
-            
-
-        # PARA GENERAR EL PDF CON LA BAJA SIN LA CLAVE
-        elif(request.method == 'POST' and ("porcentage" == requestKey)):
-            porcentage = json.loads(request.body)["porcentage"]
-            if(int(porcentage) == porcentageValido):
-                motivoDetalle = json.loads(request.body)["motivo"]
-                motivoObservacion = json.loads(request.body)["observacion"]
-                responsable = request.user.nombre
-                self.object.darBaja("cliente",porcentage,motivoDetalle,motivoObservacion,responsable)
-                response_data = {
-                'success': True,
-                'urlPDF': reverse("sales:bajaPDF", args=[self.object.pk]),
-                'urlUser': reverse("users:cuentaUser", args=[self.object.nro_cliente.pk])
-            }
-                return JsonResponse(response_data, safe=False)
-            else:
-                return HttpResponseBadRequest('WEPSSSSSSSSSSSS', status=406)
-        return redirect('sales:detail_sale',self.object.id)
-    
 
 # Aplica el descuento a una cuota
 def aplicarDescuentoCuota(request):
@@ -417,63 +350,36 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         url = request.path
         cuotasPagadas = self.object.cuotas_pagadas()
 
+        # Suma las cuotas pagadas para calcular el total a adjudicar
         valoresCuotasPagadas = [item["total"] for item in cuotasPagadas]
         sumaCuotasPagadas = sum(valoresCuotasPagadas)
+
         if("negociacion" in url):
             sumaCuotasPagadas = sumaCuotasPagadas * 0.5
-            tipoDeAdjudicacion = "NEGOCIACIÓN"
+            tipoDeAdjudicacion = "NEGOCIACIÓN" # Coloca el tipo de adjudicacion
         else:
-            tipoDeAdjudicacion = "SORTEO"
+            tipoDeAdjudicacion = "SORTEO" # Coloca el tipo de adjudicacion
         
         aumentoPorcentaje = self.object.importe * 0.1 
         importeNuevo = aumentoPorcentaje + self.object.importe
        
 
-        customers = Cliente.objects.all()
         products = Products.objects.all()
-        usuarios = Usuario.objects.filter(rango = "Vendedor") | Usuario.objects.filter(rango="Supervisor")
         intereses = CoeficientesListadePrecios.objects.all()
-        planes = Plan.objects.all()
        
+        context = {
+            'venta': self.object,
+            'form' : self.form_class,
 
-        json_complete=[]
-
-
-        products_list = []
-        for product in list(products):
-            data_product = {}
-            data_product["tipo_de_producto"] = product.tipo_de_producto
-            data_product["nombre"] = product.nombre
-            data_product["importe"] = product.importe
-            data_product["anticipo"] = sumaCuotasPagadas
-            products_list.append(data_product)
-        json_complete.append(products_list)
-    
-        interes_list = []
-        for interes in list(intereses):
-            data_interes = {}
-            data_interes["valor_nominal"] = interes.valor_nominal
-            data_interes["cuota"] = interes.cuota
-            data_interes["porcentage"] = interes.porcentage
-            interes_list.append(data_interes)
-        json_complete.append(interes_list)
-
-
-        data = json.dumps(json_complete)
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return HttpResponse(data, 'application/json')
+            'productsList' : products,
+            'productoActual': self.object.producto,
+            'intereses' : intereses,
+            'anticipo' : int(sumaCuotasPagadas),
+            'importeNuevo': int(importeNuevo),
+            'tipoDeAdjudicacion' : tipoDeAdjudicacion,
+            'idCliente': self.object.nro_cliente.nro_cliente,
+        }
         
-        context = {"venta": self.object,
-                   'form' : self.form_class,
-                   'url':url,
-                   'products': products, 
-                   'intereses': intereses,
-                   'tipoDeAdjudicacion' : tipoDeAdjudicacion,
-                   'importeNuevo': int(importeNuevo),
-                   'producto': self.object.producto.nombre,
-                   'tipoProducto': self.object.producto.tipo_de_producto,
-                   'idCliente': self.object.nro_cliente.nro_cliente,
-                   'dineroAnticipo' : int(sumaCuotasPagadas)}
         return render(request,self.template_name,context)
     
 

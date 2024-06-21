@@ -244,10 +244,10 @@ class Ventas(models.Model):
 
 
     def cuotas_pagadas(self):
-        cuotas = [cuota for cuota in self.cuotas if cuota["status"] == "Pagado"]
         try:
+            cuotas = [cuota for cuota in self.cuotas if cuota["status"] == "Pagado"]
             cuotas.pop(0)
-            return [cuota for cuota in cuotas if cuota["status"] == "Pagado"]
+            return cuotas
         except IndexError as e:
             return []
     
@@ -395,7 +395,7 @@ class Ventas(models.Model):
             fechaVencimiento = datetime.datetime.strptime(cuota, "%d/%m/%Y %H:%M")
             fechaActual = datetime.datetime.now()
 
-            if fechaActual > fechaVencimiento:
+            if fechaActual > fechaVencimiento and not self.cuotas[i]['status'] in ['Parcial','Pagado']:
                 self.cuotas[i]["status"] = "Atrasado"
                 diasDeRetraso = self.contarDias(fechaVencimiento)
                 print(f'La cuota {self.cuotas[i]["cuota"]} esta atrasada por {diasDeRetraso} dias')
