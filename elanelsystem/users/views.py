@@ -10,7 +10,7 @@ from django.views import generic
 from users.utils import printPDFNewUSer
 
 from .models import Usuario,Cliente,Sucursal,Key
-from sales.models import Ventas
+from sales.models import Ventas,ArqueoCaja,MovimientoExterno
 from .forms import CreateClienteForm, FormCreateUser, UsuarioUpdateForm
 from django.urls import reverse_lazy
 from django.contrib.auth.models import Permission
@@ -224,7 +224,7 @@ class DetailUser(TestLogin, generic.DetailView):
     model = Usuario
     template_name = "detail_user.html"
     roles = Group.objects.all()
-    
+
     def get(self,request,*args,**kwargs):
         self.object = self.get_object()
         context ={}
@@ -308,7 +308,6 @@ class DetailUser(TestLogin, generic.DetailView):
             context["form"] = form
             print(form)
             return render(request, self.template_name,context)
-        return redirect("users:list_users")
     
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
@@ -318,7 +317,6 @@ class ListaClientes(TestLogin, generic.View):
     template_name= "list_customers.html"
 
     def get(self,request,*args, **kwargs):
-        # print(request.user.get_all_permissions())
         customers = Cliente.objects.filter(agencia_registrada = request.user.sucursal)
         context = {
             "customers": customers
@@ -549,9 +547,9 @@ def addSucursal(request):
         hora = json.loads(request.body)["horaApertura"]
         
         newSucursal = Sucursal()
-        newSucursal.provincia = provincia
-        newSucursal.localidad = localidad
-        newSucursal.direccion = direccion
+        newSucursal.provincia = provincia.title()
+        newSucursal.localidad = localidad.title()
+        newSucursal.direccion = direccion.capitalize()
         newSucursal.hora_apertura = hora
         newSucursal.save()
         
@@ -560,9 +558,15 @@ def addSucursal(request):
     
 def removeSucursal(request):
     if request.method == "POST":
-        print(json.loads(request.body)["pk"])
-        pk = int(json.loads(request.body)["pk"])
+        pk = int(json.loads(request.body)["pk"]) 
+
         deleteSucursal = Sucursal.objects.get(pk=pk)
+
+        Usuario.objects.filter(sucursal=deleteSucursal).update(sucursal=None) # Setear en None los usuarios asociados para que no se borren
+        Ventas.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None las ventas asociadas para que no se borren
+        MovimientoExterno.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los movimientos asociados para que no se borren
+        ArqueoCaja.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los arqueos asociados para que no se borren
+
         deleteSucursal.delete()
         
         response_data = {"message":"Eliminado correctamente"}

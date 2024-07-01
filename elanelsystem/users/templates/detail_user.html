@@ -9,9 +9,9 @@
     <div class="wrapper_tittle">
         <h1>DETALLES DEL USUARIO</h1>
     </div>
+    <h2>{{form.c}}</h2>
     <form method="POST"  autocomplete="off" id="form_create_user">
             {% csrf_token %}
-
             <h2>Datos personales</h2>
             <input type="hidden" id="pkUser" value="{{object.id}}">
             <div class="datosPersonalesWrapper">
@@ -114,31 +114,39 @@
             <h2>Datos logisticos</h2>
             <div class="datosLogisticosWrapper">
                 <div class="inputsObligatorios {% if object.rango == 'Supervisor'%}active{%endif%}">
-                    <div class="inputWrapper grow3" id="sucursalWrapper">
-                        <label for="">Sucursal</label>
-                        <input type="text" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" value="{{sucursal_object}}" class="selectInput">
-                       
-                        <ul id="contenedorAgencia" class="select">
-                            {% for agencia in sucursales %}
-                                <li>{{agencia.pseudonimo}}</li>
-                            {% endfor %}
-                        </ul>
-                        
-                    </div>
                     
-                    <div class="inputWrapper grow3" id="rolWrapper">
+                    <div id="sucursalWrapper" class="inputWrapper grow3">
+                        <label class="labelInput">Sucursal</label>
+                        <div class="containerInputAndOptions">
+                          <img class="iconDesplegar" src="{% static "images/icons/arrowDown.png" %}" alt="">
+                          <input type="text" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" readonly value="{{sucursal_object}}" class="onlySelect selectInput input-select-custom">
+            
+                          <ul class="list-select-custom options">
+                                {% for sucursal in sucursales %}
+                                    <li data-value="{{sucursal.pseudonimo}}">{{sucursal.pseudonimo}}</li>
+                                {% endfor %}
+                          </ul>
+                        </div>
+                    </div>
+
+                    <div id="rolWrapper" class="inputWrapper grow3">
+                        <label class="labelInput" for="">{{form.rango.label}}</label>
+
+                        <div class="containerInputAndOptions">
+                          <img class="iconDesplegar" src="{% static "images/icons/arrowDown.png" %}" alt="">
+                          {{form.rango}}
+                         
+                          <ul class="list-select-custom options">
+                                {% for rol in roles %}
+                                    <li data-value="{{rol}}">{{rol}}</li>
+                                {% endfor %}
+                          </ul>
+                        </div>
                         {% for error in form.rango.errors %}
                             <p>{{error}}</p>
-                            {% comment %} <p>{{error|truncatechars:25}}</p> {% endcomment %}
                         {% endfor %}
-                        <label for="">{{form.rango.label}}</label>
-                        {{form.rango}}
-                        <ul id="contenedorRol" class="select">
-                            {% for  rol in roles %}
-                                <li>{{rol}}</li>
-                            {% endfor %}
-                        </ul>
                     </div>
+
 
                     <div class="inputWrapper grow3" id="fec_ingresoWrapper">
                         {% for error in form.fec_ingreso.errors %}
@@ -161,7 +169,7 @@
                             <p>{{error}}</p>
                         {% endfor %}
                         <label for="">{{form.password1.label}}</label>
-                        {{form.password1}}
+                        <input type="password" name="password1" id="password1" value="{{object.c}}" required="" autocomplete="off" maxlength="24" class="input-read-write-default">
                         {% comment %} <button type="button" onclick="mostrarContraseña()">Mostrar contraseña</button> {% endcomment %}
                     </div>
 
@@ -170,7 +178,7 @@
                             <p>{{error}}</p>
                         {% endfor %}
                         <label for="">{{form.password2.label}}</label>
-                        {{form.password2}}
+                        <input type="password" name="password2" id="password2" value="{{object.c}}" required="" autocomplete="off" maxlength="24" class="input-read-write-default">
                     </div>
                 </div>
                 <div id="vendedoresWrapper" class="{% if object.rango == 'Supervisor'%}active{%endif%}">
@@ -209,6 +217,9 @@
     </div>
 {% endblock content %}
 {% block js %}
+    <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+
+
     <script src="{% static 'js/input_select_create_user.js' %}"></script>
     <script src="{% static 'js/agregarFamiliar.js' %}"></script>
     <script src="{% static 'js/asignarVendedores.js' %}"></script>

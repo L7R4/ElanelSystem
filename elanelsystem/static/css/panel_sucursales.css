@@ -58,9 +58,11 @@
 }
 
 .wrapperInput> input.open{
-    color: #000;
-    background-color: #30436100;
+    color: var(--background-color);
     pointer-events: unset;
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+
 }
 .wrapperInputNew{
     width: 47%;
@@ -84,69 +86,50 @@
     display: flex;
     align-items: center;
     padding: .6rem;
-    text-indent: 1rem;
+    text-indent: 1.2rem;
     outline: none;
 }
 
 .wrapperInputNew> input.open{
-    color: #000;
-    background-color: #30436100;
+    color: var(--background-color);
     pointer-events: unset;
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+
 }
 
 .buttonsActions{
     width: 100%;
+    display: flex;
+    gap: 1rem;
 }
-.deleteSucursal, #buttonStopAddSucursal{
-    font-family: raleway-semibold;
+.deleteSucursal{
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: white;
-    background-color: #ed1717;
-    border-color: transparent;
-    border-radius: 0.3rem;
-    width: 10%;
-    padding: .3rem .8rem;
-    cursor: pointer;
+    color: var(--third-color);
+}
+#buttonStopAddSucursal{
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    color: var(--background-color);
 }
 .enableForm,.uploadForm, #buttonConfirmAddSucursal{
-    font-family: raleway-semibold;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: white;
-    background-color: var(--third-color);
-    border-color: transparent;
-    border-radius: 0.3rem;
-    width: 10%;
-    padding: .3rem .8rem;
-    cursor: pointer;
-    margin-right: .4rem;
+    color: var(--third-color);
 }
 
 .desableForm{
-    font-family: raleway-semibold;
+    color: var(--background-color);
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    background-color: transparent;
-    border: 2px solid var(--third-color);
-    border-radius: 0.3rem;
-    width: 10%;
-    padding: .3rem .8rem;
-    cursor: pointer;
 }
 
 #buttonAddSucursal{
-    font-family: raleway-semibold;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: white;
-    background-color: var(--third-color);
-    border-color: transparent;
-    border-radius: 0.3rem;
+    color: var(--third-color);
     width: 20%;
-    padding: .5rem .9rem;
+    padding: 1.2rem .9rem;
     cursor: pointer;
 }
 #buttonAddSucursal.blocked{
-    pointer-events: none;
-    color: #ffffffd1;
-    background-color: var(--third-color)6e;
+    display: none;
 }
 .div{
     width: 2rem;
@@ -157,7 +140,7 @@
     display: none;
 }
 .desableForm.active,.uploadForm.active{
-    display: unset;
+    display: flex;
 }
 .div.active{
     background-color: green;

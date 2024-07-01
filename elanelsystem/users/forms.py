@@ -24,7 +24,8 @@ class FormCreateUser(forms.ModelForm):
             'id': 'password1',
             'required': 'required',
             'autocomplete': 'off',
-            'maxlength':"24"
+            'maxlength':"24", 
+            'class': 'input-read-write-default'
         }
     ))
     password2 = forms.CharField(label="Confirmar contraseña", widget=forms.PasswordInput(
@@ -32,7 +33,8 @@ class FormCreateUser(forms.ModelForm):
             'id': 'password2',
             'required': 'required',
             'autocomplete': 'off',
-            'maxlength':"24"
+            'maxlength':"24", 
+            'class': 'input-read-write-default'
         }
     ))
 
@@ -45,116 +47,129 @@ class FormCreateUser(forms.ModelForm):
 
         widgets ={
             'email': forms.EmailInput(
-                attrs= {
-                    'id': 'emailInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"100"
-                }
+            attrs= {
+                'id': 'emailInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"100",
+                'class': 'input-read-write-default'
+            }
             ),
             'nombre': forms.TextInput(
-                attrs= {
-                    'id': 'nombreInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"100"
-                }
+            attrs= {
+                'id': 'nombreInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"100",
+                'class': 'input-read-write-default'
+            }
             ),
             'dni': forms.TextInput(
-                attrs= {
-                    'id': 'dniInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"8"
-                }
+            attrs= {
+                'id': 'dniInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"8",
+                'class': 'input-read-write-default'
+            }
             ),
             'rango': forms.TextInput(
-                attrs= {
-                    'id': 'rangoInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"20",
-                    'class': 'selectInput'
-                }
+            attrs= {
+                'id': 'rangoInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"20",
+                'class': 'selectInput input-read-write-default onlySelect'
+            }
             ),
             'tel': forms.TextInput(
-                attrs= {
-                    'id': 'telInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"11"
-                }
+            attrs= {
+                'id': 'telInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"11",
+                'class': 'input-read-write-default'
+            }
             ),
             'domic': forms.TextInput(
-                attrs= {
-                    'id': 'domicInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"200"
-                }
+            attrs= {
+                'id': 'domicInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"200",
+                'class': 'input-read-write-default'
+            }
             ),
             'prov': forms.TextInput(
-                attrs= {
-                    'id': 'provInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"40"
-                }
+            attrs= {
+                'id': 'provInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"40",
+                'class': 'input-read-write-default'
+            }
             ),
             'cp': forms.TextInput(
-                attrs= {
-                    'id': 'cpInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"5"
-                }
+            attrs= {
+                'id': 'cpInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"5",
+                'class': 'input-read-write-default'
+            }
             ),
             'loc': forms.TextInput(
-                attrs= {
-                    'id': 'locInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"100"
-                }
+            attrs= {
+                'id': 'locInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"100",
+                'class': 'input-read-write-default'
+            }
             ),
             'lugar_nacimiento': forms.TextInput(
-                attrs= {
-                    'id': 'lugar_nacimientoInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"100"
-                }
+            attrs= {
+                'id': 'lugar_nacimientoInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"100",
+                'class': 'input-read-write-default'
+            }
             ),
             'fec_nacimiento': forms.TextInput(
-                attrs= {
-                    'id': 'fec_nacimientoInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"10"
-                }
+            attrs= {
+                'id': 'fec_nacimientoInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"10",
+                'class': 'input-read-write-default'
+            }
             ),
             'fec_ingreso': forms.TextInput(
-                attrs= {
-                    'id': 'fecIngresoInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"10"
-                }
+            attrs= {
+                'id': 'fecIngresoInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"10",
+                'class': 'input-read-write-default'
+            }
             ),
             'estado_civil': forms.TextInput(
-                attrs= {
-                    'id': 'estado_civilInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"20"
-                }
+            attrs= {
+                'id': 'estado_civilInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"20",
+                'class': 'input-read-write-default'
+            }
             ),
             'xp_laboral': forms.Textarea(
-                attrs= {
-                    'id': 'xp_laboralInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                }
+            attrs= {
+                'id': 'xp_laboralInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'class': 'input-read-write-default'
+            }
             ),
         }
 
@@ -240,7 +255,7 @@ class UsuarioUpdateForm(forms.ModelForm):
             'required': 'required',
             'autocomplete': 'off',
             'maxlength':"24",
-            'value': "{{object.c}}"
+            'class': 'input-read-write-default'
         }
     ))
     password2 = forms.CharField(label="Confirmar contraseña", widget=forms.PasswordInput(
@@ -249,7 +264,7 @@ class UsuarioUpdateForm(forms.ModelForm):
             'required': 'required',
             'autocomplete': 'off',
             'maxlength':"24",
-            'value': "{{object.c}}"
+            'class': 'input-read-write-default'
 
         }
     ))
@@ -263,120 +278,136 @@ class UsuarioUpdateForm(forms.ModelForm):
 
         widgets ={
             'email': forms.EmailInput(
-                attrs= {
-                    'id': 'emailInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"100"
-                }
+            attrs= {
+                'id': 'emailInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"100",
+                'class': 'input-read-write-default'
+            }
             ),
             'nombre': forms.TextInput(
-                attrs= {
-                    'id': 'nombreInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"100"
-                }
+            attrs= {
+                'id': 'nombreInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"100",
+                'class': 'input-read-write-default'
+            }
             ),
             'dni': forms.TextInput(
-                attrs= {
-                    'id': 'dniInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"8"
-                }
+            attrs= {
+                'id': 'dniInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"8",
+                'class': 'input-read-write-default'
+            }
             ),
             'rango': forms.TextInput(
-                attrs= {
-                    'id': 'rangoInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"20",
-                    'class': 'selectInput'
-                }
+            attrs= {
+                'id': 'rangoInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"20",
+                'class': 'selectInput input-read-write-default onlySelect',
+                'readonly': 'readonly'
+            }
             ),
             'tel': forms.TextInput(
-                attrs= {
-                    'id': 'telInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"11"
-                }
+            attrs= {
+                'id': 'telInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"11",
+                'class': 'input-read-write-default'
+            }
             ),
             'domic': forms.TextInput(
-                attrs= {
-                    'id': 'domicInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"200"
-                }
+            attrs= {
+                'id': 'domicInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"200",
+                'class': 'input-read-write-default'
+            }
             ),
             'prov': forms.TextInput(
-                attrs= {
-                    'id': 'provInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"40"
-                }
+            attrs= {
+                'id': 'provInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"40",
+                'class': 'input-read-write-default'
+            }
             ),
             'cp': forms.TextInput(
-                attrs= {
-                    'id': 'cpInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"5"
-                }
+            attrs= {
+                'id': 'cpInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"5",
+                'class': 'input-read-write-default'
+            }
             ),
             'loc': forms.TextInput(
-                attrs= {
-                    'id': 'locInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"100"
-                }
+            attrs= {
+                'id': 'locInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"100",
+                'class': 'input-read-write-default'
+            }
             ),
             'lugar_nacimiento': forms.TextInput(
-                attrs= {
-                    'id': 'lugar_nacimientoInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"100"
-                }
+            attrs= {
+                'id': 'lugar_nacimientoInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"100",
+                'class': 'input-read-write-default'
+            }
             ),
             'fec_nacimiento': forms.TextInput(
-                attrs= {
-                    'id': 'fec_nacimientoInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"10"
-                }
+            attrs= {
+                'id': 'fec_nacimientoInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"10",
+                'class': 'input-read-write-default'
+            }
             ),
             'fec_ingreso': forms.TextInput(
-                attrs= {
-                    'id': 'fecIngresoInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"10"
-                }
+            attrs= {
+                'id': 'fecIngresoInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"10",
+                'class': 'input-read-write-default'
+            }
             ),
             'estado_civil': forms.TextInput(
-                attrs= {
-                    'id': 'estado_civilInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                    'maxlength':"20"
-                }
+            attrs= {
+                'id': 'estado_civilInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'maxlength':"20",
+                'class': 'input-read-write-default'
+            }
             ),
             'xp_laboral': forms.Textarea(
-                attrs= {
-                    'id': 'xp_laboralInput',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                }
+            attrs= {
+                'id': 'xp_laboralInput',
+                'required': 'required',
+                'autocomplete': 'off',
+                'class': 'input-read-write-default'
+            }
             ),
         }
 
+    
 
+    #region VALIDACIONES DE CAMPOS
     def clean_rango(self):
         rango = self.cleaned_data['rango']
         rangos_permitidas = [m.name.lower() for m in rangos]
@@ -442,6 +473,8 @@ class UsuarioUpdateForm(forms.ModelForm):
                 raise forms.ValidationError("Email invalido")
 
         return email
+    
+    #endregion
 
 
 class CreateClienteForm(forms.ModelForm):
@@ -481,11 +514,13 @@ class CreateClienteForm(forms.ModelForm):
     
     def clean_nro_cliente(self):
         nro_cliente = int(self.cleaned_data['nro_cliente'].split("_")[1])
-        last_cliente = int(Cliente.objects.last().nro_cliente.split("_")[1])
-
-        if(nro_cliente != last_cliente+1):
-            raise forms.ValidationError("Número de cliente incorrecto")
-
+        print(f"Cantidad de clientes: {Cliente.objects.count()}")
+        if(Cliente.objects.count() != 0):
+            last_cliente = int(Cliente.objects.last().nro_cliente.split("_")[1])
+            if(nro_cliente != last_cliente+1):
+                raise forms.ValidationError("Número de cliente incorrecto")
+        else:
+            return 'cli_1'
         return f"cli_{nro_cliente}"
 
     def clean_nombre(self):
@@ -493,7 +528,7 @@ class CreateClienteForm(forms.ModelForm):
         nombre = nombre.title()
         if not re.match(r'^[a-zA-Z\s]*$', nombre):
             raise forms.ValidationError('Ingrese solo letras')
-        return nombre
+        return nombre.title()
 
     def clean_dni(self):
         dniRequest = self.cleaned_data['dni']
@@ -510,26 +545,26 @@ class CreateClienteForm(forms.ModelForm):
     def clean_prov(self):
         prov = self.cleaned_data['prov']
         prov = prov.capitalize()
-        return prov
+        return prov.capitalize()
     
     def clean_loc(self):
         loc = self.cleaned_data['loc']
         loc = loc.capitalize()
-        return loc
+        return loc.capitalize()
 
     def clean_estado_civil(self):
         estado_civil = self.cleaned_data['estado_civil']
         estado_civil = estado_civil.capitalize()
         if not re.match(r'^[a-zA-Z\s]*$', estado_civil):
             raise forms.ValidationError('Ingrese solo letras')
-        return estado_civil
+        return estado_civil.capitalize()
     
     def clean_ocupacion(self):
         ocupacion = self.cleaned_data['ocupacion']
         ocupacion = ocupacion.capitalize()
         if not re.match(r'^[a-zA-Z\s]*$', ocupacion):
             raise forms.ValidationError('Ingrese solo letras')
-        return ocupacion
+        return ocupacion.capitalize()
 
     def clean_cod_postal(self):
         cod_postal = self.cleaned_data['cod_postal']
