@@ -81,6 +81,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    height: 100%;
 }
 
 .camapañaFilter>.camapañaInputWrapper>img {
@@ -93,17 +94,15 @@
 
 .camapañaFilter>.camapañaInputWrapper>input {
 
-    padding: .6rem;
-    box-sizing: border-box;
-    background-color: #304361;
-    border: 2px solid var(--third-color);
-    border-radius: .6rem;
-    outline: none;
-    width: 100%;
-    text-indent: 0.6rem;
+    /* padding: .6rem; */
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     font-family: 'raleway-semibold';
-    color: white;
+    color: var(--third-color);
+}
+
+.camapañaFilter>.camapañaInputWrapper>input::-webkit-outer-spin-button,
+.camapañaFilter>.camapañaInputWrapper>input::-webkit-inner-spin-button {
+    display: none;
 }
 
 .camapañaFilter>label {

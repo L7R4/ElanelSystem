@@ -49,7 +49,7 @@ function editarSucursal(buttons) {
                     let enableForm = form.querySelector(".enableForm")
                     buttonDelete = form.querySelector(".deleteSucursal")
 
-                    if (!form) { return; }
+                    if (!form) { return; } 
 
                     buttonU.classList.remove("active")
                     buttonU.nextElementSibling.classList.remove("active")
@@ -121,13 +121,16 @@ function newSucursal_HTML(csrf) {
                 <input type="text" class="open" id="newHora" name="horaApertura">
             </div>
         </div>
-        <button type="button" id="buttonConfirmAddSucursal">Confirmar</button>
-        <button type="button" id="buttonStopAddSucursal">Cancelar</button>
+        <div class="buttonsActions">
+            <button type="button" class="add-button-default" id="buttonConfirmAddSucursal">Confirmar</button>
+            <button type="button" class="button-default-style" id="buttonStopAddSucursal">Cancelar</button>
+        </div>
         </form>
     </div> `
     wrapperListSucursales.insertAdjacentHTML('beforeend', stringForHTML);
 
 }
+
 function cleanAddSucursal() {
     if (document.getElementById("addSucursalForm")) {
         document.querySelector(".sucursalItem.new").remove()
@@ -157,10 +160,10 @@ function createNewItemSucursal_HTML(csrf, pk, name, direccion, hora) {
                 </div>
 
                 <div class="buttonsActions">
-                    <button type="button" class="uploadForm">Confirmar</button>
-                    <button type="button" class="desableForm">Cancelar</button>
-                    <button type="button" class="enableForm">Editar</button>
-                    <button type="button" class="deleteSucursal" >Eliminar</button>
+                    <button type="button" class="uploadForm add-button-default">Confirmar</button>
+                    <button type="button" class="desableForm button-default-style">Cancelar</button>
+                    <button type="button" class="enableForm add-button-default">Editar</button>
+                    <button type="button" class="deleteSucursal delete-button-default" >Eliminar</button>
                 </div>
             </form>
         </div>
@@ -209,7 +212,6 @@ function getCookie(name) {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -218,6 +220,8 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+
 async function fetchCRUD(body, url) {
     try {
         let response = await fetch(url, {

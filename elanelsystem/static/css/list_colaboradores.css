@@ -1,35 +1,25 @@
+
 .filters
 {
-    height:12%;
     width: 100%;
     display: flex;
     align-items: center;
+    padding: 3rem;
+    justify-content: space-between;
+
 }
 #create_user {
-    padding: 1.6rem 4rem;
-    color: white;
-    font-size: 1.6rem;
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    height: fit-content;
-    text-decoration: none;
-    border-radius: 1rem;
-    letter-spacing: .04rem;
-    margin-left: 2rem;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    color: var(--third-color);
+    padding: 1rem 3rem;
 }
 
 .filters > div{
     position: relative;
     display: flex;
+    align-items: center;
     width: 40%;
-    height: auto;
-    flex-flow: column;
-    justify-content: center;
-    color: white;
-    font-family: raleway;
-    font-size: 1.3rem;
-    margin-left: auto;
-    margin-right: 3rem;
+    height: 100%;
 }
 .filters > div> img
 {
@@ -56,17 +46,11 @@
 }
 .filters > div > input
 {
-    height: 3.1rem;
-    width: 100%;
-    background-color: #304361;
-    border: 2px solid var(--third-color);
-    border-radius: 1rem;
-    outline: none;
-    text-indent: 1.2rem;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     font-family: raleway;
-    color: white;
+    color: var(--third-color);
     position: relative;
+    padding: 1rem 0;
     z-index: 2;
 }
 
@@ -113,7 +97,7 @@
 }
 .information > .tittlesWrapper{
     width: 120%;
-    background-color: var(--third-color);
+    background-color: var(--fourth-color);
 }
 
 .tittlesWrapper > .tittles > li {

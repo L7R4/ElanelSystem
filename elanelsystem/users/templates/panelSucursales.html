@@ -26,10 +26,10 @@
                     </div>
                     
                     <div class="buttonsActions">
-                        <button type="button" class="uploadForm">Confirmar</button>
-                        <button type="button" class="desableForm">Cancelar</button>
-                        <button type="button" class="enableForm">Editar</button>
-                        <button type="button" class="deleteSucursal" >Eliminar</button>
+                        <button type="button" class="uploadForm add-button-default">Confirmar</button>
+                        <button type="button" class="desableForm button-default-style">Cancelar</button>
+                        <button type="button" class="enableForm add-button-default">Editar</button>
+                        <button type="button" class="deleteSucursal delete-button-default" >Eliminar</button>
                     </div>
                 </form>
             
@@ -37,7 +37,7 @@
         {% endfor %}
     
     </div>
-    <button type="button" id="buttonAddSucursal">Agregar sucursal</button>
+    <button type="button" class="add-button-default" id="buttonAddSucursal">Agregar sucursal</button>
     
 {% endblock content %}
 {% block js %}
