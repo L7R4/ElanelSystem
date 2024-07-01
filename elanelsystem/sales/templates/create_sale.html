@@ -3,6 +3,7 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/create_sale.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 {% endblock css %}
 
 {% block content %}
@@ -79,8 +80,6 @@
             </label>
             {{form.nro_cuotas}}
         </div>
-
-        
 
         <div id="wrapperImporte">
             {% for error in form.importe.errors %}
@@ -227,13 +226,12 @@
             {{form.observaciones}}
         </div>
 
-        <div id="wrapperButtons">
-            <button type="submit" id="enviar"> Terminar </button>
-            <a id ="cancelar" href="{% url 'users:cuentaUser' object.id%}"> Cancelar </a>
-        </div>
-
-        
     </form>
+
+    <div id="wrapperButtons">
+        <button type="submit" form="form_create_sale" id="enviar" class="add-button-default"> Terminar </button>
+        <a id ="cancelar" class="delete-button-default" href="{% url 'users:cuentaUser' object.id%}"> Cancelar </a>
+    </div>
 
 {% endblock content %}
 {% block js %}

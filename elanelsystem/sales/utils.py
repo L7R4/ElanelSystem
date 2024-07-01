@@ -162,6 +162,7 @@ def exportar_excel(information):
 
 #endregion 
 
+
 def filtroMovimientos_fecha(fechaInicio, context ,fechaFinal):
         movimientosFiltrados=[]
         if(fechaInicio != "" and fechaFinal != ""):
@@ -221,12 +222,12 @@ def searchSucursalFromStrings(sucursal):
 
     return sucursalObject
 
-
 def get_ventasBySucursal(sucursal):
     from sales.models import Ventas
     if sucursal == "Todas":
         return Ventas.objects.all()
     return Ventas.objects.filter(agencia__pseudonimo=sucursal)
+
 
 #region Data Structures ----------------------------------------------------------
 
@@ -264,7 +265,7 @@ def dataStructureCannons(sucursal):
                     for j in range (len(ventas[i].cuotas[k]["pagoParcial"]["amount"])):
                         pagoParcial = cuota["pagoParcial"]["amount"][j]
                         movimiento_dataParcial ={
-                            **getInfoBaseCannon(venta,cuota),
+                            **getInfoBaseCannon(venta,cuota), # Metodo para desempaquetar un diccionario con **
                             'fecha' : pagoParcial["date"],
                             'pagado' : pagoParcial["value"],
                             "cobrador" : pagoParcial["cobrador"],

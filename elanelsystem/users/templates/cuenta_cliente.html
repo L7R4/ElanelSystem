@@ -4,18 +4,19 @@
 {% load i18n %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/cuentaUser.css' %}">
+<link rel="stylesheet" href="{% static 'css/cuentaCustomer.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 {% endblock css %}
 
 {% block content %}
 <div class="filters">
-    <a href="{% url 'sales:create_sale' customer.id %}" id="create_customer">AGREGAR</a>
+    <a class="add-button-default" href="{% url 'sales:create_sale' customer.id %}" id="create_customer">Agregar</a>
     <div>
         <!-- <h3>N° operacion</h3> -->
         <div class="searchFilter">
             <input 
             type="text"
-            class = "customer"
+            class = "customer input-read-write-default"
             id="operation">
             <img src="{% static 'images/icons/search.svg' %}" alt="">
         </div>

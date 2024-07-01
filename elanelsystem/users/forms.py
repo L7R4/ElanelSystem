@@ -228,6 +228,7 @@ class FormCreateUser(forms.ModelForm):
 
         return email
 
+
 class UsuarioUpdateForm(forms.ModelForm):
 
     """
@@ -447,8 +448,46 @@ class CreateClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ('nro_cliente','nombre','dni','domic','loc','prov','cod_postal','tel','fec_nacimiento','estado_civil','ocupacion')  # Esto incluirá todos los campos del modelo en el formulario
-
+        
+        # Labels de los campos
+        labels = {
+            'nro_cliente': 'Nro Cliente',
+            'nombre': 'Nombre',
+            'dni': 'DNI',
+            'domic': 'Domicilio',
+            'loc': 'Localidad',
+            'prov': 'Provincia',
+            'cod_postal': 'Código Postal',
+            'tel': 'Teléfono',
+            'fec_nacimiento': 'Fecha de Nacimiento',
+            'estado_civil': 'Estado Civil',
+            'ocupacion': 'Ocupación'
+        }
+        
+        # Clases de los campos llamada input-read-write-default
+        widgets = {
+            'nro_cliente': forms.TextInput(attrs={'class': 'input-read-write-default', 'readonly': 'readonly'}),
+            'nombre': forms.TextInput(attrs={'class': 'input-read-write-default'}),
+            'dni': forms.TextInput(attrs={'class': 'input-read-write-default', 'type': 'number','oninput':"if(this.value.length > 9) this.value = this.value.slice(0, 9);"}),
+            'domic': forms.TextInput(attrs={'class': 'input-read-write-default'}),
+            'loc': forms.TextInput(attrs={'class': 'input-read-write-default'}),
+            'prov': forms.TextInput(attrs={'class': 'input-read-write-default'}),
+            'cod_postal': forms.TextInput(attrs={'class': 'input-read-write-default','type': 'number','oninput':"if(this.value.length > 7) this.value = this.value.slice(0, 7);"}),
+            'tel': forms.TextInput(attrs={'class': 'input-read-write-default','type': 'number'}),
+            'fec_nacimiento': forms.TextInput(attrs={'class': 'input-read-write-default','maxlength':"10"}),
+            'estado_civil': forms.TextInput(attrs={'class': 'input-read-write-default'}),
+            'ocupacion': forms.TextInput(attrs={'class': 'input-read-write-default'})
+        }
     
+    def clean_nro_cliente(self):
+        nro_cliente = int(self.cleaned_data['nro_cliente'].split("_")[1])
+        last_cliente = int(Cliente.objects.last().nro_cliente.split("_")[1])
+
+        if(nro_cliente != last_cliente+1):
+            raise forms.ValidationError("Número de cliente incorrecto")
+
+        return f"cli_{nro_cliente}"
+
     def clean_nombre(self):
         nombre = self.cleaned_data['nombre']
         nombre = nombre.title()
@@ -463,11 +502,10 @@ class CreateClienteForm(forms.ModelForm):
             raise forms.ValidationError('DNI inválido')
         
         if existing_client.exists():
-            print("Este DNI ya pertenece a otro cliente")
             raise forms.ValidationError("Este DNI ya existe")
-        if len(dniRequest) != 8:
+        if len(dniRequest) < 8:
             raise forms.ValidationError("DNI inválido")
-        return dniRequest
+        return str(dniRequest)
 
     def clean_prov(self):
         prov = self.cleaned_data['prov']
@@ -493,12 +531,11 @@ class CreateClienteForm(forms.ModelForm):
             raise forms.ValidationError('Ingrese solo letras')
         return ocupacion
 
-
     def clean_cod_postal(self):
         cod_postal = self.cleaned_data['cod_postal']
         if not cod_postal.isdigit():
             raise forms.ValidationError('Valor invalido')
-        return cod_postal
+        return str(cod_postal)
 
     def clean_tel(self):
         tel = self.cleaned_data['tel']
@@ -507,7 +544,7 @@ class CreateClienteForm(forms.ModelForm):
         
         if len(str(tel)) < 8 or len(str(tel)) > 11:
             raise forms.ValidationError('Numero invalido')
-        return tel
+        return str(tel)
     
     def clean_fec_nacimiento(self):
     
