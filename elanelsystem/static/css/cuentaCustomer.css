@@ -1,0 +1,225 @@
+.wrapper_content {
+    padding: 4rem;
+}
+
+.filters {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding-bottom: 3rem;
+}
+
+
+.searchFilter {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.filters .searchFilter>input#operation {
+    color: var(--third-color);
+    z-index: 2;
+    padding: .5rem;
+    height: 3.5rem;
+}
+
+.searchFilter>img {
+    position: absolute;
+    filter: invert(1);
+    width: 1.8rem;
+    right: 2rem;
+    z-index: 6;
+}
+
+#create_customer {
+    color: var(--third-color);
+    font-size: 1.6rem;
+    padding: 1rem 3rem;
+}
+
+.accountWrapper {
+    display: flex;
+    width: 100%;
+    height: 88%;
+}
+
+.operations {
+    height: 100%;
+    width: 70%;
+    overflow-y: auto;
+}
+
+.operationsWrapper {
+    width: 100%;
+}
+
+.operationsList {
+    width: 100%;
+    height: 100%;
+    list-style: none;
+    border-radius: 1rem;
+}
+
+.operationItem {
+    border-radius: 1rem;
+    background: #FFF;
+    height: 20rem;
+    display: flex;
+    padding: .8rem;
+    margin-bottom: 1.4rem;
+}
+
+.informationUser {
+    height: 100%;
+    width: 30%;
+    /* padding: 0 2rem; */
+    padding-left: 2rem;
+
+}
+
+
+.iconWrapper {
+    width: 20%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.iconWrapper>img {
+    width: 70%;
+}
+
+.attributes {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 60%;
+    row-gap: .7rem;
+}
+
+.attributes>.nameStatus>h1 {
+    font-size: clamp(1rem, 1.8vw, 2.5rem);
+    font-family: raleway-bold;
+}
+
+.attributes>.nameStatus>h3 {
+    font-size: clamp(.8rem, 1vw, 1.6rem);
+    font-family: raleway-bold;
+}
+
+.attributes>.nameStatus {
+    display: flex;
+    align-items: center;
+}
+
+.attributes>.nameStatus>img {
+    width: 3rem;
+}
+
+#downloadPDF {
+    font-size: clamp(1rem, 1vw, 1.2rem);
+    font-family: raleway-semibold;
+    color: #000;
+    margin-left: 1rem;
+}
+
+.attributes>div.information {
+    display: flex;
+    justify-content: space-between;
+    padding: .6rem 5%;
+    width: 90%;
+    border-radius: .6rem;
+    background: #98CCFD;
+    font-size: clamp(1rem, .6vw, 1rem);
+    font-family: raleway-semibold;
+    align-items: center;
+}
+
+.attributes>div>h3 {
+    font-size: clamp(1rem, 1vw, 1.35rem);
+}
+
+
+.iconsAttributes {
+    width: 20%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.buttonMore {
+
+    display: flex;
+    gap: 0.2rem;
+    padding: 1rem 1.5rem;
+    background-color: var(--primary-color);
+    text-decoration: none;
+    border-radius: 1rem;
+}
+
+.buttonMore>div {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.buttonMore>div>h3 {
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway;
+    color: white;
+}
+
+.buttonMore>div>img {
+    margin-top: .1rem;
+    /* transform: rotate(-90deg); */
+    width: 1.5rem;
+    /* height: .8rem; */
+}
+
+/* USER INFORMATION STYLES */
+.data {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+/* .data>li{
+    background-color: #98CCFD;
+} */
+.data>li>h2 {
+    font-size: clamp(1.2rem, 1.5vw, 2rem);
+    font-family: raleway-bold;
+    margin-bottom: .4rem;
+    color: white;
+
+}
+
+.data>li>h3 {
+    font-size: clamp(1.2rem, 1.4vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: rgba(255, 255, 255, 0.88);
+
+}
+
+#nombre,
+#fechaNacimiento,
+#postal,
+#domic,
+#tel,
+#estadoCivil,
+#ocupacion {
+    flex-basis: 100%;
+}
+
+#nroCliente,
+#dni,
+#loc,
+#prov {
+    flex-basis: 45%;
+}

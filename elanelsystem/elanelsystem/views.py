@@ -133,9 +133,7 @@ def filterMainManage(request,dataStructure):
                 # Manejo de errores para filtros
                 print(f"Error applying filter {filter_name}: {str(e)}")
                 return HttpResponseBadRequest(f"Error applying filter {filter_name}: {str(e)}")
-            
-    # print("wepssssssssssssssssss")
-    # print(filtered_data)
+
     return filtered_data
 
 

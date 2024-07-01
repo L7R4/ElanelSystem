@@ -102,14 +102,14 @@ class Cliente(models.Model):
         
     nro_cliente = models.CharField(max_length=15,default=returNro_Cliente)
     nombre = models.CharField(max_length=100,validators=[RegexValidator(r'^[a-zA-ZñÑ ]+$', 'Ingrese solo letras')])
-    dni = models.CharField(max_length=20,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')])
+    dni = models.CharField(max_length=9,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')])
     agencia_registrada = models.CharField(max_length=30,default="")
     domic = models.CharField(max_length=100)
     loc = models.CharField(max_length=40)
     prov = models.CharField(max_length=40, validators=[RegexValidator(r'^[a-zA-ZñÑ ]+$', 'Ingrese solo letras')])
-    cod_postal = models.CharField(max_length=4,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')])
+    cod_postal = models.CharField(max_length=7,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')])
     tel = models.IntegerField(validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')])
-    fec_nacimiento = models.CharField(max_length=30, default="")
+    fec_nacimiento = models.CharField(max_length=10, default="")
     estado_civil = models.CharField(max_length=20)
     ocupacion = models.CharField(max_length=50)
 

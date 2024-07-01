@@ -1,12 +1,11 @@
-.filters
-{
-    height:12%;
+.filters {
     width: 100%;
     display: flex;
     align-items: center;
+    padding: 3rem 4rem;
 }
 
-.filters > div{
+.filters>div {
     position: relative;
     display: flex;
     width: 40%;
@@ -19,48 +18,35 @@
     margin-left: auto;
     margin-right: 3rem;
 }
-.filters > div> img
-{
+
+.filters>div>img {
     position: absolute;
     /* rotate: -90deg; */
     filter: invert(1);
     width: 1.8rem;
-    right: 2%;
+    right: 2rem;
     z-index: 6;
 }
-.filters > div > .select{
-    position: absolute;
-    height: 0;
-    max-height: 20rem;
-    overflow-y: auto;
-    top: 70%;
-    /* left: 3px; */
-    transition: all .4s ease;
-    width: 82%;
-    z-index:1;
-    background: white;
-    border-radius: 0.5rem;
-    /* border: 3px solid var(--third-color); */
-}
-.customer
-{
+
+
+.customer {
     height: 3.1rem;
     width: 100%;
     z-index: 2;
 }
 
-#create_customer 
-{
-    margin-left: 2rem;
-    max-height: 4.5rem;
-    max-width: 17rem;
-    min-height: 3.8rem;
-    min-width: 15rem;
+#create_customer {
+    font-size: clamp(1.3rem, 1.1vw, 1.7rem);
+    padding: 1rem 2.3rem;
+}
+
+#customer_search {
+    color: var(--third-color);
+    height: 3.4rem;
 }
 
 
-
-.information{
+.information {
     height: 88%;
     width: 100%;
     /* display: flex; */
@@ -68,29 +54,31 @@
     overflow-y: none;
 }
 
-.information::-webkit-scrollbar{
+.information::-webkit-scrollbar {
     width: 2px;
     height: 5px;
     border-radius: 5px;
 }
-.information::-webkit-scrollbar-thumb{
+
+.information::-webkit-scrollbar-thumb {
     background: var(--third-color);
     border-radius: 1rem;
 }
 
-.tittles{
+.tittles {
     display: flex;
     /* column-gap: calc(100% / 6); */
     list-style: none;
     width: 100%;
-    justify-content: space-around;  
+    justify-content: space-around;
 }
-.information > .tittlesWrapper{
+
+.information>.tittlesWrapper {
     width: 100%;
     background-color: var(--fourth-color);
 }
 
-.tittlesWrapper > .tittles > li {
+.tittlesWrapper>.tittles>li {
     color: white;
     font-size: 1.6rem;
     font-family: raleway-semibold;
@@ -99,8 +87,7 @@
     text-align: center;
 }
 
-.valuesWrapper > .values > a
-{
+.valuesWrapper>.values>a {
     display: flex;
     font-size: 1.4rem;
     align-items: center;
@@ -114,18 +101,11 @@
     text-decoration: none;
 }
 
-.valuesWrapper > .values > a:hover
-{
+.valuesWrapper>.values>a:hover {
     background-color: #304361;
 }
 
-.valuesWrapper > .values > a > div
-{
+.valuesWrapper>.values>a>div {
     width: 16.6%;
     text-align: center;
 }
-
-
-
-
-

@@ -3,6 +3,7 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/list_customers.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 {% endblock css %}
 
 {% block content %}
@@ -12,7 +13,7 @@
         <input 
         type="text"
         class = "customer input-read-write-default"
-        id="customer">
+        id="customer_search">
         <img src="{% static 'images/icons/search.svg' %}" alt="">
     </div>
 </div>

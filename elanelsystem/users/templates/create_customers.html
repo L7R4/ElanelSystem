@@ -3,6 +3,7 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/create_customer.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 {% endblock css %}
     
 {% block content %}
@@ -12,7 +13,7 @@
     <form method="post" id="form_create_customer" autocomplete="off">
         {% csrf_token %}
         {% for inp in form%} 
-            <div class="inputWrapper" id="{{inp.auto_id}}w">
+            <div class="inputWrapper" id="{{inp.auto_id}}">
                 <label for="">{{inp.label|truncatechars:13}}</label>
                 {{inp}}
                 {% if inp.errors %}
@@ -23,8 +24,8 @@
         {%endfor%}
     </form>
     <div class="wrapperButtons">
-        <input type="submit" value="Guardar" form="form_create_customer" id="save_customer">
-        <a id ="cancelar" href="{% url 'users:list_customers' %}"> Cancelar </a>
+        <input type="submit" value="Guardar" class="add-button-default" form="form_create_customer">
+        <a class="delete-button-default" href="{% url 'users:list_customers' %}"> Cancelar </a>
     </div>
 {% endblock content %}
 {% block js %}

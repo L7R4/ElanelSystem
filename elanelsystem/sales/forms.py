@@ -17,29 +17,54 @@ paquetes = Products.PAQUETES
 tipoProductos = Products.TIPO_PRODUCTO
 
 class FormCreateVenta(forms.Form):
+
+    #  Campos que se desean mostrar en el formulario
     nro_contrato = forms.CharField(required=True, max_length=10)
-    modalidad =forms.CharField(required=True,max_length=30)
+    modalidad = forms.CharField(required=True, max_length=30)
     nro_cuotas = forms.IntegerField(required=True)
     anticipo = forms.IntegerField(required=True)
     primer_cuota = forms.IntegerField(required=True)
-    importe = forms.FloatField(required=True)    
+    importe = forms.FloatField(required=True)
     tasa_interes = forms.FloatField(required=True)
     intereses_generados = forms.FloatField(required=True)
-    importe_x_cuota =forms.FloatField(required=True)
+    importe_x_cuota = forms.FloatField(required=True)
     total_a_pagar = forms.FloatField(required=True)
-    fecha = forms.CharField(required=True,max_length=10)
-    tipo_producto =forms.CharField(required=True)
+    fecha = forms.CharField(required=True, max_length=10)
+    tipo_producto = forms.CharField(required=True)
     producto = forms.CharField(required=True)
     paquete = forms.CharField(required=True)
     nro_orden = forms.CharField(required=True)
-    vendedor =forms.CharField(required=True)
+    vendedor = forms.CharField(required=True)
     supervisor = forms.CharField(required=True)
-    observaciones = forms.CharField(required=False,widget=forms.Textarea(attrs={"rows": 5}))
+    observaciones = forms.CharField(required=False, widget=forms.Textarea(attrs={'rows': 5,'class':'input-read-write-default'}))
+
+
+    # Widgets de los campos
+    nro_contrato.widget.attrs.update({'class': 'input-read-write-default','oninput': "this.value = this.value.replace(/[^0-9]/g, '');"})
+    modalidad.widget.attrs.update({'class': 'input-read-write-default','readonly':'readonly', 'value':'Mensual'})
+    nro_cuotas.widget.attrs.update({'class': 'input-read-write-default'})
+    anticipo.widget.attrs.update({'class': 'input-read-write-default','readonly':'readonly'})
+    primer_cuota.widget.attrs.update({'class': 'input-read-write-default','readonly':'readonly'})
+    importe.widget.attrs.update({'class': 'input-read-write-default','readonly':'readonly'})
+    tasa_interes.widget.attrs.update({'class': 'input-read-write-default','readonly':'readonly'})
+    intereses_generados.widget.attrs.update({'class': 'input-read-write-default','readonly':'readonly'})
+    importe_x_cuota.widget.attrs.update({'class': 'input-read-write-default','readonly':'readonly'})
+    total_a_pagar.widget.attrs.update({'class': 'input-read-write-default','readonly':'readonly'})
+    fecha.widget.attrs.update({'class': 'input-read-write-default'})
+    tipo_producto.widget.attrs.update({'class': 'input-read-write-default','readonly':'readonly'})
+    producto.widget.attrs.update({'class': 'input-read-write-default'})
+    paquete.widget.attrs.update({'class': 'input-read-write-default','readonly':'readonly'})
+    nro_orden.widget.attrs.update({'class': 'input-read-write-default','readonly':'readonly','oninput': "this.value = this.value.replace(/[^0-9]/g, '');"})
+    vendedor.widget.attrs.update({'class': 'input-read-write-default'})
+    supervisor.widget.attrs.update({'class': 'input-read-write-default'})
+
+    # Widg
+    
+
 
     def clean_producto(self):
         producto_input = self.cleaned_data['producto']
         producto_permitidos = [p.nombre.lower() for p in getProducts]
-        print(producto_permitidos)
 
         if producto_input.lower() not in producto_permitidos:
             raise forms.ValidationError('Producto no válido')
@@ -84,7 +109,7 @@ class FormCreateVenta(forms.Form):
         if not nro_contrato_input.isdigit():
             raise forms.ValidationError('El numero de solicitud debe ser un valor numérico.')
         
-        return nro_contrato_input
+        return str(nro_contrato_input)
     
     
     def clean_nro_orden(self):

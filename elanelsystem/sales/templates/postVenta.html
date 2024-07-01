@@ -7,7 +7,6 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/postVenta.css' %}">
-{% comment %} <link rel="stylesheet" href="{% static 'css/cuentaUser.css' %}"> {% endcomment %}
 {% endblock css %}
 
 {% block content %}
@@ -16,20 +15,24 @@
         <div class="searchFilter">
             <input 
             type="text"
-            class = "operation"
+            class = "operation input-read-write-default"
             id="operation">
             <img src="{% static 'images/icons/search.svg' %}" alt="">
         </div>
+        <div id="selectWrapperSelectAgencia" class="wrapperTypeFilter">
+            <h3 class="labelInput">Sucursal</h3>
+            <div class="containerInputAndOptions">
+              <img class="iconDesplegar" src="{% static "images/icons/arrowDown.png" %}" alt="">
 
-        <div class="sucursalWrapper" id="sucursalWrapper">
-            <label for="">Sucursal</label>
-            <div>
-                <input type="text" name="sucursal" id="sucursalInput" autocomplete="off" maxlength="50" class="selectInput" value="{{sucursalDefault.pseudonimo}}">
-                <ul id="contenedorAgencia" class="select">
+              <input type="text" name="sucursal" class="onlySelect input-select-custom" id="sucursalInput" autocomplete="off" readonly="" value="{{sucursalDefault.pseudonimo}}">
+              <ul class="list-select-custom options">
                     {% for sucursal in sucursales %}
-                        <li>{{sucursal.pseudonimo}}</li>
+                    {% if sucursal.pseudonimo == "Todas, Todas" %}
+                    {% else %}
+                    <li data-value="{{sucursal.pseudonimo}}">{{sucursal.pseudonimo}}</li>
+                    {% endif %}
                     {% endfor %}
-                </ul>
+              </ul>
             </div>
         </div>
 
@@ -40,7 +43,6 @@
                 {% comment %} <img src="{% static 'images/icons/nextSinBackground.png' %}" alt=""> {% endcomment %}
             </div>
         </div>
-        {% comment %} <button id="filtrar_ventas_button">Filtrar</button> {% endcomment %}
 
     </div>
     
@@ -206,6 +208,8 @@
 {% endblock content %}
 
 {% block js %}
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+
 <script>
     var CSRF_TOKEN = '{% csrf_token %}'
     var imgNext = "{% static 'images/icons/nextSinBackground.png' %}"

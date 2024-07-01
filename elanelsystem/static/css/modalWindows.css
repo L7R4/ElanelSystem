@@ -94,6 +94,10 @@
     width: 100%;
 }
 
+div.containerInputAndOptions {
+    height: 3.2rem;
+}
+
 /* #region INPUTs radios */
 #wrapperRadioEgresoIngreso>.selectEgreso_Ingreso {
     display: flex;
