@@ -1,8 +1,9 @@
 from django.db import models
 from django.dispatch import receiver
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator,EmailValidator,validate_email
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager, PermissionsMixin
-
+import re, datetime
 
 class Sucursal(models.Model):
     direccion = models.CharField("Direccion",max_length =100)
@@ -58,7 +59,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
     rango = models.CharField("Rango:",max_length=40)
-    dni = models.CharField("DNI",max_length=8, blank = True, null = True)
+    dni = models.CharField("DNI",max_length=9, blank = True, null = True)
     tel = models.CharField("Telefono",max_length=11, blank = True, null = True)
     
     c = models.CharField("Contraseña_depuracion:",max_length=250)
@@ -87,6 +88,66 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD ="email"
     REQUIRED_FIELDS= ["nombre","dni"]
     
+    def clean(self):
+        self.validation_nombre()
+        self.validation_sucursal()
+        self.validation_email()
+        self.validation_rango()
+        self.validation_dni()
+        self.validation_tel()
+        self.validation_fec_ingreso()
+        self.validation_fec_nacimiento()
+
+    #region Clean area de los campos
+    def validation_nombre(self):
+        if not self.nombre:
+            raise ValidationError({'nombre': 'No puede estar vacío.'})
+        
+        if not re.match(r'^[a-zA-Z\s]*$', self.nombre):
+            raise ValidationError({'nombre': 'Solo puede contener letras.'})
+
+    def validation_sucursal(self):
+        if not self.sucursal:
+            raise ValidationError({'sucursal': 'No puede estar vacio.'})
+            
+        if not Sucursal.objects.filter(pseudonimo=self.sucursal.pseudonimo).exists():
+            raise ValidationError({'sucursal': 'La sucursal no existe.'})
+
+    def validation_email(self):
+        try:
+           validate_email(self.email)
+        except ValidationError: 
+            raise ValidationError({'email': 'Email no válido.'})    
+
+    def validation_rango(self):
+        if self.rango not in dict(self.TIPOS_RANGOS_PARA_ACCESO_TODAS_SUCURSALES):
+            raise ValidationError({'rango': 'Rango no válido.'})
+
+    def validation_dni(self):
+        if len(self.dni) < 8: 
+            raise ValidationError({'dni': 'DNI inválido.'})
+
+    def validation_tel(self):
+        if len(self.tel) < 10:
+            raise ValidationError({'tel': 'Telefono inválido.'})
+
+        if not re.match(r'^\d+$', self.tel):
+            raise ValidationError({'tel': 'Debe contener solo números.'}) 
+
+    def validation_fec_ingreso(self):
+        if self.fec_ingreso and not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fec_ingreso):
+            raise ValidationError({'fec_ingreso': 'Debe estar en el formato DD/MM/AAAA.'})
+        
+        if self.fec_ingreso > datetime.now().strftime('%d/%m/%Y'):
+            raise ValidationError({'fec_ingreso': 'Fecha inválida.'})
+
+    def validation_fec_nacimiento(self):
+        if self.fec_nacimiento > datetime.now().strftime('%d/%m/%Y'):
+            raise ValidationError({'fec_nacimiento': 'Fecha inválida.'})
+
+
+    # endregion 
+
 
 class Cliente(models.Model):
     def returNro_Cliente(): 

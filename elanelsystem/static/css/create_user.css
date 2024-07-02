@@ -25,13 +25,45 @@
 }
 
 #form_create_user>div {
-    display: flex;
-    width: 100%;
-    flex-wrap: wrap;
-    padding: .8rem 2rem;
-    gap: 1rem;
-    max-width: 140rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
+    gap: 2rem;
+    padding: 2rem 0;
 }
+/* #region GRID inputsWrapper */
+#form_create_user>div>#nombreCompletoWrapper,#form_create_user>div>#domicWrapper {
+    grid-column: span 2;
+}
+#form_create_user>div>#xpLaboralWrapper {
+    grid-column: 1/ span 3;
+    height: fit-content;
+}
+#form_create_user>div>#familiares {
+    grid-column: 1 / span 4;
+}
+
+/* #endregion */
+#form_create_user>div.datosLogisticosWrapper>.inputsObligatorios{
+    display: grid;
+    grid-column: span 4;
+    grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
+    gap: 2rem;
+
+}
+
+#form_create_user> div > .inputWrapper > p{
+    position: absolute;
+    font-size: clamp(1.1rem, 1vw, 1.3rem);
+    font-family: raleway-semibold;
+    color: #ff7b7b;
+    padding: 0.3rem .6rem;
+    left: 0;
+    border-radius: 0.6rem;
+    white-space: nowrap;
+}
+/* #form_create_user>div.datosLogisticosWrapper>.inputsObligatorios > .inputWrapper{
+    grid-column: span 2;
+} */
 
 #form_create_user>h2 {
     color: var(--third-color);
@@ -43,14 +75,14 @@
     padding: .8rem 2rem;
     border-radius: .6rem;
     border-bottom: 2px solid #ffffffa0;
-    margin: 1rem 0;
+    /* margin: 1rem 0; */
 }
 
 .inputWrapper {
     position: relative;
-    display: flex;
+    /* display: flex;
     flex-flow: column;
-    justify-content: center;
+    justify-content: center; */
     color: white;
     font-family: raleway-semibold;
     font-size: clamp(1.3rem, 1.1vw, 2rem);
@@ -82,9 +114,6 @@
     max-width: 30rem;
 }
 
-#xpLaboralWrapper {
-    min-width: 80%;
-}
 
 .inputWrapper>input {
     height: 3rem;
@@ -191,18 +220,6 @@
     margin: 0;
 }
 
-#form_create_user>div.datosLogisticosWrapper {
-    display: flex;
-}
-
-#form_create_user>div.datosLogisticosWrapper>.inputsObligatorios {
-    display: flex;
-    width: 100%;
-    flex-wrap: wrap;
-    gap: 1rem;
-    max-width: 140rem;
-}
-
 #form_create_user>div.datosLogisticosWrapper>.inputsObligatorios.active {
     width: 60%;
 }
@@ -233,12 +250,9 @@
     background-color: var(--background-color);
 }
 
-#vendedoresWrapper {
+#vendedoresWrapper{
     display: none;
-    width: 40%;
-    max-width: 30rem;
 }
-
 #vendedoresWrapper.active {
     display: unset;
 }
@@ -257,7 +271,7 @@
 }
 
 #vendedoresWrapper>.listVendedores {
-    height: 20rem;
+    height: 25rem;
     background-color: #304361;
     border-radius: .6rem;
     overflow: auto;
