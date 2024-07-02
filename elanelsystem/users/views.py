@@ -26,28 +26,30 @@ class CrearUsuario(TestLogin, generic.View):
     form_class = FormCreateUser
     template_name = "create_user.html"
     roles = Group.objects.all()
+    sucursales = Sucursal.objects.all()
 
     def get(self,request,*args, **kwargs):
         context = {}
         sucursales = Sucursal.objects.all()
         context["sucursales"] = sucursales
         context["roles"] = self.roles
+        context['form'] = self.form_class
 
-        context["form"] = self.form_class
-        return render(request, self.template_name,context)
+        return render(request, self.template_name, context)
     
 
     def post(self,request,*args, **kwargs):
         form =self.form_class(request.POST)
         if form.is_valid():
+            print("Es valido")
             nombre = form.cleaned_data["nombre"]
             dni = form.cleaned_data["dni"]
             email = form.cleaned_data["email"]
-            sucursal = request.POST.get("sucursal")
             tel = form.cleaned_data["tel"]
             rango = form.cleaned_data["rango"]
-            password1 = form.cleaned_data["password1"]
-            password2 = form.cleaned_data["password2"]
+            password1 = "klf781CL"
+            password2 = "klf781CL"
+
             new_user = self.model.objects.create_user(
                 email=email,
                 nombre=nombre,
@@ -55,13 +57,14 @@ class CrearUsuario(TestLogin, generic.View):
                 rango=rango,
                 password=password2
             )
+
+
+            sucursal = form.cleaned_data["sucursal"]
             sucursalObject = Sucursal.objects.get(pseudonimo = sucursal)
+
             new_user.sucursal = sucursalObject
-            if not Sucursal.objects.filter(pk=sucursalObject.pk).exists():
-                raise ValidationError('Sucursal inválida')
-            
             new_user.tel = tel
-            new_user.c = form.cleaned_data["password1"]
+            new_user.c = password1
             new_user.is_active = True
             new_user.domic = form.cleaned_data["domic"]
             new_user.prov = form.cleaned_data["prov"]
@@ -73,6 +76,7 @@ class CrearUsuario(TestLogin, generic.View):
             new_user.estado_civil = form.cleaned_data["estado_civil"]
             new_user.xp_laboral = form.cleaned_data["xp_laboral"]
             new_user.accesosTodasSucursales = True if(rango in Usuario.TIPOS_RANGOS_PARA_ACCESO_TODAS_SUCURSALES) else False
+            
             # Para guardar los familiares en caso que haya
             familiares = []
             for key, value in request.POST.items():
@@ -110,11 +114,12 @@ class CrearUsuario(TestLogin, generic.View):
         else:
             context = {}
             sucursales = Sucursal.objects.all()
-            context["sucursales"] = sucursales
+            context["sucursales"] = sucursales  
             context["roles"] = self.roles
             context["form"] = form
+            print(form)
             return render(request, self.template_name,context)
-        
+     
         
 def viewsPDFNewUser(request,pk):
     import locale
@@ -260,8 +265,7 @@ class DetailUser(TestLogin, generic.DetailView):
             email = form.cleaned_data["email"]
             sucursal = request.POST.get("sucursal")
             updateUser.sucursal = Sucursal.objects.get(pseudonimo = sucursal)
-            
-
+            updateUser.full_clean()
             tel = form.cleaned_data["tel"]
             rango = form.cleaned_data["rango"]
             password1 = form.cleaned_data["password1"]
@@ -308,6 +312,7 @@ class DetailUser(TestLogin, generic.DetailView):
             context["form"] = form
             print(form)
             return render(request, self.template_name,context)
+    
     
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
