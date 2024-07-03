@@ -38,89 +38,152 @@ class CrearUsuario(TestLogin, generic.View):
         return render(request, self.template_name, context)
     
 
-    def post(self,request,*args, **kwargs):
-        form =self.form_class(request.POST)
-        if form.is_valid():
-            print("Es valido")
-            nombre = form.cleaned_data["nombre"]
-            dni = form.cleaned_data["dni"]
-            email = form.cleaned_data["email"]
-            tel = form.cleaned_data["tel"]
-            rango = form.cleaned_data["rango"]
-            password1 = "klf781CL"
-            password2 = "klf781CL"
+    # def post(self,request,*args, **kwargs):
+    #     form =self.form_class(request.POST)
+    #     if form.is_valid():
+    #         nombre = form.cleaned_data["nombre"]
+    #         dni = form.cleaned_data["dni"]
+    #         email = form.cleaned_data["email"]
+    #         tel = form.cleaned_data["tel"]
+    #         rango = form.cleaned_data["rango"]
+    #         password1 = "klf781CL"
+    #         password2 = "klf781CL"
 
-            new_user = self.model.objects.create_user(
-                email=email,
-                nombre=nombre,
-                dni=dni,
-                rango=rango,
-                password=password2
-            )
+    #         new_user = self.model.objects.create_user(
+    #             email=email,
+    #             nombre=nombre,
+    #             dni=dni,
+    #             rango=rango,
+    #             password=password2
+    #         )
 
 
-            sucursal = form.cleaned_data["sucursal"]
-            sucursalObject = Sucursal.objects.get(pseudonimo = sucursal)
+    #         sucursal = form.cleaned_data["sucursal"]
+    #         sucursalObject = Sucursal.objects.get(pseudonimo = sucursal)
 
-            new_user.sucursal = sucursalObject
-            new_user.tel = tel
-            new_user.c = password1
-            new_user.is_active = True
-            new_user.domic = form.cleaned_data["domic"]
-            new_user.prov = form.cleaned_data["prov"]
-            new_user.cp = form.cleaned_data["cp"]
-            new_user.loc = form.cleaned_data["loc"]
-            new_user.lugar_nacimiento = form.cleaned_data["lugar_nacimiento"]
-            new_user.fec_nacimiento = form.cleaned_data["fec_nacimiento"]
-            new_user.fec_ingreso = form.cleaned_data["fec_ingreso"]
-            new_user.estado_civil = form.cleaned_data["estado_civil"]
-            new_user.xp_laboral = form.cleaned_data["xp_laboral"]
-            new_user.accesosTodasSucursales = True if(rango in Usuario.TIPOS_RANGOS_PARA_ACCESO_TODAS_SUCURSALES) else False
+    #         new_user.sucursal = sucursalObject
+    #         new_user.tel = tel
+    #         new_user.c = password1
+    #         new_user.is_active = True
+    #         new_user.domic = form.cleaned_data["domic"]
+    #         new_user.prov = form.cleaned_data["prov"]
+    #         new_user.cp = form.cleaned_data["cp"]
+    #         new_user.loc = form.cleaned_data["loc"]
+    #         new_user.lugar_nacimiento = form.cleaned_data["lugar_nacimiento"]
+    #         new_user.fec_nacimiento = form.cleaned_data["fec_nacimiento"]
+    #         new_user.fec_ingreso = form.cleaned_data["fec_ingreso"]
+    #         new_user.estado_civil = form.cleaned_data["estado_civil"]
+    #         new_user.xp_laboral = form.cleaned_data["xp_laboral"]
+    #         new_user.accesosTodasSucursales = True if(rango in Usuario.TIPOS_RANGOS_PARA_ACCESO_TODAS_SUCURSALES) else False
             
-            # Para guardar los familiares en caso que haya
-            familiares = []
-            for key, value in request.POST.items():
-                if key.startswith('familia_nombre_') and value:
-                    familiares.append({
-                        'relacion': request.POST.get(f'familia_relacion_{key.split("_")[-1]}', ''),
-                        'nombre': value,
-                        'tel': request.POST.get(f'familia_tel_{key.split("_")[-1]}', '')
-                    })
-            new_user.datos_familiares = familiares
-            # ------------------------------------------------------------------------------
+    #         # Para guardar los familiares en caso que haya
+    #         familiares = []
+    #         for key, value in request.POST.items():
+    #             if key.startswith('familia_nombre_') and value:
+    #                 familiares.append({
+    #                     'relacion': request.POST.get(f'familia_relacion_{key.split("_")[-1]}', ''),
+    #                     'nombre': value,
+    #                     'tel': request.POST.get(f'familia_tel_{key.split("_")[-1]}', '')
+    #                 })
+    #         new_user.datos_familiares = familiares
+    #         # ------------------------------------------------------------------------------
             
 
-            # Para guardar los vendedores a cargo en caso que haya
-            vendedores = []
-            for key, value in request.POST.items():
-                if key.startswith('idv_') and value:
-                    vendedores.append({
-                        'nombre': Usuario.objects.get(email=value).nombre,
-                        'email': value,
-                    })
-            new_user.vendedores_a_cargo = vendedores
-            # ------------------------------------------------------------------------------       
+    #         # Para guardar los vendedores a cargo en caso que haya
+    #         vendedores = []
+    #         for key, value in request.POST.items():
+    #             if key.startswith('idv_') and value:
+    #                 vendedores.append({
+    #                     'nombre': Usuario.objects.get(email=value).nombre,
+    #                     'email': value,
+    #                 })
+    #         new_user.vendedores_a_cargo = vendedores
+    #         # ------------------------------------------------------------------------------       
 
-            # Para establecer al grupo que pertence segun el rango
-            grupo = Group.objects.get(name=rango)
-            new_user.groups.add(grupo)
-            # -------------------------------------------------------
+    #         # Para establecer al grupo que pertence segun el rango
+    #         grupo = Group.objects.get(name=rango)
+    #         new_user.groups.add(grupo)
+    #         # -------------------------------------------------------
                 
-            new_user.save()
-            response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[new_user.pk]),"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
+    #         new_user.save()
+    #         response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[new_user.pk]),"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
             
-            return JsonResponse(response_data, safe=False)
+    #         return JsonResponse(response_data, safe=False)
 
-        else:
-            context = {}
-            sucursales = Sucursal.objects.all()
-            context["sucursales"] = sucursales  
-            context["roles"] = self.roles
-            context["form"] = form
-            print(form)
-            return render(request, self.template_name,context)
+    #     else:
+    #         context = {}
+    #         sucursales = Sucursal.objects.all()
+    #         context["sucursales"] = sucursales  
+    #         context["roles"] = self.roles
+    #         context["form"] = form
+    #         print(form)
+    #         return render(request, self.template_name,context)
      
+    def post(self, request, *args, **kwargs):
+        form = json.loads(request.body)
+        errors = {}
+
+
+        rango = form['rango']
+        sucursal = form['sucursal']
+
+
+        # Validar el rango
+        if rango and not Group.objects.filter(name=rango).exists():
+            errors['rango'] = 'Rango invalido.'
+        else:
+            rango = Group.objects.get(name=rango)
+
+
+        # Validar la sucursal
+        if sucursal and not Sucursal.objects.filter(pseudonimo=sucursal).exists():
+            errors['sucursal'] = 'Sucursal invalida.'
+        else:
+            sucursal = Sucursal.objects.get(pseudonimo=sucursal)
+
         
+        usuario = self.model.objects.create_user(
+            email=form['email'],
+            nombre=form['nombre'],
+            dni=form['dni'],
+            rango=rango,
+            password=form['password']
+        )
+
+        # Asignar campos adicionales
+        usuario.tel = form['tel']
+        usuario.domic = form['domic']
+        usuario.prov = form['prov']
+        usuario.loc = form['loc']
+        usuario.cp = form['cp']
+        usuario.lugar_nacimiento = form['lugar_nacimiento']
+        usuario.fec_nacimiento = form['fec_nacimiento']
+        usuario.fec_ingreso = form['fec_ingreso']
+        usuario.estado_civil = form['estado_civil']
+        usuario.xp_laboral = form['xp_laboral']
+        
+
+        usuario.c = form['password']
+
+        try:
+            usuario.full_clean(exclude=['password'])
+        except ValidationError as e:
+            errors.update(e.message_dict)
+
+        if len(errors) != 0:
+            
+            usuario.delete() # Eliminar el usuario creado por la funcion _create_user del modelo UserManager
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
+        else:
+            # Asignamos aca porque entonces nos aseguramos que no tengamos errores en los campos y podamos hacer la referencia sin problemas
+            usuario.sucursal = sucursal
+            usuario.groups.add(rango)
+            usuario.save()
+            print(f"Grupo de usuario {usuario.groups.all()}")
+            return JsonResponse({'success': True}, safe=False) 
+        
+
+
 def viewsPDFNewUser(request,pk):
     import locale
     newUserObject = Usuario.objects.get(pk=pk)
@@ -240,7 +303,7 @@ class DetailUser(TestLogin, generic.DetailView):
         context["sucursal_object"] = self.object.sucursal
         context["familiares"] = self.object.datos_familiares
         context["object"] = self.get_object()
-
+    
         if self.object.rango == "Supervisor":
             vendedores_a_cargo = self.object.vendedores_a_cargo
             vendedores_sucursal = Usuario.objects.filter(sucursal=self.object.sucursal, rango="Vendedor")

@@ -89,14 +89,25 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS= ["nombre","dni"]
     
     def clean(self):
-        self.validation_nombre()
-        self.validation_sucursal()
-        self.validation_email()
-        self.validation_rango()
-        self.validation_dni()
-        self.validation_tel()
-        self.validation_fec_ingreso()
-        self.validation_fec_nacimiento()
+        errors = {}
+        validation_methods = [
+            self.validation_nombre,
+            self.validation_email,
+            self.validation_dni,
+            self.validation_tel,
+            self.validation_fec_ingreso,
+            self.validation_fec_nacimiento,
+        ]
+
+        for method in validation_methods:
+            try:
+                method()
+            except ValidationError as e:
+                errors.update(e.message_dict)
+
+        if errors:
+            raise ValidationError(errors)
+        
 
     #region Clean area de los campos
     def validation_nombre(self):
@@ -106,12 +117,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         if not re.match(r'^[a-zA-Z\s]*$', self.nombre):
             raise ValidationError({'nombre': 'Solo puede contener letras.'})
 
-    def validation_sucursal(self):
-        if not self.sucursal:
-            raise ValidationError({'sucursal': 'No puede estar vacio.'})
-            
-        if not Sucursal.objects.filter(pseudonimo=self.sucursal.pseudonimo).exists():
-            raise ValidationError({'sucursal': 'La sucursal no existe.'})
 
     def validation_email(self):
         try:
@@ -119,13 +124,14 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         except ValidationError: 
             raise ValidationError({'email': 'Email no válido.'})    
 
-    def validation_rango(self):
-        if self.rango not in dict(self.TIPOS_RANGOS_PARA_ACCESO_TODAS_SUCURSALES):
-            raise ValidationError({'rango': 'Rango no válido.'})
 
     def validation_dni(self):
         if len(self.dni) < 8: 
             raise ValidationError({'dni': 'DNI inválido.'})
+        
+        # Si el dni no es un número lanzar error
+        if not re.match(r'^\d+$', self.dni):
+            raise ValidationError({'dni': 'Debe contener solo números.'})
 
     def validation_tel(self):
         if len(self.tel) < 10:
@@ -135,15 +141,21 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
             raise ValidationError({'tel': 'Debe contener solo números.'}) 
 
     def validation_fec_ingreso(self):
-        if self.fec_ingreso and not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fec_ingreso):
-            raise ValidationError({'fec_ingreso': 'Debe estar en el formato DD/MM/AAAA.'})
-        
-        if self.fec_ingreso > datetime.now().strftime('%d/%m/%Y'):
-            raise ValidationError({'fec_ingreso': 'Fecha inválida.'})
+        if self.fec_ingreso:
+            if self.fec_ingreso and not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fec_ingreso):
+                raise ValidationError({'fec_ingreso': 'Debe estar en el formato DD/MM/AAAA.'})
+            
+            fec_ingreso = datetime.datetime.strptime(self.fec_ingreso, '%d/%m/%Y')
+            if fec_ingreso > datetime.datetime.now():
+                raise ValidationError({'fec_nacimiento': 'Fecha inválida.'})
+            
+            
 
     def validation_fec_nacimiento(self):
-        if self.fec_nacimiento > datetime.now().strftime('%d/%m/%Y'):
-            raise ValidationError({'fec_nacimiento': 'Fecha inválida.'})
+        if self.fec_nacimiento:
+            fec_nacimiento = datetime.datetime.strptime(self.fec_nacimiento, '%d/%m/%Y')
+            if fec_nacimiento > datetime.datetime.now():
+                raise ValidationError({'fec_nacimiento': 'Fecha inválida.'})
 
 
     # endregion 
