@@ -38,27 +38,19 @@ async function fetchCRUD(body, url) {
 
 
 confirmNewUser.addEventListener("click",async()=>{
-    let body = {
-        nombre: form_create_user.nombre.value,
-        dni: form_create_user.dni.value,
-        tel: form_create_user.tel.value,
-        fec_nacimiento: form_create_user.fec_nacimiento.value,
-        domic: form_create_user.domic.value,
-        prov: form_create_user.prov.value,
-        loc: form_create_user.loc.value,
-        cp: form_create_user.cp.value,
-        lugar_nacimiento: form_create_user.lugar_nacimiento.value,
-        estado_civil: form_create_user.estado_civil.value,
-        xp_laboral: form_create_user.xp_laboral.value,
-        sucursal: form_create_user.sucursal.value,
-        rango: form_create_user.rango.value,
-        fec_ingreso: form_create_user.fec_ingreso.value,
-        email: form_create_user.email.value,
-        password: form_create_user.password.value
-    }
+    body = {}
+    let inputs = form_create_user.querySelectorAll("input")
+    let textareas = form_create_user.querySelectorAll("textarea")
+    
+    inputs = [...inputs,...textareas]
 
+    inputs.forEach(element => {
+        body[element.name] = element.value
+    });
+    
     let response = await fetchCRUD(body,urlCreateUser)
     if(!response["success"]){
+        console.log(response["errors"])
         mostrarErrores(response["errors"],form_create_user)
     }
 

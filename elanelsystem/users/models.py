@@ -71,7 +71,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     lugar_nacimiento = models.CharField("Lugar de nacimiento",max_length=100, default ="")
     fec_nacimiento = models.CharField("Fecha de nacimiento", max_length = 10, default ="")
     estado_civil = models.CharField("Estado civil", max_length =30,default ="")
-    xp_laboral = models.TextField("Experiencia laboral", default ="Vacio")
+    xp_laboral = models.TextField("Experiencia laboral", blank=True,null=True, default="")
     datos_familiares = models.JSONField("Datos familiares", default=list,blank=True,null=True)
     vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
     faltas_tardanzas = models.JSONField("Faltas o tardanzas", default=list,blank=True,null=True)
@@ -97,6 +97,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
             self.validation_tel,
             self.validation_fec_ingreso,
             self.validation_fec_nacimiento,
+            self.validation_cp,
         ]
 
         for method in validation_methods:
@@ -117,15 +118,25 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         if not re.match(r'^[a-zA-Z\s]*$', self.nombre):
             raise ValidationError({'nombre': 'Solo puede contener letras.'})
 
+    # Validar el cp es decir el codigo postal, solamente puede contener numeros
+    def validation_cp(self):
+
+        if len(self.cp) > 5:
+            raise ValidationError({'cp': 'Codigo postal invalido.'})
+
+        if not re.match(r'^\d+$', self.cp):
+            raise ValidationError({'cp': 'Debe contener solo números.'})
 
     def validation_email(self):
         try:
            validate_email(self.email)
         except ValidationError: 
-            raise ValidationError({'email': 'Email no válido.'})    
+            raise ValidationError({'email': 'Email no válido.'}) 
+           
 
 
     def validation_dni(self):
+        
         if len(self.dni) < 8: 
             raise ValidationError({'dni': 'DNI inválido.'})
         
@@ -145,14 +156,27 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
             if self.fec_ingreso and not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fec_ingreso):
                 raise ValidationError({'fec_ingreso': 'Debe estar en el formato DD/MM/AAAA.'})
             
+            try:
+                fec_ingreso = datetime.datetime.strptime(self.fec_ingreso, '%d/%m/%Y')
+            except ValueError:
+                raise ValidationError({'fec_ingreso': 'Fecha inválida.'})
+
             fec_ingreso = datetime.datetime.strptime(self.fec_ingreso, '%d/%m/%Y')
             if fec_ingreso > datetime.datetime.now():
-                raise ValidationError({'fec_nacimiento': 'Fecha inválida.'})
+                raise ValidationError({'fec_ingreso': 'Fecha inválida.'})
             
             
 
     def validation_fec_nacimiento(self):
         if self.fec_nacimiento:
+            if self.fec_nacimiento and not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fec_nacimiento):
+                raise ValidationError({'fec_nacimiento': 'Debe estar en el formato DD/MM/AAAA.'})
+
+            try:
+                fec_nacimiento = datetime.datetime.strptime(self.fec_nacimiento, '%d/%m/%Y')
+            except ValueError:
+                raise ValidationError({'fec_nacimiento': 'Fecha inválida.'})
+
             fec_nacimiento = datetime.datetime.strptime(self.fec_nacimiento, '%d/%m/%Y')
             if fec_nacimiento > datetime.datetime.now():
                 raise ValidationError({'fec_nacimiento': 'Fecha inválida.'})

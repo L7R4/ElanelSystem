@@ -10,217 +10,181 @@
         <h1>DETALLES DEL USUARIO</h1>
     </div>
     <form method="POST"  autocomplete="off" id="form_create_user">
-            {% csrf_token %}
-            <h2>Datos personales</h2>
-            <input type="hidden" id="pkUser" value="{{object.id}}">
-            <div class="datosPersonalesWrapper">
-                <div class="inputWrapper grow3" id="nombreCompletoWrapper">
-                    {% for error in form.nombre.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
-                    <label for="">{{form.nombre.label}}</label>
-                    {{form.nombre}}
-                </div>
-                <div class="inputWrapper grow1" id="dniWrapper">
-                    {% for error in form.dni.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
-                    <label for=""> {{form.dni.label}}</label>
-                    {{form.dni}}
-                </div>
-                <div class="inputWrapper grow2" id="telefonoWrapper">
-                    {% for error in form.tel.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
-                    <label for="">{{form.tel.label}}</label>
-                    {{form.tel}}
-                </div>
-                <div class="inputWrapper grow3" id="domicWrapper">
-                    {% for error in form.domic.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
-                    <label for="">{{form.domic.label}}</label>
-                    {{form.domic}}
-                </div>
-
-                <div class="inputWrapper grow3" id="provWrapper">
-                    {% for error in form.prov.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
-                    <label for="">{{form.prov.label}}</label>
-                    {{form.prov}}
-                </div>
-
-                <div class="inputWrapper grow3" id="locWrapper">
-                    {% for error in form.loc.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
-                    <label for="">{{form.loc.label}}</label>
-                    {{form.loc}}
-                </div>
-                <div class="inputWrapper grow1" id="cpWrapper">
-                    {% for error in form.cp.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
-                    <label for="">{{form.cp.label}}</label>
-                    {{form.cp}}
-                </div>
-                <div class="inputWrapper grow3" id="lugarNacimientoWrapper">
-                    {% for error in form.lugar_nacimiento.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
-                    <label for="">{{form.lugar_nacimiento.label}}</label>
-                    {{form.lugar_nacimiento}}
-                </div>
-
-                <div class="inputWrapper grow1" id="fechaNacimientoWrapper">
-                    {% for error in form.fec_nacimiento.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
-                    <label for="">{{form.fec_nacimiento.label}}</label>
-                    {{form.fec_nacimiento}}
-                </div>
+        {% csrf_token %}
+        <h2>Datos personales</h2>
+        <div class="datosPersonalesWrapper">
+            <div class="inputWrapper" id="nombreCompletoWrapper">
+                <label for="">{{form.nombre.label}}</label>
+                <input id="nombre" type="text" name="nombre" class="input-read-write-default" required>
+            </div>
+            <div class="inputWrapper" id="dniWrapper">
                 
-                <div class="inputWrapper grow1" id="estadoCivilWrapper">
-                    {% for error in form.estado_civil.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
-                    <label for="">{{form.estado_civil.label}}</label>
-                    {{form.estado_civil}}
-                </div>
-
-                <div class="inputWrapper grow3" id="xpLaboralWrapper">
-                    {% for error in form.xp_laboral.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
-                    <label for="">{{form.xp_laboral.label}}</label>
-                    {{form.xp_laboral}}
-                </div>
-                <div class ="inputWrapper" id="familiares">
-                    <label for="">Datos familiares</label>
-                    {% for familiar in familiares %}
-                        <div class="familiar">
-                            <input type="text" name="familia_relacion_0" placeholder="Relación con el usuario" value="{{familiar.relacion}}">
-                            <input type="text" name="familia_nombre_0" placeholder="Nombre" value="{{familiar.nombre}}">
-                            <input type="text" name="familia_tel_0" placeholder="Teléfono" value="{{familiar.tel}}">
-                        </div>
-                    {% endfor %}
-                    <button type="button" id="agregar_familiar_button"onclick="agregarFamiliar()">Agregar Familiar</button>
-
-                </div>
+                <label for=""> {{form.dni.label}}</label>
+                <input type="text" maxlength="9" name="dni" class="input-read-write-default" required>
+                
+            </div>
+            <div class="inputWrapper" id="telefonoWrapper">
+                
+                <label for="">{{form.tel.label}}</label>
+                <input type="text" name="tel" maxlength="11" class="input-read-write-default" required>
             </div>
 
-            <h2>Datos logisticos</h2>
-            <div class="datosLogisticosWrapper">
-                <div class="inputsObligatorios {% if object.rango == 'Supervisor'%}active{%endif%}">
-                    
-                    <div id="sucursalWrapper" class="inputWrapper grow3">
-                        <label class="labelInput">Sucursal</label>
-                        <div class="containerInputAndOptions">
-                          <img class="iconDesplegar" src="{% static "images/icons/arrowDown.png" %}" alt="">
-                          <input type="text" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" readonly value="{{sucursal_object}}" class="onlySelect selectInput input-select-custom">
+            <div class="inputWrapper" id="fechaNacimientoWrapper">
+                <label for="">{{form.fec_nacimiento.label}}</label>
+                <input type="text" name="fec_nacimiento" class="inputFecha input-read-write-default" required>
+            </div>
             
-                          <ul class="list-select-custom options">
-                                {% for sucursal in sucursales %}
-                                    <li data-value="{{sucursal.pseudonimo}}">{{sucursal.pseudonimo}}</li>
-                                {% endfor %}
-                          </ul>
-                        </div>
-                    </div>
-
-                    <div id="rolWrapper" class="inputWrapper grow3">
-                        <label class="labelInput" for="">{{form.rango.label}}</label>
-
-                        <div class="containerInputAndOptions">
-                          <img class="iconDesplegar" src="{% static "images/icons/arrowDown.png" %}" alt="">
-                          {{form.rango}}
-                         
-                          <ul class="list-select-custom options">
-                                {% for rol in roles %}
-                                    <li data-value="{{rol}}">{{rol}}</li>
-                                {% endfor %}
-                          </ul>
-                        </div>
-                        {% for error in form.rango.errors %}
-                            <p>{{error}}</p>
-                        {% endfor %}
-                    </div>
-
-
-                    <div class="inputWrapper grow3" id="fec_ingresoWrapper">
-                        {% for error in form.fec_ingreso.errors %}
-                            <p>{{error}}</p>
-                        {% endfor %}
-                        <label for="">{{form.fec_ingreso.label}}</label>
-                        {{form.fec_ingreso}}                        
-                    </div>
-
-                    <div class="inputWrapper grow3" id="emailWrraper">
-                        {% for error in form.email.errors %}
-                            <p>{{error}}</p>
-                        {% endfor %}
-                        <label for="id_email">{{form.email.label}}</label>
-                        {{form.email}}
-                    </div>
-
-                    <div class="inputWrapper grow3" id="password1Wrapper">
-                        {% for error in form.password2.errors %}
-                            <p>{{error}}</p>
-                        {% endfor %}
-                        <label for="">{{form.password1.label}}</label>
-                        <input type="password" name="password1" id="password1" value="{{object.c}}" required="" autocomplete="off" maxlength="24" class="input-read-write-default">
-                        {% comment %} <button type="button" onclick="mostrarContraseña()">Mostrar contraseña</button> {% endcomment %}
-                    </div>
-
-                    <div class="inputWrapper grow3" id="password2Wrapper">
-                        {% for error in form.password2.errors %}
-                            <p>{{error}}</p>
-                        {% endfor %}
-                        <label for="">{{form.password2.label}}</label>
-                        <input type="password" name="password2" id="password2" value="{{object.c}}" required="" autocomplete="off" maxlength="24" class="input-read-write-default">
-                    </div>
-                </div>
-                <div id="vendedoresWrapper" class="{% if object.rango == 'Supervisor'%}active{%endif%}">
-                    <div class="textContainer">
-                        <h3>Elija los vendedores</h3>
-                    </div>
-                    <div class="listVendedores">
-                        <div class="containerList">
-                            <div class="items" id="itemsVendedores">
-                                <ul>
-                                    {% for v in vendedor_a_cargo %}
-                                        <li>
-                                            <input type="checkbox" checked name="idv_{{v.email}}" id="idv_{{v.email}}" value="{{v.email}}">
-                                            <label for="idv_{{v.email}}">{{v.nombre}}</label>
-                                        </li>
-                                    {% endfor %}
-                                    {% for v in vendedores %}
-                                        <li>
-                                            <input type="checkbox" name="idv_{{v.email}}" id="idv_{{v.email}}" value="{{v.email}}">
-                                            <label for="idv_{{v.email}}">{{v.nombre}}</label>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                
+            <div class="inputWrapper" id="domicWrapper">
+                <label for="">{{form.domic.label}}</label>
+                <input type="text" name="domic" class="input-read-write-default" required>
             </div>
+
+            <div class="inputWrapper" id="provWrapper">
+                
+                <label for="">{{form.prov.label}}</label>
+                <input type="text" name="prov" class="input-read-write-default" required>
+            </div>
+
+            <div class="inputWrapper" id="locWrapper">
+                
+                <label for="">{{form.loc.label}}</label>
+                <input type="text" name="loc" class="input-read-write-default" required>
+            </div>
+            <div class="inputWrapper" id="cpWrapper">
+                <label for="">{{form.cp.label}}</label>
+                <input type="text" name="cp" class="input-read-write-default" maxlength="5" required>
+                {% for error in form.cp.errors %}
+                    <p>{{error}}</p>
+                {% endfor %}
+            </div>
+            <div class="inputWrapper" id="lugarNacimientoWrapper">
+                <label for="">{{form.lugar_nacimiento.label}}</label>
+                <input type="text" name="lugar_nacimiento" class="input-read-write-default" required>
+            </div>
+
+            
+            <div class="inputWrapper" id="estadoCivilWrapper">
+                <label for="">{{form.estado_civil.label}}</label>
+                <input type="text" name="estado_civil" class="input-read-write-default" required>
+            </div>
+
+            <div class="inputWrapper" id="xpLaboralWrapper">
+                <label for="">{{form.xp_laboral.label}}</label>
+                <textarea cols="30" rows="10" name="xp_laboral" class="input-read-write-default" required></textarea>
+                    
+            </div>
+            <br>
+            <div class ="inputWrapper" id="familiares">
+                <label for="">Datos familiares</label>
+                
+                <div class="familiar">
+                    <div class="wrapperFamiliarInput">
+                        <input type="text" class="input-read-write-default" name="familia_relacion_0" placeholder="Relación con el usuario">
+                    </div>
+
+                    <div class="wrapperFamiliarInput">
+                        <input type="text" class="input-read-write-default" name="familia_nombre_0" placeholder="Nombre">
+                    </div>
+
+                    <div class="wrapperFamiliarInput">
+                        <input type="text" class="input-read-write-default" name="familia_tel_0" placeholder="Teléfono">
+                    </div>
+                </div>
+                <button type="button" id="agregar_familiar_button"onclick="agregarFamiliar()">Agregar Familiar</button>
+
+            </div>
+        </div>
+
+        <h2>Datos logisticos</h2>
+        <div class="datosLogisticosWrapper">
+            <div class="inputsObligatorios">
+                <div class="inputWrapper" id="sucursalWrapper">
+                    <label for="">Sucursal</label>
+                    <input type="text" readonly name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" class="selectInput input-read-write-default onlySelect">
+
+                    <ul id="contenedorAgencia" class="select">
+                        {% for agencia in sucursales %}
+                            <li>{{agencia.pseudonimo}}</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    
+                </div>
+                
+                <div class="inputWrapper" id="rolWrapper">
+                    
+                    <label for="">{{form.rango.label}}</label>
+                    <input type="text" readonly name="rango" class="onlySelect input-read-write-default" required>
+
+                    <ul id="contenedorRol" class="select">
+                        {% for  rol in roles %}
+                            <li>{{rol}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="inputWrapper" id="fec_ingresoWrapper">
+                    <label for="">{{form.fec_ingreso.label}}</label>
+                    <input type="text" name="fec_ingreso" class="inputFecha input-read-write-default" required>
+
+                </div>
+
+                <div class="inputWrapper" id="emailWrraper">
+                    <label for="id_email">{{form.email.label}}</label>
+                    <input type="text" name="email" class="input-read-write-default" required>
+
+
+                </div>
+
+                <div class="inputWrapper" id="password1Wrapper">
+                    
+                    <label for="">Contraseña</label>
+                    <input type="text" name="password" class="input-read-write-default" required>
+                    {% comment %} <button type="button" onclick="mostrarContraseña()">Mostrar contraseña</button> {% endcomment %}
+                </div>
+            </div>
+
+
+            <div id="vendedoresWrapper">
+                <div class="textContainer">
+                    <h3>Elija los vendedores</h3>
+                </div>
+                <div class="listVendedores">
+                    <div class="containerList">
+                        <div class="items" id="itemsVendedores">
+                            <ul>
+                                
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+        </div>
 
     </form>
     <div class="wrapperButtons">
         <button type="button" id="saveButton" form="form_create_user">Guardar</button>
-        <a id ="cancelar" href="{% url 'users:list_customers' %}"> Cancelar </a>
+        <a id ="cancelar" href="{% url 'users:list_users' %}"> Cancelar </a>
     </div>
 {% endblock content %}
 {% block js %}
+    <script>
+        let inputsFechas = document.querySelectorAll('.inputFecha');
+        inputsFechas.forEach(input => {
+            input.addEventListener('input', function (e) {
+                var input = e.target;
+                var val = input.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,2})(\d{0,4})/);
+                input.value = !val[2] ? val[1] : val[1] + '/' + val[2] + (val[3] ? '/' + val[3] : '');
+            });
+        })
+    </script>
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
-
-
-    <script src="{% static 'js/input_select_create_user.js' %}"></script>
+    <script src="{% static 'js/errorsFormManagement.js' %}"></script>
     <script src="{% static 'js/agregarFamiliar.js' %}"></script>
-    <script src="{% static 'js/asignarVendedores.js' %}"></script>
     <script src="{% static 'js/redirectToPDFNewUser.js' %}"></script>    
+
+
+    {% comment %} <script src="{% static 'js/asignarVendedores.js' %}"></script> {% endcomment %}
 {% endblock js %}
