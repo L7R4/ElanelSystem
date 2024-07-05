@@ -1,9 +1,11 @@
 
 import datetime
 import os
+import re
 from django.conf import settings
 from django.contrib.auth.models import Group,Permission
 from django.forms import ValidationError
+from django.db.utils import IntegrityError
 from django.shortcuts import redirect, render
 from django.views import generic
 
@@ -16,7 +18,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.models import Permission
 from sales.mixins import TestLogin
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-
+from django.core.validators import RegexValidator,EmailValidator,validate_email
 import json
 from django.http import HttpRequest, HttpResponseRedirect, HttpResponse, JsonResponse
 
@@ -36,110 +38,49 @@ class CrearUsuario(TestLogin, generic.View):
         context['form'] = self.form_class
 
         return render(request, self.template_name, context)
-    
-
-    # def post(self,request,*args, **kwargs):
-    #     form =self.form_class(request.POST)
-    #     if form.is_valid():
-    #         nombre = form.cleaned_data["nombre"]
-    #         dni = form.cleaned_data["dni"]
-    #         email = form.cleaned_data["email"]
-    #         tel = form.cleaned_data["tel"]
-    #         rango = form.cleaned_data["rango"]
-    #         password1 = "klf781CL"
-    #         password2 = "klf781CL"
-
-    #         new_user = self.model.objects.create_user(
-    #             email=email,
-    #             nombre=nombre,
-    #             dni=dni,
-    #             rango=rango,
-    #             password=password2
-    #         )
 
 
-    #         sucursal = form.cleaned_data["sucursal"]
-    #         sucursalObject = Sucursal.objects.get(pseudonimo = sucursal)
-
-    #         new_user.sucursal = sucursalObject
-    #         new_user.tel = tel
-    #         new_user.c = password1
-    #         new_user.is_active = True
-    #         new_user.domic = form.cleaned_data["domic"]
-    #         new_user.prov = form.cleaned_data["prov"]
-    #         new_user.cp = form.cleaned_data["cp"]
-    #         new_user.loc = form.cleaned_data["loc"]
-    #         new_user.lugar_nacimiento = form.cleaned_data["lugar_nacimiento"]
-    #         new_user.fec_nacimiento = form.cleaned_data["fec_nacimiento"]
-    #         new_user.fec_ingreso = form.cleaned_data["fec_ingreso"]
-    #         new_user.estado_civil = form.cleaned_data["estado_civil"]
-    #         new_user.xp_laboral = form.cleaned_data["xp_laboral"]
-    #         new_user.accesosTodasSucursales = True if(rango in Usuario.TIPOS_RANGOS_PARA_ACCESO_TODAS_SUCURSALES) else False
-            
-    #         # Para guardar los familiares en caso que haya
-    #         familiares = []
-    #         for key, value in request.POST.items():
-    #             if key.startswith('familia_nombre_') and value:
-    #                 familiares.append({
-    #                     'relacion': request.POST.get(f'familia_relacion_{key.split("_")[-1]}', ''),
-    #                     'nombre': value,
-    #                     'tel': request.POST.get(f'familia_tel_{key.split("_")[-1]}', '')
-    #                 })
-    #         new_user.datos_familiares = familiares
-    #         # ------------------------------------------------------------------------------
-            
-
-    #         # Para guardar los vendedores a cargo en caso que haya
-    #         vendedores = []
-    #         for key, value in request.POST.items():
-    #             if key.startswith('idv_') and value:
-    #                 vendedores.append({
-    #                     'nombre': Usuario.objects.get(email=value).nombre,
-    #                     'email': value,
-    #                 })
-    #         new_user.vendedores_a_cargo = vendedores
-    #         # ------------------------------------------------------------------------------       
-
-    #         # Para establecer al grupo que pertence segun el rango
-    #         grupo = Group.objects.get(name=rango)
-    #         new_user.groups.add(grupo)
-    #         # -------------------------------------------------------
-                
-    #         new_user.save()
-    #         response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[new_user.pk]),"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
-            
-    #         return JsonResponse(response_data, safe=False)
-
-    #     else:
-    #         context = {}
-    #         sucursales = Sucursal.objects.all()
-    #         context["sucursales"] = sucursales  
-    #         context["roles"] = self.roles
-    #         context["form"] = form
-    #         print(form)
-    #         return render(request, self.template_name,context)
-     
     def post(self, request, *args, **kwargs):
         form = json.loads(request.body)
         errors = {}
-
-
+        
         rango = form['rango']
         sucursal = form['sucursal']
+        email=form['email']
+        dni=form['dni']
 
+        usuario = Usuario()
 
         # Validar el rango
         if rango and not Group.objects.filter(name=rango).exists():
             errors['rango'] = 'Rango invalido.'
-        else:
+        elif rango:
             rango = Group.objects.get(name=rango)
 
 
         # Validar la sucursal
         if sucursal and not Sucursal.objects.filter(pseudonimo=sucursal).exists():
             errors['sucursal'] = 'Sucursal invalida.'
-        else:
+
+        elif sucursal:
             sucursal = Sucursal.objects.get(pseudonimo=sucursal)
+
+        # Validar la existencia del DNI
+        if dni and Usuario.objects.filter(dni=dni).exists():
+            errors['dni'] = 'DNI ya registrado.'
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
+
+
+        # Validar la existencia del email
+        if email and Usuario.objects.filter(email=email).exists():
+            errors['email'] = 'El email ya registrado.'
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
+
+        elif email:
+            try:
+                validate_email(email)
+            except ValidationError: 
+                errors['email'] = 'Email no válido.' 
 
         
         usuario = self.model.objects.create_user(
@@ -161,15 +102,62 @@ class CrearUsuario(TestLogin, generic.View):
         usuario.fec_ingreso = form['fec_ingreso']
         usuario.estado_civil = form['estado_civil']
         usuario.xp_laboral = form['xp_laboral']
-        
-
         usuario.c = form['password']
+
+        # Para guardar los familiares en caso que haya
+        familiares = []
+        flag = True
+        for key, value in form.items():
+            if key.startswith('familia_nombre_') and value:
+                numero = key.split("_")[-1]
+                print(f"Entro")
+                # Valido el texto de realacion con el familiar
+                relacion = form[f'familia_relacion_{numero}']
+                if not re.match(r'^[a-zA-Z\s]*$', relacion):
+                    errors[f'familia_relacion_{numero}'] = 'Solo puede contener letras.'
+                    flag = False
+                
+                tel = form[f'familia_tel_{numero}']
+                print(f"Tel: {tel}")
+                if not re.match(r'^\d+$', tel):
+                    errors[f'familia_tel_{numero}'] = 'Solo puede contener numeros.'
+                    flag = False
+
+                # Valido el texto de realacion con el familiar
+                nombre = value
+                if not re.match(r'^[a-zA-Z\s]*$', nombre):
+                    errors[f'familia_nombre_{numero}'] = 'Solo puede contener letras.' 
+                    flag = False  
+                
+                familiares.append({
+                    'relacion': relacion,
+                    'nombre': value,
+                    'tel': tel
+                })
+
+        if(flag):
+            usuario.datos_familiares = familiares
+      # ------------------------------------------------------------------------------    
+
+        # Para guardar los vendedores a cargo en caso que haya
+        vendedores = []
+        for key, value in form.items():
+            if key.startswith('idv_') and value:
+                
+                vendedores.append({
+                    'nombre': Usuario.objects.get(email=value).nombre,
+                    'email': value,
+                })
+        usuario.vendedores_a_cargo = vendedores
+        # ------------------------------------------------------------------------------       
+
+
 
         try:
             usuario.full_clean(exclude=['password'])
         except ValidationError as e:
             errors.update(e.message_dict)
-
+        print(f"Errores: {errors}")
         if len(errors) != 0:
             
             usuario.delete() # Eliminar el usuario creado por la funcion _create_user del modelo UserManager
@@ -180,53 +168,9 @@ class CrearUsuario(TestLogin, generic.View):
             usuario.groups.add(rango)
             usuario.save()
             print(f"Grupo de usuario {usuario.groups.all()}")
-            return JsonResponse({'success': True}, safe=False) 
-        
+            errorFlag = False
+            return JsonResponse({'success': True}, safe=False)         
 
-
-def viewsPDFNewUser(request,pk):
-    import locale
-    newUserObject = Usuario.objects.get(pk=pk)
-    # Establecer la configuración regional a español
-    locale.setlocale(locale.LC_TIME, '')
-
-    fecha = datetime.datetime.strptime(newUserObject.fec_ingreso, '%d/%m/%Y')
-    nombre_mes = fecha.strftime('%B')
-    
-    context ={
-                "day": fecha.strftime("%d"),
-                "month": fecha.strftime("%m"),
-                "name_month": nombre_mes,
-                "year": fecha.year,
-                "date_today": newUserObject.fec_ingreso,
-                "nombreCompleto":newUserObject.nombre,
-                "nroCliente": newUserObject.pk,
-                "domicilio": newUserObject.domic,
-                "localidad": newUserObject.loc,
-                "provincia": newUserObject.prov,
-                "cp": newUserObject.cp,
-                "telefono" : newUserObject.tel,
-                "lugar_nacimiento" : newUserObject.lugar_nacimiento,
-                "fec_nacimiento" : newUserObject.fec_nacimiento,
-                "dni": newUserObject.dni,
-                "estado_civil" : newUserObject.estado_civil,
-                "xp_laboral" : newUserObject.xp_laboral,
-                "datos_familiares" : newUserObject.datos_familiares,
-                "agenciaNombre": newUserObject.sucursal,
-                "provincia_localidad_sucursal": newUserObject.sucursal.localidad + "," + newUserObject.sucursal.provincia,
-                "agenciaDireccion": newUserObject.sucursal.direccion,
-            }
-            
-    userName = str(newUserObject.nombre)
-    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "newUser.pdf")
-    
-    printPDFNewUSer(context,request.build_absolute_uri(),urlPDF)
-
-    with open(urlPDF, 'rb') as pdf_file:
-        response = HttpResponse(pdf_file,content_type="application/pdf")
-        response['Content-Disposition'] = 'inline; filename='+userName+"_ficha"+'.pdf'
-        return response
-    
 
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
@@ -253,39 +197,6 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return HttpResponse(data, 'application/json')
         return render(request, self.template_name,context)
-
-
-def requestUsuariosAcargo(request):
-    sucursalName = request.GET.get("sucursal",None)
-    usuarioPk = request.GET.get("usuario",None)
-    usuarioObject = Usuario.objects.get(pk=usuarioPk)
-    
-    if sucursalName !="":
-        sucursalObject = Sucursal.objects.get(pseudonimo = sucursalName)
-        usuarios_filtrados = Usuario.objects.filter(sucursal = sucursalObject, rango="Vendedor").exclude(pk=usuarioPk)
-        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
-
-    else:
-        usuarios_filtrados = Usuario.objects.filter(rango = "Vendedor")
-        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
-    
-    
-    return JsonResponse({"data":usuarios_filtrados_listDict, "vendedores_a_cargo": usuarioObject.vendedores_a_cargo})
-
-def requestUsuarios(request):
-    sucursalName = request.GET.get("sucursal",None)
-    
-    if sucursalName !="":
-        sucursalObject = Sucursal.objects.get(pseudonimo = sucursalName)
-        usuarios_filtrados = Usuario.objects.filter(sucursal = sucursalObject, rango="Vendedor")
-        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
-
-    else:
-        usuarios_filtrados = Usuario.objects.filter(rango = "Vendedor")
-        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
-    
-    
-    return JsonResponse({"data":usuarios_filtrados_listDict})
 
 
 class DetailUser(TestLogin, generic.DetailView):
@@ -375,7 +286,83 @@ class DetailUser(TestLogin, generic.DetailView):
             context["form"] = form
             print(form)
             return render(request, self.template_name,context)
+
+
+def viewsPDFNewUser(request,pk):
+    import locale
+    newUserObject = Usuario.objects.get(pk=pk)
+    # Establecer la configuración regional a español
+    locale.setlocale(locale.LC_TIME, '')
+
+    fecha = datetime.datetime.strptime(newUserObject.fec_ingreso, '%d/%m/%Y')
+    nombre_mes = fecha.strftime('%B')
     
+    context ={
+                "day": fecha.strftime("%d"),
+                "month": fecha.strftime("%m"),
+                "name_month": nombre_mes,
+                "year": fecha.year,
+                "date_today": newUserObject.fec_ingreso,
+                "nombreCompleto":newUserObject.nombre,
+                "nroCliente": newUserObject.pk,
+                "domicilio": newUserObject.domic,
+                "localidad": newUserObject.loc,
+                "provincia": newUserObject.prov,
+                "cp": newUserObject.cp,
+                "telefono" : newUserObject.tel,
+                "lugar_nacimiento" : newUserObject.lugar_nacimiento,
+                "fec_nacimiento" : newUserObject.fec_nacimiento,
+                "dni": newUserObject.dni,
+                "estado_civil" : newUserObject.estado_civil,
+                "xp_laboral" : newUserObject.xp_laboral,
+                "datos_familiares" : newUserObject.datos_familiares,
+                "agenciaNombre": newUserObject.sucursal,
+                "provincia_localidad_sucursal": newUserObject.sucursal.localidad + "," + newUserObject.sucursal.provincia,
+                "agenciaDireccion": newUserObject.sucursal.direccion,
+            }
+            
+    userName = str(newUserObject.nombre)
+    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "newUser.pdf")
+    
+    printPDFNewUSer(context,request.build_absolute_uri(),urlPDF)
+
+    with open(urlPDF, 'rb') as pdf_file:
+        response = HttpResponse(pdf_file,content_type="application/pdf")
+        response['Content-Disposition'] = 'inline; filename='+userName+"_ficha"+'.pdf'
+        return response
+    
+def requestUsuariosAcargo(request):
+    sucursalName = request.GET.get("sucursal",None)
+    usuarioPk = request.GET.get("usuario",None)
+    usuarioObject = Usuario.objects.get(pk=usuarioPk)
+    
+    if sucursalName !="":
+        sucursalObject = Sucursal.objects.get(pseudonimo = sucursalName)
+        usuarios_filtrados = Usuario.objects.filter(sucursal = sucursalObject, rango="Vendedor").exclude(pk=usuarioPk)
+        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
+
+    else:
+        usuarios_filtrados = Usuario.objects.filter(rango = "Vendedor")
+        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
+    
+    
+    return JsonResponse({"data":usuarios_filtrados_listDict, "vendedores_a_cargo": usuarioObject.vendedores_a_cargo})
+
+def requestUsuarios(request):
+    sucursalName = request.GET.get("sucursal",None)
+    
+    if sucursalName !="":
+        sucursalObject = Sucursal.objects.get(pseudonimo = sucursalName)
+        usuarios_filtrados = Usuario.objects.filter(sucursal = sucursalObject, rango="Vendedor")
+        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
+
+    else:
+        usuarios_filtrados = Usuario.objects.filter(rango = "Vendedor")
+        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
+    
+    
+    return JsonResponse({"data":usuarios_filtrados_listDict})
+
     
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     

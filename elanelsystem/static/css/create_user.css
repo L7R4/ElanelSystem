@@ -39,7 +39,7 @@
     height: fit-content;
 }
 #form_create_user>div>#familiares {
-    grid-column: 1 / span 4;
+    grid-column: 1 / span 3;
 }
 
 /* #endregion */
@@ -51,8 +51,8 @@
 
 }
 
-#form_create_user> div > .inputWrapper > p{
-    position: absolute;
+#form_create_user p.message-error{
+    position: relative;
     font-size: clamp(1.1rem, 1vw, 1.3rem);
     font-family: raleway-semibold;
     color: #ff7b7b;
@@ -61,9 +61,7 @@
     border-radius: 0.6rem;
     white-space: nowrap;
 }
-/* #form_create_user>div.datosLogisticosWrapper>.inputsObligatorios > .inputWrapper{
-    grid-column: span 2;
-} */
+
 
 #form_create_user>h2 {
     color: var(--third-color);
@@ -136,25 +134,48 @@
 }
 
 #familiares>.familiar {
-    display: flex;
+    display: grid;
     gap: 1rem;
-    margin-bottom: 1rem;
-}
+    grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
+    margin-bottom: 2rem;
+    position: relative;
+    align-items: center;
 
-#familiares>.familiar>input {
-    height: 2.9rem;
-    width: 33%;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway;
-    background-color: #304361;
-    border: 2px solid var(--third-color);
-    border-radius: .6rem;
+}
+#familiares>.familiar>.wrapperFamiliarInput{
+    height: 3rem;
+    position: relative;
+}
+#familiares>.familiar>.wrapperButtonRemove {
+    position: absolute;
+    left: 100%;
+    margin-left: 1rem;
+    
+}
+#familiares>.familiar>.wrapperButtonRemove > button{
+    background-color: #ed1717;
+    color: var(--third-color);
+    border: none;
+    border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
     display: flex;
     align-items: center;
-    padding: .6rem;
-    text-indent: 1rem;
+    justify-content: center;
+    cursor: pointer;
+    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+    font-family: raleway-semibold;
     outline: none;
-    color: white;
+    transition: all .1s ease;
+}
+#familiares>.familiar>.wrapperButtonRemove > button:hover {
+    background-color: #ed1717a0;
+}
+
+#familiares>.familiar>.wrapperFamiliarInput>input {
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    color: var(--third-color);
+    height: 3rem;
 }
 
 #agregar_familiar_button {
