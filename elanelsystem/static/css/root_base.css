@@ -199,7 +199,7 @@ ul.list-select-custom {
    height: 0;
    overflow-y: auto;
    max-height: 16rem;
-   top: 70%;
+   top: 60%;
    transition: height 0.3s ease;
 }
 
@@ -209,7 +209,7 @@ ul.list-select-custom>li {
 }
 
 ul.list-select-custom>li:first-child {
-   padding-top: 1.6rem;
+   padding-top: 2rem;
 }
 
 ul.list-select-custom>li.selected {

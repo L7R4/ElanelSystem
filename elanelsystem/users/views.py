@@ -13,19 +13,20 @@ from users.utils import printPDFNewUSer
 
 from .models import Usuario,Cliente,Sucursal,Key
 from sales.models import Ventas,ArqueoCaja,MovimientoExterno
-from .forms import CreateClienteForm, FormCreateUser, UsuarioUpdateForm
+from .forms import CreateClienteForm
 from django.urls import reverse_lazy
 from django.contrib.auth.models import Permission
 from sales.mixins import TestLogin
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.core.validators import RegexValidator,EmailValidator,validate_email
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.validators import validate_email
 import json
-from django.http import HttpRequest, HttpResponseRedirect, HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse
 
 #region Usuarios - - - - - - - - - - - - - - - - - - - -
+
+
 class CrearUsuario(TestLogin, generic.View):
     model = Usuario
-    form_class = FormCreateUser
     template_name = "create_user.html"
     roles = Group.objects.all()
     sucursales = Sucursal.objects.all()
@@ -35,7 +36,6 @@ class CrearUsuario(TestLogin, generic.View):
         sucursales = Sucursal.objects.all()
         context["sucursales"] = sucursales
         context["roles"] = self.roles
-        context['form'] = self.form_class
 
         return render(request, self.template_name, context)
 
@@ -207,7 +207,6 @@ class DetailUser(TestLogin, generic.DetailView):
     def get(self,request,*args,**kwargs):
         self.object = self.get_object()
         context ={}
-        context["form"] = UsuarioUpdateForm(instance = self.object)
         sucursales = Sucursal.objects.all()
         context["sucursales"] = sucursales
         context["roles"] = self.roles
@@ -228,64 +227,64 @@ class DetailUser(TestLogin, generic.DetailView):
         return render(request, self.template_name, context)
     
 
-    def post(self,request,*args, **kwargs):
-        self.object = self.get_object()
-        form =UsuarioUpdateForm(request.POST, instance = self.object)
-        updateUser = Usuario.objects.get(pk = self.object.pk)
+    # def post(self,request,*args, **kwargs):
+    #     self.object = self.get_object()
+    #     form =UsuarioUpdateForm(request.POST, instance = self.object)
+    #     updateUser = Usuario.objects.get(pk = self.object.pk)
 
-        if form.is_valid():
-            nombre = form.cleaned_data["nombre"]
-            dni = form.cleaned_data["dni"]
-            email = form.cleaned_data["email"]
-            sucursal = request.POST.get("sucursal")
-            updateUser.sucursal = Sucursal.objects.get(pseudonimo = sucursal)
-            updateUser.full_clean()
-            tel = form.cleaned_data["tel"]
-            rango = form.cleaned_data["rango"]
-            password1 = form.cleaned_data["password1"]
-            password2 = form.cleaned_data["password2"]
+    #     if form.is_valid():
+    #         nombre = form.cleaned_data["nombre"]
+    #         dni = form.cleaned_data["dni"]
+    #         email = form.cleaned_data["email"]
+    #         sucursal = request.POST.get("sucursal")
+    #         updateUser.sucursal = Sucursal.objects.get(pseudonimo = sucursal)
+    #         updateUser.full_clean()
+    #         tel = form.cleaned_data["tel"]
+    #         rango = form.cleaned_data["rango"]
+    #         password1 = form.cleaned_data["password1"]
+    #         password2 = form.cleaned_data["password2"]
 
-            updateUser.rango = rango
-            if(rango != "Supervisor"):
-                updateUser.vendedores_a_cargo = []
-            else:
-                # Para guardar los vendedores a cargo en caso que haya
-                vendedores = []
-                for key, value in request.POST.items():
-                    if key.startswith('idv_') and value:
-                        vendedores.append({
-                            'nombre': Usuario.objects.get(email=value).nombre,
-                            'email': value,
-                        })
-                updateUser.vendedores_a_cargo = vendedores
-            # ------------------------------------------------------------------------------       
+    #         updateUser.rango = rango
+    #         if(rango != "Supervisor"):
+    #             updateUser.vendedores_a_cargo = []
+    #         else:
+    #             # Para guardar los vendedores a cargo en caso que haya
+    #             vendedores = []
+    #             for key, value in request.POST.items():
+    #                 if key.startswith('idv_') and value:
+    #                     vendedores.append({
+    #                         'nombre': Usuario.objects.get(email=value).nombre,
+    #                         'email': value,
+    #                     })
+    #             updateUser.vendedores_a_cargo = vendedores
+    #         # ------------------------------------------------------------------------------       
             
-            updateUser.nombre = nombre
-            updateUser.tel = tel
-            updateUser.email = email
-            updateUser.dni = dni
-            updateUser.c = password1
-            updateUser.set_password(password1)
+    #         updateUser.nombre = nombre
+    #         updateUser.tel = tel
+    #         updateUser.email = email
+    #         updateUser.dni = dni
+    #         updateUser.c = password1
+    #         updateUser.set_password(password1)
             
 
-            grupo = Group.objects.get(name=rango)
+    #         grupo = Group.objects.get(name=rango)
 
-            updateUser.groups.clear()
-            updateUser.groups.add(grupo)
-            updateUser.save()
+    #         updateUser.groups.clear()
+    #         updateUser.groups.add(grupo)
+    #         updateUser.save()
             
-            response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[updateUser.pk]),"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
-            return JsonResponse(response_data, safe=False)
+    #         response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[updateUser.pk]),"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
+    #         return JsonResponse(response_data, safe=False)
 
 
-        else:
-            context = {}
-            sucursales = Sucursal.objects.all()
-            context["sucursales"] = sucursales
-            context["roles"] = self.roles
-            context["form"] = form
-            print(form)
-            return render(request, self.template_name,context)
+    #     else:
+    #         context = {}
+    #         sucursales = Sucursal.objects.all()
+    #         context["sucursales"] = sucursales
+    #         context["roles"] = self.roles
+    #         context["form"] = form
+    #         print(form)
+    #         return render(request, self.template_name,context)
 
 
 def viewsPDFNewUser(request,pk):
@@ -331,6 +330,7 @@ def viewsPDFNewUser(request,pk):
         response['Content-Disposition'] = 'inline; filename='+userName+"_ficha"+'.pdf'
         return response
     
+
 def requestUsuariosAcargo(request):
     sucursalName = request.GET.get("sucursal",None)
     usuarioPk = request.GET.get("usuario",None)
@@ -347,6 +347,7 @@ def requestUsuariosAcargo(request):
     
     
     return JsonResponse({"data":usuarios_filtrados_listDict, "vendedores_a_cargo": usuarioObject.vendedores_a_cargo})
+
 
 def requestUsuarios(request):
     sucursalName = request.GET.get("sucursal",None)
