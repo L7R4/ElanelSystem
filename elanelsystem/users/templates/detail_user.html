@@ -14,68 +14,81 @@
         <h2>Datos personales</h2>
         <div class="datosPersonalesWrapper">
             <div class="inputWrapper" id="nombreCompletoWrapper">
-                <label for="">{{form.nombre.label}}</label>
-                <input id="nombre" type="text" name="nombre" class="input-read-write-default" required>
+                <label for="">Nombre completo</label>
+                <input id="nombre" type="text" name="nombre" value="{{object.nombre}}" class="input-read-write-default" required>
             </div>
             <div class="inputWrapper" id="dniWrapper">
                 
-                <label for=""> {{form.dni.label}}</label>
-                <input type="text" maxlength="9" name="dni" class="input-read-write-default" required>
+                <label for="">DNI</label>
+                <input type="text" maxlength="9" name="dni" value="{{object.dni}}" class="input-read-write-default" required>
                 
             </div>
             <div class="inputWrapper" id="telefonoWrapper">
                 
-                <label for="">{{form.tel.label}}</label>
-                <input type="text" name="tel" maxlength="11" class="input-read-write-default" required>
+                <label for="">Telefono</label>
+                <input type="text" name="tel" maxlength="11" value="{{object.tel}}" class="input-read-write-default" required>
             </div>
 
             <div class="inputWrapper" id="fechaNacimientoWrapper">
-                <label for="">{{form.fec_nacimiento.label}}</label>
-                <input type="text" name="fec_nacimiento" class="inputFecha input-read-write-default" required>
+                <label for="">Fecha de nacimiento</label>
+                <input type="text" name="fec_nacimiento" value="{{object.fec_nacimiento}}" class="inputFecha input-read-write-default" required>
             </div>
             
             <div class="inputWrapper" id="domicWrapper">
-                <label for="">{{form.domic.label}}</label>
-                <input type="text" name="domic" class="input-read-write-default" required>
+                <label for="">Domicilio</label>
+                <input type="text" name="domic" value="{{object.domic}}" class="input-read-write-default" required>
             </div>
 
             <div class="inputWrapper" id="provWrapper">
                 
-                <label for="">{{form.prov.label}}</label>
-                <input type="text" name="prov" class="input-read-write-default" required>
+                <label for="">Provincia</label>
+                <input type="text" name="prov" value="{{object.prov}}" class="input-read-write-default" required>
             </div>
 
             <div class="inputWrapper" id="locWrapper">
                 
-                <label for="">{{form.loc.label}}</label>
-                <input type="text" name="loc" class="input-read-write-default" required>
+                <label for="">Localidad</label>
+                <input type="text" name="loc" value="{{object.loc}}" class="input-read-write-default" required>
             </div>
             <div class="inputWrapper" id="cpWrapper">
-                <label for="">{{form.cp.label}}</label>
-                <input type="text" name="cp" class="input-read-write-default" maxlength="5" required>
+                <label for="">Codigo postal</label>
+                <input type="text" name="cp" value="{{object.cp}}" class="input-read-write-default" maxlength="5" required>
                 {% for error in form.cp.errors %}
                     <p>{{error}}</p>
                 {% endfor %}
             </div>
             <div class="inputWrapper" id="lugarNacimientoWrapper">
-                <label for="">{{form.lugar_nacimiento.label}}</label>
-                <input type="text" name="lugar_nacimiento" class="input-read-write-default" required>
+                <label for="">Lugar de nacimiento</label>
+                <input type="text" value="{{object.lugar_nacimiento}}" name="lugar_nacimiento" class="input-read-write-default" required>
             </div>
 
             
             <div class="inputWrapper" id="estadoCivilWrapper">
-                <label for="">{{form.estado_civil.label}}</label>
-                <input type="text" name="estado_civil" class="input-read-write-default" required>
+                <label for="">Estado civil</label>
+                <input type="text" name="estado_civil" value="{{object.estado_civil}}" class="input-read-write-default" required>
             </div>
 
             <div class="inputWrapper" id="xpLaboralWrapper">
-                <label for="">{{form.xp_laboral.label}}</label>
-                <textarea cols="30" rows="10" name="xp_laboral" class="input-read-write-default" required></textarea>
-                    
+                <label for="">Experiencia laboral</label>
+                <textarea cols="30" rows="10" name="xp_laboral" class="input-read-write-default" required>{{object.xp_laboral}}</textarea>
+                
             </div>
             <br>
             <div class ="inputWrapper" id="familiares">
                 <label for="">Datos familiares</label>
+                {% for familiar in familiares  %}
+                    <div class="familiar">
+                        <div class="wrapperFamiliarInput">
+                            <input type="text" class="input-read-write-default" name="familia_relacion_{{ forloop.counter0 }}" placeholder="Relación con el usuario" value="{{ familiar.relacion }}">
+                        </div>
+                        <div class="wrapperFamiliarInput">
+                            <input type="text" class="input-read-write-default" name="familia_nombre_{{ forloop.counter0 }}" placeholder="Nombre" value="{{ familiar.nombre }}">
+                        </div>
+                        <div class="wrapperFamiliarInput">
+                            <input type="text" class="input-read-write-default" name="familia_tel_{{ forloop.counter0 }}" placeholder="Teléfono" value="{{ familiar.tel }}">
+                        </div>
+                    </div>
+                {% endfor %}
                 
                 <div class="familiar">
                     <div class="wrapperFamiliarInput">
@@ -98,40 +111,41 @@
         <h2>Datos logisticos</h2>
         <div class="datosLogisticosWrapper">
             <div class="inputsObligatorios">
-                <div class="inputWrapper" id="sucursalWrapper">
-                    <label for="">Sucursal</label>
-                    <input type="text" readonly name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" class="selectInput input-read-write-default onlySelect">
-
-                    <ul id="contenedorAgencia" class="select">
-                        {% for agencia in sucursales %}
-                            <li>{{agencia.pseudonimo}}</li>
-                        {% endfor %}
-                    </ul>
-                    
-                    
+                <div id="sucursalWrapper" class="inputWrapper">
+                    <label class="labelInput">Sucursal</label>
+                    <div class="containerInputAndOptions">
+                        <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                        <input type="text" readonly value ="{{object.sucursal.pseudonimo}}" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" class="input-select-custom input-read-write-default onlySelect">
+                        <ul id="contenedorAgencia" class="list-select-custom options">
+                            {% for agencia in sucursales %}
+                                <li data-value="{{agencia.pseudonimo}}">{{agencia.pseudonimo}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
                 
-                <div class="inputWrapper" id="rolWrapper">
-                    
-                    <label for="">{{form.rango.label}}</label>
-                    <input type="text" readonly name="rango" class="onlySelect input-read-write-default" required>
-
-                    <ul id="contenedorRol" class="select">
-                        {% for  rol in roles %}
-                            <li>{{rol}}</li>
-                        {% endfor %}
-                    </ul>
+                <div id="rangoWrapper" class="inputWrapper">
+                    <label class="labelInput">Rango</label>
+                    <div class="containerInputAndOptions">
+                        <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                        <input type="text" readonly value ="{{object.rango}}" name="rango" id="rangoInput" required="required" autocomplete="off" maxlength="50" class="input-select-custom input-read-write-default onlySelect">
+                        <ul id="contenedorAgencia" class="list-select-custom options">
+                            {% for rol in roles %}
+                                <li data-value="{{rol}}">{{rol}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="inputWrapper" id="fec_ingresoWrapper">
-                    <label for="">{{form.fec_ingreso.label}}</label>
-                    <input type="text" name="fec_ingreso" class="inputFecha input-read-write-default" required>
+                    <label for="">Fecha de ingreso</label>
+                    <input type="text" value ="{{object.fec_ingreso}}" name="fec_ingreso" class="inputFecha input-read-write-default" required>
 
                 </div>
 
                 <div class="inputWrapper" id="emailWrraper">
-                    <label for="id_email">{{form.email.label}}</label>
-                    <input type="text" name="email" class="input-read-write-default" required>
+                    <label for="id_email">Email</label>
+                    <input type="text" name="email" value ="{{object.email}}" class="input-read-write-default" required>
 
 
                 </div>
@@ -139,8 +153,7 @@
                 <div class="inputWrapper" id="password1Wrapper">
                     
                     <label for="">Contraseña</label>
-                    <input type="text" name="password" class="input-read-write-default" required>
-                    {% comment %} <button type="button" onclick="mostrarContraseña()">Mostrar contraseña</button> {% endcomment %}
+                    <input type="text" name="password" value ="{{object.c}}" class="input-read-write-default" required>
                 </div>
             </div>
 
@@ -185,6 +198,5 @@
     <script src="{% static 'js/agregarFamiliar.js' %}"></script>
     <script src="{% static 'js/redirectToPDFNewUser.js' %}"></script>    
 
-
-    {% comment %} <script src="{% static 'js/asignarVendedores.js' %}"></script> {% endcomment %}
+    <script src="{% static 'js/asignarVendedores.js' %}"></script>
 {% endblock js %}

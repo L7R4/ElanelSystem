@@ -29,6 +29,7 @@ class CrearUsuario(TestLogin, generic.View):
     model = Usuario
     template_name = "create_user.html"
     roles = Group.objects.all()
+    
     sucursales = Sucursal.objects.all()
 
     def get(self,request,*args, **kwargs):
@@ -169,7 +170,8 @@ class CrearUsuario(TestLogin, generic.View):
             usuario.save()
             print(f"Grupo de usuario {usuario.groups.all()}")
             errorFlag = False
-            return JsonResponse({'success': True}, safe=False)         
+            response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
+            return JsonResponse(response_data, safe=False)         
 
 
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
@@ -227,64 +229,129 @@ class DetailUser(TestLogin, generic.DetailView):
         return render(request, self.template_name, context)
     
 
-    # def post(self,request,*args, **kwargs):
-    #     self.object = self.get_object()
-    #     form =UsuarioUpdateForm(request.POST, instance = self.object)
-    #     updateUser = Usuario.objects.get(pk = self.object.pk)
+    def post(self, request, *args, **kwargs):
+        form = json.loads(request.body)
+        errors = {}
+        
+        rango = form['rango']
+        sucursal = form['sucursal']
+        email=form['email']
+        dni=form['dni']
 
-    #     if form.is_valid():
-    #         nombre = form.cleaned_data["nombre"]
-    #         dni = form.cleaned_data["dni"]
-    #         email = form.cleaned_data["email"]
-    #         sucursal = request.POST.get("sucursal")
-    #         updateUser.sucursal = Sucursal.objects.get(pseudonimo = sucursal)
-    #         updateUser.full_clean()
-    #         tel = form.cleaned_data["tel"]
-    #         rango = form.cleaned_data["rango"]
-    #         password1 = form.cleaned_data["password1"]
-    #         password2 = form.cleaned_data["password2"]
+       # Obtener el usuario existente
+        usuario = self.get_object()
+        print(usuario)
+        # Validar el rango
+        if rango and not Group.objects.filter(name=rango).exists():
+            errors['rango'] = 'Rango invalido.'
+        elif rango:
+            rango = Group.objects.get(name=rango)
 
-    #         updateUser.rango = rango
-    #         if(rango != "Supervisor"):
-    #             updateUser.vendedores_a_cargo = []
-    #         else:
-    #             # Para guardar los vendedores a cargo en caso que haya
-    #             vendedores = []
-    #             for key, value in request.POST.items():
-    #                 if key.startswith('idv_') and value:
-    #                     vendedores.append({
-    #                         'nombre': Usuario.objects.get(email=value).nombre,
-    #                         'email': value,
-    #                     })
-    #             updateUser.vendedores_a_cargo = vendedores
-    #         # ------------------------------------------------------------------------------       
-            
-    #         updateUser.nombre = nombre
-    #         updateUser.tel = tel
-    #         updateUser.email = email
-    #         updateUser.dni = dni
-    #         updateUser.c = password1
-    #         updateUser.set_password(password1)
-            
+        # Validar la sucursal
+        if sucursal and not Sucursal.objects.filter(pseudonimo=sucursal).exists():
+            errors['sucursal'] = 'Sucursal invalida.'
+        elif sucursal:
+            sucursal = Sucursal.objects.get(pseudonimo=sucursal)
 
-    #         grupo = Group.objects.get(name=rango)
+        # Validar la existencia del DNI
+        if dni and Usuario.objects.filter(dni=dni).exclude(pk=usuario.pk).exists():
+            errors['dni'] = 'DNI ya registrado.'
 
-    #         updateUser.groups.clear()
-    #         updateUser.groups.add(grupo)
-    #         updateUser.save()
-            
-    #         response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[updateUser.pk]),"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
-    #         return JsonResponse(response_data, safe=False)
+        # Validar la existencia del email
+        if email and Usuario.objects.filter(email=email).exclude(pk=usuario.pk).exists():
+            errors['email'] = 'El email ya registrado.'
+        elif email:
+            try:
+                validate_email(email)
+            except ValidationError: 
+                errors['email'] = 'Email no válido.' 
+
+        
+        # Asignar campos adicionales
+        usuario.email = email
+        usuario.nombre=form['nombre']
+        usuario.dni=dni
+        usuario.rango=rango
+        usuario.password=form['password']
+
+        usuario.tel = form['tel']
+        usuario.domic = form['domic']
+        usuario.prov = form['prov']
+        usuario.loc = form['loc']
+        usuario.cp = form['cp']
+        usuario.lugar_nacimiento = form['lugar_nacimiento']
+        usuario.fec_nacimiento = form['fec_nacimiento']
+        usuario.fec_ingreso = form['fec_ingreso']
+        usuario.estado_civil = form['estado_civil']
+        usuario.xp_laboral = form['xp_laboral']
+        usuario.c = form['password']
+
+    #region Para guardar los familiares en caso que haya
+        familiares = []
+        flag = True
+        for key, value in form.items():
+            if key.startswith('familia_nombre_') and value:
+                numero = key.split("_")[-1]
+                print(f"Entro")
+                # Valido el texto de realacion con el familiar
+                relacion = form[f'familia_relacion_{numero}']
+                if not re.match(r'^[a-zA-Z\s]*$', relacion):
+                    errors[f'familia_relacion_{numero}'] = 'Solo puede contener letras.'
+                    flag = False
+                
+                tel = form[f'familia_tel_{numero}']
+                print(f"Tel: {tel}")
+                if not re.match(r'^\d+$', tel):
+                    errors[f'familia_tel_{numero}'] = 'Solo puede contener numeros.'
+                    flag = False
+
+                # Valido el texto de realacion con el familiar
+                nombre = value
+                if not re.match(r'^[a-zA-Z\s]*$', nombre):
+                    errors[f'familia_nombre_{numero}'] = 'Solo puede contener letras.' 
+                    flag = False  
+                
+                familiares.append({
+                    'relacion': relacion,
+                    'nombre': value,
+                    'tel': tel
+                })
+
+        if(flag):
+            usuario.datos_familiares = familiares
+    #endregion ------------------------------------------------------------------------------    
+
+    #region Para guardar los vendedores a cargo en caso que haya
+        vendedores = []
+        for key, value in form.items():
+            if key.startswith('idv_') and value:
+                
+                vendedores.append({
+                    'nombre': Usuario.objects.get(email=value).nombre,
+                    'email': value,
+                })
+        usuario.vendedores_a_cargo = vendedores
+    #endregion       
 
 
-    #     else:
-    #         context = {}
-    #         sucursales = Sucursal.objects.all()
-    #         context["sucursales"] = sucursales
-    #         context["roles"] = self.roles
-    #         context["form"] = form
-    #         print(form)
-    #         return render(request, self.template_name,context)
+
+        try:
+            usuario.full_clean(exclude=['password'])
+        except ValidationError as e:
+            errors.update(e.message_dict)
+        print(f"Errores: {errors}")
+        if len(errors) != 0:
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
+        else:
+            # Asignamos aca porque entonces nos aseguramos que no tengamos errores en los campos y podamos hacer la referencia sin problemas
+            usuario.sucursal = sucursal
+            usuario.groups.add(rango)
+            usuario.set_password(form['password'])
+            usuario.save()
+            print(f"Grupo de usuario {usuario.groups.all()}")
+            errorFlag = False
+            return JsonResponse({'success': True}, safe=False)         
+
 
 
 def viewsPDFNewUser(request,pk):
