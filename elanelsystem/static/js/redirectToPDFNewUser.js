@@ -32,7 +32,6 @@ async function fetchCRUD(body, url) {
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error("Error en fetchCRUD:", error); // Agregar este log
     }
 }
 
