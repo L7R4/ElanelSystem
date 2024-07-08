@@ -30,20 +30,24 @@
     gap: 2rem;
     padding: 2rem 0;
 }
+
 /* #region GRID inputsWrapper */
-#form_create_user>div>#nombreCompletoWrapper,#form_create_user>div>#domicWrapper {
+#form_create_user>div>#nombreCompletoWrapper,
+#form_create_user>div>#domicWrapper {
     grid-column: span 2;
 }
+
 #form_create_user>div>#xpLaboralWrapper {
     grid-column: 1/ span 3;
     height: fit-content;
 }
+
 #form_create_user>div>#familiares {
     grid-column: 1 / span 3;
 }
 
 /* #endregion */
-#form_create_user>div.datosLogisticosWrapper>.inputsObligatorios{
+#form_create_user>div.datosLogisticosWrapper>.inputsObligatorios {
     display: grid;
     grid-column: span 4;
     grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
@@ -51,7 +55,7 @@
 
 }
 
-#form_create_user p.message-error{
+#form_create_user p.message-error {
     position: relative;
     font-size: clamp(1.1rem, 1vw, 1.3rem);
     font-family: raleway-semibold;
@@ -86,7 +90,12 @@
     font-size: clamp(1.3rem, 1.1vw, 2rem);
 
 }
-.inputWrapper > label{
+
+ul.list-select-custom {
+    background-color: var(--background-color);
+}
+
+.inputWrapper>label {
     font-size: clamp(1.3rem, 1.0vw, 1.5rem);
     font-family: raleway-semibold;
     color: var(--third-color);
@@ -142,17 +151,20 @@
     align-items: center;
 
 }
-#familiares>.familiar>.wrapperFamiliarInput{
+
+#familiares>.familiar>.wrapperFamiliarInput {
     height: 3rem;
     position: relative;
 }
+
 #familiares>.familiar>.wrapperButtonRemove {
     position: absolute;
     left: 100%;
     margin-left: 1rem;
-    
+
 }
-#familiares>.familiar>.wrapperButtonRemove > button{
+
+#familiares>.familiar>.wrapperButtonRemove>button {
     background-color: #ed1717;
     color: var(--third-color);
     border: none;
@@ -168,7 +180,8 @@
     outline: none;
     transition: all .1s ease;
 }
-#familiares>.familiar>.wrapperButtonRemove > button:hover {
+
+#familiares>.familiar>.wrapperButtonRemove>button:hover {
     background-color: #ed1717a0;
 }
 
@@ -193,46 +206,6 @@
     /* margin-top: 1rem; */
 }
 
-.inputWrapper>input.selectInput {
-    position: relative;
-    z-index: 2;
-}
-
-.inputWrapper>.select {
-    position: absolute;
-    height: 0;
-    max-height: 20rem;
-    overflow-y: auto;
-    top: 70%;
-    /* left: 3px; */
-    transition: all .4s ease;
-    width: 100%;
-    z-index: 1;
-    background: white;
-    border-radius: 0.5rem;
-    /* border: 3px solid var(--third-color); */
-}
-
-.inputWrapper>.select>li {
-    padding: 1rem;
-    font-family: raleway;
-    font-size: 1.4rem;
-    color: black;
-}
-
-.inputWrapper>.select>li:first-child {
-    padding-top: 3rem;
-}
-
-.inputWrapper>.select>li:hover {
-    background-color: #3d7bd867;
-    cursor: pointer;
-}
-
-.inputWrapper>.select::-webkit-scrollbar {
-    width: 4px;
-    border-radius: 5px;
-}
 
 .inputWrapper>input[type=number]::-webkit-outer-spin-button,
 .inputWrapper>input[type=number]::-webkit-inner-spin-button {
@@ -241,39 +214,36 @@
     margin: 0;
 }
 
-#form_create_user>div.datosLogisticosWrapper>.inputsObligatorios.active {
-    width: 60%;
-}
-
-#form_create_user>div.datosLogisticosWrapper>.inputsObligatorios.supervisorPicked {
-    width: 60%;
-}
-
-#sucursalInput{
+#sucursalInput {
     background-color: var(--background-color);
     color: var(--third-color);
     z-index: 4;
 }
 
-#sucursalInput+ul.options{
+#sucursalInput+ul.options {
     z-index: 3;
     background-color: var(--background-color);
 }
 
-#rangoInput{
+#rangoInput {
     background-color: var(--background-color);
     color: var(--third-color);
     z-index: 2;
 }
 
-#rangoInput+ul.options{
+#rangoInput+ul.options {
     z-index: 1;
     background-color: var(--background-color);
 }
 
-#vendedoresWrapper{
+#vendedoresWrapper {
     display: none;
 }
+
+.inputWrapper>div.containerInputAndOptions {
+    height: 3rem;
+}
+
 #vendedoresWrapper.active {
     display: unset;
 }
@@ -312,13 +282,13 @@
 }
 
 #itemsVendedores>ul>li>label {
-    color: white;
+    color: var(--third-color);
     display: block;
     width: 100%;
     padding: 1.2rem;
     font-family: raleway-semibold;
     cursor: pointer;
-    font-size: clamp(1.3rem, 1.1vw, 2rem);
+    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
 }
 
 #itemsVendedores>ul>li:hover {

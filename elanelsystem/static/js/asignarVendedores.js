@@ -52,6 +52,7 @@ async function vendedoresACargoGet(sucursal, usuario) {
     return data;
 }
 
+
 // Funcion para cuando se esta creando un usuario nuevo
 async function vendedoresGet(sucursal) {
     const response = await fetch(`/usuario/administracion/requestusuarios/?sucursal=${sucursal}`, {
@@ -62,6 +63,7 @@ async function vendedoresGet(sucursal) {
     const data = await response.json();
     return data;
 }
+
 
 // Funcion para cuando se esta editan un usuario
 function createVendedorACargoHTMLElement(contenedor, vendedor, list_vendedores_a_cargo) {
@@ -81,6 +83,8 @@ function createVendedorACargoHTMLElement(contenedor, vendedor, list_vendedores_a
     }
     contenedor.insertAdjacentHTML('afterbegin', stringForHTML);
 }
+
+
 // Funcion para cuando se esta creando un usuario nuevo
 function createVendedorHTMLElement(contenedor, vendedor) {
     let stringForHTML = ""
@@ -92,6 +96,7 @@ function createVendedorHTMLElement(contenedor, vendedor) {
     </li> `;
     contenedor.insertAdjacentHTML('afterbegin', stringForHTML);
 }
+
 
 function isVendedorInCargoList(vendedor, list_vendedores_a_cargo) {
     return list_vendedores_a_cargo.some(item => item.email === vendedor.email);
