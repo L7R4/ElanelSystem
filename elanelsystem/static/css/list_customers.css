@@ -36,8 +36,8 @@
 }
 
 #create_customer {
-    font-size: clamp(1.3rem, 1.1vw, 1.7rem);
-    padding: 1rem 2.3rem;
+    font-size: clamp(1.3rem, 1.1vw, 1.5rem);
+    padding: 1rem 3rem;
 }
 
 #customer_search {

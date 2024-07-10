@@ -10,24 +10,75 @@
     <div class="wrapper_tittle">
         <h1>NUEVO CLIENTE</h1>
     </div>
+
     <form method="post" id="form_create_customer" autocomplete="off">
-        {% csrf_token %}
-        {% for inp in form%} 
-            <div class="inputWrapper" id="{{inp.auto_id}}">
-                <label for="">{{inp.label|truncatechars:13}}</label>
-                {{inp}}
-                {% if inp.errors %}
-                    <p class="error-message">{{ inp.errors.0 }}</p>
-                {% endif %}
-               
+            {% csrf_token %}
+
+            <div class="inputWrapper" id="wrapperNroCliente">
+                <label for="">Nro Cliente</label>
+                <input type="text" name="nro_cliente" value="{{customer_number}}" class="input-read-write-default" readonly="readonly" maxlength="15" required id="id_nro_cliente">
             </div>
-        {%endfor%}
+         
+            <div class="inputWrapper" id="wrapperNombre">
+                <label for="">Nombre</label>
+                <input type="text" name="nombre" class="input-read-write-default" maxlength="100" required id="id_nombre">
+            </div>
+         
+            <div class="inputWrapper" id="wrapperDNI">
+                <label for="">DNI</label>
+                <input type="number" name="dni" class="input-read-write-default" oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);" maxlength="9" required id="id_dni">
+            </div>
+         
+            <div class="inputWrapper" id="wrapperDomicilio">
+                <label for="">Domicilio</label>
+                <input type="text" name="domic" class="input-read-write-default" maxlength="100" required= id="id_domic">
+            </div>
+         
+            <div class="inputWrapper" id="wrapperLocalidad">
+                <label for="">Localidad</label>
+                <input type="text" name="loc" class="input-read-write-default" maxlength="40" required id="id_loc">
+            </div>
+         
+            <div class="inputWrapper" id="wrapperProvincia">
+                <label for="">Provincia</label>
+                <input type="text" name="prov" class="input-read-write-default" maxlength="40" required id="id_prov">
+            </div>
+         
+            <div class="inputWrapper" id="wrapperCP">
+                <label for="">Código Postal</label>
+                <input type="number" name="cod_postal" class="input-read-write-default" oninput="if(this.value.length > 7) this.value = this.value.slice(0, 7);" maxlength="7" required id="id_cod_postal">
+            </div>
+         
+            <div class="inputWrapper" id="wrapperTelefono">
+                <label for="">Teléfono</label>
+                <input type="number" name="tel" class="input-read-write-default" required id="id_tel">
+            </div>
+         
+            <div class="inputWrapper" id="wrapperFecNacimiento">
+                <label for="">Fecha de Nacimiento</label>
+                <input type="text" name="fec_nacimiento" class="input-read-write-default" maxlength="10" required id="id_fec_nacimiento">
+            </div>
+         
+            <div class="inputWrapper" id="wrapperEstadoCivil">
+                <label for="">Estado Civil</label>
+                <input type="text" name="estado_civil" class="input-read-write-default" maxlength="20" required id="id_estado_civil">
+            </div>
+         
+            <div class="inputWrapper" id="wrapperOcupacion">
+                <label for="">Ocupación</label>
+                <input type="text" name="ocupacion" class="input-read-write-default" maxlength="50" required id="id_ocupacion">
+            </div>
+        
     </form>
+
+
     <div class="wrapperButtons">
-        <input type="submit" value="Guardar" class="add-button-default" form="form_create_customer">
+        <button type="button" id="saveButton" class="add-button-default" form="form_create_customer">Guardar</button>
         <a class="delete-button-default" href="{% url 'users:list_customers' %}"> Cancelar </a>
     </div>
 {% endblock content %}
+
+
 {% block js %}
     <script>
         document.getElementById('id_fec_nacimiento').addEventListener('input', function (e) {
@@ -36,4 +87,7 @@
         input.value = !val[2] ? val[1] : val[1] + '/' + val[2] + (val[3] ? '/' + val[3] : '');
         });
     </script>
+    <script src="{% static 'js/errorsFormManagement.js' %}"></script>
+    <script src="{% static 'js/redirectNewCustomer.js' %}"></script>
+
 {% endblock js %}

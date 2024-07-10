@@ -1,28 +1,27 @@
-
-.filters
-{
+.filters {
     width: 100%;
     display: flex;
     align-items: center;
-    padding: 3rem;
+    padding: 3rem 4rem;
     justify-content: space-between;
 
 }
+
 #create_user {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
     color: var(--third-color);
     padding: 1rem 3rem;
 }
 
-.filters > div{
+.filters>div {
     position: relative;
     display: flex;
     align-items: center;
     width: 40%;
     height: 100%;
 }
-.filters > div> img
-{
+
+.filters>div>img {
     position: absolute;
     /* rotate: -90deg; */
     filter: invert(1);
@@ -30,7 +29,8 @@
     right: 2%;
     z-index: 6;
 }
-.filters > div > .select{
+
+.filters>div>.select {
     position: absolute;
     height: 0;
     max-height: 20rem;
@@ -39,13 +39,13 @@
     /* left: 3px; */
     transition: all .4s ease;
     width: 82%;
-    z-index:1;
+    z-index: 1;
     background: white;
     border-radius: 0.5rem;
     /* border: 3px solid var(--third-color); */
 }
-.filters > div > input
-{
+
+.filters>div>input {
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     font-family: raleway;
     color: var(--third-color);
@@ -54,8 +54,7 @@
     z-index: 2;
 }
 
-#create_customer
-{
+#create_customer {
     padding: 1.6rem 4rem;
     color: white;
     font-size: 1.6rem;
@@ -70,7 +69,7 @@
 
 
 
-.information{
+.information {
     height: 88%;
     width: 100%;
     /* display: flex; */
@@ -78,29 +77,31 @@
     overflow-y: none;
 }
 
-.information::-webkit-scrollbar{
+.information::-webkit-scrollbar {
     width: 2px;
     height: 5px;
     border-radius: 5px;
 }
-.information::-webkit-scrollbar-thumb{
+
+.information::-webkit-scrollbar-thumb {
     background: var(--third-color);
     border-radius: 1rem;
 }
 
-.tittles{
+.tittles {
     display: flex;
     /* column-gap: calc(100% / 6); */
     list-style: none;
     width: 100%;
-    justify-content: space-around;  
+    justify-content: space-around;
 }
-.information > .tittlesWrapper{
+
+.information>.tittlesWrapper {
     width: 120%;
     background-color: var(--fourth-color);
 }
 
-.tittlesWrapper > .tittles > li {
+.tittlesWrapper>.tittles>li {
     color: white;
     font-size: 1.6rem;
     font-family: raleway-semibold;
@@ -108,12 +109,12 @@
     width: 20%;
     text-align: center;
 }
-.valuesWrapper{
+
+.valuesWrapper {
     width: 120%;
 }
 
-.valuesWrapper > .values > a
-{
+.valuesWrapper>.values>a {
     display: flex;
     font-size: 1.4rem;
     align-items: center;
@@ -127,18 +128,11 @@
     text-decoration: none;
 }
 
-.valuesWrapper > .values > a:hover
-{
+.valuesWrapper>.values>a:hover {
     background-color: #304361;
 }
 
-.valuesWrapper > .values > a > div
-{
+.valuesWrapper>.values>a>div {
     width: 20%;
     text-align: center;
 }
-
-
-
-
-

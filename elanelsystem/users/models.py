@@ -198,20 +198,108 @@ class Cliente(models.Model):
         return last_number_cliente_char    
         
     nro_cliente = models.CharField(max_length=15,default=returNro_Cliente)
-    nombre = models.CharField(max_length=100,validators=[RegexValidator(r'^[a-zA-ZñÑ ]+$', 'Ingrese solo letras')])
-    dni = models.CharField(max_length=9,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')])
+    nombre = models.CharField(max_length=100)
+    dni = models.CharField(max_length=9)
     agencia_registrada = models.CharField(max_length=30,default="")
     domic = models.CharField(max_length=100)
     loc = models.CharField(max_length=40)
-    prov = models.CharField(max_length=40, validators=[RegexValidator(r'^[a-zA-ZñÑ ]+$', 'Ingrese solo letras')])
-    cod_postal = models.CharField(max_length=7,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')])
-    tel = models.IntegerField(validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')])
+    prov = models.CharField(max_length=40)
+    cod_postal = models.CharField(max_length=7)
+    tel = models.CharField(max_length=11)
     fec_nacimiento = models.CharField(max_length=10, default="")
     estado_civil = models.CharField(max_length=20)
     ocupacion = models.CharField(max_length=50)
     
     def __str__(self):
-        return f'{self.nombre} - {self.dni}'
+        return f'{self.nro_cliente}: {self.nombre} - {self.dni}'
+
+    def clean(self):
+        errors = {}
+        validation_methods = [
+            self.clean_nro_cliente,
+            self.validation_nombre,
+            self.validation_estado_civil,
+            self.validation_dni,
+            self.validation_tel,
+            self.validation_fec_nacimiento,
+            self.validation_cod_postal,
+        ]
+
+        for method in validation_methods:
+            try:
+                method()
+            except ValidationError as e:
+                errors.update(e.message_dict)
+
+        if errors:
+            raise ValidationError(errors)
+        
+    #region Clean area de los campos
+    def clean_nro_cliente(self):
+        nro_cliente = int(self.nro_cliente.split("_")[1])
+        last_cliente = int(Cliente.objects.last().nro_cliente.split("_")[1])
+        if(nro_cliente != last_cliente+1):
+            raise ValidationError({'nro_cliente': "Número de cliente incorrecto."})
+            
+
+    def validation_nombre(self):
+        if not self.nombre:
+            raise ValidationError({'nombre': 'No puede estar vacío.'})
+        
+        if not re.match(r'^[a-zA-Z\s]*$', self.nombre):
+            raise ValidationError({'nombre': 'Solo puede contener letras.'})
+
+
+    def validation_estado_civil(self):
+        if not re.match(r'^[a-zA-Z\s]*$', self.estado_civil):
+            raise ValidationError({'estado_civil': 'Solo puede contener letras.'})
+        
+
+    def validation_cod_postal(self):
+
+        if len(self.cod_postal) > 5:
+            raise ValidationError({'cod_postal': 'Codigo postal invalido.'})
+
+        if not re.match(r'^\d+$', self.cod_postal):
+            raise ValidationError({'cod_postal': 'Debe contener solo números.'})
+
+
+    def validation_dni(self):
+        
+        if len(self.dni) < 8: 
+            raise ValidationError({'dni': 'DNI inválido.'})
+
+        if not re.match(r'^\d+$', self.dni):
+            raise ValidationError({'dni': 'Debe contener solo números.'})
+        
+        if Usuario.objects.filter(dni=self.dni).exists():
+            raise ValidationError({'dni': 'DNI ya registrado.'})
+
+
+    def validation_tel(self):
+        if len(self.tel) < 10:
+            raise ValidationError({'tel': 'Telefono inválido.'})
+
+        if not re.match(r'^\d+$', self.tel):
+            raise ValidationError({'tel': 'Debe contener solo números.'}) 
+            
+
+    def validation_fec_nacimiento(self):
+        if self.fec_nacimiento:
+            if self.fec_nacimiento and not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fec_nacimiento):
+                raise ValidationError({'fec_nacimiento': 'Debe estar en el formato DD/MM/AAAA.'})
+
+            try:
+                fec_nacimiento = datetime.datetime.strptime(self.fec_nacimiento, '%d/%m/%Y')
+            except ValueError:
+                raise ValidationError({'fec_nacimiento': 'Fecha inválida.'})
+
+            fec_nacimiento = datetime.datetime.strptime(self.fec_nacimiento, '%d/%m/%Y')
+            if fec_nacimiento > datetime.datetime.now():
+                raise ValidationError({'fec_nacimiento': 'Fecha inválida.'})
+
+
+    # endregion 
 
     
 class Key(models.Model):

@@ -7,7 +7,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from .mixins import TestLogin
 from .models import ArqueoCaja, Ventas,CoeficientesListadePrecios,MovimientoExterno
 from .forms import FormChangePAck, FormCreateVenta, FormCreateAdjudicacion
-from users.forms import CreateClienteForm
+# from users.forms import CreateClienteForm
 from users.models import Cliente, Sucursal,Usuario,Key
 from .models import Ventas
 from products.models import Products,Plan
@@ -648,7 +648,7 @@ class ChangeTitularidad(TestLogin,generic.DetailView):
 class CrearUsuarioYCambiarTitu(TestLogin,generic.DetailView):
     model = Ventas
     template_name = 'crearclienteycambiar.html'
-    form_class = CreateClienteForm
+    # form_class = CreateClienteForm
 
     def get(self, request,*args, **kwargs):
         self.object = self.get_object()

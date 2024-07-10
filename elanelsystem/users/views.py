@@ -13,7 +13,7 @@ from users.utils import printPDFNewUSer
 
 from .models import Usuario,Cliente,Sucursal,Key
 from sales.models import Ventas,ArqueoCaja,MovimientoExterno
-from .forms import CreateClienteForm
+# from .forms import CreateClienteForm
 from django.urls import reverse_lazy
 from django.contrib.auth.models import Permission
 from sales.mixins import TestLogin
@@ -111,7 +111,7 @@ class CrearUsuario(TestLogin, generic.View):
         for key, value in form.items():
             if key.startswith('familia_nombre_') and value:
                 numero = key.split("_")[-1]
-                print(f"Entro")
+
                 # Valido el texto de realacion con el familiar
                 relacion = form[f'familia_relacion_{numero}']
                 if not re.match(r'^[a-zA-Z\s]*$', relacion):
@@ -119,7 +119,7 @@ class CrearUsuario(TestLogin, generic.View):
                     flag = False
                 
                 tel = form[f'familia_tel_{numero}']
-                print(f"Tel: {tel}")
+
                 if not re.match(r'^\d+$', tel):
                     errors[f'familia_tel_{numero}'] = 'Solo puede contener numeros.'
                     flag = False
@@ -158,7 +158,7 @@ class CrearUsuario(TestLogin, generic.View):
             usuario.full_clean(exclude=['password'])
         except ValidationError as e:
             errors.update(e.message_dict)
-        print(f"Errores: {errors}")
+       
         if len(errors) != 0:
             
             usuario.delete() # Eliminar el usuario creado por la funcion _create_user del modelo UserManager
@@ -168,9 +168,8 @@ class CrearUsuario(TestLogin, generic.View):
             usuario.sucursal = sucursal
             usuario.groups.add(rango)
             usuario.save()
-            print(f"Grupo de usuario {usuario.groups.all()}")
-            errorFlag = False
-            response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
+
+            response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
             return JsonResponse(response_data, safe=False)         
 
 
@@ -240,7 +239,7 @@ class DetailUser(TestLogin, generic.DetailView):
 
        # Obtener el usuario existente
         usuario = self.get_object()
-        print(usuario)
+
         # Validar el rango
         if rango and not Group.objects.filter(name=rango).exists():
             errors['rango'] = 'Rango invalido.'
@@ -348,9 +347,9 @@ class DetailUser(TestLogin, generic.DetailView):
             usuario.groups.add(rango)
             usuario.set_password(form['password'])
             usuario.save()
-            print(f"Grupo de usuario {usuario.groups.all()}")
-            errorFlag = False
-            return JsonResponse({'success': True}, safe=False)         
+
+            response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
+            return JsonResponse(response_data, safe=False)         
 
 
 
@@ -398,37 +397,21 @@ def viewsPDFNewUser(request,pk):
         return response
     
 
-def requestUsuariosAcargo(request):
-    sucursalName = request.GET.get("sucursal",None)
-    usuarioPk = request.GET.get("usuario",None)
-    usuarioObject = Usuario.objects.get(pk=usuarioPk)
-    
-    if sucursalName !="":
-        sucursalObject = Sucursal.objects.get(pseudonimo = sucursalName)
-        usuarios_filtrados = Usuario.objects.filter(sucursal = sucursalObject, rango="Vendedor").exclude(pk=usuarioPk)
-        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
-
-    else:
-        usuarios_filtrados = Usuario.objects.filter(rango = "Vendedor")
-        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
-    
-    
-    return JsonResponse({"data":usuarios_filtrados_listDict, "vendedores_a_cargo": usuarioObject.vendedores_a_cargo})
-
-
 def requestUsuarios(request):
-    sucursalName = request.GET.get("sucursal",None)
+    request = json.loads(request.body)
+    sucursal = Sucursal.objects.get(pseudonimo = request["sucursal"]) if request["sucursal"] else ""
+    user = Usuario.objects.get(pk=request["pkUser"]) if request["pkUser"] else None
     
-    if sucursalName !="":
-        sucursalObject = Sucursal.objects.get(pseudonimo = sucursalName)
-        usuarios_filtrados = Usuario.objects.filter(sucursal = sucursalObject, rango="Vendedor")
+    usuarios_filtrados_listDict = []
+
+    if request["sucursal"] !="":
+        if user != None and user.rango =="Vendedor":
+            usuarios_filtrados = Usuario.objects.filter(sucursal = sucursal, rango="Vendedor").exclude(pk=user.pk)
+        else:
+            usuarios_filtrados = Usuario.objects.filter(sucursal = sucursal, rango="Vendedor")
+
         usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
 
-    else:
-        usuarios_filtrados = Usuario.objects.filter(rango = "Vendedor")
-        usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
-    
-    
     return JsonResponse({"data":usuarios_filtrados_listDict})
 
     
@@ -464,40 +447,46 @@ class ListaClientes(TestLogin, generic.View):
 class CrearCliente(TestLogin, generic.CreateView):
     model = Cliente
     template_name = 'create_customers.html'
-    form_class = CreateClienteForm
 
 
     def get(self, request,*args, **kwargs):
         context = {}
         context["customer_number"] = Cliente.returNro_Cliente
-        context['form'] = self.form_class
         return render(request, self.template_name, context)
     
 
     def post(self,request,*args,**kwargs):
+        errors = {}
+        form = json.loads(request.body)
         
-        form =self.form_class(request.POST)
-        if form.is_valid():
-                customer = Cliente()
-                customer.nro_cliente = form.cleaned_data["nro_cliente"]
-                customer.nombre = form.cleaned_data['nombre']
-                customer.dni = form.cleaned_data['dni']
-                customer.domic = form.cleaned_data['domic']
-                customer.loc = form.cleaned_data['loc']
-                customer.prov = form.cleaned_data['prov']
-                customer.cod_postal = form.cleaned_data['cod_postal']
-                customer.tel = form.cleaned_data['tel']
-                customer.estado_civil = form.cleaned_data['estado_civil']
-                customer.fec_nacimiento = form.cleaned_data['fec_nacimiento']
-                customer.ocupacion = form.cleaned_data['ocupacion']
-                customer.agencia_registrada = request.user.sucursal
-                customer.save()              
-                return redirect("users:list_customers")
+        customer = Cliente()
+        customer.nro_cliente = form["nro_cliente"]
+        customer.nombre = form['nombre']
+        customer.dni = str(form['dni'])
+        customer.domic = form['domic']
+        customer.loc = form['loc']
+        customer.prov = form['prov']
+        customer.cod_postal = str(form['cod_postal'])
+        customer.tel = str(form['tel'])
+        customer.estado_civil = form['estado_civil']
+        customer.fec_nacimiento = form['fec_nacimiento']
+        customer.ocupacion = form['ocupacion']
+        customer.agencia_registrada = request.user.sucursal
+
+        try:
+            customer.full_clean()
+        except ValidationError as e:
+            errors.update(e.message_dict)
+              
+
+        if len(errors) != 0:
+            print(errors)
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
         else:
-            context = {}
-            context["customer_number"] = Cliente.returNro_Cliente
-            context['form'] = form
-            return render(request, self.template_name, context)
+            customer.save()
+
+            response_data = {"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
+            return JsonResponse(response_data, safe=False)     
 
 
 class CuentaUser(TestLogin, generic.DetailView):

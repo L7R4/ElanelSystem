@@ -12,7 +12,6 @@ urlpatterns = [
     path("usuario/detalleusuario/<int:pk>/",DetailUser.as_view(),name="detailUser"),
     path("cliente/lista_clientes/",ListaClientes.as_view(),name="list_customers"),
     path("usuario/administracion/requestusuarios/",requestUsuarios,name="requestUsuarios"),
-    path("usuario/administracion/requestusuarios_acargo/",requestUsuariosAcargo,name="requestUsuarios_acargo"),
     path("cliente/crear_cliente/",CrearCliente.as_view(),name="create_customer"),
     path("cliente/<int:pk>/operaciones/",CuentaUser.as_view(),name="cuentaUser"),
     path("crearclienteycambiar/<int:pk>/",CrearUsuarioYCambiarTitu.as_view(),name="crearYCambiar"),
