@@ -1,5 +1,4 @@
 .wrapper_content {
-    box-sizing: border-box;
     padding: 4rem;
     display: flex;
     flex-flow: column;
@@ -17,60 +16,42 @@
 /* #region Formulario de adjudicacion */
 #form_create_sale {
     width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2.6rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
+    gap: 2rem;
     position: relative;
 }
 
 #form_create_sale>div {
     display: flex;
     flex-direction: column;
-    width: 20%;
     position: relative;
 }
 
-#form_create_sale>div>p {
-    position: absolute;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    color: #ed1717;
-    padding: 0.3rem 1rem;
-    top: 100%;
-    left: -3%;
-    border-radius: 0.6rem;
-}
-
-#form_create_sale>div>input {
-    height: 3.1rem;
-
-    background-color: #304361;
-    border: 2px solid var(--third-color);
-    border-radius: 1rem;
-    outline: none;
-    text-indent: 1.2rem;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+#form_create_sale input {
+    height: 3rem;
     font-family: raleway;
-    color: white;
+    color: var(--third-color);
+    background-color: var(--background-color);
 
 }
 
-#form_create_sale #id_tipo_producto {
+#form_create_sale #tipoProductoInput {
     position: relative;
     z-index: 9;
 }
 
-#form_create_sale #wrapperTipoProducto>ul {
+#form_create_sale #tipoProductoInput+ul.options {
     z-index: 8;
 }
 
 
-#form_create_sale #id_producto {
+#form_create_sale #productoInput {
     position: relative;
     z-index: 7;
 }
 
-#form_create_sale #wrapperProducto>ul {
+#form_create_sale #productoInput+ul.options {
     z-index: 6;
 }
 
@@ -79,7 +60,7 @@
     z-index: 5;
 }
 
-#form_create_sale #wrapperVendedor>ul {
+#form_create_sale #id_agencia+ul.options {
     z-index: 4;
 }
 
@@ -88,28 +69,29 @@
     z-index: 3;
 }
 
-#form_create_sale #wrapperModalidad>ul {
+#form_create_sale #id_modalidad+ul.options {
     z-index: 2;
 }
 
-
+#form_create_sale > #wrapperProducto,
+#form_create_sale > #wrapperAgencia, 
+#form_create_sale > #wrapperObservaciones{
+    grid-column: 2 span;
+}
 
 
 #form_create_sale>div>textarea {
-    background-color: rgba(253, 253, 253, 0.07);
-    border: 2px solid var(--third-color);
-    border-radius: 1rem;
-    outline: none;
-    padding: 1.2rem;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    padding: 1rem;
+    text-indent: unset;
+    max-height: none;
     font-family: raleway;
-    color: white;
+    color: var(--third-color);
 }
 
 #form_create_sale>div>label {
     font-size: clamp(1.4rem, 1.3vw, 1.5rem);
     font-family: raleway-semibold;
-    color: white;
+    color: var(--third-color);
     width: fit-content;
     padding-left: 0.7rem;
     padding-bottom: 0.3rem;
@@ -121,71 +103,7 @@
     margin: 0;
 }
 
-#form_create_sale>div>.select>li {
-    padding: 1rem;
-    font-family: raleway;
-    font-size: 1.4rem;
-    color: black;
-}
 
-#form_create_sale>div>.select>li:first-child {
-    padding-top: 2rem;
-}
-
-#form_create_sale>div>.select>li:hover {
-    background-color: #3d7bd867;
-    cursor: pointer;
-}
-
-#form_create_sale>div>.select::-webkit-scrollbar {
-    width: 4px;
-    border-radius: 5px;
-}
-
-#form_create_sale>div>.select::-webkit-scrollbar-thumb {
-    background: #0b386289;
-    border-radius: 1rem;
-}
-
-
-/* DISEÑO DE INPUTS */
-#wrapperNroSolicitud,
-#wrapperNroOrden,
-#wrapperNroCuotas,
-#wrapperImporte,
-#wrapperTasaIntereses,
-#wrapperFecha,
-#wrapperInteresesGenerados,
-#wrapperImportexCuota,
-#wrapperTotalAPagar,
-#wrapperCuota1,
-#wrapperSuscripcion {
-    flex-basis: 12%;
-}
-
-#wrapperProducto,
-#wrapperSupervisor,
-#wrapperVendedor {
-    flex-basis: 30%;
-}
-
-#wrapperObservaciones {
-    flex-basis: 35%
-}
-
-#wrapperTipoProducto,
-#wrapperPaquete {
-    flex-basis: 30%;
-}
-
-#wrapperModalidad {
-    flex-basis: 100%
-}
-
-#wrapperModalidad>input,
-div#wrapperModalidad>ul.select {
-    width: 30%;
-}
 
 #id_importe,
 #id_intereses_generados,
@@ -199,31 +117,19 @@ div#wrapperModalidad>ul.select {
     border: 2px solid #1c2d45b8 !important;
 }
 
-#form_create_sale>div>.select {
-    position: absolute;
-    height: 0;
-    overflow-y: auto;
-    top: 80%;
-    transition: all .4s ease;
-    width: 100%;
-    z-index: 2;
-    background: white;
-    border-radius: 0.5rem;
-    max-height: 13rem;
-}
 
 /* #endregion */
 
 /* INPUTS DESIGN */
 .wrapperButtons {
-    position: absolute;
-    bottom: 4rem;
-    right: 4rem;
+    display: flex;
+    align-self: flex-end;
+    margin-top: auto;
+    gap: 1rem;
+}
+.wrapperButtons > a,
+.wrapperButtons > button{
+    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
 }
 
 
-
-
-/* #form_create_sale > div > .select.active{
-    height: 13rem;
-} */

@@ -1,12 +1,13 @@
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
+from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.mixins import PermissionRequiredMixin
 
 from .mixins import TestLogin
 from .models import ArqueoCaja, Ventas,CoeficientesListadePrecios,MovimientoExterno
-from .forms import FormChangePAck, FormCreateVenta, FormCreateAdjudicacion
+from .forms import FormChangePAck, FormCreateVenta
 from users.models import Cliente, Sucursal,Usuario
 from .models import Ventas
 from products.models import Products,Plan
@@ -250,7 +251,6 @@ class DetailSale(TestLogin,generic.DetailView):
     
 
 
-
 # Aplica el descuento a una cuota
 def aplicarDescuentoCuota(request):
     if request.method == 'POST':
@@ -342,7 +342,6 @@ def darBaja(request,pk):
 class CreateAdjudicacion(TestLogin,generic.DetailView):
     model = Ventas
     template_name = "create_adjudicacion.html"
-    form_class = FormCreateAdjudicacion
     
     def get(self,request,*args, **kwargs):
         self.object = self.get_object()
@@ -362,16 +361,10 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         aumentoPorcentaje = self.object.importe * 0.1 
         importeNuevo = aumentoPorcentaje + self.object.importe
        
-
-        products = Products.objects.all()
         intereses = CoeficientesListadePrecios.objects.all()
        
         context = {
             'venta': self.object,
-            'form' : self.form_class,
-
-            'productsList' : products,
-            'productoActual': self.object.producto,
             'intereses' : intereses,
             'anticipo' : int(sumaCuotasPagadas),
             'importeNuevo': int(importeNuevo),
@@ -383,9 +376,11 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
     
 
     def post(self, request, *args, **kwargs):
+
         form =json.loads(request.body)
         self.object = self.get_object()
         numeroAdjudicacion = self.object.nro_operacion
+        errors ={}
 
         # Obtenemos el total de cuotas pagadas - - - - - - - - - - - - - - - - - - - -
         cuotasPagadas = self.object.cuotas_pagadas()
@@ -402,57 +397,81 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
             sumaCuotasPagadas = sumaCuotasPagadas * 0.5
 
        
+        # Validar el cliente
+        cliente = form['nro_cliente']
+        if cliente != self.get_object().nro_cliente.nro_cliente:
+            raise ValidationError({'nro_cliente': 'Error en el numero de cliente.'})
+        elif cliente:
+            cliente = Cliente.objects.get(nro_cliente=cliente)
         
-        if request.POST["nro_cliente"] != self.get_object().nro_cliente.nro_cliente:
-            raise ValidationError('Hubo un cambio malicioso de numero de cliente')
+
+        # Validar el producto
+        producto = form['producto']
+        if producto and not Products.objects.filter(nombre=producto).exists():
+            errors['producto'] = 'Producto invalido.'
+        elif producto:
+            producto = Products.objects.get(nombre=producto)
+
+
+        # Validar la sucursal
+        agencia = form['agencia']
+        if agencia and not Sucursal.objects.filter(pseudonimo=agencia).exists():
+            errors['agencia'] = 'Agencia invalida.'
+
+        elif agencia:
+            agencia = Sucursal.objects.get(pseudonimo=agencia)
+
+        sale = Ventas()
+
+        sale.nro_solicitud = form['nro_contrato']
+        sale.modalidad = form['modalidad']
+        sale.importe = form['importe']
+        sale.anticipo = form['anticipo']
+        sale.tasa_interes = form['tasa_interes']
+        sale.intereses_generados = form['intereses_generados']
+        sale.importe_x_cuota = form['importe_x_cuota']
+        sale.nro_cuotas = form['nro_cuotas']
+        sale.total_a_pagar = form['total_a_pagar']
+        sale.fecha = form['fecha']
+        sale.tipo_producto = form['tipo_producto']
+                
+        try:
+            sale.full_clean()
+        except ValidationError as e:
+            errors.update(e.message_dict)
+       
+        if len(errors) != 0:
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
+        else:
+            # Asignamos aca porque entonces nos aseguramos que no tengamos errores en los campos y podamos hacer la referencia sin problemas
+            sale.nro_cliente = cliente
+            sale.agencia = agencia
+            agencia.producto = producto
+            
+            sale.save()
+            sale.crearCuotas() # Crea las cuotas
+            sale.crearAdjudicacion(numeroAdjudicacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
+            self.object.darBaja("adjudicacion",0,"","",request.user.nombre) # Da de baja la venta que fue adjudicada
+
+            # response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
+            # return JsonResponse(response_data, safe=False)        
+            return JsonResponse({'success': True}, safe=False)          
+        
+        # return redirect("users:cuentaUser",pk= self.get_object().nro_cliente.pk)
         
         
-        if form.is_valid():
-                sale = Ventas()
-
-    #             # Para guardar como objeto Cliente
-                nro_cliente_instance = Cliente.objects.get(nro_cliente__iexact=request.POST['nro_cliente'])
-                sale.nro_cliente = nro_cliente_instance
-
-
-                sale.nro_solicitud = form['nro_contrato']
-                sale.modalidad = form['modalidad']
-                sale.importe = form['importe']
-                sale.anticipo = form['anticipo']
-                sale.tasa_interes = form['tasa_interes']
-                sale.intereses_generados = form['intereses_generados']
-                sale.importe_x_cuota = form['importe_x_cuota']
-                sale.nro_cuotas = form['nro_cuotas']
-                sale.total_a_pagar = form['total_a_pagar']
-                sale.fecha = form['fecha']
-                sale.tipo_producto = form['tipo_producto']
-                sale.agencia = form['agencia']
-
-                # Para guardar como objeto Producto
-                producto_instance = Products.objects.get(nombre__iexact=form.cleaned_data['producto'])
-                sale.producto = producto_instance
-
-
-                sale.save()
-                sale.crearCuotas() # Crea las cuotas
-                sale.crearAdjudicacion(numeroAdjudicacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
-                self.object.darBaja("adjudicacion",0,"","",request.user.nombre) # Da de baja la venta que fue adjudicada
-
-                return redirect("users:cuentaUser",pk= self.get_object().nro_cliente.pk)
-        
-        
-        aumentoPorcentaje = self.object.importe * 0.1 
-        importeNuevo = aumentoPorcentaje + self.object.importe
-        context = {
-            'form': form,
-            'object': self.get_object(),
-            'tipoProducto': self.object.producto.tipo_de_producto,
-            'tipoDeAdjudicacion' : tipo_adjudicacion.upper(),
-            'producto': self.object.producto.nombre,
-            'importeNuevo': int(importeNuevo),
-            'dineroAnticipo' : int(sumaCuotasPagadas)
-        }
-        return render(request, self.template_name, context)
+        # aumentoPorcentaje = self.object.importe * 0.1 
+        # importeNuevo = aumentoPorcentaje + self.object.importe
+        # context = {
+        #     'form': form,
+        #     'object': self.get_object(),
+        #     'tipoProducto': self.object.producto.tipo_de_producto,
+        #     'tipoDeAdjudicacion' : tipo_adjudicacion.upper(),
+        #     'producto': self.object.producto.nombre,
+        #     'importeNuevo': int(importeNuevo),
+        #     'dineroAnticipo' : int(sumaCuotasPagadas)
+        # }
+        return render(request, self.template_name, {})
 
 
 class ChangePack(TestLogin,generic.DetailView):
