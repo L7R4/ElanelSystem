@@ -1,0 +1,198 @@
+{% extends 'molde.html' %}
+
+{% load static %}
+{% load util %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/create_adjudicacion.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+{% endblock css %}
+
+{% block content %}
+    <div class="wrapper_tittle">
+        <h1>ADJUDICAION POR {{tipoDeAdjudicacion}}</h1>
+    </div>
+    
+    <form method="POST" id="form_create_sale" autocomplete="off">
+        
+        {% csrf_token %}
+        <input type="hidden" name="nro_cliente" id="id_nro_cliente" value="{{idCliente}}">
+
+        <div id="wrapperTipoProducto">
+            {% for error in form.tipo_producto.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.tipo_producto.label}}
+            </label>
+            <input type="text" name="tipo_producto" required="" id="id_tipo_producto" value="{{tipoProducto}}">
+            <ul class="select">
+                <li>Moto</li>
+                <li>Electrodomestico</li>
+                <li>Prestamo</li>
+            </ul>
+        </div>
+
+        
+
+        <div id="wrapperNroSolicitud">
+            {% for error in form.nro_contrato.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">{{form.nro_contrato.label}}</label>
+            {{form.nro_contrato}}
+        </div>
+
+
+        
+
+        <div id="wrapperFecha">
+            {% for error in form.fecha.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.fecha.label}}
+            </label>
+            {{form.fecha}}
+        </div>
+
+        <div id="wrapperNroCuotas">
+            {% for error in form.nro_cuotas.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.nro_cuotas.label}}
+            </label>
+            {{form.nro_cuotas}}
+        </div>
+
+        <div id="wrapperProducto">
+            {% for error in form.producto.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.producto.label}}
+            </label>
+            <input type="text" name="producto" required="" id="id_producto" value="{{producto}}">
+            <ul class="select">
+            </ul>
+        </div>
+        
+
+        <div id="wrapperImporte">
+            {% for error in form.importe.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.importe.label}}
+            </label>
+            <input type="number" name="importe" step="any" required="" id="id_importe" value="{{importeNuevo|clear_space}}">
+        </div>
+
+        <div id="wrapperSuscripcion">
+            {% for error in form.importe.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.anticipo.label}}
+            </label>
+            <input type="number" name="anticipo" required="" id="id_anticipo" value="{{dineroAnticipo|clear_space}}">
+        </div>
+
+        <div id="wrapperTasaIntereses">
+            {% for error in form.tasa_interes.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.tasa_interes.label}}
+            </label>
+            {{form.tasa_interes}}
+        </div>
+        
+        <div id="wrapperVendedor">
+            {% for error in form.agencia.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.agencia.label}}
+            </label>
+            {{form.agencia}}
+            <ul class="select">
+                <li>Agencia Chaco</li>
+                <li>Agencia Corrientes</li>
+                <li>Agencia Misiones</li>
+                
+            </ul>
+        </div>
+        
+
+        <div id="wrapperInteresesGenerados">
+            {% for error in form.intereses_generados.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.intereses_generados.label|truncatechars:15}}
+            </label>
+            {{form.intereses_generados}}
+        </div>
+
+        <div id="wrapperImportexCuota">
+            {% for error in form.importe_x_cuota.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.importe_x_cuota.label}}
+            </label>
+            {{form.importe_x_cuota}}
+        </div>
+
+        <div id="wrapperTotalAPagar">
+            {% for error in form.total_a_pagar.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.total_a_pagar.label}}
+            </label>
+            
+            {{form.total_a_pagar}}
+        </div>
+
+        
+        <div id="wrapperModalidad">
+            {% for error in form.modalidad.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.modalidad.label}}
+            </label>
+            {{form.modalidad}}
+            <ul class="select">
+                <li>Diario</li>
+                <li>Semanal</li>
+                <li>Quincenal</li>
+                <li>Mensual</li>
+            </ul>
+        </div>
+        
+        <div id="wrapperObservaciones">
+            {% for error in form.observaciones.errors %}
+                <p>{{error}}</p>
+            {% endfor %}
+            <label for="">
+                {{form.observaciones.label}}
+            </label>
+            {{form.observaciones}}
+        </div>
+
+
+    </form>
+    <div class="wrapperButtons">
+        <a id ="cancelar" class="delete-button-default" href="{% url 'sales:detail_sale' venta.id%}"> Cancelar </a>
+        <button type="submit"  class="add-button-default" form ="form_create_sale" id="enviar"> Terminar </button>
+    </div> 
+
+{% endblock content %}
+{% block js %}
+    <script src="{% static 'js/form_create_adju.js' %}"></script>
+    <script src="{% static 'js/inputs_selects_create_sale.js' %}"></script>
+{% endblock js %}

@@ -1,3 +1,4 @@
+import re
 from django.db import models
 from django.forms import ValidationError
 from users.models import Cliente,Usuario,Sucursal
@@ -7,6 +8,7 @@ import json
 import datetime
 from dateutil.relativedelta import relativedelta
 from sales.utils import obtener_ultima_campania
+from django.core.exceptions import ValidationError
 
 #region C-LISTA-PRECIOS
 class CoeficientesListadePrecios(models.Model):
@@ -152,7 +154,7 @@ class Ventas(models.Model):
     
     #region Campos
     nro_cliente = models.ForeignKey(Cliente,on_delete=models.CASCADE,related_name="ventas_nro_cliente")
-    nro_solicitud = models.CharField("Nro solicitud:",max_length=10,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')],default="")
+    nro_solicitud = models.CharField("Nro solicitud:",max_length=10,default="")
     modalidad = models.CharField("Modalidad:",max_length=15, choices=MODALIDADES,default="")
     nro_cuotas = models.IntegerField()
     nro_operacion = models.IntegerField(default=returnOperacion)
@@ -162,7 +164,7 @@ class Ventas(models.Model):
     
     suspendida = models.BooleanField(default=False)
     importe = models.FloatField("Importe:",default=0)
-    tasa_interes = models.FloatField("Tasa de Interes:",validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')],default=0)
+    tasa_interes = models.FloatField("Tasa de Interes:",default=0)
     primer_cuota =models.FloatField("Primer cuota:",default=0)
     anticipo =models.IntegerField("Cuota de Inscripcion:",default=0)
     intereses_generados = models.FloatField("Intereses Gen:",default=0)
@@ -172,7 +174,7 @@ class Ventas(models.Model):
     tipo_producto = models.CharField(max_length=20,default="")
     producto = models.ForeignKey(Products,on_delete=models.CASCADE,related_name="ventas_producto",default="")
     paquete = models.CharField(max_length=20,default="")
-    nro_orden = models.CharField("Nro de Orden:",max_length=10,validators=[RegexValidator(r'^\d+(\.\d+)?$', 'Ingrese un número válido')],default="")
+    nro_orden = models.CharField("Nro de Orden:",max_length=10,default="")
     vendedor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="ventas_ven_usuario",default="",blank=True,null=True)
     supervisor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="venta_super_usuario",default="",blank=True,null=True)
     observaciones = models.CharField("Obeservaciones:",max_length=255,blank=True,null=True)
@@ -182,6 +184,95 @@ class Ventas(models.Model):
     cuotas = models.JSONField(default=list)
     #endregion
     
+
+
+    #region Validaciones
+    def clean(self):
+        errors = {}
+        validation_methods = [
+            self.validation_nombre,
+            self.validation_email,
+            self.validation_dni,
+            self.validation_tel,
+            self.validation_fec_ingreso,
+            self.validation_fec_nacimiento,
+            self.validation_cp,
+        ]
+
+        for method in validation_methods:
+            try:
+                method()
+            except ValidationError as e:
+                errors.update(e.message_dict)
+
+        if errors:
+            raise ValidationError(errors)
+
+
+    def clean_nro_operacion(self):
+        lastOperacion = Ventas.objects.last().nro_operacion
+        if(self.nro_operacion != lastOperacion+1):
+            raise ValidationError({'nro_operacion': "Número de operacion incorrecto."})
+        
+    def validation_nro_solicitud(self):
+        if not re.match(r'^\d+$', self.total_a_pagar):
+            raise ValidationError({'nro_solicitud': 'Debe contener solo números.'})
+        
+    def validation_nro_orden(self):
+        if not re.match(r'^\d+$', self.nro_orden):
+            raise ValidationError({'nro_orden': 'Debe contener solo números.'})
+
+    def validation_modalidad(self):
+        if self.modalidad not in [m[0] for m in self.MODALIDADES]:
+            raise ValidationError({'modalidad': 'Modalidad no válida.'})
+        
+    def validation_total_a_pagar(self):
+        if self.total_a_pagar < 0:
+            raise ValidationError({'total_a_pagar': 'Dinero invalido. Debe ser mayor a 0.'})
+        
+        if not re.match(r'^\d+$', self.total_a_pagar):
+            raise ValidationError({'total_a_pagar': 'Debe contener solo números.'})
+        
+    def validation_importe(self):
+        if self.importe < 0:
+            raise ValidationError({'importe': 'Dinero invalido. Debe ser mayor a 0.'})
+        
+    def validation_importe_x_cuota(self):
+        if self.importe_x_cuota < 0:
+            raise ValidationError({'importe_x_cuota': 'Dinero invalido. Debe ser mayor a 0.'})
+        
+    def validation_tasa_interes(self):
+        if self.tasa_interes < 0:
+            raise ValidationError({'tasa_interes': 'Tasa de interes invalida.'})
+        
+    def validation_fecha(self):
+        if self.fecha:
+            if self.fecha and not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fecha):
+                raise ValidationError({'fecha': 'Debe estar en el formato DD/MM/AAAA.'})
+
+            try:
+                fecha = datetime.datetime.strptime(self.fecha, '%d/%m/%Y')
+            except ValueError:
+                raise ValidationError({'fecha': 'Fecha inválida.'})
+
+            fecha = datetime.datetime.strptime(self.fecha, '%d/%m/%Y')
+            if fecha > datetime.datetime.now():
+                raise ValidationError({'fecha': 'Fecha inválida.'})
+
+    def validation_tipo_producto(self):
+        tipoProductos = Products.TIPO_PRODUCTO
+        if self.tipo_producto not in [m[0] for m in tipoProductos]:
+            raise ValidationError({'tipo_producto': 'Tipo de producto no válido.'})
+
+    def validation_paquete(self):
+        paquetes = Products.PAQUETES
+        if self.paquete not in [m[0] for m in paquetes]:
+            raise ValidationError({'paquete': 'Paquete no válido.'})
+
+    #endregion
+
+
+
 
     def contarDiasSegunModalidad(self,modalidad,ultimaFechaDevencimiento = ""):
         modalidad = modalidad.lower()
@@ -308,8 +399,8 @@ class Ventas(models.Model):
         
         
     def crearAdjudicacion(self,nroDeVenta,tipo):
-        self.cuotas.pop(0)
-        self.cuotas[0]["status"] = "Pendiente"
+        self.cuotas.pop(0) # Elimina la cuota 0
+        self.cuotas[0]["status"] = "Pendiente" # Cambia el status de la cuota 1 a Pendiente
         self.nro_operacion = nroDeVenta
 
         self.adjudicado["status"] = True
@@ -431,6 +522,8 @@ class Ventas(models.Model):
         fechaHoy = datetime.datetime.now()
         diferencia = fechaHoy - fechaReferente
         return diferencia.days
+
+    
 #endregion
 
 #region ARQUEO

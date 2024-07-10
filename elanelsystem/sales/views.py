@@ -7,8 +7,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from .mixins import TestLogin
 from .models import ArqueoCaja, Ventas,CoeficientesListadePrecios,MovimientoExterno
 from .forms import FormChangePAck, FormCreateVenta, FormCreateAdjudicacion
-# from users.forms import CreateClienteForm
-from users.models import Cliente, Sucursal,Usuario,Key
+from users.models import Cliente, Sucursal,Usuario
 from .models import Ventas
 from products.models import Products,Plan
 import datetime
@@ -342,7 +341,7 @@ def darBaja(request,pk):
 
 class CreateAdjudicacion(TestLogin,generic.DetailView):
     model = Ventas
-    template_name = "create_adjudicacionSorteo.html"
+    template_name = "create_adjudicacion.html"
     form_class = FormCreateAdjudicacion
     
     def get(self,request,*args, **kwargs):
@@ -384,13 +383,17 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
     
 
     def post(self, request, *args, **kwargs):
-        form =self.form_class(request.POST)
+        form =json.loads(request.body)
         self.object = self.get_object()
         numeroAdjudicacion = self.object.nro_operacion
 
+        # Obtenemos el total de cuotas pagadas - - - - - - - - - - - - - - - - - - - -
         cuotasPagadas = self.object.cuotas_pagadas()
         valoresCuotasPagadas = [item["total"] for item in cuotasPagadas]
         sumaCuotasPagadas = sum(valoresCuotasPagadas)
+
+
+        # Obtenemos el tipo de adjudicacion - - - - - - - - - - - - - - - - - - - -
         url = request.path
         if("sorteo" in url):
             tipo_adjudicacion = "sorteo"
@@ -412,18 +415,18 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
                 sale.nro_cliente = nro_cliente_instance
 
 
-                sale.nro_solicitud = form.cleaned_data['nro_contrato']
-                sale.modalidad = form.cleaned_data['modalidad']
-                sale.importe = form.cleaned_data['importe']
-                sale.anticipo = form.cleaned_data['anticipo']
-                sale.tasa_interes = form.cleaned_data['tasa_interes']
-                sale.intereses_generados = form.cleaned_data['intereses_generados']
-                sale.importe_x_cuota = form.cleaned_data['importe_x_cuota']
-                sale.nro_cuotas = form.cleaned_data['nro_cuotas']
-                sale.total_a_pagar = form.cleaned_data['total_a_pagar']
-                sale.fecha = form.cleaned_data['fecha']
-                sale.tipo_producto = form.cleaned_data['tipo_producto']
-                sale.agencia = form.cleaned_data['agencia']
+                sale.nro_solicitud = form['nro_contrato']
+                sale.modalidad = form['modalidad']
+                sale.importe = form['importe']
+                sale.anticipo = form['anticipo']
+                sale.tasa_interes = form['tasa_interes']
+                sale.intereses_generados = form['intereses_generados']
+                sale.importe_x_cuota = form['importe_x_cuota']
+                sale.nro_cuotas = form['nro_cuotas']
+                sale.total_a_pagar = form['total_a_pagar']
+                sale.fecha = form['fecha']
+                sale.tipo_producto = form['tipo_producto']
+                sale.agencia = form['agencia']
 
                 # Para guardar como objeto Producto
                 producto_instance = Products.objects.get(nombre__iexact=form.cleaned_data['producto'])
@@ -431,9 +434,9 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
 
 
                 sale.save()
-                sale.crearCuotas()
-                sale.crearAdjudicacion(numeroAdjudicacion,tipo_adjudicacion)
-                self.object.darBaja("adjudicacion",0,"","",request.user.nombre)
+                sale.crearCuotas() # Crea las cuotas
+                sale.crearAdjudicacion(numeroAdjudicacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
+                self.object.darBaja("adjudicacion",0,"","",request.user.nombre) # Da de baja la venta que fue adjudicada
 
                 return redirect("users:cuentaUser",pk= self.get_object().nro_cliente.pk)
         
