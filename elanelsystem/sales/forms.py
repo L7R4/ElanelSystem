@@ -187,7 +187,6 @@ class FormCreateAdjudicacion(forms.Form):
     def clean_producto(self):
         producto_input = self.cleaned_data['producto']
         producto_permitidos = [p.nombre.lower() for p in getProducts]
-        print(producto_permitidos)
 
         if producto_input.lower() not in producto_permitidos:
             raise forms.ValidationError('Producto no válido')
