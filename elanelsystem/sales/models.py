@@ -190,13 +190,17 @@ class Ventas(models.Model):
     def clean(self):
         errors = {}
         validation_methods = [
-            self.validation_nombre,
-            self.validation_email,
-            self.validation_dni,
-            self.validation_tel,
-            self.validation_fec_ingreso,
-            self.validation_fec_nacimiento,
-            self.validation_cp,
+            self.validation_nro_solicitud,
+            self.validation_nro_orden,
+            self.validation_modalidad,
+            self.validation_total_a_pagar,
+            self.validation_importe,
+            self.validation_importe_x_cuota,
+            self.validation_tasa_interes,
+            self.validation_fecha,
+            self.validation_tipo_producto,
+            self.validation_paquete,
+            self.validation_nro_operacion    
         ]
 
         for method in validation_methods:
@@ -209,7 +213,7 @@ class Ventas(models.Model):
             raise ValidationError(errors)
 
 
-    def clean_nro_operacion(self):
+    def validation_nro_operacion(self):
         lastOperacion = Ventas.objects.last().nro_operacion
         if(self.nro_operacion != lastOperacion+1):
             raise ValidationError({'nro_operacion': "Número de operacion incorrecto."})

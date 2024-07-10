@@ -14,7 +14,7 @@ inputRol.addEventListener("input", async () => {
 
         let body = {
             "sucursal": sucursalInput.value,
-            "pkUser": pkUser.value
+            "pkUser": pkUser ? pkUser.value : null
         }
 
         let vendedores = await fetchVendedores(body, url);

@@ -54,9 +54,6 @@
                 <div class="inputWrapper" id="cpWrapper">
                     <label for="">Codigo postal</label>
                     <input type="text" name="cp" class="input-read-write-default" maxlength="5" required>
-                    {% for error in form.cp.errors %}
-                        <p>{{error}}</p>
-                    {% endfor %}
                 </div>
                 <div class="inputWrapper" id="lugarNacimientoWrapper">
                     <label for="">Lugar de nacimiento</label>
