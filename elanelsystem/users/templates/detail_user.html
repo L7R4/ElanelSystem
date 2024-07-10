@@ -14,6 +14,7 @@
         <h2>Datos personales</h2>
         <div class="datosPersonalesWrapper">
             <div class="inputWrapper" id="nombreCompletoWrapper">
+                <input id="pkUser" type="hidden" name="pkUser" value="{{object.pk}}" class="input-read-write-default" required>
                 <label for="">Nombre completo</label>
                 <input id="nombre" type="text" name="nombre" value="{{object.nombre}}" class="input-read-write-default" required>
             </div>
@@ -76,20 +77,6 @@
             <br>
             <div class ="inputWrapper" id="familiares">
                 <label for="">Datos familiares</label>
-                {% for familiar in familiares  %}
-                    <div class="familiar">
-                        <div class="wrapperFamiliarInput">
-                            <input type="text" class="input-read-write-default" name="familia_relacion_{{ forloop.counter0 }}" placeholder="Relación con el usuario" value="{{ familiar.relacion }}">
-                        </div>
-                        <div class="wrapperFamiliarInput">
-                            <input type="text" class="input-read-write-default" name="familia_nombre_{{ forloop.counter0 }}" placeholder="Nombre" value="{{ familiar.nombre }}">
-                        </div>
-                        <div class="wrapperFamiliarInput">
-                            <input type="text" class="input-read-write-default" name="familia_tel_{{ forloop.counter0 }}" placeholder="Teléfono" value="{{ familiar.tel }}">
-                        </div>
-                    </div>
-                {% endfor %}
-                
                 <div class="familiar">
                     <div class="wrapperFamiliarInput">
                         <input type="text" class="input-read-write-default" name="familia_relacion_0" placeholder="Relación con el usuario">
@@ -103,6 +90,22 @@
                         <input type="text" class="input-read-write-default" name="familia_tel_0" placeholder="Teléfono">
                     </div>
                 </div>
+                {% for familiar in familiares  %}
+                    <div class="familiar">
+                        <div class="wrapperFamiliarInput">
+                            <input type="text" class="input-read-write-default" name="familia_relacion_{{ forloop.counter0 }}" placeholder="Relación con el usuario" value="{{ familiar.relacion }}">
+                        </div>
+                        <div class="wrapperFamiliarInput">
+                            <input type="text" class="input-read-write-default" name="familia_nombre_{{ forloop.counter0 }}" placeholder="Nombre" value="{{ familiar.nombre }}">
+                        </div>
+                        <div class="wrapperFamiliarInput">
+                            <input type="text" class="input-read-write-default" name="familia_tel_{{ forloop.counter0 }}" placeholder="Teléfono" value="{{ familiar.tel }}">
+                        </div>
+                        <div class="wrapperButtonRemove">
+                            <button type="button" onclick="removeFamiliar(this)" class="button-remove">-</button>
+                        </div>
+                    </div>
+                {% endfor %}
                 <button type="button" id="agregar_familiar_button"onclick="agregarFamiliar()">Agregar Familiar</button>
 
             </div>
@@ -158,7 +161,7 @@
             </div>
 
 
-            <div id="vendedoresWrapper">
+            <div id="vendedoresWrapper" {% if object.rango == "Supervisor" %}class="active"{% endif %}>
                 <div class="textContainer">
                     <h3>Elija los vendedores</h3>
                 </div>
@@ -166,7 +169,24 @@
                     <div class="containerList">
                         <div class="items" id="itemsVendedores">
                             <ul>
-                                
+                                {% if object.rango == "Supervisor" %}
+                                    {% comment %} Recorre los vendedores que estan acargo del usuario{% endcomment %}
+
+                                    {% for vendedor in vendedor_a_cargo %}
+                                        <li>
+                                            <input type="checkbox" name="idv_{{vendedor.email}}" id="idv_{{vendedor.email}}" value="{{vendedor.email}}" checked>
+                                            <label for="">{{vendedor.nombre}}</label>
+                                        </li>
+                                    {% endfor %}
+
+                                    {% comment %} Recorre los vendedores que no estan acargo del usuario{% endcomment %}
+                                    {% for vendedor in vendedores %}
+                                        <li>
+                                            <input type="checkbox" name="idv_{{vendedor.email}}" id="idv_{{vendedor.email}}" value="{{vendedor.email}}">
+                                            <label for="">{{vendedor.nombre}}</label>
+                                        </li>
+                                    {% endfor %}
+                                {% endif %}
                             </ul>
                         </div>
                     </div>

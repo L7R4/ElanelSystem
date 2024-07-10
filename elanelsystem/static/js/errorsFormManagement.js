@@ -1,4 +1,4 @@
-function mostrarErrores(errores,formulario) {
+function mostrarErrores(errores, formulario) {
     // Limpiar los mensajes de error anteriores
     let messagesError = document.querySelectorAll('.message-error');
     messagesError.forEach(mensaje => mensaje.remove());
@@ -18,14 +18,3 @@ function mostrarErrores(errores,formulario) {
         }
     }
 }
-
-// Ejemplo de uso
-const errores = {
-    nombre: "El nombre es obligatorio.",
-    email: "El email no es válido.",
-    telefono: "El teléfono debe tener 10 dígitos."
-};
-
-// document.addEventListener('DOMContentLoaded', () => {
-//     mostrarErrores(errores);
-// });

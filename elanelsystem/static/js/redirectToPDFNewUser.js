@@ -36,21 +36,27 @@ async function fetchCRUD(body, url) {
 }
 
 
-confirmNewUser.addEventListener("click",async()=>{
+confirmNewUser.addEventListener("click", async () => {
     body = {}
     let inputs = form_create_user.querySelectorAll("input")
     let textareas = form_create_user.querySelectorAll("textarea")
-    
-    inputs = [...inputs,...textareas]
+
+    inputs = [...inputs, ...textareas]
 
     inputs.forEach(element => {
         body[element.name] = element.value
     });
-    
-    let response = await fetchCRUD(body,urlCreateUser)
-    if(!response["success"]){
-        console.log(response["errors"])
-        mostrarErrores(response["errors"],form_create_user)
+
+    let response = await fetchCRUD(body, urlCreateUser)
+    if (!response["success"]) {
+        mostrarErrores(response["errors"], form_create_user)
+    } else {
+        // Redireccionar a la página de PDF en una nueva pestaña y en la actual cambiar de url a la de la lista de usuarios
+        console.log(response["urlRedirect"])
+        console.log(response["urlPDF"])
+        window.open(response["urlPDF"], "_blank")
+        window.location.href = response["urlRedirect"];
+
     }
 
 })

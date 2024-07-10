@@ -96,11 +96,22 @@
     white-space: nowrap;
 }
 
+#form_create_customer p.message-error {
+    position: relative;
+    font-size: clamp(1.1rem, 1vw, 1.3rem);
+    font-family: raleway-semibold;
+    color: #ff7b7b;
+    padding: 0.3rem .6rem;
+    left: 0;
+    border-radius: 0.6rem;
+    white-space: nowrap;
+}
+
 /* #region  Grid inputs config */
 
-#form_create_customer>.inputWrapper#id_nombre,
-#form_create_customer>.inputWrapper#id_domic,
-#form_create_customer>.inputWrapper#id_ocupacion {
+#form_create_customer>.inputWrapper#wrapperNombre,
+#form_create_customer>.inputWrapper#wrapperDomicilio,
+#form_create_customer>.inputWrapper#wrapperOcupacion {
     grid-column: span 2;
 }
 
