@@ -25,12 +25,19 @@ sendNewGroup.addEventListener("click", ()=>{
     createNewGroup();
     inputNewGroup.value =""
     modalCreateGroup.classList.remove("active")
+    clearActivePermisos()
+    clearActiveOfGroups()
 })
 
 
 // MODAL MANAGER
 buttonCreateNewGroup.addEventListener("click",()=>{
     modalCreateGroup.classList.add("active")
+    clearActivePermisos()
+    clearActiveOfGroups()
+    backgroundPermission.classList.remove("active")
+    formUpdatePermisos.style.pointerEvents ="none"
+    sendUpdatePermisos.classList.remove("enabled")
 })
 
 closeModalForm.addEventListener("click",()=>{
