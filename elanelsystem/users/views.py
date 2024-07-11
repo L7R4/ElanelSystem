@@ -12,6 +12,7 @@ from django.views import generic
 from users.utils import printPDFNewUSer
 
 from .models import Usuario,Cliente,Sucursal,Key
+from sales.models import CuentaCobranza
 from sales.models import Ventas,ArqueoCaja,MovimientoExterno
 # from .forms import CreateClienteForm
 from django.urls import reverse_lazy
@@ -609,6 +610,41 @@ def requestKey(request):
             
 
 #endregion  - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+#region Cuenta de Cobro
+class PanelCuentaCobro(generic.View):
+    template_name = "panelCuentaDeCobro.html"
+    def get(self,request,*args,**kwargs):
+        cuentas = CuentaCobranza.objects.all()
+        context= {
+            "cuentas": cuentas,
+            }
+        return render(request, self.template_name, context)
+
+def addCuenta(request):
+    if request.method == "POST":
+        alias = json.loads(request.body)["alias"]
+        
+        newCuenta = CuentaCobranza()
+        newCuenta.alias = alias.capitalize()
+        newCuenta.save()
+        
+        response_data = {"message":"Cuenta creada exitosamente!"}
+        return JsonResponse(response_data,safe=False)
+    
+def removeCuenta(request):
+    if request.method == "POST":
+        alias = json.loads(request.body)["alias"] 
+
+        deleteCuenta = CuentaCobranza.objects.get(alias=alias)
+        deleteCuenta.delete()
+        
+        response_data = {"message":"Cuenta eliminada correctamente"}
+        return JsonResponse(response_data,safe=False)
+
+
+#endregion
 
 #region Sucursales - - - - - - - - - - - - - - - - - - - 
 

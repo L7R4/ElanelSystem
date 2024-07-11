@@ -20,14 +20,11 @@
     padding: 4rem 0;
 }
 .wrapperItem{
-    width: 32%;
-    /* position: relative; */
-}
-
-
-.containers > #wrapperGrupos{
     width: 40%;
+    min-width: 30rem;
 }
+
+
 .textContainer{
     margin: 0 auto;
     display: flex;
@@ -154,8 +151,10 @@
 }
 
 #itemsGrupos > ul > li.itemPicked{
-    background: var(--third-color);
-    color: white;
+    background: var(--secundary-color);
+    color: var(--third-color);
+    border-radius: .6rem;
+
 }
 
 
@@ -210,8 +209,8 @@
     background: #30436127;
 }
 #itemsPermisos > ul > label.perActive{
-    background: var(--third-color);
-    color: white;
+    background: var(--secundary-color);
+    color: var(--third-color);
 }
 .wrapperSendUpdateGroup{
     margin-top: auto;

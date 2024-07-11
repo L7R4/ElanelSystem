@@ -61,12 +61,14 @@ itemsGrupo.forEach(item => {
 function selectGroupListener(grupo) {
     grupo.addEventListener("click", async()=>{
         if (grupo.classList.contains("itemPicked")){
+            clearActivePermisos()
             clearActiveOfGroups()
             backgroundPermission.classList.remove("active")
             formUpdatePermisos.style.pointerEvents ="none"
             sendUpdatePermisos.classList.remove("enabled")
         }
         else{
+            
             clearActiveOfGroups()
             grupo.classList.add("itemPicked")
             let group = grupo.textContent
@@ -138,9 +140,12 @@ sendUpdatePermisos.addEventListener("click",()=>{
 })
 
 function clearActiveOfGroups() {
+    let itemsGrupo = document.querySelectorAll("#itemsGrupos > ul > li")
     itemsGrupo.forEach(e => e.classList.remove("itemPicked"))
 }
+
 function clearActivePermisos() {
+    let itemsPermisosLabels = document.querySelectorAll("#itemsPermisos > ul > label")
     itemsPermisosLabels.forEach(e => e.classList.remove("perActive"))
 }
 
@@ -167,7 +172,7 @@ function menuConceptual_click_derecho(item,urlImageDelete) {
             let positionX = e.clientX + "px"
             let positionY = e.clientY + "px"
             // Crear tu propio menú contextual personalizado
-            let stringForHTML = `<div id="contextMenu" style="left: ${positionX}; top: ${positionY};"><div class="option"><img src="${urlImageDelete}" alt=""><h5>Eliminar grupo: ${element.textContent}</h5></div></div>`
+            let stringForHTML = `<div id="contextMenu" style="left: ${positionX}; top: ${positionY};"><div class="option"><img src="${urlImageDelete}" alt=""><h5>Eliminar grupo: ${item.textContent}</h5></div></div>`
         
             // Agregar el menú al cuerpo del documento
             document.body.insertAdjacentHTML('beforeend', stringForHTML);
@@ -197,13 +202,13 @@ function menuConceptual_click_derecho(item,urlImageDelete) {
                     confirmDelete.addEventListener("click",()=>{
                         // Elimnar el grupo
                         contextMenu.remove();
-                        let grupo = element.textContent
+                        let grupo = item.textContent
                         let body = {
                             "grupo": grupo
                         }
                         
                         fetchCRUD(body,deleteGrupoURL).then(data=>{
-                            element.remove()
+                            item.remove()
                         })
                     })
 
