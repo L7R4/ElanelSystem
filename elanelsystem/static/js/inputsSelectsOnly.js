@@ -21,11 +21,11 @@ let inputSelectOnlyCustom = document.querySelectorAll(".containerInputAndOptions
 inputSelectOnlyCustom.forEach(input => {
     let optionsList = input.nextElementSibling;
     let options = optionsList.querySelectorAll("li");
-
     toggleOptionsList(input, optionsList);
 
     options.forEach(option => {
         option.addEventListener("click", () => {
+            console.log("click")
             toggleOption(input, option)
 
             // Disparar el evento "input" en el input después de seleccionar una opción
@@ -78,6 +78,21 @@ function toggleOptionsList(input, optionsList) {
             optionsList.classList.remove("open"); // Cierra la lista si se hace clic fuera
             iconDisplay.classList.remove("open"); // Cierra la lista si se hace clic fuera
         }
+    });
+}
+
+function updateListOptions(optionsList, input) {
+    let options = optionsList.querySelectorAll("li");
+    toggleOptionsList(input, optionsList);
+
+    options.forEach(option => {
+        option.addEventListener("click", () => {
+            console.log("click2")
+            toggleOption(input, option)
+
+            // Disparar el evento "input" en el input después de seleccionar una opción
+            input.dispatchEvent(new Event('input'));
+        });
     });
 }
 

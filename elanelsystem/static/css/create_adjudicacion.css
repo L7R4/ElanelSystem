@@ -36,32 +36,52 @@
 
 }
 
+#form_create_sale #wrapperTipoProducto img.iconDesplegar{
+    z-index: 13;
+    filter: invert(1);
+}
+
 #form_create_sale #tipoProductoInput {
+    position: relative;
+    z-index: 12;
+}
+
+#form_create_sale #tipoProductoInput+ul.options {
+    z-index: 11;
+}
+
+
+#form_create_sale #wrapperProducto img.iconDesplegar {
+    z-index: 10;
+    filter: invert(1);
+}
+
+#form_create_sale #productoInput {
     position: relative;
     z-index: 9;
 }
 
-#form_create_sale #tipoProductoInput+ul.options {
+#form_create_sale #productoInput+ul.options {
     z-index: 8;
 }
 
-
-#form_create_sale #productoInput {
-    position: relative;
+#form_create_sale #wrapperAgencia img.iconDesplegar {
     z-index: 7;
-}
-
-#form_create_sale #productoInput+ul.options {
-    z-index: 6;
+    filter: invert(1);
 }
 
 #form_create_sale #id_agencia {
     position: relative;
-    z-index: 5;
+    z-index: 6;
 }
 
 #form_create_sale #id_agencia+ul.options {
+    z-index: 5;
+}
+
+#form_create_sale #wrapperModalidad img.iconDesplegar {
     z-index: 4;
+    filter: invert(1);
 }
 
 #form_create_sale #id_modalidad {
@@ -77,6 +97,10 @@
 #form_create_sale > #wrapperAgencia, 
 #form_create_sale > #wrapperObservaciones{
     grid-column: 2 span;
+}
+
+#form_create_sale > #wrapperProducto.desactive{
+    pointer-events: none;
 }
 
 

@@ -567,7 +567,7 @@ def createNewGroup(request):
     if request.method == 'POST':
         # Obtener el nombre del nuevo grupo desde la solicitud
         groupRequest = json.loads(request.body)["newGroup"]
-        # print(groupRequest)
+        
         try:
             # Verificar si el grupo ya existe
             if Group.objects.filter(name=groupRequest).exists():

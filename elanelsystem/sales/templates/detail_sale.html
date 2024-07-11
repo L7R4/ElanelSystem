@@ -356,7 +356,7 @@
                                 <input type="text" value="" name="cobrador" class = "input-select-custom onlySelect" id ="cobrador" placeholder ="Elija el cobrador" autocomplete="off" readonly>
                                 <ul class="list-select-custom options">
                                         {% for cobrador in cobradores %}
-                                            <li data-value="{{cobrador.nombre}}">{{cobrador.nombre}}</li>
+                                            <li data-value="{{cobrador.alias}}">{{cobrador.alias}}</li>
                                         {% endfor %}
                                 </ul>
                             </div>

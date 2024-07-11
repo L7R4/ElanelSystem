@@ -277,7 +277,6 @@ class Ventas(models.Model):
 
 
 
-
     def contarDiasSegunModalidad(self,modalidad,ultimaFechaDevencimiento = ""):
         modalidad = modalidad.lower()
 
@@ -527,7 +526,36 @@ class Ventas(models.Model):
         diferencia = fechaHoy - fechaReferente
         return diferencia.days
 
+
+class CuentaCobranza(models.Model):
+    alias = models.CharField("Alias:",max_length=50)
+
+    def __str__(self):
+        return self.alias
     
+    #region Validaciones
+    def clean(self):
+        errors = {}
+        validation_methods = [
+            self.validation_alias    
+        ]
+
+        for method in validation_methods:
+            try:
+                method()
+            except ValidationError as e:
+                errors.update(e.message_dict)
+
+        if errors:
+            raise ValidationError(errors)
+    
+
+    def validation_alias(self):
+        if CuentaCobranza.objects.filter(alias=self.alias).exists():
+            raise ValidationError({'alias': "Ya existe una cuenta con ese alias."})
+    #endregion       
+
+
 #endregion
 
 #region ARQUEO
