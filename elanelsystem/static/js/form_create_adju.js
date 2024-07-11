@@ -2,7 +2,7 @@
 const inputSelects = document.querySelectorAll(".select");
 const listProducto = document.querySelector('#wrapperProducto ul')
 const inputTipoDeProducto = document.querySelector('#tipoProductoInput')
-// const inputTipoDeProducto = document.querySelector('#tipoProductoInput')
+const inputProducto = document.querySelector('#productoInput')
 // Para bloquer el input de producto
 // listProducto.previousElementSibling.classList.add("desactive")
 
@@ -77,17 +77,27 @@ async function requestProductos(){
 inputTipoDeProducto.addEventListener("input", async ()=>{
     productos = await requestProductos();
     
-    listProducto.innerHTML = ""
-    productos.forEach(product => {
-        createProductoHTMLElement(listProducto, product["nombre"]);
-    });
-    console.log(productos)
+    listProducto.innerHTML = "" // Limpia la lista de productos
+    listProducto.previousElementSibling.value ="" // Limpia el input de producto en caso de que se haya seleccionado un producto
+    if(productos.length != 0){
 
+        inputProducto.parentElement.parentElement.classList.remove("desactive") // Desbloquea el input de producto
+        console.log(inputProducto.offsetParent)
+        productos.forEach(product => {
+            createProductoHTMLElement(listProducto, product["nombre"]);
+        });
+        updateListOptions(listProducto, inputProducto); // Actualiza los listeners de la lista de productos
+    }else{
+        inputProducto.parentElement.parentElement.classList.add("desactive") // Bloquea el input de producto
+    }
+    
 });
-console.log(productos)
 
 
-
+// Cuando se selecciona un producto se guarda en la variable productoHandled
+inputProducto.addEventListener("input", async ()=>{
+    productoHandled = productos.filter((item) => item["nombre"] == inputProducto.value)[0];
+});
 
 
 
@@ -183,34 +193,7 @@ console.log(productos)
 // })
 
 
-function testClicks(event) {
-    try {
-        let menu = document.querySelector(".select.active")
-        let input = menu.previousElementSibling
-        let elementsLisClicked = Array.from(menu.children)
-        if(event.target != menu && event.target != input && menu.classList.contains("active") && !elementsLisClicked.includes(event.target)){
-            menu.classList.remove("active")
-            menu.style.height = 0 +'px'
-        }
-    } catch (error) {
-    }
-    
-}
 
-
-function clearActiveMenu() {
-    inputSelects.forEach(element => {
-        element.classList.remove("active")
-        element.style.height = 0 +'px'
-    });
-}
-document.addEventListener("click",testClicks)
-
-
-function filterObjetsByType(productsList,productType) {
-    let objets = productsList.filter(object => object["tipo_de_producto"] == productType)
-    return objets
-}
 
 function rellenarCamposDeVenta(valueNroCuotas, valueInteres){
     if(valueNroCuotas != "" && valueInteres != ""){
@@ -228,42 +211,42 @@ function rellenarCamposDeVenta(valueNroCuotas, valueInteres){
 
 
 // PARA FILTRAR DATOS MEDIANTE INPUTS
-function buscar(texto, datos){
-    let listFilteredData = []
-    let dataFormat = datos.filter((item) =>{
+// function buscar(texto, datos){
+//     let listFilteredData = []
+//     let dataFormat = datos.filter((item) =>{
   
-      // Accede a unicamente a los valores de cada elemento del JSON
-        let valores = Object.values(item);
-        // Los transforma al elemento en string para que sea mas facil filtrar por "include"
-        let string = valores.join(",")
-        // console.log(string)
-        if(string.toLocaleLowerCase().includes(texto.toLocaleLowerCase())){
-          listFilteredData.push(item)
-        }
-    })
-    return listFilteredData;
-}
+//       // Accede a unicamente a los valores de cada elemento del JSON
+//         let valores = Object.values(item);
+//         // Los transforma al elemento en string para que sea mas facil filtrar por "include"
+//         let string = valores.join(",")
+//         // console.log(string)
+//         if(string.toLocaleLowerCase().includes(texto.toLocaleLowerCase())){
+//           listFilteredData.push(item)
+//         }
+//     })
+//     return listFilteredData;
+// }
 
-function actualizarResultados(resultados,contenedor) {
-    // Limpia el contenedor de los datos
-    contenedor.innerHTML = "";
+// function actualizarResultados(resultados,contenedor) {
+//     // Limpia el contenedor de los datos
+//     contenedor.innerHTML = "";
     
-    // Se reccore los datos filtrados
-    let lis ="";
-    resultados.forEach((item) => {
-        // console.log(item["nombre"])
-        lis += "<li>"+item["nombre"]+"</li>";
+//     // Se reccore los datos filtrados
+//     let lis ="";
+//     resultados.forEach((item) => {
+//         // console.log(item["nombre"])
+//         lis += "<li>"+item["nombre"]+"</li>";
   
-    });
-    contenedor.insertAdjacentHTML("beforeend",lis)
-    let height = contenedor.scrollHeight
-    contenedor.style.height = height +'px'
-}
+//     });
+//     contenedor.insertAdjacentHTML("beforeend",lis)
+//     let height = contenedor.scrollHeight
+//     contenedor.style.height = height +'px'
+// }
 
 
-// Esto evita el comportamiento predeterminado del botón "Tab" y el "Enter"
+// Esto evita el comportamiento predeterminado del boton "Enter"
 document.addEventListener('keydown', function (e) {
-    if (e.key === 'Tab' || e.key === 'Enter') {
+    if (e.key === 'Enter') {
       e.preventDefault();
     }
   });

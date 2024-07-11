@@ -51,14 +51,25 @@ async function permisosGet(group) {
     const data = await response.json();
     return data;
 }
-//  - - - - - - -  - - - - 
 
-function selectGroup(arrayGrupos) {
-    arrayGrupos.forEach(item => {
-        item.addEventListener("click", async()=>{
+
+//  - - - - - - -  - - - - 
+itemsGrupo.forEach(item => {
+    selectGroupListener(item);
+})
+
+function selectGroupListener(grupo) {
+    grupo.addEventListener("click", async()=>{
+        if (grupo.classList.contains("itemPicked")){
             clearActiveOfGroups()
-            item.classList.add("itemPicked")
-            let group = item.textContent
+            backgroundPermission.classList.remove("active")
+            formUpdatePermisos.style.pointerEvents ="none"
+            sendUpdatePermisos.classList.remove("enabled")
+        }
+        else{
+            clearActiveOfGroups()
+            grupo.classList.add("itemPicked")
+            let group = grupo.textContent
             groupToChange = group
             let permisosActives = await permisosGet(group);
             Array.from(itemsPermisos).map(e => {
@@ -74,10 +85,10 @@ function selectGroup(arrayGrupos) {
             backgroundPermission.classList.add("active")
             formUpdatePermisos.style.pointerEvents ="unset"
             sendUpdatePermisos.classList.add("enabled")
-        })
+        }
     });
 }
-selectGroup(itemsGrupo);
+
 
 
 // SELECCION DE PERMISOS PARA GRUPOS
@@ -86,6 +97,7 @@ itemsPermisos.forEach(element => {
         element.checked ? element.nextElementSibling.classList.add("perActive") : element.nextElementSibling.classList.remove("perActive");
     })
 });
+
 
 
 function updatePermisos(grupo) {
@@ -118,6 +130,7 @@ function updatePermisos(grupo) {
 }
 
 
+
 sendUpdatePermisos.addEventListener("click",()=>{
     updatePermisos(groupToChange);
     sendUpdatePermisos.classList.remove("enabled")
@@ -133,9 +146,12 @@ function clearActivePermisos() {
 
 
 // Menu conceptual al apretar click derecho - - - - - - 
-function menuConceptual_click_derecho(items,urlImageDelete) {
-    items.forEach(element => {
-        element.addEventListener('contextmenu', function (e) {
+itemsGrupo.forEach(element => {
+    menuConceptual_click_derecho(element,urlImageDelete)
+});
+
+function menuConceptual_click_derecho(item,urlImageDelete) {
+    item.addEventListener('contextmenu', function (e) {
             // Prevenir el menú contextual predeterminado del navegador
             e.preventDefault();
             
@@ -187,7 +203,6 @@ function menuConceptual_click_derecho(items,urlImageDelete) {
                         }
                         
                         fetchCRUD(body,deleteGrupoURL).then(data=>{
-                            console.log(data["message"])
                             element.remove()
                         })
                     })
@@ -199,9 +214,7 @@ function menuConceptual_click_derecho(items,urlImageDelete) {
                 });
             })
         })
-        
-    });
 }
-menuConceptual_click_derecho(itemsGrupo,urlImageDelete)
+
 //  - - - - - - - - - - - - - - - - - - - - - - - - - -
 

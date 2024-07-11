@@ -6,7 +6,7 @@ from django.views import generic
 from django.contrib.auth.mixins import PermissionRequiredMixin
 
 from .mixins import TestLogin
-from .models import ArqueoCaja, Ventas,CoeficientesListadePrecios,MovimientoExterno
+from .models import ArqueoCaja, Ventas,CoeficientesListadePrecios,MovimientoExterno,CuentaCobranza
 from .forms import FormChangePAck, FormCreateVenta
 from users.models import Cliente, Sucursal,Usuario
 from .models import Ventas
@@ -231,7 +231,7 @@ class DetailSale(TestLogin,generic.DetailView):
         
         context["changeTitularidad"] = list(reversed(self.object.cambioTitularidadField))
         context['cuotas'] = sale_target.cuotas
-        context['cobradores'] = Usuario.objects.all()
+        context['cobradores'] = CuentaCobranza.objects.all()
         context["object"] = self.object
         context["nro_cuotas"] = sale_target.nro_cuotas
         context["urlRedirectPDF"] = reverse("sales:bajaPDF",args=[self.object.pk])
@@ -366,6 +366,7 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         context = {
             'venta': self.object,
             'intereses' : intereses,
+            'agencias': Sucursal.objects.all(),
             'anticipo' : int(sumaCuotasPagadas),
             'importeNuevo': int(importeNuevo),
             'tipoDeAdjudicacion' : tipoDeAdjudicacion,
