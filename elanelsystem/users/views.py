@@ -624,13 +624,14 @@ class PanelCuentaCobro(generic.View):
 
 def addCuenta(request):
     if request.method == "POST":
+        print (json.loads(request.body))
         alias = json.loads(request.body)["alias"]
         
         newCuenta = CuentaCobranza()
         newCuenta.alias = alias.capitalize()
         newCuenta.save()
         
-        response_data = {"message":"Cuenta creada exitosamente!"}
+        response_data = {"message":"Cuenta creada exitosamente!","alias":alias.capitalize()}
         return JsonResponse(response_data,safe=False)
     
 def removeCuenta(request):
