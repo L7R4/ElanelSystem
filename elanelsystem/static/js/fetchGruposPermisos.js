@@ -198,7 +198,7 @@ function menuConceptual_click_derecho(item,urlImageDelete) {
                     let htmlConfirmarDelete = `<div id="confirmarDelete"><h5>¿Seguro que quieres eliminar este grupo?</h5><div><button id="confirmDelete" type="button">Si</button><button id="notConfirmDelete" type="button">No</button></div></div>`
                     contextMenu.children[0].classList.add("blocked")
                     contextMenu.insertAdjacentHTML('beforeend', htmlConfirmarDelete);
-
+                    
                     confirmDelete.addEventListener("click",()=>{
                         // Elimnar el grupo
                         contextMenu.remove();
@@ -207,7 +207,7 @@ function menuConceptual_click_derecho(item,urlImageDelete) {
                             "grupo": grupo
                         }
                         
-                        fetchCRUD(body,deleteGrupoURL).then(data=>{
+                        fetchCRUD(body).then(data=>{
                             item.remove()
                         })
                     })
@@ -222,4 +222,3 @@ function menuConceptual_click_derecho(item,urlImageDelete) {
 }
 
 //  - - - - - - - - - - - - - - - - - - - - - - - - - -
-

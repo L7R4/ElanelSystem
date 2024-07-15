@@ -54,6 +54,7 @@
             <label for="">Fecha</label>
             <input type="text" class="input-read-write-default" name="fecha" maxlength="10" required id="id_fecha">
         </div>
+        
 
         <div id="wrapperNroCuotas">
             <label for="">Nro cuotas</label>
@@ -62,23 +63,60 @@
 
         <div id="wrapperTasaIntereses">
             <label for="">Tasa interes</label>
-            <input type="number" name="tasa_interes" class="input-read-write-default" required id="id_tasa_interes">
+            <div>
+                <input type="number" name="tasa_interes" class="input-read-write-default" required id="id_tasa_interes">
+                <p class="iconValueInput">%</p>
+            </div>
         </div>
         
 
         <div id="wrapperImporte">
             <label for="">Importe</label>
-            <input type="number" name="importe" class="input-read-write-default" required id="id_importe">
+            <div>
+                <input type="number" name="importe" class="input-read-write-default {% if  'sorteo' in request.path %}not_ed{% endif %}" required id="id_importe">
+                <p class="iconValueInput">$</p>
+            </div>
         </div>
 
+        {% if "negociacion" in request.path%}
         <div id="wrapperSuscripcion">
             <label for="">Anticipo</label>
-            <input type="number" name="anticipo" class="input-read-write-default" required id="id_anticipo">
+            <div>
+                <input type="number" name="anticipo" class="input-read-write-default" required id="id_anticipo">
+                <p class="iconValueInput">$</p>
+            </div>
+        </div>
+        
+        <div id="wrapperImportexCuota">
+            <label for="">Porcentaje a reconocer</label>
+            <div>
+                <input type="number" class="input-read-write-default not_ed" value="50" name="porcentaje_a_reconocer" required id="id_porcentaje_a_reconocer">
+                <input type="hidden" name="autorizado_por" id="id_autorizado_por">
+                <p class="iconValueInput">%</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div id="wrapperCantidadCuotasPagadas">
+            <label for="">Cantidad de cuotas pagadas</label>
+            <div>
+                <p>{{cantidad_cuotas_pagadas}}</p>
+            </div>
+        </div>
+
+        <div id="wrapperSumaCuotasPagadas">
+            <label for="">Suma de cuotas pagadas</label>
+            <div>
+                <p>${{sumaCuotasPagadas}}</p>
+            </div>
         </div>
 
         <div id="wrapperInteresesGenerados">
             <label for="">Intereses generados</label>
-            <input type="number" class="input-read-write-default" name="intereses_generados" required id="id_intereses_generados">
+            <div>
+                <input type="number" class="input-read-write-default not_ed" name="intereses_generados" required id="id_intereses_generados">
+                <p class="iconValueInput">$</p>
+            </div>
         </div>
         
         <div id="wrapperAgencia" class="inputWrapper">
@@ -111,12 +149,18 @@
 
         <div id="wrapperImportexCuota">
             <label for="">Importe por cuota</label>
-            <input type="number" class="input-read-write-default" name="importe_x_cuota" required id="id_importe_x_cuota">
+            <div>
+                <input type="number" class="input-read-write-default not_ed" name="importe_x_cuota" required id="id_importe_x_cuota">
+                <p class="iconValueInput">$</p>
+            </div>
         </div>
 
         <div id="wrapperTotalAPagar">
             <label for="">Total a pagar</label>
-            <input type="number" class="input-read-write-default" name="total_a_pagar" required id="id_total_a_pagar">
+            <div>
+                <input type="number" class="input-read-write-default not_ed" name="total_a_pagar" required id="id_total_a_pagar">
+                <p class="iconValueInput">$</p>
+            </div>
         </div>
 
         <div id="wrapperObservaciones">
@@ -145,5 +189,6 @@
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
     <script src="{% static 'js/errorsFormManagement.js' %}"></script>
     <script src="{% static 'js/form_create_adju.js' %}"></script>
-    {% comment %} <script src="{% static 'js/inputs_selects_create_sale.js' %}"></script> {% endcomment %}
+    <script src="{% static 'js/porcentaje_a_reconocer_management.js' %}"></script>
+    
 {% endblock js %}

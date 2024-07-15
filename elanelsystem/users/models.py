@@ -12,6 +12,8 @@ class Sucursal(models.Model):
     localidad = models.CharField("Localidad",max_length =80)
     sucursal_central = models.BooleanField(default=False)
     pseudonimo = models.CharField("Pseudonimo", max_length=100, default="")
+    gerente = models.ForeignKey('users.Usuario',on_delete=models.DO_NOTHING,related_name="gerente")
+
 
     def __str__(self):
         return self.pseudonimo
@@ -56,7 +58,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         ('Dueños', 'Dueños'), 
     )
     nombre = models.CharField("Nombre Completo",max_length=100)
-    sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
+    sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios')
+    # sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
     rango = models.CharField("Rango:",max_length=40)
     dni = models.CharField("DNI",max_length=9, blank = True, null = True)
