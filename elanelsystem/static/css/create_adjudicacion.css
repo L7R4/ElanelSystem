@@ -27,12 +27,31 @@
     flex-direction: column;
     position: relative;
 }
+#form_create_sale>div>div{
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#form_create_sale>div>div>input {
+    text-indent:2.5rem ;
+    
+}
+
 
 #form_create_sale input {
     height: 3rem;
     font-family: raleway;
     color: var(--third-color);
     background-color: var(--background-color);
+
+}
+#form_create_sale input+p.iconValueInput {
+    position: absolute;
+    font-family: raleway-bold;
+    margin-left: 1rem;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    color: var(--third-color);
 
 }
 
@@ -94,14 +113,47 @@
 }
 
 #form_create_sale > #wrapperProducto,
-#form_create_sale > #wrapperAgencia, 
-#form_create_sale > #wrapperObservaciones{
+#form_create_sale > #wrapperAgencia{
     grid-column: 2 span;
+}
+
+#form_create_sale > #wrapperObservaciones{
+    grid-column: 1/2 span;
 }
 
 #form_create_sale > #wrapperProducto.desactive{
     pointer-events: none;
 }
+
+#form_create_sale >div#wrapperCantidadCuotasPagadas > div,
+#form_create_sale >div#wrapperSumaCuotasPagadas > div{
+    background-color: #3f4653d4 !important;
+    pointer-events: none;
+    border: 2px solid #1c2d45b8 !important;
+    max-height: 3.5rem;
+    min-height: 2.8rem;
+    border: 2px solid var(--secundary-color);
+    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
+    position: relative;
+    border-radius: 1rem;
+    width: 100%;
+    font-feature-settings: "pnum" on, "lnum" on;
+    height: 3rem;
+    color: var(--third-color);
+    display: flex;
+    align-items: center;
+    padding-left: 1.2rem;
+}
+
+#form_create_sale > #wrapperProducto.desactive input{
+    background-color: #393e4c;
+    border-color: #243247;
+}
+
+#form_create_sale > #wrapperProducto.desactive img{
+    display: none;
+}
+
 
 
 #form_create_sale>div>textarea {
@@ -129,13 +181,8 @@
 
 
 
-#id_importe,
-#id_intereses_generados,
-#id_importe_x_cuota,
-#id_paquete,
-#id_total_a_pagar,
-#id_primer_cuota,
-#id_anticipo {
+
+.not_ed{
     background-color: #3f4653d4 !important;
     pointer-events: none;
     border: 2px solid #1c2d45b8 !important;

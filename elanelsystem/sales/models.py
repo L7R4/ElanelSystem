@@ -141,7 +141,8 @@ class Ventas(models.Model):
 
     DEFAULT_STATUS_ADJUDICACION = {
         "status" : False,
-        "tipo" : ""
+        "tipo" : "",
+        "autorizado_por": "",
     }
 
     DEFAULT_STATUS_AUDITORIAS =[{
@@ -182,6 +183,7 @@ class Ventas(models.Model):
     adjudicado = models.JSONField(default=DEFAULT_STATUS_ADJUDICACION)
     deBaja = models.JSONField(default=DEFAULT_STATUS_BAJA)
     cuotas = models.JSONField(default=list)
+    # realizada_por = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="ventas_real_usuario")
     #endregion
     
 

@@ -353,13 +353,11 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         sumaCuotasPagadas = sum(valoresCuotasPagadas)
 
         if("negociacion" in url):
-            sumaCuotasPagadas = sumaCuotasPagadas * 0.5
+        #     sumaCuotasPagadas = sumaCuotasPagadas * 0.5
             tipoDeAdjudicacion = "NEGOCIACIÓN" # Coloca el tipo de adjudicacion
         else:
             tipoDeAdjudicacion = "SORTEO" # Coloca el tipo de adjudicacion
         
-        aumentoPorcentaje = self.object.importe * 0.1 
-        importeNuevo = aumentoPorcentaje + self.object.importe
        
         intereses = CoeficientesListadePrecios.objects.all()
        
@@ -367,8 +365,8 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
             'venta': self.object,
             'intereses' : intereses,
             'agencias': Sucursal.objects.all(),
-            'anticipo' : int(sumaCuotasPagadas),
-            'importeNuevo': int(importeNuevo),
+            'sumaCuotasPagadas' : int(sumaCuotasPagadas),
+            'cantidad_cuotas_pagadas': len(cuotasPagadas),
             'tipoDeAdjudicacion' : tipoDeAdjudicacion,
             'idCliente': self.object.nro_cliente.nro_cliente,
         }
