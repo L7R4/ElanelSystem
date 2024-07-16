@@ -118,7 +118,7 @@
                     <label class="labelInput">Sucursal</label>
                     <div class="containerInputAndOptions">
                         <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                        <input type="text" readonly value ="{{object.sucursal.pseudonimo}}" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" class="input-select-custom input-read-write-default onlySelect">
+                        <input type="text" readonly value ="{{sucursales_actives}}" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" class="input-select-custom input-read-write-default multipleSelect">
                         <ul id="contenedorAgencia" class="list-select-custom options">
                             {% for agencia in sucursales %}
                                 <li data-value="{{agencia.pseudonimo}}">{{agencia.pseudonimo}}</li>
@@ -214,6 +214,8 @@
         })
     </script>
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+    <script src="{% static 'js/inputsSelectsMultipleCustoms.js' %}"></script>
+
     <script src="{% static 'js/errorsFormManagement.js' %}"></script>
     <script src="{% static 'js/agregarFamiliar.js' %}"></script>
     <script src="{% static 'js/redirectToPDFNewUser.js' %}"></script>    
