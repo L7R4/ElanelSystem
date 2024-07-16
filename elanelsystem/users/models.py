@@ -12,7 +12,7 @@ class Sucursal(models.Model):
     localidad = models.CharField("Localidad",max_length =80)
     sucursal_central = models.BooleanField(default=False)
     pseudonimo = models.CharField("Pseudonimo", max_length=100, default="")
-    gerente = models.ForeignKey('users.Usuario',on_delete=models.DO_NOTHING,related_name="gerente")
+    gerente = models.ForeignKey('users.Usuario',on_delete=models.DO_NOTHING,related_name="gerente",blank=True,null=True)
 
 
     def __str__(self):

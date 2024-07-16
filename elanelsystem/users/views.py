@@ -47,7 +47,9 @@ class CrearUsuario(TestLogin, generic.View):
         errors = {}
         
         rango = form['rango']
-        sucursal = form['sucursal']
+        sucursales_text = form['sucursal']
+        sucursales_split = [nombre.strip() for nombre in sucursales_text.split('-')]
+        print(sucursales_split)
         email=form['email']
         dni=form['dni']
 
@@ -61,11 +63,10 @@ class CrearUsuario(TestLogin, generic.View):
 
 
         # Validar la sucursal
-        if sucursal and not Sucursal.objects.filter(pseudonimo=sucursal).exists():
-            errors['sucursal'] = 'Sucursal invalida.'
-
-        elif sucursal:
-            sucursal = Sucursal.objects.get(pseudonimo=sucursal)
+        for sucursal in sucursales_split:
+            if sucursal and not Sucursal.objects.filter(pseudonimo=sucursal).exists():
+                errors['sucursal'] = f'Sucursal {sucursal} invalida.'
+                
 
         # Validar la existencia del DNI
         if dni and Usuario.objects.filter(dni=dni).exists():
@@ -166,14 +167,17 @@ class CrearUsuario(TestLogin, generic.View):
             return JsonResponse({'success': False, 'errors': errors}, safe=False)  
         else:
             # Asignamos aca porque entonces nos aseguramos que no tengamos errores en los campos y podamos hacer la referencia sin problemas
-            usuario.sucursal = sucursal
+            for sucursal in sucursales_split:
+                sucursal_object = Sucursal.objects.get(pseudonimo=sucursal)
+                usuario.sucursales.add(sucursal_object)
+
             usuario.groups.add(rango)
             usuario.save()
 
             response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
             return JsonResponse(response_data, safe=False)         
 
-
+    
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
     template_name = "list_users.html"
@@ -190,7 +194,7 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
             data_user["nombre"] = c.nombre
             data_user["dni"] = c.dni
             data_user["email"] = c.email
-            data_user["sucursal"] = str(c.sucursal)
+            # data_user["sucursal"] = str(c.sucursal)
             data_user["tel"] = c.tel
             data_user["rango"] = c.rango
             users_list.append(data_user)
@@ -212,7 +216,10 @@ class DetailUser(TestLogin, generic.DetailView):
         sucursales = Sucursal.objects.all()
         context["sucursales"] = sucursales
         context["roles"] = self.roles
-        context["sucursal_object"] = self.object.sucursal
+
+        sucursales_actives = [sucursal.pseudonimo for sucursal in self.object.sucursales.all()]
+        context["sucursales_actives"] = '- '.join(sucursales_actives)
+        
         context["familiares"] = self.object.datos_familiares
         context["object"] = self.get_object()
     
@@ -234,7 +241,8 @@ class DetailUser(TestLogin, generic.DetailView):
         errors = {}
         
         rango = form['rango']
-        sucursal = form['sucursal']
+        sucursales_text = form['sucursal']
+        sucursales_split = [nombre.strip() for nombre in sucursales_text.split('-')]
         email=form['email']
         dni=form['dni']
 
@@ -248,10 +256,9 @@ class DetailUser(TestLogin, generic.DetailView):
             rango = Group.objects.get(name=rango)
 
         # Validar la sucursal
-        if sucursal and not Sucursal.objects.filter(pseudonimo=sucursal).exists():
-            errors['sucursal'] = 'Sucursal invalida.'
-        elif sucursal:
-            sucursal = Sucursal.objects.get(pseudonimo=sucursal)
+        for sucursal in sucursales_split:
+            if sucursal and not Sucursal.objects.filter(pseudonimo=sucursal).exists():
+                errors['sucursal'] = f'Sucursal {sucursal} invalida.'
 
         # Validar la existencia del DNI
         if dni and Usuario.objects.filter(dni=dni).exclude(pk=usuario.pk).exists():
@@ -344,7 +351,9 @@ class DetailUser(TestLogin, generic.DetailView):
             return JsonResponse({'success': False, 'errors': errors}, safe=False)  
         else:
             # Asignamos aca porque entonces nos aseguramos que no tengamos errores en los campos y podamos hacer la referencia sin problemas
-            usuario.sucursal = sucursal
+            for sucursal in sucursales_split:
+                sucursal_object = Sucursal.objects.get(pseudonimo=sucursal)
+                usuario.sucursales.add(sucursal_object)
             usuario.groups.add(rango)
             usuario.set_password(form['password'])
             usuario.save()
@@ -418,6 +427,7 @@ def requestUsuarios(request):
     
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
+
 #region Clientes - - - - - - - - - - - - - - - - - - - - - - -
 class ListaClientes(TestLogin, generic.View):
     model = Cliente
@@ -517,6 +527,7 @@ class PanelAdmin(TestLogin,PermissionRequiredMixin,generic.View):
         return render(request, self.template_name, context)
 #endregion  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+
 #region Permisos - - - - - - - - - - - - - - - - - - - - - - 
 class PanelPermisos(TestLogin, generic.View):
     template_name = "panelPermisos.html"
@@ -545,6 +556,7 @@ def updatePermisosAGrupo(request):
     if request.method == "POST":
 
         permissionRequest = json.loads(request.body)["permisos"]
+        print(permissionRequest)
         groupRequest = json.loads(request.body)["grupo"]
         # Obtener el grupo
         group = Group.objects.get(name=groupRequest)
@@ -646,6 +658,7 @@ def removeCuenta(request):
 
 
 #endregion
+
 
 #region Sucursales - - - - - - - - - - - - - - - - - - - 
 
