@@ -56,12 +56,13 @@
 }
 
 #form_create_user p.message-error {
-    position: relative;
+    position: absolute;
     font-size: clamp(1.1rem, 1vw, 1.3rem);
     font-family: raleway-semibold;
     color: #ff7b7b;
     padding: 0.3rem .6rem;
     left: 0;
+    top: 100%;
     border-radius: 0.6rem;
     white-space: nowrap;
 }
@@ -220,7 +221,7 @@ ul.list-select-custom {
     z-index: 4;
 }
 
-#sucursalInput+ul.options {
+#sucursalWrapper ul.options {
     z-index: 3;
     background-color: var(--background-color);
 }
@@ -231,7 +232,7 @@ ul.list-select-custom {
     z-index: 2;
 }
 
-#rangoInput+ul.options {
+#rangoWrapper ul.options {
     z-index: 1;
     background-color: var(--background-color);
 }

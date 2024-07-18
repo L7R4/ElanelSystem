@@ -16,17 +16,19 @@
 */
 
 let inputSelectMultipleCustom = document.querySelectorAll(".containerInputAndOptions > input.multipleSelect");
-
+console.log("Input select multiple custom")
+console.log(inputSelectMultipleCustom)
 
 inputSelectMultipleCustom.forEach(input => {
     let optionsList = input.nextElementSibling;
     let options = optionsList.querySelectorAll("li");
 
-    toggleOptionsList(input, optionsList);
+    toggleOptionsLists(input, optionsList);
 
     options.forEach(option => {
         option.addEventListener("click", () => {
-            toggleOption(input, option)
+            toggleOptions(input, option)
+            console.log("Dispara multiple input")
 
             // Disparar el evento "input" en el input después de seleccionar una opción
             input.dispatchEvent(new Event('input'));
@@ -35,7 +37,7 @@ inputSelectMultipleCustom.forEach(input => {
 });
 
 // Funcion que controla la seleccion de las opciones del menu select
-function toggleOption(input, option) {
+function toggleOptions(input, option) {
     // Obtenemos las opciones actualmente seleccionadas del valor del input, separadas por comas
     let selectedOptions = input.value.split('-').map(option => option.trim());
 
@@ -58,7 +60,7 @@ function toggleOption(input, option) {
 }
 
 // Funcion donde se le pasa el input en el cual se hizo click para que pueda MOSTRAR O NO MOSTRAR la lista de opciones
-function toggleOptionsList(input, optionsList) {
+function toggleOptionsLists(input, optionsList) {
     // Si hace click directamente en el input
     input.addEventListener("focus", () => {
         if (!optionsList.classList.contains("open")) {

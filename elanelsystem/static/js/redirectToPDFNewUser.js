@@ -17,6 +17,7 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
 async function fetchCRUD(body, url) {
     try {
         let response = await fetch(url, {
@@ -46,14 +47,11 @@ confirmNewUser.addEventListener("click", async () => {
     inputs.forEach(element => {
         body[element.name] = element.value
     });
-
     let response = await fetchCRUD(body, urlCreateUser)
     if (!response["success"]) {
         mostrarErrores(response["errors"], form_create_user)
     } else {
         // Redireccionar a la página de PDF en una nueva pestaña y en la actual cambiar de url a la de la lista de usuarios
-        console.log(response["urlRedirect"])
-        console.log(response["urlPDF"])
         window.open(response["urlPDF"], "_blank")
         window.location.href = response["urlRedirect"];
 
