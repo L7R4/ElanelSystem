@@ -177,7 +177,7 @@ class CrearUsuario(TestLogin, generic.View):
             response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
             return JsonResponse(response_data, safe=False)         
 
-    
+  
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
     template_name = "list_users.html"
@@ -218,7 +218,8 @@ class DetailUser(TestLogin, generic.DetailView):
         context["roles"] = self.roles
 
         sucursales_actives = [sucursal.pseudonimo for sucursal in self.object.sucursales.all()]
-        context["sucursales_actives"] = '- '.join(sucursales_actives)
+        context["sucursales_actives"] = ' - '.join(sucursales_actives)
+        print(context["sucursales_actives"])
         
         context["familiares"] = self.object.datos_familiares
         context["object"] = self.get_object()
@@ -242,7 +243,8 @@ class DetailUser(TestLogin, generic.DetailView):
         
         rango = form['rango']
         sucursales_text = form['sucursal']
-        sucursales_split = [nombre.strip() for nombre in sucursales_text.split('-')]
+        sucursales_split = [nombre.strip() for nombre in sucursales_text.split(' - ')]
+        
         email=form['email']
         dni=form['dni']
 
@@ -258,7 +260,7 @@ class DetailUser(TestLogin, generic.DetailView):
         # Validar la sucursal
         for sucursal in sucursales_split:
             if sucursal and not Sucursal.objects.filter(pseudonimo=sucursal).exists():
-                errors['sucursal'] = f'Sucursal {sucursal} invalida.'
+                errors['sucursal'] = f"Sucursal '{sucursal}' invalida."
 
         # Validar la existencia del DNI
         if dni and Usuario.objects.filter(dni=dni).exclude(pk=usuario.pk).exists():
@@ -351,9 +353,11 @@ class DetailUser(TestLogin, generic.DetailView):
             return JsonResponse({'success': False, 'errors': errors}, safe=False)  
         else:
             # Asignamos aca porque entonces nos aseguramos que no tengamos errores en los campos y podamos hacer la referencia sin problemas
+            usuario.sucursales.clear() # Limpiar las sucursales anteriores
             for sucursal in sucursales_split:
                 sucursal_object = Sucursal.objects.get(pseudonimo=sucursal)
                 usuario.sucursales.add(sucursal_object)
+
             usuario.groups.add(rango)
             usuario.set_password(form['password'])
             usuario.save()

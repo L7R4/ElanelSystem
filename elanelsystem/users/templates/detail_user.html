@@ -121,9 +121,11 @@
                         <input type="text" readonly value ="{{sucursales_actives}}" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" class="input-select-custom input-read-write-default multipleSelect">
                         <ul id="contenedorAgencia" class="list-select-custom options">
                             {% for agencia in sucursales %}
-                                <li data-value="{{agencia.pseudonimo}}">{{agencia.pseudonimo}}</li>
+                            <li data-value="{{agencia.pseudonimo}}" class="{% if agencia.pseudonimo in sucursales_actives %}selected{% endif %}">{{agencia.pseudonimo}}</li>
                             {% endfor %}
+                            
                         </ul>
+                        
                     </div>
                 </div>
                 
@@ -212,6 +214,7 @@
                 input.value = !val[2] ? val[1] : val[1] + '/' + val[2] + (val[3] ? '/' + val[3] : '');
             });
         })
+        
     </script>
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
     <script src="{% static 'js/inputsSelectsMultipleCustoms.js' %}"></script>

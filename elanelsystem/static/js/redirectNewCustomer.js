@@ -46,7 +46,7 @@ confirmNewUser.addEventListener("click", async () => {
     inputs.forEach(element => {
         body[element.name] = element.value
     });
-
+    
     let response = await fetchCRUD(body, urlCreateCustomer)
     if (!response["success"]) {
         mostrarErrores(response["errors"], form_create_customer)
