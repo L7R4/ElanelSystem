@@ -1,6 +1,7 @@
 const listProducto = document.querySelector('#wrapperProducto ul')
 const inputTipoDeProducto = document.querySelector('#tipoProductoInput')
 const inputProducto = document.querySelector('#productoInput')
+const submitAdjudicacionButton = document.querySelector('#enviar')
 
 const inputsWithEventInput = document.querySelectorAll(".eventInput")
 
@@ -88,6 +89,7 @@ inputProducto.addEventListener("input", async () => {
 });
 
 
+// Agrega listener de tipo input a los inputs que son necesarios para calcular los valores de venta
 inputsWithEventInput.forEach(input => {
     input.addEventListener("input", () => {
         rellenarCamposDeVenta();
@@ -129,3 +131,27 @@ function createProductoHTMLElement(contenedor, producto) {
     stringForHTML = `<li data-value="${producto}">${producto}</li>`;
     contenedor.insertAdjacentHTML('afterbegin', stringForHTML);
 }
+
+
+submitAdjudicacionButton.addEventListener("click", async () => {
+    body = {}
+    let inputs = form_create_sale.querySelectorAll("input")
+    let textareas = form_create_sale.querySelectorAll("textarea")
+
+    inputs = [...inputs, ...textareas]
+
+    inputs.forEach(element => {
+        body[element.name] = element.value
+    });
+
+    let response = await fetchFunction(body, urlCreateUser)
+    if (!response["success"]) {
+        mostrarErrores(response["errors"], form_create_user)
+    } else {
+        // Redireccionar a la página de PDF en una nueva pestaña y en la actual cambiar de url a la de la lista de usuarios
+        // window.open(response["urlPDF"], "_blank")
+        window.location.href = response["urlRedirect"];
+
+    }
+})
+
