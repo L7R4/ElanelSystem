@@ -226,7 +226,7 @@ class DetailUser(TestLogin, generic.DetailView):
     
         if self.object.rango == "Supervisor":
             vendedores_a_cargo = self.object.vendedores_a_cargo
-            vendedores_sucursal = Usuario.objects.filter(sucursal=self.object.sucursal, rango="Vendedor")
+            vendedores_sucursal = Usuario.objects.filter(sucursales__in=self.object.sucursales.all(), rango="Vendedor")
 
             # Excluir vendedores que están a cargo
             vendedores_disponibles = vendedores_sucursal.exclude(email__in=[vendedor['email'] for vendedor in vendedores_a_cargo])
@@ -413,16 +413,17 @@ def viewsPDFNewUser(request,pk):
 
 def requestUsuarios(request):
     request = json.loads(request.body)
-    sucursal = Sucursal.objects.get(pseudonimo = request["sucursal"]) if request["sucursal"] else ""
+    sucursal_filter = [nombre.strip() for nombre in request["sucursal"].split('-')][0]
+    sucursal = Sucursal.objects.get(pseudonimo = sucursal_filter) if request["sucursal"] else ""
     user = Usuario.objects.get(pk=request["pkUser"]) if request["pkUser"] else None
     
     usuarios_filtrados_listDict = []
 
     if request["sucursal"] !="":
         if user != None and user.rango =="Vendedor":
-            usuarios_filtrados = Usuario.objects.filter(sucursal = sucursal, rango="Vendedor").exclude(pk=user.pk)
+            usuarios_filtrados = Usuario.objects.filter(sucursales = sucursal, rango="Vendedor").exclude(pk=user.pk)
         else:
-            usuarios_filtrados = Usuario.objects.filter(sucursal = sucursal, rango="Vendedor")
+            usuarios_filtrados = Usuario.objects.filter(sucursales = sucursal, rango="Vendedor")
 
         usuarios_filtrados_listDict = list({"nombre": item.nombre, "email":item.email} for item in usuarios_filtrados)
 
@@ -438,7 +439,7 @@ class ListaClientes(TestLogin, generic.View):
     template_name= "list_customers.html"
 
     def get(self,request,*args, **kwargs):
-        customers = Cliente.objects.filter(agencia_registrada = request.user.sucursal)
+        customers = Cliente.objects.filter(agencia_registrada = request.user.sucursales.all()[0])
         context = {
             "customers": customers
         }
@@ -486,7 +487,7 @@ class CrearCliente(TestLogin, generic.CreateView):
         customer.estado_civil = form['estado_civil']
         customer.fec_nacimiento = form['fec_nacimiento']
         customer.ocupacion = form['ocupacion']
-        customer.agencia_registrada = request.user.sucursal
+        customer.agencia_registrada = request.user.sucursales.all()[0]
 
         try:
             customer.full_clean()

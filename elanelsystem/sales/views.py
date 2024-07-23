@@ -89,13 +89,13 @@ class CrearVenta(TestLogin,generic.DetailView):
 
         customers = Cliente.objects.all()
         products = Products.objects.all()
-        sucursalString = request.user.sucursal.pseudonimo  
+        sucursalString = request.user.sucursales.all()[0].pseudonimo
         usuarios = ""
 
         if(sucursalString == "Todas" and request.user.accesosTodasSucursales):
             usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor"])
         else:
-            usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor"],sucursal__pseudonimo = sucursalString)
+            usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor"],sucursales__pseudonimo = sucursalString)
             
         intereses = CoeficientesListadePrecios.objects.all()
         planes = Plan.objects.all()
@@ -189,7 +189,7 @@ class CrearVenta(TestLogin,generic.DetailView):
                 sale.tipo_producto = form.cleaned_data['tipo_producto']
                 sale.paquete = form.cleaned_data['paquete']
                 sale.nro_orden = form.cleaned_data['nro_orden']
-                sale.agencia = request.user.sucursal
+                sale.agencia = request.user.sucursales.all()[0]
 
                 # Para guardar como objeto Producto
                 producto_instance = Products.objects.get(nombre__iexact=form.cleaned_data['producto'])
@@ -360,12 +360,13 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         
        
         intereses = CoeficientesListadePrecios.objects.all()
-       
+        
         context = {
             'venta': self.object,
             'intereses' : intereses,
             'agencias': Sucursal.objects.all(),
             'sumaCuotasPagadas' : int(sumaCuotasPagadas),
+            'autorizado_por':  Sucursal.objects.get(pseudonimo = request.user.sucursales.all()[0].pseudonimo).gerente.nombre,
             'cantidad_cuotas_pagadas': len(cuotasPagadas),
             'tipoDeAdjudicacion' : tipoDeAdjudicacion,
             'idCliente': self.object.nro_cliente.nro_cliente,

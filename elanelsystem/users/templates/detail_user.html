@@ -185,7 +185,7 @@
                                     {% for vendedor in vendedores %}
                                         <li>
                                             <input type="checkbox" name="idv_{{vendedor.email}}" id="idv_{{vendedor.email}}" value="{{vendedor.email}}">
-                                            <label for="">{{vendedor.nombre}}</label>
+                                            <label for="idv_{{vendedor.email}}">{{vendedor.nombre}}</label>
                                         </li>
                                     {% endfor %}
                                 {% endif %}

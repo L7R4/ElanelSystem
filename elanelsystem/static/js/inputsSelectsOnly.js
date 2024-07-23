@@ -16,8 +16,6 @@
 */
 
 let inputSelectOnlyCustom = document.querySelectorAll(".containerInputAndOptions > input.onlySelect");
-console.log("Input select only custom")
-console.log(inputSelectOnlyCustom)
 
 inputSelectOnlyCustom.forEach(input => {
     let optionsList = input.nextElementSibling;
@@ -27,7 +25,6 @@ inputSelectOnlyCustom.forEach(input => {
     options.forEach(option => {
         option.addEventListener("click", () => {
             toggleOption(input, option)
-            console.log("Dispara only input")
             // Disparar el evento "input" en el input después de seleccionar una opción
             input.dispatchEvent(new Event('input'));
         });
@@ -87,7 +84,6 @@ function updateListOptions(optionsList, input) {
 
     options.forEach(option => {
         option.addEventListener("click", () => {
-            console.log("click2")
             toggleOption(input, option)
 
             // Disparar el evento "input" en el input después de seleccionar una opción

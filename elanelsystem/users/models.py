@@ -239,10 +239,11 @@ class Cliente(models.Model):
         
     #region Clean area de los campos
     def clean_nro_cliente(self):
-        nro_cliente = int(self.nro_cliente.split("_")[1])
-        last_cliente = int(Cliente.objects.last().nro_cliente.split("_")[1])
-        if(nro_cliente != last_cliente+1):
-            raise ValidationError({'nro_cliente': "Número de cliente incorrecto."})
+        if Cliente.objects.last():
+            nro_cliente = int(self.nro_cliente.split("_")[1])
+            last_cliente = int(Cliente.objects.last().nro_cliente.split("_")[1])
+            if(nro_cliente != last_cliente+1):
+                raise ValidationError({'nro_cliente': "Número de cliente incorrecto."})
             
 
     def validation_nombre(self):
@@ -275,7 +276,7 @@ class Cliente(models.Model):
         if not re.match(r'^\d+$', self.dni):
             raise ValidationError({'dni': 'Debe contener solo números.'})
         
-        if Usuario.objects.filter(dni=self.dni).exists():
+        if Cliente.objects.filter(dni=self.dni).exists():
             raise ValidationError({'dni': 'DNI ya registrado.'})
 
 
