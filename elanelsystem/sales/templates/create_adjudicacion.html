@@ -10,7 +10,7 @@
 
 {% block content %}
     <div class="wrapper_tittle">
-        <h1>ADJUDICAION POR {{tipoDeAdjudicacion}}</h1>
+        <h1>ADJUDICACION POR {{tipoDeAdjudicacion}}</h1>
     </div>
     
     <form method="POST" id="form_create_sale" autocomplete="off">
@@ -58,13 +58,13 @@
 
         <div id="wrapperNroCuotas">
             <label for="">Nro cuotas</label>
-            <input type="number" class="input-read-write-default" name="nro_cuotas" required id="id_nro_cuotas">
+            <input type="number" class="input-read-write-default eventInput" name="nro_cuotas" required id="id_nro_cuotas">
         </div>
 
         <div id="wrapperTasaIntereses">
             <label for="">Tasa interes</label>
             <div>
-                <input type="number" name="tasa_interes" class="input-read-write-default" required id="id_tasa_interes">
+                <input type="number" name="tasa_interes" class="input-read-write-default eventInput" required id="id_tasa_interes">
                 <p class="iconValueInput">%</p>
             </div>
         </div>
@@ -73,7 +73,7 @@
         <div id="wrapperImporte">
             <label for="">Importe</label>
             <div>
-                <input type="number" name="importe" class="input-read-write-default {% if  'sorteo' in request.path %}not_ed{% endif %}" required id="id_importe">
+                <input type="number" name="importe" class="input-read-write-default eventInput {% if  'sorteo' in request.path %}not_ed{% endif %}" required id="id_importe">
                 <p class="iconValueInput">$</p>
             </div>
         </div>
@@ -82,16 +82,16 @@
         <div id="wrapperSuscripcion">
             <label for="">Anticipo</label>
             <div>
-                <input type="number" name="anticipo" class="input-read-write-default" required id="id_anticipo">
+                <input type="number" name="anticipo" class="input-read-write-default eventInput" required id="id_anticipo">
                 <p class="iconValueInput">$</p>
             </div>
         </div>
         
-        <div id="wrapperImportexCuota">
+        <div id="wrapperPorcetajeAReconocer">
             <label for="">Porcentaje a reconocer</label>
             <div>
-                <input type="number" class="input-read-write-default not_ed" value="50" name="porcentaje_a_reconocer" required id="id_porcentaje_a_reconocer">
-                <input type="hidden" name="autorizado_por" id="id_autorizado_por">
+                <input type="number" class="input-read-write-default eventInput not_ed" value="50" name="porcentaje_a_reconocer" required id="id_porcentaje_a_reconocer">
+                <input type="hidden" name="autorizado_por" id="id_autorizado_por" value="{{autorizado_por}}">
                 <p class="iconValueInput">%</p>
             </div>
         </div>
@@ -100,14 +100,15 @@
         <div id="wrapperCantidadCuotasPagadas">
             <label for="">Cantidad de cuotas pagadas</label>
             <div>
-                <p>{{cantidad_cuotas_pagadas}}</p>
+                <p class="textInputP">{{cantidad_cuotas_pagadas}}</p>
             </div>
         </div>
 
         <div id="wrapperSumaCuotasPagadas">
             <label for="">Suma de cuotas pagadas</label>
             <div>
-                <p>${{sumaCuotasPagadas}}</p>
+                <p class="iconValueInput">$</p>
+                <p class="textInputP">{{sumaCuotasPagadas}}</p>
             </div>
         </div>
 
@@ -177,6 +178,9 @@
 
 {% endblock content %}
 {% block js %}
+    <script src="{% static 'js/menuContextual.js' %}"></script>
+    <script src="{% static 'js/porcentajeAdjudicacion.js' %}"></script>
+
     <script>
         document.getElementById('id_fecha').addEventListener('input', function (e) {
         var input = e.target;
@@ -184,11 +188,10 @@
         input.value = !val[2] ? val[1] : val[1] + '/' + val[2] + (val[3] ? '/' + val[3] : '');
         });
         var urlRequestProductos = "{% url 'products:get_products' %}";
-
     </script>
+
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
     <script src="{% static 'js/errorsFormManagement.js' %}"></script>
     <script src="{% static 'js/form_create_adju.js' %}"></script>
-    <script src="{% static 'js/porcentaje_a_reconocer_management.js' %}"></script>
     
 {% endblock js %}

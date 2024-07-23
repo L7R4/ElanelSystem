@@ -44,6 +44,16 @@ html {
    font-size: 62.5%;
 }
 
+/* --------------------------------------------------
+   > Estilos para el context menu al hacer click derecho
+   --------------------------------------------------*/
+.context-menu {
+   display: none;
+   position: absolute;
+   z-index: 1000;
+}
+
+
 /* #region SET DEFAULT BUTTONS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* --------------------------------------------------

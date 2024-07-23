@@ -6,11 +6,47 @@
     position: relative;
 }
 
+body {
+    overflow: hidden;
+}
 
 .wrapper_tittle>h1 {
     font-size: clamp(3rem, 3vw, 5rem);
     font-family: raleway-bold;
     color: var(--third-color);
+}
+
+.wrapperEdicionPorcentaje #editarProcentajeButton {
+    font-size: clamp(1.1rem, 1vw, 1.3rem);
+    font-family: raleway-bold;
+    color: var(--secundary-color);
+    background-color: var(--third-color);
+    border-radius: .6rem;
+}
+
+.wrapperEdicionPorcentaje>.wrapperFormAutorizacion {
+    display: none;
+    background-color: var(--third-color);
+    padding: 1.3rem;
+    border-radius: .6rem;
+}
+
+.wrapperEdicionPorcentaje #guardarAutorizado,
+.wrapperEdicionPorcentaje #cancelarAutorizado {
+    font-size: clamp(1.1rem, 1vw, 1.3rem);
+    font-family: raleway-bold;
+    border-radius: .6rem;
+
+}
+
+.wrapperEdicionPorcentaje #inputAutorizacion {
+    margin: .5rem 0;
+}
+
+.wrapperFormAutorizacion label {
+    font-size: clamp(1.1rem, 1vw, 1.3rem);
+    font-family: raleway-bold;
+    color: var(--background-color);
 }
 
 /* #region Formulario de adjudicacion */
@@ -27,15 +63,16 @@
     flex-direction: column;
     position: relative;
 }
-#form_create_sale>div>div{
+
+#form_create_sale>div>div {
     position: relative;
     display: flex;
     align-items: center;
 }
 
 #form_create_sale>div>div>input {
-    text-indent:2.5rem ;
-    
+    text-indent: 2.5rem;
+
 }
 
 
@@ -46,7 +83,8 @@
     background-color: var(--background-color);
 
 }
-#form_create_sale input+p.iconValueInput {
+
+p.iconValueInput {
     position: absolute;
     font-family: raleway-bold;
     margin-left: 1rem;
@@ -55,7 +93,11 @@
 
 }
 
-#form_create_sale #wrapperTipoProducto img.iconDesplegar{
+.textInputP {
+    padding-left: 2.2rem;
+}
+
+#form_create_sale #wrapperTipoProducto img.iconDesplegar {
     z-index: 13;
     filter: invert(1);
 }
@@ -112,21 +154,21 @@
     z-index: 2;
 }
 
-#form_create_sale > #wrapperProducto,
-#form_create_sale > #wrapperAgencia{
+#form_create_sale>#wrapperProducto,
+#form_create_sale>#wrapperAgencia {
     grid-column: 2 span;
 }
 
-#form_create_sale > #wrapperObservaciones{
+#form_create_sale>#wrapperObservaciones {
     grid-column: 1/2 span;
 }
 
-#form_create_sale > #wrapperProducto.desactive{
+#form_create_sale>#wrapperProducto.desactive {
     pointer-events: none;
 }
 
-#form_create_sale >div#wrapperCantidadCuotasPagadas > div,
-#form_create_sale >div#wrapperSumaCuotasPagadas > div{
+#form_create_sale>div#wrapperCantidadCuotasPagadas>div,
+#form_create_sale>div#wrapperSumaCuotasPagadas>div {
     background-color: #3f4653d4 !important;
     pointer-events: none;
     border: 2px solid #1c2d45b8 !important;
@@ -142,15 +184,14 @@
     color: var(--third-color);
     display: flex;
     align-items: center;
-    padding-left: 1.2rem;
 }
 
-#form_create_sale > #wrapperProducto.desactive input{
+#form_create_sale>#wrapperProducto.desactive input {
     background-color: #393e4c;
     border-color: #243247;
 }
 
-#form_create_sale > #wrapperProducto.desactive img{
+#form_create_sale>#wrapperProducto.desactive img {
     display: none;
 }
 
@@ -182,7 +223,7 @@
 
 
 
-.not_ed{
+.not_ed {
     background-color: #3f4653d4 !important;
     pointer-events: none;
     border: 2px solid #1c2d45b8 !important;
@@ -198,9 +239,8 @@
     margin-top: auto;
     gap: 1rem;
 }
-.wrapperButtons > a,
-.wrapperButtons > button{
+
+.wrapperButtons>a,
+.wrapperButtons>button {
     font-size: clamp(1.4rem, 1.3vw, 1.6rem);
 }
-
-
