@@ -32,7 +32,17 @@ class Ventas(models.Model):
     # Funcion para crear las cuotas cuando se cree una venta 
     def crearCuotas(self):
         cuotas = self.cuotas
-        fechaDeAlta = datetime.datetime.strptime(self.fecha, '%d/%m/%Y %H:%M')
+        fechaDeAlta = None
+    
+    # Intenta analizar la fecha en dos formatos diferentes
+        try:
+            fechaDeAlta = datetime.datetime.strptime(self.fecha, '%d/%m/%Y %H:%M')
+        except ValueError:
+            fechaDeAlta = datetime.datetime.strptime(self.fecha, '%d/%m/%Y')
+            # Agrega la hora '00:00' a la fecha
+            fechaDeAlta = fechaDeAlta.replace(hour=0, minute=0)
+
+            
         # Setear la variable fechaDeVencimiento con un tipo fecha
         fechaDeVencimiento = fechaDeAlta
         contMeses = 0
@@ -217,11 +227,12 @@ class Ventas(models.Model):
 
     def validation_nro_operacion(self):
         lastOperacion = Ventas.objects.last().nro_operacion
-        if(self.nro_operacion != lastOperacion+1):
-            raise ValidationError({'nro_operacion': "Número de operacion incorrecto."})
+        if not self.adjudicado["status"]:
+            if(self.nro_operacion != lastOperacion+1):
+                raise ValidationError({'nro_operacion': "Número de operacion incorrecto."})
         
     def validation_nro_solicitud(self):
-        if not re.match(r'^\d+$', self.total_a_pagar):
+        if not re.match(r'^\d+$', self.nro_solicitud):
             raise ValidationError({'nro_solicitud': 'Debe contener solo números.'})
         
     def validation_nro_orden(self):
@@ -235,9 +246,7 @@ class Ventas(models.Model):
     def validation_total_a_pagar(self):
         if self.total_a_pagar < 0:
             raise ValidationError({'total_a_pagar': 'Dinero invalido. Debe ser mayor a 0.'})
-        
-        if not re.match(r'^\d+$', self.total_a_pagar):
-            raise ValidationError({'total_a_pagar': 'Debe contener solo números.'})
+
         
     def validation_importe(self):
         if self.importe < 0:

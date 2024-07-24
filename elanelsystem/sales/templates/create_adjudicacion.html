@@ -16,13 +16,12 @@
     <form method="POST" id="form_create_sale" autocomplete="off">
         
         {% csrf_token %}
-        <input type="hidden" name="nro_cliente" id="id_nro_cliente" value="{{idCliente}}">
 
         <div id="wrapperTipoProducto" class="inputWrapper">
             <label class="labelInput">Tipo de producto</label>
             <div class="containerInputAndOptions">
                 <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" readonly name="sucursal" id="tipoProductoInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
+                <input type="text" readonly name="tipo_producto" id="tipoProductoInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
                 <ul class="list-select-custom options">
                     <li>Moto</li>
                     <li>Electrodomestico</li>
@@ -44,7 +43,7 @@
 
         <div id="wrapperNroSolicitud">
             <label for="">Nro contrato</label>
-            <input type="text" class="input-read-write-default" name="nro_contrato" maxlength="10" required id="id_nro_contrato">
+            <input type="text" value="{{venta.nro_solicitud}}" class="not_ed input-read-write-default" name="nro_contrato" maxlength="10" required id="id_nro_contrato">
         </div>
 
 
