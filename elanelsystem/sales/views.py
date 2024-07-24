@@ -22,6 +22,7 @@ from .utils import *
 from collections import defaultdict
 import elanelsystem.settings as settings
 from elanelsystem.views import filterMainManage
+from django.forms.models import model_to_dict
 
 
 
@@ -236,6 +237,8 @@ class DetailSale(TestLogin,generic.DetailView):
         context["nro_cuotas"] = sale_target.nro_cuotas
         context["urlRedirectPDF"] = reverse("sales:bajaPDF",args=[self.object.pk])
         context['urlUser'] = reverse("users:cuentaUser", args=[self.object.pk])
+        request.session["venta"] = model_to_dict(self.object)
+
         try:
             if len(self.object.cuotas_pagadas()) >= 6:
                 context["porcetageDefault"] = 50
@@ -357,7 +360,7 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
             tipoDeAdjudicacion = "NEGOCIACIÓN" # Coloca el tipo de adjudicacion
         else:
             tipoDeAdjudicacion = "SORTEO" # Coloca el tipo de adjudicacion
-        
+        print(request.session["venta"])
        
         intereses = CoeficientesListadePrecios.objects.all()
         
@@ -423,18 +426,22 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
 
         sale = Ventas()
 
+        sale.nro_cliente = Cliente.objects.get(nro_cliente=cliente)
         sale.nro_solicitud = form['nro_contrato']
         sale.modalidad = form['modalidad']
+        sale.nro_cuotas = form['nro_cuotas']
         sale.importe = form['importe']
         sale.anticipo = form['anticipo']
         sale.tasa_interes = form['tasa_interes']
         sale.intereses_generados = form['intereses_generados']
         sale.importe_x_cuota = form['importe_x_cuota']
-        sale.nro_cuotas = form['nro_cuotas']
         sale.total_a_pagar = form['total_a_pagar']
         sale.fecha = form['fecha']
         sale.tipo_producto = form['tipo_producto']
-                
+        # sale.observaciones = form['observaciones']
+        
+
+
         try:
             sale.full_clean()
         except ValidationError as e:
