@@ -355,13 +355,8 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         valoresCuotasPagadas = [item["total"] for item in cuotasPagadas]
         sumaCuotasPagadas = sum(valoresCuotasPagadas)
 
-        if("negociacion" in url):
-        #     sumaCuotasPagadas = sumaCuotasPagadas * 0.5
-            tipoDeAdjudicacion = "NEGOCIACIÓN" # Coloca el tipo de adjudicacion
-        else:
-            tipoDeAdjudicacion = "SORTEO" # Coloca el tipo de adjudicacion
-        print(request.session["venta"])
-       
+        tipoDeAdjudicacion = "NEGOCIACIÓN" if "negociacion" in url else "SORTEO"
+        
         intereses = CoeficientesListadePrecios.objects.all()
         
         context = {
@@ -385,34 +380,20 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         numeroAdjudicacion = self.object.nro_operacion
         errors ={}
 
-        # Obtenemos el total de cuotas pagadas - - - - - - - - - - - - - - - - - - - -
-        cuotasPagadas = self.object.cuotas_pagadas()
-        valoresCuotasPagadas = [item["total"] for item in cuotasPagadas]
-        sumaCuotasPagadas = sum(valoresCuotasPagadas)
-
 
         # Obtenemos el tipo de adjudicacion - - - - - - - - - - - - - - - - - - - -
         url = request.path
-        if("sorteo" in url):
-            tipo_adjudicacion = "sorteo"
-        elif("negociacion" in url):
-            tipo_adjudicacion = "negociacion"
-            sumaCuotasPagadas = sumaCuotasPagadas * 0.5
-
-       
-        # Validar el cliente
-        cliente = form['nro_cliente']
-        if cliente != self.get_object().nro_cliente.nro_cliente:
-            raise ValidationError({'nro_cliente': 'Error en el numero de cliente.'})
-        elif cliente:
-            cliente = Cliente.objects.get(nro_cliente=cliente)
-        
+        tipo_adjudicacion = "sorteo" if "sorteo" in url else "negociacion"
 
         # Validar el producto
         producto = form['producto']
+        print(producto)
         if producto and not Products.objects.filter(nombre=producto).exists():
             errors['producto'] = 'Producto invalido.'
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
+
         elif producto:
+            print("Weps")
             producto = Products.objects.get(nombre=producto)
 
 
@@ -420,26 +401,38 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         agencia = form['agencia']
         if agencia and not Sucursal.objects.filter(pseudonimo=agencia).exists():
             errors['agencia'] = 'Agencia invalida.'
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
+
 
         elif agencia:
             agencia = Sucursal.objects.get(pseudonimo=agencia)
 
         sale = Ventas()
 
-        sale.nro_cliente = Cliente.objects.get(nro_cliente=cliente)
-        sale.nro_solicitud = form['nro_contrato']
+        sale.nro_cliente = Cliente.objects.get(pk=request.session["venta"]["nro_cliente"])
+        sale.nro_operacion = request.session["venta"]["nro_operacion"]
+        sale.agencia = Sucursal.objects.get(pseudonimo = form["agencia"])
+        sale.vendedor = Usuario.objects.get(pk = request.session["venta"]["vendedor"])
+        sale.supervisor = Usuario.objects.get(pk = request.session["venta"]["supervisor"])
+        sale.nro_solicitud = str(request.session["venta"]["nro_solicitud"])
+        sale.nro_orden = str(request.session["venta"]["nro_orden"])
+        sale.paquete = str(request.session["venta"]["paquete"])
+        #sale.nro_operacion = request.session["venta"]["nro_operacion"] --> Ver como hacer la campaña
+        sale.importe = int(form['importe'])
         sale.modalidad = form['modalidad']
-        sale.nro_cuotas = form['nro_cuotas']
-        sale.importe = form['importe']
-        sale.anticipo = form['anticipo']
-        sale.tasa_interes = form['tasa_interes']
-        sale.intereses_generados = form['intereses_generados']
-        sale.importe_x_cuota = form['importe_x_cuota']
-        sale.total_a_pagar = form['total_a_pagar']
+        sale.nro_cuotas = int(form['nro_cuotas'])
+        sale.tasa_interes = int(form['tasa_interes'])
+        sale.intereses_generados = int(form['intereses_generados'])
+        sale.importe_x_cuota = int(form['importe_x_cuota'])
+        sale.total_a_pagar = int(form['total_a_pagar'])
         sale.fecha = form['fecha']
         sale.tipo_producto = form['tipo_producto']
-        # sale.observaciones = form['observaciones']
-        
+        sale.observaciones = form['observaciones']
+
+        sale.producto = producto
+        sale.agencia = agencia
+        sale.crearCuotas() # Crea las cuotas
+        sale.crearAdjudicacion(numeroAdjudicacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
 
 
         try:
@@ -448,37 +441,14 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
             errors.update(e.message_dict)
        
         if len(errors) != 0:
+            print(errors)
+            sale.delete()
             return JsonResponse({'success': False, 'errors': errors}, safe=False)  
         else:
-            # Asignamos aca porque entonces nos aseguramos que no tengamos errores en los campos y podamos hacer la referencia sin problemas
-            sale.nro_cliente = cliente
-            sale.agencia = agencia
-            agencia.producto = producto
-            
-            sale.save()
-            sale.crearCuotas() # Crea las cuotas
-            sale.crearAdjudicacion(numeroAdjudicacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
+           
             self.object.darBaja("adjudicacion",0,"","",request.user.nombre) # Da de baja la venta que fue adjudicada
-
-            # response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
-            # return JsonResponse(response_data, safe=False)        
-            return JsonResponse({'success': True}, safe=False)          
+            return JsonResponse({'success': True,'urlRedirect':reverse_lazy('users:detailUser',args=[request.session["venta"]["nro_cliente"]])}, safe=False)          
         
-        # return redirect("users:cuentaUser",pk= self.get_object().nro_cliente.pk)
-        
-        
-        # aumentoPorcentaje = self.object.importe * 0.1 
-        # importeNuevo = aumentoPorcentaje + self.object.importe
-        # context = {
-        #     'form': form,
-        #     'object': self.get_object(),
-        #     'tipoProducto': self.object.producto.tipo_de_producto,
-        #     'tipoDeAdjudicacion' : tipo_adjudicacion.upper(),
-        #     'producto': self.object.producto.nombre,
-        #     'importeNuevo': int(importeNuevo),
-        #     'dineroAnticipo' : int(sumaCuotasPagadas)
-        # }
-        return render(request, self.template_name, {})
 
 
 class ChangePack(TestLogin,generic.DetailView):

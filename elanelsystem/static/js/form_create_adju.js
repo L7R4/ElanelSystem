@@ -98,14 +98,18 @@ inputsWithEventInput.forEach(input => {
 
 function rellenarCamposDeVenta() {
     try {
-        id_intereses_generados.value = parseInt((id_tasa_interes.value * id_importe.value) / 100)
         let dineroDeCuotas = parseInt(document.querySelector("#wrapperSumaCuotasPagadas .textInputP").textContent)
         if (window.location.href.includes("negociacion")) {
-            let dineroAReconocerDeCuotas = dineroDeCuotas * (parseInt(id_porcentaje_a_reconocer.value) / 100)
-            id_total_a_pagar.value = (parseInt(id_importe.value) + parseInt(id_intereses_generados.value)) - (parseInt(id_anticipo.value) + dineroAReconocerDeCuotas)
+            let subTotalSinIntereses = parseInt(id_importe.value) - (dineroDeCuotas * (parseInt(id_porcentaje_a_reconocer.value) / 100) + parseInt(id_anticipo.value))
+            id_intereses_generados.value = parseInt((subTotalSinIntereses * id_tasa_interes.value) / 100)
+
+            id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
             id_importe_x_cuota.value = parseInt(parseInt(id_total_a_pagar.value) / parseInt(id_nro_cuotas.value))
         } else {
-            id_total_a_pagar.value = (parseInt(id_importe.value) + parseInt(id_intereses_generados.value)) - dineroDeCuotas
+            let subTotalSinIntereses = parseInt(id_importe.value) - dineroDeCuotas
+            id_intereses_generados.value = parseInt((subTotalSinIntereses * id_tasa_interes.value) / 100)
+
+            id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
             id_importe_x_cuota.value = parseInt(id_total_a_pagar.value / id_nro_cuotas.value)
         }
 
@@ -143,10 +147,10 @@ submitAdjudicacionButton.addEventListener("click", async () => {
     inputs.forEach(element => {
         body[element.name] = element.value
     });
-
-    let response = await fetchFunction(body, urlCreateUser)
+    
+    let response = await fetchFunction(body, window.location.pathname)
     if (!response["success"]) {
-        mostrarErrores(response["errors"], form_create_user)
+        mostrarErrores(response["errors"], form_create_sale)
     } else {
         // Redireccionar a la página de PDF en una nueva pestaña y en la actual cambiar de url a la de la lista de usuarios
         // window.open(response["urlPDF"], "_blank")
