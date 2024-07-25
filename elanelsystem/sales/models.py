@@ -34,14 +34,7 @@ class Ventas(models.Model):
         cuotas = self.cuotas
         fechaDeAlta = None
     
-    # Intenta analizar la fecha en dos formatos diferentes
-        try:
-            fechaDeAlta = datetime.datetime.strptime(self.fecha, '%d/%m/%Y %H:%M')
-        except ValueError:
-            fechaDeAlta = datetime.datetime.strptime(self.fecha, '%d/%m/%Y')
-            # Agrega la hora '00:00' a la fecha
-            fechaDeAlta = fechaDeAlta.replace(hour=0, minute=0)
-
+        fechaDeAlta = datetime.datetime.strptime(self.fecha, '%d/%m/%Y %H:%M')
             
         # Setear la variable fechaDeVencimiento con un tipo fecha
         fechaDeVencimiento = fechaDeAlta
@@ -128,7 +121,7 @@ class Ventas(models.Model):
         cuotas[0]["bloqueada"] = False
 
         self.cuotas = cuotas
-        self.save()
+        # self.save()
     
     # Modalidades de tiempo de pago
     MODALIDADES = (
@@ -192,7 +185,7 @@ class Ventas(models.Model):
     auditoria = models.JSONField(default=DEFAULT_STATUS_AUDITORIAS)
     adjudicado = models.JSONField(default=DEFAULT_STATUS_ADJUDICACION)
     deBaja = models.JSONField(default=DEFAULT_STATUS_BAJA)
-    cuotas = models.JSONField(default=list)
+    cuotas = models.JSONField(default=list,blank=True,null=True)
     # realizada_por = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="ventas_real_usuario")
     #endregion
     
@@ -273,6 +266,7 @@ class Ventas(models.Model):
             fecha = datetime.datetime.strptime(self.fecha, '%d/%m/%Y')
             if fecha > datetime.datetime.now():
                 raise ValidationError({'fecha': 'Fecha inválida.'})
+            self.fecha = self.fecha + " " + datetime.datetime.now().strftime("%H:%M")
 
     def validation_tipo_producto(self):
         tipoProductos = Products.TIPO_PRODUCTO
@@ -345,7 +339,7 @@ class Ventas(models.Model):
 
                     })
         
-        self.save()
+        # self.save()
 
 
     def cuotas_pagadas(self):
@@ -365,7 +359,7 @@ class Ventas(models.Model):
         self.deBaja["detalleMotivo"] = detalleMotivo
         self.deBaja["responsable"] = responsable
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-        self.save()
+        # self.save()
          
     
     def porcentajeADevolver(self):
@@ -420,7 +414,7 @@ class Ventas(models.Model):
         self.adjudicado["status"] = True
         self.adjudicado["tipo"] = tipo
 
-        self.save()
+        # self.save()
 
     #region CuotasManagement
     def desbloquearCuota(self,cuota):

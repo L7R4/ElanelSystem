@@ -168,9 +168,6 @@ class FormCreateVenta(forms.Form):
         return supervisor_input
     
 
-
-    
-
 class FormChangePAck(forms.Form):
     nro_solicitud = forms.CharField(required=True, max_length=10)
     modalidad =forms.CharField(required=True,max_length=30)

@@ -110,7 +110,7 @@ function rellenarCamposDeVenta() {
             id_intereses_generados.value = parseInt((subTotalSinIntereses * id_tasa_interes.value) / 100)
 
             id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
-            id_importe_x_cuota.value = parseInt(id_total_a_pagar.value / id_nro_cuotas.value)
+            id_importe_x_cuota.value = id_nro_cuotas.value <= 0 ? 0 : parseInt(id_total_a_pagar.value / id_nro_cuotas.value);
         }
 
     } catch (error) {

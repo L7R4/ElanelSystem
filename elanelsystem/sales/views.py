@@ -204,8 +204,8 @@ class CrearVenta(TestLogin,generic.DetailView):
                 supervisor_instance = Usuario.objects.get(nombre__iexact=form.cleaned_data['supervisor'])
                 sale.supervisor = supervisor_instance
 
-                sale.save()
                 sale.crearCuotas()
+                sale.save()
                 return redirect("users:cuentaUser",pk= self.get_object().pk)
 
         return render(request, self.template_name, {'form': form, 'object' : self.get_object()})
@@ -380,6 +380,7 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         numeroAdjudicacion = self.object.nro_operacion
         errors ={}
 
+        sale = Ventas()
 
         # Obtenemos el tipo de adjudicacion - - - - - - - - - - - - - - - - - - - -
         url = request.path
@@ -387,27 +388,27 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
 
         # Validar el producto
         producto = form['producto']
-        print(producto)
+
         if producto and not Products.objects.filter(nombre=producto).exists():
-            errors['producto'] = 'Producto invalido.'
-            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
+            errors['producto'] = 'Producto invalido.' 
 
         elif producto:
-            print("Weps")
             producto = Products.objects.get(nombre=producto)
+            sale.producto = producto
+
 
 
         # Validar la sucursal
         agencia = form['agencia']
         if agencia and not Sucursal.objects.filter(pseudonimo=agencia).exists():
-            errors['agencia'] = 'Agencia invalida.'
-            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
-
+            errors['agencia'] = 'Agencia invalida.' 
 
         elif agencia:
             agencia = Sucursal.objects.get(pseudonimo=agencia)
+            sale.agencia = agencia
 
-        sale = Ventas()
+
+        sale.adjudicado["status"] = True
 
         sale.nro_cliente = Cliente.objects.get(pk=request.session["venta"]["nro_cliente"])
         sale.nro_operacion = request.session["venta"]["nro_operacion"]
@@ -429,10 +430,7 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         sale.tipo_producto = form['tipo_producto']
         sale.observaciones = form['observaciones']
 
-        sale.producto = producto
-        sale.agencia = agencia
-        sale.crearCuotas() # Crea las cuotas
-        sale.crearAdjudicacion(numeroAdjudicacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
+        
 
 
         try:
@@ -442,11 +440,14 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
        
         if len(errors) != 0:
             print(errors)
-            sale.delete()
             return JsonResponse({'success': False, 'errors': errors}, safe=False)  
         else:
-           
+            sale.crearCuotas() # Crea las cuotas
+            sale.crearAdjudicacion(numeroAdjudicacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
+            sale.save()
+            
             self.object.darBaja("adjudicacion",0,"","",request.user.nombre) # Da de baja la venta que fue adjudicada
+            self.object.save()
             return JsonResponse({'success': True,'urlRedirect':reverse_lazy('users:detailUser',args=[request.session["venta"]["nro_cliente"]])}, safe=False)          
         
 
