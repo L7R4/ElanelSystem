@@ -244,3 +244,15 @@ p.iconValueInput {
 .wrapperButtons>button {
     font-size: clamp(1.4rem, 1.3vw, 1.6rem);
 }
+
+#form_create_sale p.message-error {
+    position: absolute;
+    font-size: clamp(1.1rem, 1vw, 1.3rem);
+    font-family: raleway-semibold;
+    color: #ff7b7b;
+    padding: 0.3rem .6rem;
+    left: 0;
+    top: 100%;
+    border-radius: 0.6rem;
+    white-space: nowrap;
+}
