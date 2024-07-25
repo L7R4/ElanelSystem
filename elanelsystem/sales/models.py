@@ -386,13 +386,11 @@ class Ventas(models.Model):
 
 
     def suspenderOperacion(self):
-        initial = 1
-        if(self.adjudicado["status"] == True):
-            initial = 0
 
         cuotas = self.cuotas
         contAtrasados = 0
-        for i in range(initial,int(self.nro_cuotas+initial)):
+        # print(f"La cantidad de cuotas es {len(cuotas)}")
+        for i in range(0,len(cuotas)):
             if(cuotas[i]["status"] == "Atrasado"):
                 contAtrasados +=1
 
@@ -408,7 +406,9 @@ class Ventas(models.Model):
         
     def crearAdjudicacion(self,nroDeVenta,tipo):
         self.cuotas.pop(0) # Elimina la cuota 0
+        print(f"La primer cuota es {self.cuotas[0]}")
         self.cuotas[0]["status"] = "Pendiente" # Cambia el status de la cuota 1 a Pendiente
+        self.cuotas[0]["bloqueada"] = False
         self.nro_operacion = nroDeVenta
 
         self.adjudicado["status"] = True
@@ -485,20 +485,18 @@ class Ventas(models.Model):
 
 
     def testVencimientoCuotas(self):
-        initial = 1
-        if self.adjudicado["status"]:
-            initial = 0
 
-        for i in range(initial, int(self.nro_cuotas + initial)):
+        for i in range(0, len(self.cuotas)):
             cuota = self.cuotas[i]["fechaDeVencimiento"]
-            fechaVencimiento = datetime.datetime.strptime(cuota, "%d/%m/%Y %H:%M")
-            fechaActual = datetime.datetime.now()
+            if self.cuotas[i]["cuota"] != "Cuota 0":
+                fechaVencimiento = datetime.datetime.strptime(cuota, "%d/%m/%Y %H:%M")
+                fechaActual = datetime.datetime.now()
 
-            if fechaActual > fechaVencimiento and not self.cuotas[i]['status'] in ['Parcial','Pagado']:
-                self.cuotas[i]["status"] = "Atrasado"
-                diasDeRetraso = self.contarDias(fechaVencimiento)
-                print(f'La cuota {self.cuotas[i]["cuota"]} esta atrasada por {diasDeRetraso} dias')
-                self.cuotas[i]["diasRetraso"] = diasDeRetraso
+                if fechaActual > fechaVencimiento and not self.cuotas[i]['status'] in ['Parcial','Pagado']:
+                    self.cuotas[i]["status"] = "Atrasado"
+                    diasDeRetraso = self.contarDias(fechaVencimiento)
+                    print(f'La cuota {self.cuotas[i]["cuota"]} esta atrasada por {diasDeRetraso} dias')
+                    self.cuotas[i]["diasRetraso"] = diasDeRetraso
 
         self.save()
     #endregion
@@ -508,19 +506,16 @@ class Ventas(models.Model):
         INTERES = 0.01
         cuotas = self.cuotas
 
-        initial = 1
-        if(self.adjudicado["status"] == True):
-            initial = 0
-
-        for i in range(initial,int(self.nro_cuotas + initial)):
+        for i in range(0,len(self.cuotas)):
             fechaVencimiento = cuotas[i]["fechaDeVencimiento"]
-            fechaVencimientoFormated = datetime.datetime.strptime(fechaVencimiento,"%d/%m/%Y %H:%M")
-            fechaInicioDeCuota = fechaVencimientoFormated + relativedelta(months=-1)
-            
-            if(NOW > fechaInicioDeCuota + relativedelta(days=+15)):
-                cantidadDias = (NOW - (fechaInicioDeCuota + relativedelta(days=+15))).days
-                cuotas[i]["interesPorMora"] = cantidadDias*INTERES
-                cuotas[i]["totalFinal"] = cuotas[i]["total"]+(cuotas[i]["total"] * cuotas[i]["interesPorMora"])
+            if self.cuotas[i]["cuota"] != "Cuota 0":
+                fechaVencimientoFormated = datetime.datetime.strptime(fechaVencimiento,"%d/%m/%Y %H:%M")
+                fechaInicioDeCuota = fechaVencimientoFormated + relativedelta(months=-1)
+                
+                if(NOW > fechaInicioDeCuota + relativedelta(days=+15)):
+                    cantidadDias = (NOW - (fechaInicioDeCuota + relativedelta(days=+15))).days
+                    cuotas[i]["interesPorMora"] = cantidadDias*INTERES
+                    cuotas[i]["totalFinal"] = cuotas[i]["total"]+(cuotas[i]["total"] * cuotas[i]["interesPorMora"])
 
             self.cuotas = cuotas
         self.save()

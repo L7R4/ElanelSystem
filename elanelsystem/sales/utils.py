@@ -12,6 +12,9 @@ from django.http import HttpResponse, JsonResponse
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from users.models import Cliente
 
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 #region Funciones para exportar PDFs
 def printPDFBaja(data,url,productoName):
@@ -419,3 +422,25 @@ def formatKeys(lista_dicts):
         lista_formateada.append(nuevo_dict)
 
     return lista_formateada
+
+
+
+#region Para enviar correos electrónicos
+def send_html_email(subject, template, context, from_email, to_email):
+    """
+    Envía un correo electrónico HTML.
+
+    :param subject: Asunto del correo electrónico.
+    :param template: Ruta al template HTML.
+    :param context: Contexto para renderizar el template.
+    :param from_email: Dirección de correo del remitente.
+    :param to_email: Dirección de correo del destinatario.
+    
+    """
+    html_message = render_to_string(template, context)
+    plain_message = strip_tags(html_message)
+    
+    email = EmailMessage(subject, plain_message, from_email, [to_email])
+    email.content_subtype = 'html'  # Define que el contenido es HTML
+    email.send()
+#endregion

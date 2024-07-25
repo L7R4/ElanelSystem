@@ -448,7 +448,17 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
             
             self.object.darBaja("adjudicacion",0,"","",request.user.nombre) # Da de baja la venta que fue adjudicada
             self.object.save()
-            return JsonResponse({'success': True,'urlRedirect':reverse_lazy('users:detailUser',args=[request.session["venta"]["nro_cliente"]])}, safe=False)          
+
+            #region Para enviar el correo
+            subject = 'Se envio una adjudicacion'
+            template = 'adjudicacion_correo.html'
+            context = {'nombre': 'Usuario'}  # Contexto para renderizar el template
+            from_email = 'lautaror@elanelsys.com'
+            to_email = 'lautaro.rodriguez553@gmail.com'
+
+            send_html_email(subject, template, context, from_email, to_email)
+            #endregion
+            return JsonResponse({'success': True,'urlRedirect':reverse_lazy('users:cuentaUser',args=[request.session["venta"]["nro_cliente"]])}, safe=False)          
         
 
 
