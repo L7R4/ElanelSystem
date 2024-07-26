@@ -1,5 +1,6 @@
 import datetime
 from django import template
+from django.urls import reverse
 from users.models import Usuario
 from django.db.models import Max
 from sales.models import Ventas
@@ -68,3 +69,24 @@ def obtener_ultima_campania():
     else:
         return ultima_campania
     
+
+@register.simple_tag(takes_context=True)
+def seccionesPorPermisos(context):
+    user = context['request'].user
+
+    secciones = {
+        "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
+        "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
+        "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
+        "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
+        "Post Venta": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList",args=[obtener_ultima_campania()])},
+        "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
+        "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
+        "Administracion": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},
+    }
+    secciones_permitidas = {}
+    for k, v in secciones.items():
+        if v["permisos"][0] in user.get_all_permissions():
+            secciones_permitidas[k] = v
+            
+    return secciones_permitidas

@@ -26,7 +26,16 @@
             </div>
             
             <ul class="list">
-                {% if perms.sales.my_ver_resumen%}
+                {% seccionesPorPermisos as secciones %}
+                {% for seccion, data in secciones.items %}
+                    <li>
+                        <a href="{{data.url}}" id="{{seccion|lower}}">
+                            <p>{{seccion}}</p> 
+                        </a>
+                        <div class="check"></div>
+                    </li>
+                {% endfor %}
+                {% comment %} {% if perms.sales.my_ver_resumen%}
 
                     <li>
                         <a href="{% url 'sales:resumen' %}" id="resumen">
@@ -52,7 +61,7 @@
                         <p>Caja</p> 
                     </a>
                     <div class="check"></div>
-                </li>
+                </li> {% endcomment %}
 
                 {% comment %} {% if perms.sales.my_ver_planes%}
 
@@ -65,7 +74,7 @@
                     </li> 
 
                 {% endif %} {% endcomment %}
-                <li>
+                {% comment %} <li>
                     <a href="{% url 'reporteView' %}" id="reportes">
                         <img src="{% static 'images/icons/planes.svg' %}" alt="">
                         <p>Reportes</p>
@@ -107,7 +116,7 @@
                         </a>
                         <div class="check"></div>
                     </li>
-                {% endif %}
+                {% endif %} {% endcomment %}
 
                 <li>
                     <a href="{% url 'logout' %}" id="close_session">

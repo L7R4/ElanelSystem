@@ -38,7 +38,7 @@ EMAIL_USE_SSL = True
 EMAIL_PORT = 465
 # EMAIL_TIMEOUT = None
 EMAIL_HOST_USER="lautaror@elanelsys.com"
-EMAIL_HOST_PASSWORD="ixq039KG*"
+EMAIL_HOST_PASSWORD="fb0zf5/2vN"
 
 
 # Application definition

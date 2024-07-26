@@ -3,31 +3,25 @@ from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.views import generic
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from users.forms import CustomLoginForm
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.cache import never_cache
 from sales.utils import dataStructureCannons, dataStructureVentas, dataStructureMovimientosExternos,deleteFieldsInDataStructures
 from users.models import Sucursal, Usuario
-from sales.utils import exportar_excel
+from sales.utils import exportar_excel, obtener_ultima_campania
 
 class IndexLoginView(generic.FormView):
     form_class = CustomLoginForm
     template_name = "index.html"
-    success_url = reverse_lazy('sales:resumen')
 
     @method_decorator(csrf_protect)
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
-        users = Usuario.objects.all()
-        print(users)
         if request.user.is_authenticated:
-            print("weps")
-            return HttpResponseRedirect(self.get_success_url())
-        else:
-            print(request.user)
-            return super(IndexLoginView, self).dispatch(request, *args, **kwargs)
+            return redireccionar_por_permisos(request.user)
+        return super(IndexLoginView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         """
@@ -36,11 +30,28 @@ class IndexLoginView(generic.FormView):
         username = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password')
         user = authenticate(username=username, password=password)
-        print("weps3")
         if user is not None:
-            print("weps4")
             login(self.request, user)
-            return super(IndexLoginView, self).form_valid(form)
+            return redireccionar_por_permisos(user)
+        return super(IndexLoginView, self).form_invalid(form)
+
+def redireccionar_por_permisos(usuario):
+    secciones = {
+        "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
+        "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
+        "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
+        "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
+        "Post Venta": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList",args=[obtener_ultima_campania()])},
+        "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
+        "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
+        "Administracion": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},
+    }
+    permisos_usuario = usuario.get_all_permissions()
+
+    for k, v in secciones.items():
+        if v["permisos"][0] in permisos_usuario:
+            return redirect(v["url"])
+    return redirect('default:index')
 
 
 def logout_view(request):

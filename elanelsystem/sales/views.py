@@ -461,7 +461,6 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
             return JsonResponse({'success': True,'urlRedirect':reverse_lazy('users:cuentaUser',args=[request.session["venta"]["nro_cliente"]])}, safe=False)          
         
 
-
 class ChangePack(TestLogin,generic.DetailView):
     model = Ventas
     template_name = "change_pack.html"

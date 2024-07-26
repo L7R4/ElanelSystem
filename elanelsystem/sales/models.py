@@ -406,7 +406,6 @@ class Ventas(models.Model):
         
     def crearAdjudicacion(self,nroDeVenta,tipo):
         self.cuotas.pop(0) # Elimina la cuota 0
-        print(f"La primer cuota es {self.cuotas[0]}")
         self.cuotas[0]["status"] = "Pendiente" # Cambia el status de la cuota 1 a Pendiente
         self.cuotas[0]["bloqueada"] = False
         self.nro_operacion = nroDeVenta
