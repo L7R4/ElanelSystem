@@ -148,14 +148,16 @@ submitAdjudicacionButton.addEventListener("click", async () => {
         body[element.name] = element.value
     });
     
+    document.getElementById('loader').style.display = 'block';
     let response = await fetchFunction(body, window.location.pathname)
+
     if (!response["success"]) {
         mostrarErrores(response["errors"], form_create_sale)
     } else {
-        // Redireccionar a la página de PDF en una nueva pestaña y en la actual cambiar de url a la de la lista de usuarios
-        // window.open(response["urlPDF"], "_blank")
         window.location.href = response["urlRedirect"];
-
     }
+
+    document.getElementById('loader').style.display = 'none';
+
 })
 
