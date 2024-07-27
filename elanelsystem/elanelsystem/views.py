@@ -35,23 +35,28 @@ class IndexLoginView(generic.FormView):
             return redireccionar_por_permisos(user)
         return super(IndexLoginView, self).form_invalid(form)
 
+
 def redireccionar_por_permisos(usuario):
+    
     secciones = {
-        "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
+        # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
         "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
         "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
         "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
         "Post Venta": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList",args=[obtener_ultima_campania()])},
         "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
-        "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
-        "Administracion": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},
+        "Liquidaciones": {"permisos": ["liquidacion.my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
+        "Administracion": {"permisos": ["users.my_ver_administracion"], "url": reverse("users:panelAdmin")},
+        "Planes suspendidos": {"permisos": ["sales.my_ver_planes_suspendidos"], "url": reverse("sales:ventasSuspendidas")},
     }
-    permisos_usuario = usuario.get_all_permissions()
 
+    secciones_permitidas = {}
     for k, v in secciones.items():
-        if v["permisos"][0] in permisos_usuario:
-            return redirect(v["url"])
-    return redirect('default:index')
+        if any(usuario.has_perm(perm) for perm in v['permisos']):
+            secciones_permitidas[k] = v
+
+    for k, v in secciones_permitidas.items():
+        return redirect(v["url"])
 
 
 def logout_view(request):

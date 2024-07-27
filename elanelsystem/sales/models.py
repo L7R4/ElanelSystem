@@ -389,19 +389,20 @@ class Ventas(models.Model):
 
         cuotas = self.cuotas
         contAtrasados = 0
-        # print(f"La cantidad de cuotas es {len(cuotas)}")
+        
         for i in range(0,len(cuotas)):
             if(cuotas[i]["status"] == "Atrasado"):
                 contAtrasados +=1
-
+        if contAtrasados >=4:
+            self.darBaja("falta de pago",0,"Operacion de baja por extenderse 120 dias o mas sin abonar","","")
+            self.suspendida = True
+            self.save()
         if contAtrasados >= 3:
             self.suspendida = True
             self.save()
         elif(self.suspendida == True and contAtrasados==0):
             self.suspendida = False
             self.save()
-        elif(self.suspendida==False and contAtrasados < 3):
-            print("La operacion "+ str(self.pk)+" esta activa")
         
         
     def crearAdjudicacion(self,nroDeVenta,tipo):
@@ -480,7 +481,6 @@ class Ventas(models.Model):
         else:
             raise ValueError("Solo se puede aplicar descuento a la cuota 0 y 1. En otro caso, esta cuota está pagada")
         self.save()
-
 
 
     def testVencimientoCuotas(self):
