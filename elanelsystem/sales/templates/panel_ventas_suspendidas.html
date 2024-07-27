@@ -1,0 +1,40 @@
+{% extends 'molde.html' %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/cuentaCustomer.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+{% endblock css %}
+
+{% block content %}
+<div class="filters">
+    {% comment %} <a class="add-button-default" href="{% url 'sales:create_sale' customer.id %}" id="create_customer">Agregar</a> {% endcomment %}
+    <div>
+        
+        <div class="searchFilter">
+            <h2>Coloque el numero de venta para filtrar la venta</h2>
+            <input type="text" name ="nro_operacion" class = "customer input-read-write-default" id="nro_ordenInput">
+            <img src="{% static 'images/icons/search.svg' %}" alt="">
+        </div>
+</div>
+
+<div class="accountWrapper">
+
+    <div class="operations">
+        <div class="operationsWrapper">
+            <ul class="operationsList">
+                
+            </ul>       
+        </div>
+    </div> 
+    
+
+</div>
+
+{% endblock content %}
+
+{% block js %}
+<script src="{% static 'js/search_ventas_suspendidas.js' %}"></script>
+{% endblock js %}

@@ -25,7 +25,7 @@ urlpatterns = [
     path("usuario/administracion/sucursales/update",updateSucursal,name="updateSucursal"),
     #endregion - - - - - - - - - - - - - - 
 
-    #region Administracion CRUD - - - - - - - -
+    #region Cuenta de cobros CRUD - - - - - - - -
     path("usuario/administracion/cuentas_cobros/",PanelCuentaCobro.as_view(),name="panelCuentaDeCobro"),
     path("usuario/administracion/cuentas_cobros/add",addCuenta,name="addCuenta"),
     path("usuario/administracion/cuentas_cobros/remove",removeCuenta,name="removeCuenta"),

@@ -73,9 +73,9 @@ def obtener_ultima_campania():
 @register.simple_tag(takes_context=True)
 def seccionesPorPermisos(context):
     user = context['request'].user
-
+    # print(user)
     secciones = {
-        "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
+        # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
         "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
         "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
         "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
@@ -84,9 +84,9 @@ def seccionesPorPermisos(context):
         "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
         "Administracion": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},
     }
+
     secciones_permitidas = {}
     for k, v in secciones.items():
-        if v["permisos"][0] in user.get_all_permissions():
+        if any(user.has_perm(perm) for perm in v['permisos']):
             secciones_permitidas[k] = v
-            
     return secciones_permitidas

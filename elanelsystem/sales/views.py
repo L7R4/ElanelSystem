@@ -776,6 +776,37 @@ class PostVenta(TestLogin,generic.View):
             response_data = {"status": False,"message": "Hubo un error al generar la auditoria"}
             return JsonResponse(response_data, safe=False)
 
+
+class PanelVentasSuspendidas(TestLogin,generic.View):
+    template_name = 'panel_ventas_suspendidas.html'
+
+    def get(self,request,*args,**kwargs):
+        ventasSuspendidas = Ventas.objects.filter(suspendida=True)
+        context = {
+            "ventasSuspendidas": ventasSuspendidas,
+        }
+        return render(request, self.template_name, context)
+    
+    def post(self,request,*args,**kwargs):
+        data = json.loads(request.body)
+        venta = Ventas.objects.get(nro_operacion=data["nro_operacion"])
+        cuotas_pagadas = sum(cuota["pagado"] for cuota in venta.cuotas_pagadas())
+        saldo_Afavor = len(venta.cuotas_pagadas())
+        cuotas_atrasadas = len([cuota for cuota in venta.cuotas if cuota["status"] == "Atrasado"])
+
+        context = {
+            "producto": venta.producto.nombre,
+            "importe": venta.producto.importe,
+            "nro_orden": venta.nro_orden,
+            "fecha_inscripcion": venta.fecha,
+            "nro_operacion": venta.nro_operacion,
+            "cuotas_atrasadas": cuotas_atrasadas,
+            "saldo_Afavor": saldo_Afavor,
+            "cuotas_pagadas": cuotas_pagadas,
+
+        }
+        return JsonResponse({"status": True,"venta":context}, safe=False)
+        
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 #region PDFs - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
