@@ -202,10 +202,10 @@ class Ventas(models.Model):
             self.validation_importe,
             self.validation_importe_x_cuota,
             self.validation_tasa_interes,
-            self.validation_fecha,
+            # self.validation_fecha,
             self.validation_tipo_producto,
             self.validation_paquete,
-            self.validation_nro_operacion    
+            # self.validation_nro_operacion    
         ]
 
         for method in validation_methods:
