@@ -35,21 +35,37 @@ async function fetchVenta(url,body) {
         return data;
     } catch (error) {}
 }
-if (!response.ok) {
-    throw new Error('Ocurrio un error al buscar la venta')
-}
+
 
 
 inputNroVenta.addEventListener('input', async()=>{
-    let venta = await fetchVenta(window.location.pathname,{'nro_orden':inputNroVenta.value})
     wrapperOperaciones.innerHTML = ''
-    wrapperOperaciones.insertAdjacentHTML('beforeend',createVentaHTML(venta["venta"]))
+    if(inputNroVenta.value != ''){
+        let venta = await fetchVenta(window.location.pathname,{'nro_operacion':inputNroVenta.value})
+        console.log(venta)
+        if(venta["venta"] != null){
+            wrapperOperaciones.insertAdjacentHTML('beforeend',createVentaHTML(venta["venta"])) 
+        }else{
+            let message = "No se encontro ninguna venta con ese número"
+            wrapperOperaciones.insertAdjacentHTML('beforeend',createMessageHTML(message))
+        }
+    }else{
+        let message = "Coloque el numero de venta para filtrar la venta"
+        wrapperOperaciones.insertAdjacentHTML('beforeend',createMessageHTML(message))
+    }
 })
 
 function createVentaHTML(venta) {
+    let tipo_producto_image = `<img src="/static/images/icons/moto_icon.svg" alt="">`
+    if (venta.tipo_producto === 'Prestamo') {
+        tipo_producto_image= `<img src="/static/images/icons/soluciones_dinerarias_icon.svg" alt="">`
+    }else if(venta.tipo_producto === 'Electrodomestico'){
+        tipo_producto_image= `<img src="/static/images/icons/combos_icon.svg" alt="">`
+    }
+
     let string = `<li class="operationItem">
                     <div class="iconWrapper">
-                        <img src="/static/images/icons/iconMoto.png" alt="">
+                        ${tipo_producto_image}
                     </div>
                     <div class="attributes">
                         <div class="nameStatus">
@@ -80,7 +96,7 @@ function createVentaHTML(venta) {
                         </div>
                         <div class="information">
                             <h2>Saldo a favor</h2>
-                            <h3>${venta.saldo_Afavor}</h3>
+                            <h3>$${venta.saldo_Afavor}</h3>
                         </div>
                         <div class="information">
                             <h2>Cuotas pagadas</h2>
@@ -88,5 +104,12 @@ function createVentaHTML(venta) {
                         </div>
                     </div>
                 </li>`
+    return string;
+}
+
+function createMessageHTML(message) {
+    let string = `<div class="wrapperMessage">
+                        <h2 class="messageInfoVacio">${message}</h2>
+                    </div>`
     return string;
 }

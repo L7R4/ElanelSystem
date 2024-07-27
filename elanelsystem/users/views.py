@@ -219,7 +219,6 @@ class DetailUser(TestLogin, generic.DetailView):
 
         sucursales_actives = [sucursal.pseudonimo for sucursal in self.object.sucursales.all()]
         context["sucursales_actives"] = ' - '.join(sucursales_actives)
-        print(context["sucursales_actives"])
         
         context["familiares"] = self.object.datos_familiares
         context["object"] = self.get_object()
