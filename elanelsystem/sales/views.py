@@ -786,8 +786,9 @@ class PanelVentasSuspendidas(TestLogin,generic.View):
     
     def post(self,request,*args,**kwargs):
         data = json.loads(request.body)
+        sucursal = request.user.sucursales.all()[0]
         try:
-            venta = Ventas.objects.get(nro_operacion=data["nro_operacion"], suspendida=True)
+            venta = Ventas.objects.get(nro_operacion=data["nro_operacion"], suspendida=True, agencia=sucursal)
             saldo_Afavor = sum(cuota["pagado"] for cuota in venta.cuotas_pagadas())
             cuotas_pagadas = len(venta.cuotas_pagadas())
             cuotas_atrasadas = len([cuota for cuota in venta.cuotas if cuota["status"] == "Atrasado"])
@@ -802,13 +803,20 @@ class PanelVentasSuspendidas(TestLogin,generic.View):
                 "cuotas_atrasadas": cuotas_atrasadas,
                 "saldo_Afavor": saldo_Afavor,
                 "cuotas_pagadas": cuotas_pagadas,
+                "urlSimularPlanRecupero": reverse("sales:simuladorPlanrecupero"),
 
             }
             return JsonResponse({"status": True,"venta":context}, safe=False)
         except:
             return JsonResponse({"status": True,"venta":None}, safe=False)
 
-        
+
+class SimuladorPlanRecupero(TestLogin,generic.View):
+    template_name = "simulador_plan_recupero.html"
+
+    def get(self,request,*args,**kwargs):
+        context = {}
+        return render(request, self.template_name, context)
         
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

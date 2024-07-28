@@ -15,13 +15,15 @@
     align-items: center;
     max-width: 30rem;
 }
-.filters > h2{
+
+.filters>h2 {
     font-size: clamp(1.3rem, 1.2vw, 2.3rem);
     font-family: raleway-bold;
     color: var(--third-color);
     padding-bottom: .6rem;
     letter-spacing: .1rem;
 }
+
 .filters .searchFilter>input#nro_ordenInput {
     color: var(--third-color);
     z-index: 2;
@@ -65,13 +67,15 @@
     list-style: none;
     border-radius: 1rem;
 }
-.operationsList .messageInfoVacio{
+
+.operationsList .messageInfoVacio {
     font-size: clamp(1.5rem, 1.8vw, 3rem);
     font-family: raleway;
     color: var(--third-color);
     opacity: .5;
     text-align: center;
 }
+
 .operationItem {
     border-radius: 1rem;
     background: #FFF;
@@ -163,74 +167,7 @@
 }
 
 
-.buttonMore {
 
-    display: flex;
-    gap: 0.2rem;
-    padding: 1rem 1.5rem;
-    background-color: var(--primary-color);
-    text-decoration: none;
-    border-radius: 1rem;
-}
-
-.buttonMore>div {
-    display: flex;
-    gap: 0.4rem;
-    align-items: center;
-}
-
-.buttonMore>div>h3 {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway;
-    color: white;
-}
-
-.buttonMore>div>img {
-    margin-top: .1rem;
-    /* transform: rotate(-90deg); */
-    width: 1.5rem;
-    /* height: .8rem; */
-}
-
-/* USER INFORMATION STYLES */
-.data {
-    list-style: none;
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-}
-
-/* .data>li{
-    background-color: #98CCFD;
-} */
-.data>li>h2 {
-    font-size: clamp(1.2rem, 1.5vw, 2rem);
-    font-family: raleway-bold;
-    margin-bottom: .4rem;
-    color: white;
-
-}
-
-.data>li>h3 {
-    font-size: clamp(1.2rem, 1.4vw, 1.6rem);
-    font-family: raleway-semibold;
-    color: rgba(255, 255, 255, 0.88);
-
-}
-
-#nombre,
-#fechaNacimiento,
-#postal,
-#domic,
-#tel,
-#estadoCivil,
-#ocupacion {
-    flex-basis: 100%;
-}
-
-#nroCliente,
-#dni,
-#loc,
-#prov {
-    flex-basis: 45%;
+.urlsWrapper>a {
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
 }

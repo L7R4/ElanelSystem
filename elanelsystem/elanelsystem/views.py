@@ -11,6 +11,8 @@ from django.views.decorators.cache import never_cache
 from sales.utils import dataStructureCannons, dataStructureVentas, dataStructureMovimientosExternos,deleteFieldsInDataStructures
 from users.models import Sucursal, Usuario
 from sales.utils import exportar_excel, obtener_ultima_campania
+from django.contrib.auth.models import Permission
+
 
 class IndexLoginView(generic.FormView):
     form_class = CustomLoginForm
@@ -49,7 +51,8 @@ def redireccionar_por_permisos(usuario):
         "Administracion": {"permisos": ["users.my_ver_administracion"], "url": reverse("users:panelAdmin")},
         "Planes suspendidos": {"permisos": ["sales.my_ver_planes_suspendidos"], "url": reverse("sales:ventasSuspendidas")},
     }
-
+    # allPermissions = [perm for perm in Permission.objects.all() if perm.codename.startswith('my_')]
+    
     secciones_permitidas = {}
     for k, v in secciones.items():
         if any(usuario.has_perm(perm) for perm in v['permisos']):

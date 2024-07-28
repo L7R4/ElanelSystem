@@ -1,0 +1,55 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/panel_products.css' %}">
+{% endblock css %}
+
+{% block content %}
+    <div class="wrapperListSucursales" id="wrapperListSucursales">
+        <h1>{{latest_sucursal}}</h1>
+        {% for product in productos %}
+            <div class="sucursalItem">
+                <h2>{{product.tipo_de_producto}} - {{product.nombre}}</h2>
+                <form method="POST" class="formSucursal">
+                    {% csrf_token %}
+                    <input type="hidden" id="inputID" name="inputID" value="{{product.pk}}">
+                    <div class="containerInputs">
+                        <div class="wrapperInput">
+                            <label for="">Paquete</label>
+                            <input type="text" class="" id="inputDireccion" name="inputDireccion" value="{{product.paquete}}">
+                        </div>
+                        <div class="wrapperInput">
+                            <label for="">Importe</label>
+                            <input type="text" class="" id="inputHora" name="inputHora" value="{{product.importe}}">
+                        </div>
+                    </div>
+                    
+                    <div class="buttonsActions">
+                        <button type="button" class="uploadForm add-button-default">Confirmar</button>
+                        <button type="button" class="desableForm button-default-style">Cancelar</button>
+                        <button type="button" class="enableForm add-button-default">Editar</button>
+                        <button type="button" class="deleteSucursal delete-button-default" >Eliminar</button>
+                    </div>
+                </form>
+            
+            </div>
+        {% endfor %}
+    
+    </div>
+    <button type="button" class="add-button-default" id="buttonAddSucursal">Agregar producto</button>
+    
+{% endblock content %}
+{% block js %}
+<script>
+    var CSRF_TOKEN = '{% csrf_token %}'
+    // URLs - - - - - - - -
+    var urlUpdateS = "{% url 'users:updateSucursal' %}"
+    var urlAddS = "{% url 'users:addSucursal' %}"
+    var urlRemoveS = "{% url 'users:removeSucursal' %}"
+    // - - - - - - - -
+
+</script>
+<script src="{% static 'js/fetch_upload_sucursal.js' %}"></script>
+
+{% endblock js %}

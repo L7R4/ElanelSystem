@@ -1,0 +1,159 @@
+{% extends 'molde.html' %}
+
+{% load static %}
+{% load util %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/create_adjudicacion.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+{% endblock css %}
+
+{% block content %}
+    <div id="loader"></div>
+    <div class="wrapper_tittle">
+        <h1>PLAN RECUPERO</h1>
+    </div>
+    
+    <form method="POST" id="form_create_sale" autocomplete="off">
+        
+        {% csrf_token %}
+
+        <div id="wrapperTipoProducto" class="inputWrapper">
+            <label class="labelInput">Tipo de producto</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" readonly name="tipo_producto" id="tipoProductoInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
+                <ul class="list-select-custom options">
+                    <li>Moto</li>
+                    <li>Electrodomestico</li>
+                    <li>Prestamo</li>
+                </ul>
+            </div>
+        </div>
+
+        
+        <div id="wrapperProducto" class="inputWrapper desactive">
+            <label class="labelInput">Producto</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" readonly name="producto" id="productoInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
+                <ul class="list-select-custom options">
+                </ul>
+            </div>
+        </div>
+
+        <div id="wrapperNroCuotas">
+            <label for="">Nro cuotas</label>
+            <input type="number" class="input-read-write-default eventInput" name="nro_cuotas" required id="id_nro_cuotas">
+        </div>
+
+        <div id="wrapperTasaIntereses">
+            <label for="">Tasa interes</label>
+            <div>
+                <input type="number" name="tasa_interes" class="input-read-write-default eventInput" required id="id_tasa_interes">
+                <p class="iconValueInput">%</p>
+            </div>
+        </div>
+        
+
+        <div id="wrapperImporte">
+            <label for="">Importe</label>
+            <div>
+                <input type="number" name="importe" class="input-read-write-default eventInput {% if  'sorteo' in request.path %}not_ed{% endif %}" required id="id_importe">
+                <p class="iconValueInput">$</p>
+            </div>
+        </div>
+
+        {% if "negociacion" in request.path%}
+        <div id="wrapperSuscripcion">
+            <label for="">Anticipo</label>
+            <div>
+                <input type="number" name="anticipo" class="input-read-write-default eventInput" required id="id_anticipo">
+                <p class="iconValueInput">$</p>
+            </div>
+        </div>
+        
+        <div id="wrapperPorcetajeAReconocer">
+            <label for="">Porcentaje a reconocer</label>
+            <div>
+                <input type="number" class="input-read-write-default eventInput not_ed" value="50" name="porcentaje_a_reconocer" required id="id_porcentaje_a_reconocer">
+                <input type="hidden" name="autorizado_por" id="id_autorizado_por" value="{{autorizado_por}}">
+                <p class="iconValueInput">%</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div id="wrapperCantidadCuotasPagadas">
+            <label for="">Cantidad de cuotas pagadas</label>
+            <div>
+                <p class="textInputP">{{cantidad_cuotas_pagadas}}</p>
+            </div>
+        </div>
+
+        <div id="wrapperSumaCuotasPagadas">
+            <label for="">Suma de cuotas pagadas</label>
+            <div>
+                <p class="iconValueInput">$</p>
+                <p class="textInputP">{{sumaCuotasPagadas}}</p>
+            </div>
+        </div>
+
+        <div id="wrapperInteresesGenerados">
+            <label for="">Intereses generados</label>
+            <div>
+                <input type="number" class="input-read-write-default not_ed" name="intereses_generados" required id="id_intereses_generados">
+                <p class="iconValueInput">$</p>
+            </div>
+        </div>
+        
+        <div id="wrapperModalidad" class="inputWrapper">
+            <label class="labelInput">Modalidad</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" readonly name="modalidad" id="id_modalidad" required autocomplete="off" maxlength="30" class="input-select-custom input-read-write-default onlySelect">
+                <ul class="list-select-custom options">
+                    <li>Diario</li>
+                    <li>Semanal</li>
+                    <li>Quincenal</li>
+                    <li>Mensual</li>
+                </ul>
+            </div>
+        </div>
+        
+
+        <div id="wrapperImportexCuota">
+            <label for="">Importe por cuota</label>
+            <div>
+                <input type="number" class="input-read-write-default not_ed" name="importe_x_cuota" required id="id_importe_x_cuota">
+                <p class="iconValueInput">$</p>
+            </div>
+        </div>
+
+        <div id="wrapperTotalAPagar">
+            <label for="">Total a pagar</label>
+            <div>
+                <input type="number" class="input-read-write-default not_ed" name="total_a_pagar" required id="id_total_a_pagar">
+                <p class="iconValueInput">$</p>
+            </div>
+        </div>
+
+
+    </form>
+    <div class="wrapperButtons">
+        <a id ="cancelar" class="delete-button-default" href="{% url 'sales:ventasSuspendidas'%}"> Cancelar </a>
+    </div> 
+
+{% endblock content %}
+{% block js %}
+    <script src="{% static 'js/menuContextual.js' %}"></script>
+    <script src="{% static 'js/porcentajeAdjudicacion.js' %}"></script>
+
+    <script>
+        var urlRequestProductos = "{% url 'products:get_products' %}";
+    </script>
+
+    <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+    <script src="{% static 'js/errorsFormManagement.js' %}"></script>
+    <script src="{% static 'js/form_create_adju.js' %}"></script>
+    
+{% endblock js %}

@@ -17,50 +17,58 @@ function getCookie(name) {
     return cookieValue;
 }
 
-async function fetchVenta(url,body) {
+async function fetchVenta(url, body) {
     try {
-        let response = await fetch(url,{
-            method:'POST',
-            body:JSON.stringify(body),
-            headers:{
-                'Content-Type':'application/json',
-                'X-CSRFToken':getCookie('csrftoken')
+        let response = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
             }
-            
-        }) 
+
+        })
         if (!response.ok) {
             throw new Error('Ocurrio un error al buscar la venta')
         }
         let data = await response.json()
         return data;
-    } catch (error) {}
+    } catch (error) { }
 }
 
 
 
-inputNroVenta.addEventListener('input', async()=>{
+inputNroVenta.addEventListener('input', async () => {
     wrapperOperaciones.innerHTML = ''
-    if(inputNroVenta.value != ''){
-        let venta = await fetchVenta(window.location.pathname,{'nro_operacion':inputNroVenta.value})
+    if (inputNroVenta.value != '') {
+        let venta = await fetchVenta(window.location.pathname, { 'nro_operacion': inputNroVenta.value })
         console.log(venta)
-        if(venta["venta"] != null){
-            wrapperOperaciones.insertAdjacentHTML('beforeend',createVentaHTML(venta["venta"])) 
-        }else{
+        if (venta["venta"] != null) {
+            wrapperOperaciones.insertAdjacentHTML('beforeend', createVentaHTML(venta["venta"]))
+        } else {
             let message = "No se encontro ninguna venta con ese número"
-            wrapperOperaciones.insertAdjacentHTML('beforeend',createMessageHTML(message))
+            wrapperOperaciones.insertAdjacentHTML('beforeend', createMessageHTML(message))
         }
-    }else{
+    } else {
         let message = "Coloque el numero de venta para filtrar la venta"
-        wrapperOperaciones.insertAdjacentHTML('beforeend',createMessageHTML(message))
+        wrapperOperaciones.insertAdjacentHTML('beforeend', createMessageHTML(message))
     }
 })
 
 function createVentaHTML(venta) {
+    // Para elegir imagen segun el tipo de producto
     let tipo_producto_image = `<img src="/static/images/icons/moto_icon.svg" alt="">`
     if (venta.tipo_producto === 'Prestamo') {
-        tipo_producto_image= `<img src="/static/images/icons/soluciones_dinerarias_icon.svg" alt="">`
-    }else if(venta.tipo_producto === 'Electrodomestico'){
-        tipo_producto_image= `<img src="/static/images/icons/combos_icon.svg" alt="">`
+        tipo_producto_image = `<img src="/static/images/icons/soluciones_dinerarias_icon.svg" alt="">`
+    } else if (venta.tipo_producto === 'Electrodomestico') {
+        tipo_producto_image = `<img src="/static/images/icons/combos_icon.svg" alt="">`
+    }
+
+
+    // Para verificar si la venta tiene plan de recupero
+    let buttonPlanRecupero = ''
+    if (venta.cuotas_atrasadas >= 4) {
+        buttonPlanRecupero = `<div class="urlsWrapper"><a href="${venta.urlSimularPlanRecupero}" class="add-button-default">Simular plan recupero</a></div>`
     }
 
     let string = `<li class="operationItem">
@@ -103,6 +111,14 @@ function createVentaHTML(venta) {
                             <h3>${venta.cuotas_pagadas}</h3>
                         </div>
                     </div>
+                    ${buttonPlanRecupero}
+                    <a href="/ventas/detalle_venta/1/" class="buttonMore">
+                            <div>
+                                <h3>Ver mas</h3>
+                                <img src="/static/images/icons/nextSinBackground.png" alt="">
+                            </div>
+                        </a>
+                    
                 </li>`
     return string;
 }
