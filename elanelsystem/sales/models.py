@@ -9,6 +9,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from sales.utils import obtener_ultima_campania
 from django.core.exceptions import ValidationError
+from dateutil.relativedelta import relativedelta
 
 #region C-LISTA-PRECIOS
 class CoeficientesListadePrecios(models.Model):
@@ -205,6 +206,7 @@ class Ventas(models.Model):
             # self.validation_fecha,
             self.validation_tipo_producto,
             self.validation_paquete,
+            self.validation_campania,
             # self.validation_nro_operacion    
         ]
 
@@ -277,6 +279,18 @@ class Ventas(models.Model):
         paquetes = Products.PAQUETES
         if self.paquete not in [m[0] for m in paquetes]:
             raise ValidationError({'paquete': 'Paquete no válido.'})
+        
+    def validation_campania(self):
+        campaniaActual = self.agencia.campania
+        fechaActual = datetime.datetime.now()
+        ultimo_dia_mes_pasado = datetime.datetime.now().replace(day=1) - relativedelta(days=1)
+        diferencia_dias = (fechaActual - ultimo_dia_mes_pasado).days
+
+        if(self.campania == campaniaActual - 1 ):
+            if(diferencia_dias > 3): # Si la diferencia de dias es mayor a 3 dias, no se puede asignar la campania porque ya paso el tiempo limite para dar de alta una venta en la campania anterior
+                raise ValidationError({'campania': 'Campania no válida.'})
+        elif(self.campania != campaniaActual):
+            raise ValidationError({'campania': 'Campania no válida.'})
 
     #endregion
 

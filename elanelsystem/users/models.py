@@ -4,26 +4,71 @@ from django.core.validators import RegexValidator,EmailValidator,validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager, PermissionsMixin
 import re, datetime
+from dateutil.relativedelta import relativedelta
+
 
 class Sucursal(models.Model):
+    fecha_innaguracion = models.CharField("Fecha de innaguración",max_length =10,default="")
+    campania = models.IntegerField("Campaña",default=0)
     direccion = models.CharField("Direccion",max_length =100)
     hora_apertura = models.CharField("Hora de apertura",max_length =5)
     provincia = models.CharField("Provincia",max_length =80)
     localidad = models.CharField("Localidad",max_length =80)
     sucursal_central = models.BooleanField(default=False)
     pseudonimo = models.CharField("Pseudonimo", max_length=100, default="")
-    gerente = models.ForeignKey('users.Usuario',on_delete=models.DO_NOTHING,related_name="gerente",blank=True,null=True)
+    gerente = models.ForeignKey('users.Usuario',on_delete=models.SET_NULL,related_name="gerente",blank=True,null=True)
 
 
     def __str__(self):
         return self.pseudonimo
 
     def save(self, *args, **kwargs):
+        self.calcularCampania()
         if((self.localidad).lower() in "resistencia"):
             self.pseudonimo = "Sucursal central"
         else:    
             self.pseudonimo = (f'{self.localidad}, {self.provincia}')
         super(Sucursal, self).save(*args, **kwargs)
+
+    def calcularCampania(self):
+        if self.fecha_innaguracion:
+            fecha_innaguracion = datetime.datetime.strptime(self.fecha_innaguracion, '%d/%m/%Y')
+            fecha_actual = datetime.datetime.now()
+            meses = relativedelta(fecha_actual, fecha_innaguracion)
+            meses_totales = meses.years * 12 + meses.months
+            self.campania = meses_totales
+
+    #region Validaciones
+    def clean(self):
+        errors = {}
+        validation_methods = [
+            self.validation_fecha_innaguracion,
+            # self.validation_campania,
+        ]
+
+        for method in validation_methods:
+            try:
+                method()
+            except ValidationError as e:
+                errors.update(e.message_dict)
+
+        if errors:
+            raise ValidationError(errors)
+
+    def validation_fecha_innaguracion(self):
+        if self.fecha_innaguracion:
+            if self.fecha_innaguracion and not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fecha_innaguracion):
+                raise ValidationError({'fecha_innaguracion': 'Debe estar en el formato DD/MM/AAAA.'})
+
+            try:
+                fecha_innaguracion = datetime.datetime.strptime(self.fecha_innaguracion, '%d/%m/%Y')
+            except ValueError:
+                raise ValidationError({'fecha_innaguracion': 'Fecha inválida.'})
+
+            fecha_innaguracion = datetime.datetime.strptime(self.fecha_innaguracion, '%d/%m/%Y')
+            if fecha_innaguracion > datetime.datetime.now():
+                raise ValidationError({'fecha_innaguracion': 'Fecha inválida.'})
+    #endregion
 
 
 class UserManager(BaseUserManager):
@@ -58,7 +103,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         ('Dueños', 'Dueños'), 
     )
     nombre = models.CharField("Nombre Completo",max_length=100)
-    sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios')
+    sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios',blank=True,null = True)
     # sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
     rango = models.CharField("Rango:",max_length=40)

@@ -57,30 +57,37 @@ inputNroVenta.addEventListener('input', async () => {
 
 function createVentaHTML(venta) {
     // Para elegir imagen segun el tipo de producto
-    let tipo_producto_image = `<img src="/static/images/icons/moto_icon.svg" alt="">`
+    let tipo_producto_image = `<img class="iconProducto" src="/static/images/icons/moto_icon.svg" alt="">`
     if (venta.tipo_producto === 'Prestamo') {
-        tipo_producto_image = `<img src="/static/images/icons/soluciones_dinerarias_icon.svg" alt="">`
+        tipo_producto_image = `<img class="iconProducto" src="/static/images/icons/soluciones_dinerarias_icon.svg" alt="">`
     } else if (venta.tipo_producto === 'Electrodomestico') {
-        tipo_producto_image = `<img src="/static/images/icons/combos_icon.svg" alt="">`
+        tipo_producto_image = `<img class="iconProducto" src="/static/images/icons/combos_icon.svg" alt="">`
     }
 
 
     // Para verificar si la venta tiene plan de recupero
     let buttonPlanRecupero = ''
+    let operationStatusImage = `<img class="iconStatus" src="/static/images/icons/operationSuspendido.svg" alt=""></img>`
+    let operationStatusText = `<h3>Suspendida</h3>`
     if (venta.cuotas_atrasadas >= 4) {
-        buttonPlanRecupero = `<div class="urlsWrapper"><a href="${venta.urlSimularPlanRecupero}" class="add-button-default">Simular plan recupero</a></div>`
+        operationStatusImage = `<img class="iconStatus" src="/static/images/icons/operationBaja.svg" alt=""></img>`
+        operationStatusText = `<h3>De baja</h3>`
+        buttonPlanRecupero = `<a href="${venta.urlSimularPlanRecupero}" class="buttonSimulacro add-button-default" target="_blank"><h3>Simular plan recupero</h3></a>`
     }
 
     let string = `<li class="operationItem">
-                    <div class="iconWrapper">
+                    <div class="nameStatus">
                         ${tipo_producto_image}
+                        <h1>${venta.producto}</h1>
+                        ${operationStatusImage}
+                        ${operationStatusText}
                     </div>
                     <div class="attributes">
-                        <div class="nameStatus">
-                            <h1>${venta.producto}</h1>
-                            <img src="/static/images/icons/operationSuspendido.svg" alt="">
-                            <h3>Suspendida</h3>
+                        <div class="information" id="cliente_information">
+                            <h2>Cliente</h2>
+                            <h3>${venta.cliente}</h3>
                         </div>
+
                         <div class="information">
                             <h2>Importe</h2>
                             <h3>$${venta.importe}</h3>
@@ -112,12 +119,6 @@ function createVentaHTML(venta) {
                         </div>
                     </div>
                     ${buttonPlanRecupero}
-                    <a href="/ventas/detalle_venta/1/" class="buttonMore">
-                            <div>
-                                <h3>Ver mas</h3>
-                                <img src="/static/images/icons/nextSinBackground.png" alt="">
-                            </div>
-                        </a>
                     
                 </li>`
     return string;
