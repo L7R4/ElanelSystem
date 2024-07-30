@@ -13,223 +13,164 @@
 
     <form method="POST" id="form_create_sale" autocomplete="off">
         
-        {% csrf_token %}
-        <input type="hidden" name="nro_cliente" id="id_nro_cliente" value="{{object.nro_cliente}}">
+        <input type="hidden" name="csrfmiddlewaretoken" value="muXN2dHhDr0WwNi0AOAbzsAhQQRDoWQJkQGJfib1LjTggFOSHQ8CovDG0MNneL2J">
+        <input type="hidden" name="nro_cliente" id="id_nro_cliente" value="cli_1">
 
-        <div id="wrapperTipoProducto">
-            {% for error in form.tipo_producto.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.tipo_producto.label}}
-            </label>
-            {{form.tipo_producto}}
-            <ul class="select">
-                <li>Moto</li>
-                <li>Electrodomestico</li>
-                <li>Prestamo</li>
-            </ul>
+
+        <div id="wrapperTipoProducto" class="inputWrapper">
+            <label class="labelInput">Tipo de producto</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" readonly name="tipo_producto" id="tipoProductoInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
+                <ul class="list-select-custom options">
+                    <li>Moto</li>
+                    <li>Electrodomestico</li>
+                    <li>Prestamo</li>
+                </ul>
+            </div>
         </div>
 
-        <div id="wrapperProducto">
-            {% for error in form.producto.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.producto.label}}
-            </label>
-            {{form.producto}}
-            <ul class="select">
-            </ul>
+
+        <div id="wrapperProducto" class="inputWrapper desactive">
+            <label class="labelInput">Producto</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" readonly name="producto" id="productoInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
+                <ul class="list-select-custom options">
+                </ul>
+            </div>
         </div>
 
         <div id="wrapperNroSolicitud">
-            {% for error in form.nro_contrato.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">{{form.nro_contrato.label}}</label>
-            {{form.nro_contrato}}
+            <label for="">Nro contrato</label>
+            <input type="text" name="nro_contrato" maxlength="10" class="input-read-write-default" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required="" id="id_nro_contrato">
+
         </div>
 
         <div id="wrapperNroOrden">
-            {% for error in form.nro_orden.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.nro_orden.label}}
-            </label>
-            {{form.nro_orden}}
+            <label for="">Nro orden</label>
+            <input type="text" name="nro_orden" class="input-read-write-default" readonly oninput="this.value=this.value.replace(/[^0-9]/g, '');" required="" id="id_nro_orden">
         </div>
 
         <div id="wrapperFecha">
-            {% for error in form.fecha.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.fecha.label}}
-            </label>
-            {{form.fecha}}
+            <label for="">Fecha</label>
+            <input type="text" name="fecha" maxlength="10" class="input-read-write-default" required id="id_fecha">
         </div>
 
         <div id="wrapperNroCuotas">
-            {% for error in form.nro_cuotas.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.nro_cuotas.label}}
-            </label>
-            {{form.nro_cuotas}}
-        </div>
-
-        <div id="wrapperImporte">
-            {% for error in form.importe.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.importe.label}}
-            </label>
-            {{form.importe}}
-        </div>
-
-        <div id="wrapperCuota1">
-            {% for error in form.primer_cuota.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.primer_cuota.label}}
-            </label>
-            {{form.primer_cuota}}
-        </div>
-
-        <div id="wrapperSuscripcion">
-            {% for error in form.importe.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.anticipo.label}}
-            </label>
-            {{form.anticipo}}
+            <label for="">Nro cuotas</label>
+            <input type="number" class="input-read-write-default eventInput" name="nro_cuotas" required id="id_nro_cuotas">
         </div>
 
         <div id="wrapperTasaIntereses">
-            {% for error in form.tasa_interes.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.tasa_interes.label}}
-            </label>
-            {{form.tasa_interes}}
+            <label for="">Importe</label>
+            <div class="containerIcon_Input">
+                <input type="number" name="importe" class="not_ed input-read-write-default" readonly required id="id_importe">
+                <p class="iconValueInput">$</p>
+            </div>
+        </div>
+
+        <div id="wrapperCuota1">
+            <label for="">Primer cuota</label>
+            <div class="containerIcon_Input">
+                <input type="number" name="primer_cuota" class="not_ed input-read-write-default" readonly required id="id_primer_cuota">
+                <p class="iconValueInput">$</p>
+            </div>
+        </div>
+
+        <div id="wrapperSuscripcion">
+            <label for="">Suscripción</label>
+            <div class="containerIcon_Input">
+                <input type="number" name="anticipo" class="not_ed input-read-write-default" readonly required id="id_anticipo">
+                <p class="iconValueInput">$</p>
+            </div>
+        </div>
+
+        <div id="wrapperTasaIntereses">
+            <label for="">Tasa interes</label>
+            <div class="containerIcon_Input">
+                <input type="number" name="tasa_interes" class="not_ed input-read-write-default" readonly required id="id_tasa_interes">
+                <p class="iconValueInput">%</p>
+            </div>
         </div>
 
         
 
         <div id="wrapperInteresesGenerados">
-            {% for error in form.intereses_generados.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.intereses_generados.label|truncatechars:15}}
-            </label>
-            {{form.intereses_generados}}
+            <label for="">Intereses generados</label>
+            <div class="containerIcon_Input">
+                <input type="number" name="intereses_generados" class="not_ed input-read-write-default" readonly required id="id_intereses_generados">
+                <p class="iconValueInput">$</p>
+            </div>
         </div>
 
         <div id="wrapperImportexCuota">
-            {% for error in form.importe_x_cuota.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.importe_x_cuota.label}}
-            </label>
-            {{form.importe_x_cuota}}
+            <label for="">Importe x cuota</label>
+            <div class="containerIcon_Input">
+                <input type="number" name="importe_x_cuota" class="not_ed input-read-write-default" readonly required id="id_importe_x_cuota">
+                <p class="iconValueInput">$</p>
+            </div>
         </div>
 
         <div id="wrapperTotalAPagar">
-            {% for error in form.total_a_pagar.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.total_a_pagar.label}}
-            </label>
-            
-            {{form.total_a_pagar}}
+            <label for="">Total a pagar</label>
+            <div class="containerIcon_Input">
+                <input type="number" name="total_a_pagar" class="not_ed input-read-write-default" readonly required id="id_total_a_pagar">
+                <p class="iconValueInput">$</p>
+            </div>
         </div>
-
-        
 
         <div id="wrapperPaquete">
-            {% for error in form.paquete.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.paquete.label}}
-            </label>
-            {{form.paquete}}
+            <label for="">Paquete</label>
+            <input type="text" name="paquete" class="not_ed input-read-write-default" readonly required id="id_paquete">
         </div>
         
-        <div id="wrapperModalidad">
-            {% for error in form.modalidad.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.modalidad.label}}
-            </label>
-            {{form.modalidad}}
-            <ul class="select">
-                <li>Diario</li>
-                <li>Semanal</li>
-                <li>Quincenal</li>
-                <li>Mensual</li>
-            </ul>
+        
+        <div id="wrapperModalidad" class="inputWrapper">
+            <label class="labelInput">Modalidad</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" readonly name="modalidad" id="id_modalidad" required autocomplete="off" maxlength="30" class="input-select-custom onlySelect">
+                <ul class="list-select-custom options">
+                    <li>Diario</li>
+                    <li>Semanal</li>
+                    <li>Quincenal</li>
+                    <li>Mensual</li>
+                </ul>
+            </div>
         </div>
         
 
-        <div id="wrapperVendedor">
-            {% for error in form.vendedor.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.vendedor.label}}
-            </label>
-            {{form.vendedor}}
-            <ul class="select">
-                {% for vendedor in usuarios %}
-                    <li>{{vendedor.nombre}}</li>
-                {% endfor %}
-            </ul>
+        <div id="wrapperVendedor" class="inputWrapper">
+            <label class="labelInput">Vendedor</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" name="vendedor" readonly class="input-select-custom onlySelect" required id="id_vendedor">
+                <ul class="list-select-custom options">
+                </ul>
+            </div>
         </div>
 
-        <div id="wrapperSupervisor">
-            {% for error in form.supervisor.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.supervisor.label}}
-            </label>
-            {{form.supervisor}}
-            <ul class="select">
-                {% for supervisor in usuarios %}
-                    {% if supervisor.rango == "Supervisor" %}
-                        <li>{{supervisor.nombre}}</li>
-                    {% else %}  
-                    {% endif %}
-                {% endfor %}
-            </ul>
+
+        <div id="wrapperSupervisor" class="inputWrapper">
+            <label class="labelInput">Supervisor</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" name="supervisor" readonly class="input-select-custom onlySelect" required="" id="id_supervisor">
+                <ul class="list-select-custom options">
+                </ul>
+            </div>
         </div>
 
         <div id="wrapperObservaciones">
-            {% for error in form.observaciones.errors %}
-                <p>{{error}}</p>
-            {% endfor %}
-            <label for="">
-                {{form.observaciones.label}}
-            </label>
-            {{form.observaciones}}
+            <label for="">Observaciones</label>
+            <textarea name="observaciones" cols="40" rows="5" class="input-read-write-default" id="id_observaciones"></textarea>
         </div>
 
     </form>
 
     <div id="wrapperButtons">
-        <button type="submit" form="form_create_sale" id="enviar" class="add-button-default"> Terminar </button>
+        <button type="button" form="form_create_sale" id="enviar" class="add-button-default"> Terminar </button>
         <a id ="cancelar" class="delete-button-default" href="{% url 'users:cuentaUser' object.id%}"> Cancelar </a>
     </div>
 
@@ -241,8 +182,11 @@
         var val = input.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,2})(\d{0,4})/);
         input.value = !val[2] ? val[1] : val[1] + '/' + val[2] + (val[3] ? '/' + val[3] : '');
         });
+        var urlRequestProductos = "{% url 'products:get_products' %}";
+
     </script>
-    <script src="{% static 'js/form_create_sale2.js' %}"></script>
-    <script src="{% static 'js/inputs_selects_create_sale.js' %}"></script>
-    <script src="{% static 'js/displays_forms_calculadora.js' %}"></script>
+
+    <script src="{% static 'js/form_create_sale.js' %}"></script>
+    <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+    {% comment %} <script src="{% static 'js/displays_forms_calculadora.js' %}"></script> {% endcomment %}
 {% endblock js %}
