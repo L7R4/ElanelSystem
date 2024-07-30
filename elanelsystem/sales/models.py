@@ -17,7 +17,7 @@ class CoeficientesListadePrecios(models.Model):
     cuota = models.IntegerField("Cuotas:")
     porcentage = models.FloatField("Porcentage:")
 #endregion
-
+# WEpsss
 #region VENTAS
 class Ventas(models.Model):
 
