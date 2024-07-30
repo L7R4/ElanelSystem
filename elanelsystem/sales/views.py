@@ -794,6 +794,7 @@ class PanelVentasSuspendidas(TestLogin,generic.View):
             cuotas_atrasadas = len([cuota for cuota in venta.cuotas if cuota["status"] == "Atrasado"])
 
             context = {
+                "cliente": venta.nro_cliente.nombre,
                 "tipo_producto": venta.producto.tipo_de_producto,
                 "producto": venta.producto.nombre,
                 "importe": venta.producto.importe,
@@ -803,19 +804,33 @@ class PanelVentasSuspendidas(TestLogin,generic.View):
                 "cuotas_atrasadas": cuotas_atrasadas,
                 "saldo_Afavor": saldo_Afavor,
                 "cuotas_pagadas": cuotas_pagadas,
-                "urlSimularPlanRecupero": reverse("sales:simuladorPlanrecupero"),
+                "urlSimularPlanRecupero": reverse("sales:simuladorPlanrecupero",args=[venta.pk]),
 
             }
             return JsonResponse({"status": True,"venta":context}, safe=False)
         except:
+            
             return JsonResponse({"status": True,"venta":None}, safe=False)
 
 
-class SimuladorPlanRecupero(TestLogin,generic.View):
+class SimuladorPlanRecupero(TestLogin,generic.DetailView):
     template_name = "simulador_plan_recupero.html"
+    model = Ventas
 
     def get(self,request,*args,**kwargs):
-        context = {}
+        self.object = self.get_object()
+
+        cuotasPagadas = self.object.cuotas_pagadas()
+
+        # Suma las cuotas pagadas para calcular el total a adjudicar
+        valoresCuotasPagadas = [item["total"] for item in cuotasPagadas]
+        sumaCuotasPagadas = sum(valoresCuotasPagadas)
+
+        context = {
+            'venta' : self.object,
+            'sumaCuotasPagadas' : int(sumaCuotasPagadas),
+            'cantidad_cuotas_pagadas': len(cuotasPagadas),
+        }
         return render(request, self.template_name, context)
         
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

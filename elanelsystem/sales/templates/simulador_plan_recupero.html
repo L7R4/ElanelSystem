@@ -59,7 +59,7 @@
         <div id="wrapperImporte">
             <label for="">Importe</label>
             <div>
-                <input type="number" name="importe" class="input-read-write-default eventInput {% if  'sorteo' in request.path %}not_ed{% endif %}" required id="id_importe">
+                <input type="number" name="importe" class="input-read-write-default eventInput not_ed" required id="id_importe">
                 <p class="iconValueInput">$</p>
             </div>
         </div>
@@ -154,6 +154,6 @@
 
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
     <script src="{% static 'js/errorsFormManagement.js' %}"></script>
-    <script src="{% static 'js/form_create_adju.js' %}"></script>
+    <script src="{% static 'js/form_simulacro_planRecupero.js' %}"></script>
     
 {% endblock js %}
