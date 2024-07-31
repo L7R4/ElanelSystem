@@ -106,5 +106,20 @@ def requestProducts(request):
     if request.method == 'POST':
         tipo = json.loads(request.body).get('tipoProducto', None)
         productos = Products.objects.filter(tipo_de_producto=tipo) if tipo else []
-        productos = [{"nombre": producto.nombre, "importe": producto.importe} for producto in productos]        
-        return JsonResponse({"message": "OK", "productos": productos},safe=False)
+
+        productos_list = []
+        for producto in productos:
+            productos_list.append(
+                {"nombre": producto.nombre, 
+                "paquete": producto.plan.tipodePlan,
+                "importe": producto.plan.valor_nominal,
+                "primer_cuota": producto.plan.cuota_1,
+                "suscripcion": producto.plan.suscripcion,
+                "c30": producto.plan.c30,
+                "c24": producto.plan.c24,
+                "c48": producto.plan.c48,
+                "c60": producto.plan.c60,
+                })
+
+      
+        return JsonResponse({"message": "OK", "productos": productos_list},safe=False)

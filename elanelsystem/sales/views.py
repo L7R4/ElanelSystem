@@ -7,7 +7,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 
 from .mixins import TestLogin
 from .models import ArqueoCaja, Ventas,CoeficientesListadePrecios,MovimientoExterno,CuentaCobranza
-from .forms import FormChangePAck, FormCreateVenta
+from .forms import FormChangePAck
 from users.models import Cliente, Sucursal,Usuario
 from .models import Ventas
 from products.models import Products,Plan
@@ -83,7 +83,6 @@ class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
 class CrearVenta(TestLogin,generic.DetailView):
     model = Cliente
     template_name = "create_sale.html"
-    form_class = FormCreateVenta
 
     def get(self,request,*args, **kwargs):
         self.object = self.get_object()
@@ -104,16 +103,6 @@ class CrearVenta(TestLogin,generic.DetailView):
 
         json_complete=[]
 
-
-        products_list = []
-        for product in list(products):
-            data_product = {}
-            data_product["tipo_de_producto"] = product.tipo_de_producto
-            data_product["nombre"] = product.nombre
-            data_product["paquete"] = product.paquete
-            data_product["importe"] = product.importe
-            products_list.append(data_product)
-        json_complete.append(products_list)
     
         interes_list = []
         for interes in list(intereses):
@@ -152,7 +141,6 @@ class CrearVenta(TestLogin,generic.DetailView):
             return HttpResponse(data, 'application/json')
         
         context ={
-            'form' : self.form_class,
             "object": self.object,
             'customers': customers, 
             'products': products, 
@@ -164,50 +152,80 @@ class CrearVenta(TestLogin,generic.DetailView):
     
 
     def post(self, request, *args, **kwargs):
-        form =self.form_class(request.POST)
         self.object = self.get_object()
-        if request.POST["nro_cliente"] != self.get_object().nro_cliente:
-            raise ValidationError('Hubo un cambio malicioso de numero de cliente')
+        form =json.loads(request.body)
+        errors ={}
+        sale = Ventas()
+
         
-        if form.is_valid():
-                sale = Ventas()
+        # Para guardar como objeto Producto
+        producto = form["producto"]
+        if producto and not Products.objects.filter(nombre=producto).exists():
+            errors['producto'] = 'Producto invalido.' 
+        else:
+            producto = Products.objects.get(nombre=producto)
+            sale.producto = producto
 
-                # Para guardar como objeto Cliente
-                nro_cliente_instance = Cliente.objects.get(nro_cliente__iexact=request.POST['nro_cliente'])
-                sale.nro_cliente = nro_cliente_instance
+        # Validar la sucursal
+        agencia = form.get('agencia', request.user.sucursales.all()[0].pseudonimo)
 
-                sale.nro_solicitud = form.cleaned_data['nro_contrato']
-                sale.modalidad = form.cleaned_data['modalidad']
-                sale.importe = form.cleaned_data['importe']
-                sale.primer_cuota = form.cleaned_data['primer_cuota']
-                sale.anticipo = form.cleaned_data['anticipo']
-                sale.tasa_interes = form.cleaned_data['tasa_interes']
-                sale.intereses_generados = form.cleaned_data['intereses_generados']
-                sale.importe_x_cuota = form.cleaned_data['importe_x_cuota']
-                sale.nro_cuotas = form.cleaned_data['nro_cuotas']
-                sale.total_a_pagar = form.cleaned_data['total_a_pagar']
-                sale.fecha = form.cleaned_data['fecha']
-                sale.tipo_producto = form.cleaned_data['tipo_producto']
-                sale.paquete = form.cleaned_data['paquete']
-                sale.nro_orden = form.cleaned_data['nro_orden']
-                sale.agencia = request.user.sucursales.all()[0]
+        if agencia and not Sucursal.objects.filter(pseudonimo=agencia).exists():
+            errors['agencia'] = 'Agencia invalida.'
+        else:
+            agencia = Sucursal.objects.get(pseudonimo=agencia)
+            sale.agencia = agencia
 
-                # Para guardar como objeto Producto
-                producto_instance = Products.objects.get(nombre__iexact=form.cleaned_data['producto'])
-                sale.producto = producto_instance
+        
+        # Comprobar el vendendor
+        vendedor = form['vendedor']
+        if vendedor and not Usuario.objects.get(nombre__iexact=vendedor).exists():
+            errors['vendedor'] = 'Vendedor invalido.' 
+        else:
+            vendedor_instance = Usuario.objects.get(nombre__iexact=form['vendedor'])
+            sale.vendedor = vendedor_instance
 
-                # Para guardar como objeto Usuario
-                usuario_instance = Usuario.objects.get(nombre__iexact=form.cleaned_data['vendedor'])
-                sale.vendedor = usuario_instance
+        # Comprobar el supervisor
+        supervisor = form['supervisor']
+        if supervisor and not Usuario.objects.get(nombre__iexact=supervisor).exists():
+            errors['supervisor'] = 'Supervisor invalido.' 
+        else:
+            supervisor_instance = Usuario.objects.get(nombre__iexact=form['supervisor'])
+            sale.supervisor = supervisor_instance
 
-                # Para guardar como objeto Usuario
-                supervisor_instance = Usuario.objects.get(nombre__iexact=form.cleaned_data['supervisor'])
-                sale.supervisor = supervisor_instance
 
-                sale.crearCuotas()
-                sale.save()
-                return redirect("users:cuentaUser",pk= self.get_object().pk)
 
+
+        sale.nro_cliente = Cliente.objects.get(nro_cliente__iexact=self.get_object().nro_cliente)
+        
+        sale.nro_solicitud = form['nro_contrato']
+        sale.modalidad = form['modalidad']
+        sale.importe = form['importe']
+        sale.primer_cuota = form['primer_cuota']
+        sale.anticipo = form['anticipo']
+        sale.tasa_interes = form['tasa_interes']
+        sale.intereses_generados = form['intereses_generados']
+        sale.importe_x_cuota = form['importe_x_cuota']
+        sale.nro_cuotas = form['nro_cuotas']
+        sale.total_a_pagar = form['total_a_pagar']
+        sale.fecha = form['fecha']
+        sale.tipo_producto = form['tipo_producto']
+        sale.paquete = form['paquete']
+        sale.nro_orden = form['nro_orden']
+        
+        try:
+            sale.full_clean()
+        except ValidationError as e:
+            errors.update(e.message_dict)
+       
+        if len(errors) != 0:
+            print(errors)
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)
+        else:
+            sale.crearCuotas()
+            sale.save()
+            return JsonResponse({'success': True}, safe=False)
+
+        # return redirect("users:cuentaUser",pk= self.get_object().pk)
         return render(request, self.template_name, {'form': form, 'object' : self.get_object()})
     
 

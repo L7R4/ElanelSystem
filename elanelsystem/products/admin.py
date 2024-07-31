@@ -3,7 +3,7 @@ from .models import Plan, Products
 
 @admin.register(Products)
 class ProductsAdmin(admin.ModelAdmin):
-    list_display = ("tipo_de_producto","nombre","paquete","importe")
+    list_display = ("tipo_de_producto","nombre","plan")
 
 @admin.register(Plan)
 class PlansAdmin(admin.ModelAdmin):
