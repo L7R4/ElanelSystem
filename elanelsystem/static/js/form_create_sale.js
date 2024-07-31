@@ -81,10 +81,11 @@ inputTipoDeProducto.addEventListener("input", async () => {
 // Cuando se selecciona un producto se guarda en la variable productoHandled
 inputProducto.addEventListener("input", async () => {
     productoHandled = productos.filter((item) => item["nombre"] == inputProducto.value)[0];
-
-    if (window.location.href.includes("sorteo")) {
-        id_importe.value = productoHandled["importe"];
-    }
+    id_importe.value = productoHandled["importe"];
+    id_paquete.value = productoHandled["paquete"];
+    id_primer_cuota.value = productoHandled["primer_cuota"];
+    id_suscripcion.value = productoHandled["suscripcion"];
+    
 });
 
 
@@ -98,25 +99,17 @@ inputsWithEventInput.forEach(input => {
 function rellenarCamposDeVenta() {
     try {
         let dineroDeCuotas = parseInt(document.querySelector("#wrapperSumaCuotasPagadas .textInputP").textContent)
-        if (window.location.href.includes("negociacion")) {
-            let subTotalSinIntereses = parseInt(id_importe.value) - (dineroDeCuotas * (parseInt(id_porcentaje_a_reconocer.value) / 100) + parseInt(id_anticipo.value))
-            id_intereses_generados.value = parseInt((subTotalSinIntereses * id_tasa_interes.value) / 100)
+        let subTotalSinIntereses = parseInt(id_importe.value) - dineroDeCuotas
+        id_intereses_generados.value = parseInt((subTotalSinIntereses * id_tasa_interes.value) / 100)
+        id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
+        id_importe_x_cuota.value = id_nro_cuotas.value <= 0 ? 0 : parseInt(id_total_a_pagar.value / id_nro_cuotas.value);
+    }
 
-            id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
-            id_importe_x_cuota.value = parseInt(parseInt(id_total_a_pagar.value) / parseInt(id_nro_cuotas.value))
-        } else {
-            let subTotalSinIntereses = parseInt(id_importe.value) - dineroDeCuotas
-            id_intereses_generados.value = parseInt((subTotalSinIntereses * id_tasa_interes.value) / 100)
-
-            id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
-            id_importe_x_cuota.value = id_nro_cuotas.value <= 0 ? 0 : parseInt(id_total_a_pagar.value / id_nro_cuotas.value);
-        }
-
-    } catch (error) {
+    catch (error) {
         console.log(error)
 
     }
-}
+}   
 
 
 // Esto evita el comportamiento predeterminado del boton "Enter"
