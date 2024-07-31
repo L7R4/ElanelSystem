@@ -113,12 +113,10 @@ def requestProducts(request):
                 {"nombre": producto.nombre, 
                 "paquete": producto.plan.tipodePlan,
                 "importe": producto.plan.valor_nominal,
-                "primer_cuota": producto.plan.cuota_1,
-                "suscripcion": producto.plan.suscripcion,
-                "c30": producto.plan.c30,
-                "c24": producto.plan.c24,
-                "c48": producto.plan.c48,
-                "c60": producto.plan.c60,
+                "c24_porcentage": producto.plan.c24_porcentage,
+                "c30_porcentage": producto.plan.c30_porcentage,
+                "c48_porcentage": producto.plan.c48_porcentage,
+                "c60_porcentage": producto.plan.c60_porcentage,
                 })
 
       

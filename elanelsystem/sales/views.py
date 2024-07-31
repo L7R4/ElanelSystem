@@ -122,20 +122,6 @@ class CrearVenta(TestLogin,generic.DetailView):
             users_list.append(data_users)
         json_complete.append(users_list)
 
-
-        planes_list = []
-        for plan in list(planes):
-            data_plan = {}
-            data_plan["valor_nominal"] = plan.valor_nominal
-            data_plan["suscripcion"] = plan.suscripcion
-            data_plan["cuota_1"] = plan.cuota_1
-            data_plan["tipodePlan"] = plan.tipodePlan
-            data_plan["c24"] = plan.c24
-            data_plan["c30"] = plan.c30
-            data_plan["c48"] = plan.c48
-            data_plan["c60"] = plan.c60
-            planes_list.append(data_plan)
-        json_complete.append(planes_list)
         data = json.dumps(json_complete)
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return HttpResponse(data, 'application/json')
