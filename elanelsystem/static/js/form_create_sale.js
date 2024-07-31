@@ -88,6 +88,14 @@ inputProducto.addEventListener("input", async () => {
     
 });
 
+function porcentaje_segun_nroCuotas(nroCuotas) {
+    let cuotasList =[24,30,48,60]
+    for (let i = 0; i < cuotasList.length; i++) {
+        if (nroCuotas == cuotasList[i]) {
+            return cuotasList[i]
+        }
+    }
+}
 
 // Agrega listener de tipo input a los inputs que son necesarios para calcular los valores de venta
 inputsWithEventInput.forEach(input => {
