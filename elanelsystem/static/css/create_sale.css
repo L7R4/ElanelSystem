@@ -12,15 +12,17 @@
     border: 2px solid #1c2d45b8 !important;
 }
 
-.input-select-custom{
+.input-select-custom {
     background-color: var(--background-color);
     color: var(--third-color);
 }
-.containerIcon_Input{
+
+.containerIcon_Input {
     position: relative;
     display: flex;
     align-items: center;
 }
+
 p.iconValueInput {
     position: absolute;
     font-family: raleway-bold;
@@ -81,14 +83,22 @@ p.iconValueInput {
     height: 3.3rem;
     background-color: #1B1A27;
 }
+
+#form_create_sale div.containerIcon_Input>input {
+    color: var(--third-color);
+    text-indent: 2.2rem;
+}
+
 .iconDesplegar {
     filter: invert(1);
 }
+
 /* #region Z-INDEX de los inputs selects*/
 
 #form_create_sale>#wrapperTipoProducto .iconDesplegar {
     z-index: 9;
 }
+
 #form_create_sale>#wrapperTipoProducto #tipoProductoInput {
     z-index: 8;
 }
@@ -100,6 +110,7 @@ p.iconValueInput {
 #form_create_sale>#wrapperProducto .iconDesplegar {
     z-index: 9;
 }
+
 #form_create_sale>#wrapperProducto #productoInput {
     z-index: 8;
 }
@@ -111,6 +122,7 @@ p.iconValueInput {
 #form_create_sale>#wrapperModalidad .iconDesplegar {
     z-index: 9;
 }
+
 #form_create_sale>#wrapperModalidad #id_modalidad {
     z-index: 8;
 }
@@ -122,6 +134,7 @@ p.iconValueInput {
 #form_create_sale>#wrapperVendedor .iconDesplegar {
     z-index: 6;
 }
+
 #form_create_sale>#wrapperVendedor #id_vendedor {
     z-index: 5;
 }
@@ -133,6 +146,7 @@ p.iconValueInput {
 #form_create_sale>#wrapperSupervisor .iconDesplegar {
     z-index: 3;
 }
+
 #form_create_sale>#wrapperSupervisor #id_supervisor {
     z-index: 2;
 }

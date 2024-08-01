@@ -112,6 +112,7 @@ def requestProducts(request):
             productos_list.append(
                 {"nombre": producto.nombre, 
                 "paquete": producto.plan.tipodePlan,
+                "porcetajeParaSuscripcion": 0.25,
                 "importe": producto.plan.valor_nominal,
                 "c24_porcentage": producto.plan.c24_porcentage,
                 "c30_porcentage": producto.plan.c30_porcentage,
