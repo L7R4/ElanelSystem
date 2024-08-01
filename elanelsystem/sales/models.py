@@ -2,12 +2,12 @@ import re
 from django.db import models
 from django.forms import ValidationError
 from users.models import Cliente,Usuario,Sucursal
-from products.models import Products
+from products.models import Plan, Products
 from django.core.validators import RegexValidator
 import json
 import datetime
 from dateutil.relativedelta import relativedelta
-from sales.utils import obtener_ultima_campania
+from sales.utils import getAllCampaniaOfYear, getCampaniaActual, obtener_ultima_campania
 from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
 
@@ -17,7 +17,8 @@ class CoeficientesListadePrecios(models.Model):
     cuota = models.IntegerField("Cuotas:")
     porcentage = models.FloatField("Porcentage:")
 #endregion
-# WEpsss
+
+
 #region VENTAS
 class Ventas(models.Model):
 
@@ -159,12 +160,12 @@ class Ventas(models.Model):
     
     #region Campos
     nro_cliente = models.ForeignKey(Cliente,on_delete=models.CASCADE,related_name="ventas_nro_cliente")
-    nro_solicitud = models.CharField("Nro solicitud:",max_length=10,default="")
+    nro_contrato = models.CharField("Nro Contrato:",max_length=10,default="")
     modalidad = models.CharField("Modalidad:",max_length=15, choices=MODALIDADES,default="")
     nro_cuotas = models.IntegerField()
     nro_operacion = models.IntegerField(default=returnOperacion)
     agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
-    campania = models.IntegerField(default=0)
+    campania = models.CharField("Campaña:",max_length=50,default="")
     cambioTitularidadField = models.JSONField(default=list,blank=True,null=True)
     
     suspendida = models.BooleanField(default=False)
@@ -196,18 +197,21 @@ class Ventas(models.Model):
     def clean(self):
         errors = {}
         validation_methods = [
-            self.validation_nro_solicitud,
+            self.validation_nro_contrato,
             self.validation_nro_orden,
             self.validation_modalidad,
             self.validation_total_a_pagar,
             self.validation_importe,
             self.validation_importe_x_cuota,
             self.validation_tasa_interes,
+            self.validation_intereses_generados,
+            self.validation_anticipo,
+            self.validation_primer_cuota,
             # self.validation_fecha,
             self.validation_tipo_producto,
             self.validation_paquete,
             self.validation_campania,
-            # self.validation_nro_operacion    
+            # self.validation_nro_operacion   
         ]
 
         for method in validation_methods:
@@ -226,30 +230,62 @@ class Ventas(models.Model):
             if(self.nro_operacion != lastOperacion+1):
                 raise ValidationError({'nro_operacion': "Número de operacion incorrecto."})
         
-    def validation_nro_solicitud(self):
-        if not re.match(r'^\d+$', self.nro_solicitud):
-            raise ValidationError({'nro_solicitud': 'Debe contener solo números.'})
+    def validation_nro_contrato(self):
+        if self.nro_contrato:
+            if not re.match(r'^\d+$', self.nro_contrato):
+                raise ValidationError({'nro_contrato': 'Debe contener solo números.'})
         
     def validation_nro_orden(self):
-        if not re.match(r'^\d+$', self.nro_orden):
-            raise ValidationError({'nro_orden': 'Debe contener solo números.'})
+        if self.nro_orden:
+            if not re.match(r'^\d+$', self.nro_orden):
+                raise ValidationError({'nro_orden': 'Debe contener solo números.'})
 
     def validation_modalidad(self):
-        if self.modalidad not in [m[0] for m in self.MODALIDADES]:
-            raise ValidationError({'modalidad': 'Modalidad no válida.'})
-        
-    def validation_total_a_pagar(self):
-        if self.total_a_pagar < 0:
-            raise ValidationError({'total_a_pagar': 'Dinero invalido. Debe ser mayor a 0.'})
+        if self.modalidad:
+            if self.modalidad not in [m[0] for m in self.MODALIDADES]:
+                raise ValidationError({'modalidad': 'Modalidad no válida.'}) 
 
-        
+    def validation_primer_cuota(self):
+        if not self.adjudicado["status"]:
+            if self.primer_cuota <= 0:
+                raise ValidationError({'primer_cuota': 'Dinero invalido. Debe ser mayor a 0.'})
+    
+    def validation_anticipo(self):
+        if not self.adjudicado["status"]:
+            if self.anticipo <= 0:
+                raise ValidationError({'anticipo': 'Dinero invalido. Debe ser mayor a 0.'})
+            
+    def validation_total_a_pagar(self):
+        if not self.adjudicado["status"]:
+            if self.total_a_pagar <= 0:
+                raise ValidationError({'total_a_pagar': 'Dinero invalido. Debe ser mayor a 0.'})
+        else:
+            if self.total_a_pagar < 0:
+                raise ValidationError({'total_a_pagar': 'Dinero invalido.'})
+      
     def validation_importe(self):
-        if self.importe < 0:
-            raise ValidationError({'importe': 'Dinero invalido. Debe ser mayor a 0.'})
+        if not self.adjudicado["status"]:
+            if self.importe <= 0:
+                raise ValidationError({'importe': 'Dinero invalido. Debe ser mayor a 0.'})
+        else:
+            if self.importe < 0:
+                raise ValidationError({'importe': 'Dinero invalido.'})
+    
+    def validation_intereses_generados(self):
+        if not self.adjudicado["status"]:
+            if self.intereses_generados <= 0:
+                raise ValidationError({'intereses_generados': 'Dinero invalido. Debe ser mayor a 0.'})
+        else:
+            if self.intereses_generados < 0:
+                raise ValidationError({'intereses_generados': 'Dinero invalido.'})
         
     def validation_importe_x_cuota(self):
-        if self.importe_x_cuota < 0:
-            raise ValidationError({'importe_x_cuota': 'Dinero invalido. Debe ser mayor a 0.'})
+        if not self.adjudicado["status"]:
+            if self.importe_x_cuota <= 0:
+                raise ValidationError({'importe_x_cuota': 'Dinero invalido. Debe ser mayor a 0.'})
+        else:
+            if self.importe_x_cuota < 0:
+                raise ValidationError({'importe_x_cuota': 'Dinero invalido.'})
         
     def validation_tasa_interes(self):
         if self.tasa_interes < 0:
@@ -276,21 +312,24 @@ class Ventas(models.Model):
             raise ValidationError({'tipo_producto': 'Tipo de producto no válido.'})
 
     def validation_paquete(self):
-        paquetes = Products.PAQUETES
+        paquetes = Plan.TIPO_PLAN_CHOICES
         if self.paquete not in [m[0] for m in paquetes]:
             raise ValidationError({'paquete': 'Paquete no válido.'})
         
     def validation_campania(self):
-        campaniaActual = self.agencia.campania
+        campaniasDelAño = getAllCampaniaOfYear()
+        campaniaActual = getCampaniaActual()
+        campaniaAnterior = campaniasDelAño[campaniasDelAño.index(campaniaActual) - 1]
+
         fechaActual = datetime.datetime.now()
         ultimo_dia_mes_pasado = datetime.datetime.now().replace(day=1) - relativedelta(days=1)
         diferencia_dias = (fechaActual - ultimo_dia_mes_pasado).days
 
-        if(self.campania == campaniaActual - 1 ):
-            if(diferencia_dias > 3): # Si la diferencia de dias es mayor a 3 dias, no se puede asignar la campania porque ya paso el tiempo limite para dar de alta una venta en la campania anterior
-                raise ValidationError({'campania': 'Campania no válida.'})
+        if(self.campania == campaniaAnterior):
+            if(diferencia_dias > 5): # Si la diferencia de dias es mayor a 3 dias, no se puede asignar la campania porque ya paso el tiempo limite para dar de alta una venta en la campania anterior
+                raise ValidationError({'campania': 'Campaña no válida.'})
         elif(self.campania != campaniaActual):
-            raise ValidationError({'campania': 'Campania no válida.'})
+            raise ValidationError({'campania': 'Campaña no válida.'})
 
     #endregion
 

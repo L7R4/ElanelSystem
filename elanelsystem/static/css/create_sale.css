@@ -96,62 +96,87 @@ p.iconValueInput {
 /* #region Z-INDEX de los inputs selects*/
 
 #form_create_sale>#wrapperTipoProducto .iconDesplegar {
-    z-index: 9;
+    z-index: 21;
 }
 
 #form_create_sale>#wrapperTipoProducto #tipoProductoInput {
-    z-index: 8;
+    z-index: 20;
 }
 
 #form_create_sale>#wrapperTipoProducto .options {
-    z-index: 7;
+    z-index: 19;
 }
 
 #form_create_sale>#wrapperProducto .iconDesplegar {
-    z-index: 9;
+    z-index: 18;
 }
 
 #form_create_sale>#wrapperProducto #productoInput {
-    z-index: 8;
+    z-index: 17;
 }
 
 #form_create_sale>#wrapperProducto .options {
-    z-index: 7;
+    z-index: 16;
 }
 
+
+#form_create_sale>#wrapperAgencia .iconDesplegar {
+    z-index: 15;
+}
+
+#form_create_sale>#wrapperAgencia #id_agencia {
+    z-index: 14;
+}
+
+#form_create_sale>#wrapperAgencia .options {
+    z-index: 13;
+}
+
+
 #form_create_sale>#wrapperModalidad .iconDesplegar {
-    z-index: 9;
+    z-index: 12;
 }
 
 #form_create_sale>#wrapperModalidad #id_modalidad {
-    z-index: 8;
+    z-index: 11;
 }
 
 #form_create_sale>#wrapperModalidad .options {
-    z-index: 7;
+    z-index: 10;
 }
 
 #form_create_sale>#wrapperVendedor .iconDesplegar {
-    z-index: 6;
+    z-index: 9;
 }
 
 #form_create_sale>#wrapperVendedor #id_vendedor {
-    z-index: 5;
+    z-index: 8;
 }
 
 #form_create_sale>#wrapperVendedor .options {
-    z-index: 4;
+    z-index: 7;
 }
 
 #form_create_sale>#wrapperSupervisor .iconDesplegar {
-    z-index: 3;
+    z-index: 6;
 }
 
 #form_create_sale>#wrapperSupervisor #id_supervisor {
-    z-index: 2;
+    z-index: 5;
 }
 
 #form_create_sale>#wrapperSupervisor .options {
+    z-index: 4;
+}
+#form_create_sale>#wrapperCampania .iconDesplegar {
+    z-index: 3;
+}
+
+#form_create_sale>#wrapperCampania #id_campania {
+    z-index: 2;
+}
+
+#form_create_sale>#wrapperCampania .options {
     z-index: 1;
 }
 
@@ -183,6 +208,7 @@ p.iconValueInput {
 }
 
 
+
 /* INPUTS DESIGN */
 
 #wrapperButtons {
@@ -192,11 +218,22 @@ p.iconValueInput {
     align-self: end;
 }
 
-#wrapperButtons>#enviar,
+#wrapperButtons>#submitCreateSaleButton,
 #wrapperButtons>#cancelar {
     font-size: clamp(1.4rem, 1.3vw, 1.5rem);
 }
 
+#form_create_sale p.message-error {
+    position: absolute;
+    font-size: clamp(1.1rem, 1vw, 1.3rem);
+    font-family: raleway-semibold;
+    color: #ff7b7b;
+    padding: 0.3rem .6rem;
+    left: 0;
+    top: 100%;
+    border-radius: 0.6rem;
+    white-space: nowrap;
+}
 
 #form_create_sale>div>.select {
     position: absolute;
@@ -237,17 +274,22 @@ p.iconValueInput {
     border-radius: 1rem;
 }
 
+/* button#submitCreateSaleButton:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+} */
 
 /* DISEÑO DE INPUTS */
 
 #wrapperProducto,
 #wrapperVendedor,
-#wrapperSupervisor {
+#wrapperSupervisor,
+#wrapperAgencia {
     grid-column: span 2;
 }
 
 #wrapperObservaciones {
-    grid-column: span 2;
+    grid-column:  1 / span 2;
     grid-row: span 2;
 }
 

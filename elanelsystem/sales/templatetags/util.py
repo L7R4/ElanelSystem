@@ -79,7 +79,7 @@ def seccionesPorPermisos(context):
         "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
         "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
         "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
-        "Post Venta": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList",args=[obtener_ultima_campania()])},
+        "Post Venta": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList")},
         "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
         "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
         "Administracion": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},

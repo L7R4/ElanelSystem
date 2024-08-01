@@ -8,8 +8,6 @@ from dateutil.relativedelta import relativedelta
 
 
 class Sucursal(models.Model):
-    fecha_innaguracion = models.CharField("Fecha de innaguración",max_length =10,default="")
-    campania = models.IntegerField("Campaña",default=0)
     direccion = models.CharField("Direccion",max_length =100)
     hora_apertura = models.CharField("Hora de apertura",max_length =5)
     provincia = models.CharField("Provincia",max_length =80)
@@ -23,51 +21,30 @@ class Sucursal(models.Model):
         return self.pseudonimo
 
     def save(self, *args, **kwargs):
-        self.calcularCampania()
         if((self.localidad).lower() in "resistencia"):
             self.pseudonimo = "Sucursal central"
         else:    
             self.pseudonimo = (f'{self.localidad}, {self.provincia}')
         super(Sucursal, self).save(*args, **kwargs)
 
-    def calcularCampania(self):
-        if self.fecha_innaguracion:
-            fecha_innaguracion = datetime.datetime.strptime(self.fecha_innaguracion, '%d/%m/%Y')
-            fecha_actual = datetime.datetime.now()
-            meses = relativedelta(fecha_actual, fecha_innaguracion)
-            meses_totales = meses.years * 12 + meses.months
-            self.campania = meses_totales
 
     #region Validaciones
-    def clean(self):
-        errors = {}
-        validation_methods = [
-            self.validation_fecha_innaguracion,
-            # self.validation_campania,
-        ]
+    # def clean(self):
+    #     errors = {}
+    #     validation_methods = [
+    #         self.validation_fecha_innaguracion,
+    #         # self.validation_campania,
+    #     ]
 
-        for method in validation_methods:
-            try:
-                method()
-            except ValidationError as e:
-                errors.update(e.message_dict)
+    #     for method in validation_methods:
+    #         try:
+    #             method()
+    #         except ValidationError as e:
+    #             errors.update(e.message_dict)
 
-        if errors:
-            raise ValidationError(errors)
+    #     if errors:
+    #         raise ValidationError(errors)
 
-    def validation_fecha_innaguracion(self):
-        if self.fecha_innaguracion:
-            if self.fecha_innaguracion and not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fecha_innaguracion):
-                raise ValidationError({'fecha_innaguracion': 'Debe estar en el formato DD/MM/AAAA.'})
-
-            try:
-                fecha_innaguracion = datetime.datetime.strptime(self.fecha_innaguracion, '%d/%m/%Y')
-            except ValueError:
-                raise ValidationError({'fecha_innaguracion': 'Fecha inválida.'})
-
-            fecha_innaguracion = datetime.datetime.strptime(self.fecha_innaguracion, '%d/%m/%Y')
-            if fecha_innaguracion > datetime.datetime.now():
-                raise ValidationError({'fecha_innaguracion': 'Fecha inválida.'})
     #endregion
 
 

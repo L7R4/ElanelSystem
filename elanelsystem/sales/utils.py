@@ -202,6 +202,19 @@ def filtroMovimientos_fecha(fechaInicio, context ,fechaFinal):
                     movimientosFiltrados.append(context[i])
         return movimientosFiltrados
 
+def getCampaniaActual():
+    list_mesesStr = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    mes_actual = datetime.datetime.now().month
+    anio_actual = datetime.datetime.now().year
+    return f'{list_mesesStr[mes_actual-1]} {anio_actual}'
+
+def getAllCampaniaOfYear():
+    list_mesesStr = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    anio_actual = datetime.datetime.now().year
+    meses_formato = [f'{mes} {anio_actual}' for mes in list_mesesStr]
+    return meses_formato
+
+
 def obtener_ultima_campania():
     # Lo importo aca para evitar el error de dependencias circulares
     from sales.models import Ventas
