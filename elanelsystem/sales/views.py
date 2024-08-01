@@ -89,49 +89,36 @@ class CrearVenta(TestLogin,generic.DetailView):
 
         customers = Cliente.objects.all()
         products = Products.objects.all()
-        sucursalString = request.user.sucursales.all()[0].pseudonimo
-        usuarios = ""
+        sucursal = request.user.sucursales.all()[0]
 
-        if(sucursalString == "Todas" and request.user.accesosTodasSucursales):
-            usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor"])
-        else:
-            usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor"],sucursales__pseudonimo = sucursalString)
-            
-        intereses = CoeficientesListadePrecios.objects.all()
-        planes = Plan.objects.all()
-       
-
-        json_complete=[]
-
-    
-        interes_list = []
-        for interes in list(intereses):
-            data_interes = {}
-            data_interes["valor_nominal"] = interes.valor_nominal
-            data_interes["cuota"] = interes.cuota
-            data_interes["porcentage"] = interes.porcentage
-            interes_list.append(data_interes)
-        json_complete.append(interes_list)
-
-
-        users_list = []
-        for user in list(usuarios):
-            data_users = {}
-            data_users["nombre"] = user.nombre
-            data_users["rango"] = user.rango
-            users_list.append(data_users)
-        json_complete.append(users_list)
-
-        data = json.dumps(json_complete)
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return HttpResponse(data, 'application/json')
+        # intereses = CoeficientesListadePrecios.objects.all()
+        vendedores = Usuario.objects.filter(sucursales__in=[sucursal], rango__in=["Vendedor","Supervisor"])
+        supervisores = Usuario.objects.filter(sucursales__in = [sucursal], rango="Supervisor")
         
+        campaniasDelAño = getAllCampaniaOfYear()
+        campaniaActual = getCampaniaActual()
+        campaniaAnterior = campaniasDelAño[campaniasDelAño.index(campaniaActual) - 1]
+        campaniasDisponibles = []
+
+        #region Para determinar si se habilita la campaña anterior
+        fechaActual = datetime.datetime.now()
+        ultimo_dia_mes_pasado = datetime.datetime.now().replace(day=1) - relativedelta(days=1)
+        diferencia_dias = (fechaActual - ultimo_dia_mes_pasado).days
+
+        if(diferencia_dias > 5): # Si la diferencia de dias es mayor a 5 dias, no se puede asignar la campania porque ya paso el tiempo limite para dar de alta una venta en la campania anterior
+            campaniasDisponibles = [campaniaActual]
+        else:
+            campaniasDisponibles = [campaniaActual,campaniaAnterior]
+        #endregion
         context ={
             "object": self.object,
             'customers': customers, 
             'products': products, 
-            'intereses': intereses, 
-            'usuarios': usuarios, 
+            'agencias': request.user.sucursales.all(), 
+            'agenciaActual': request.user.sucursales.all()[0], 
+            'campaniasDisponibles': campaniasDisponibles, 
+            'vendedores': vendedores, 
+            'supervisores': supervisores, 
         }
 
         return render(request,self.template_name,context)
@@ -153,7 +140,7 @@ class CrearVenta(TestLogin,generic.DetailView):
             sale.producto = producto
 
         # Validar la sucursal
-        agencia = form.get('agencia', request.user.sucursales.all()[0].pseudonimo)
+        agencia = form["agencia"] 
 
         if agencia and not Sucursal.objects.filter(pseudonimo=agencia).exists():
             errors['agencia'] = 'Agencia invalida.'
@@ -164,7 +151,7 @@ class CrearVenta(TestLogin,generic.DetailView):
         
         # Comprobar el vendendor
         vendedor = form['vendedor']
-        if vendedor and not Usuario.objects.get(nombre__iexact=vendedor).exists():
+        if  not Usuario.objects.filter(nombre__iexact=vendedor).exists():
             errors['vendedor'] = 'Vendedor invalido.' 
         else:
             vendedor_instance = Usuario.objects.get(nombre__iexact=form['vendedor'])
@@ -172,7 +159,10 @@ class CrearVenta(TestLogin,generic.DetailView):
 
         # Comprobar el supervisor
         supervisor = form['supervisor']
-        if supervisor and not Usuario.objects.get(nombre__iexact=supervisor).exists():
+        print("supervisor")
+        print(supervisor)
+        print(Usuario.objects.filter(nombre__iexact=supervisor).exists())
+        if not Usuario.objects.filter(nombre__iexact=supervisor).exists():
             errors['supervisor'] = 'Supervisor invalido.' 
         else:
             supervisor_instance = Usuario.objects.get(nombre__iexact=form['supervisor'])
@@ -183,20 +173,21 @@ class CrearVenta(TestLogin,generic.DetailView):
 
         sale.nro_cliente = Cliente.objects.get(nro_cliente__iexact=self.get_object().nro_cliente)
         
-        sale.nro_solicitud = form['nro_contrato']
-        sale.modalidad = form['modalidad']
-        sale.importe = form['importe']
-        sale.primer_cuota = form['primer_cuota']
-        sale.anticipo = form['anticipo']
-        sale.tasa_interes = form['tasa_interes']
-        sale.intereses_generados = form['intereses_generados']
-        sale.importe_x_cuota = form['importe_x_cuota']
-        sale.nro_cuotas = form['nro_cuotas']
-        sale.total_a_pagar = form['total_a_pagar']
+        sale.nro_contrato = form['nro_contrato']
+        sale.modalidad = form['modalidad'] if form['modalidad'] else ""
+        sale.importe = int(form['importe'])
+        sale.primer_cuota = int(form['primer_cuota']) if form['primer_cuota'] else 0
+        sale.anticipo = int(form['anticipo']) if form['anticipo'] else 0
+        sale.tasa_interes = float(form['tasa_interes']) if form['tasa_interes'] else 0
+        sale.intereses_generados = int(form['intereses_generados']) if form['intereses_generados'] else 0
+        sale.importe_x_cuota = int(form['importe_x_cuota']) if form['importe_x_cuota'] else 0
+        sale.nro_cuotas = int(form['nro_cuotas'])
+        sale.total_a_pagar = int(form['total_a_pagar']) if form['total_a_pagar'] else 0
         sale.fecha = form['fecha']
         sale.tipo_producto = form['tipo_producto']
         sale.paquete = form['paquete']
         sale.nro_orden = form['nro_orden']
+        sale.campania = form['campania']
         
         try:
             sale.full_clean()
@@ -207,13 +198,47 @@ class CrearVenta(TestLogin,generic.DetailView):
             print(errors)
             return JsonResponse({'success': False, 'errors': errors}, safe=False)
         else:
+            sale.fecha = form['fecha'] + " 00:00"
             sale.crearCuotas()
             sale.save()
-            return JsonResponse({'success': True}, safe=False)
+            return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
 
-        # return redirect("users:cuentaUser",pk= self.get_object().pk)
-        return render(request, self.template_name, {'form': form, 'object' : self.get_object()})
+
+def eliminarVenta(request,pk):
+    form = json.loads(request.body)
+    nro_orden = form["nro_orden_delete"]
+
+    venta = Ventas.objects.get(pk=pk)
+    if(venta.nro_orden == nro_orden):
+        try:
+            venta.delete()
+            return JsonResponse({"status": True,'urlRedirect': reverse('users:cuentaUser', args=[venta.nro_cliente.pk])}, safe=False)
+        except Exception:
+            return JsonResponse({"status": False,"message":"Error al eliminar la venta"}, safe=False)
+    else:
+        return JsonResponse({"status": False,"message":"Codigo incorrecto"}, safe=False)
+
+
+
+def requestVendedores_Supervisores(request):
+    request = json.loads(request.body)
+    sucursal = request["agencia"] if request["agencia"] else ""
     
+    vendedores = []
+    supervisores = []
+
+    if request["agencia"] !="":
+        vendedores = Usuario.objects.filter(sucursales__pseudonimo = sucursal, rango__in=["Vendedor","Supervisor"])
+        supervisores = Usuario.objects.filter(sucursales__pseudonimo = sucursal, rango="Supervisor")
+    
+    vendedores = [vendedor.nombre for vendedor in vendedores]
+    supervisores = [supervisor.nombre for supervisor in supervisores]
+
+    print(vendedores)
+    print(supervisores)
+
+    return JsonResponse({"vendedores":vendedores,"supervisores":supervisores}, safe=False)
+
 
 class DetailSale(TestLogin,generic.DetailView):
     model = Ventas
@@ -241,6 +266,7 @@ class DetailSale(TestLogin,generic.DetailView):
         context["nro_cuotas"] = sale_target.nro_cuotas
         context["urlRedirectPDF"] = reverse("sales:bajaPDF",args=[self.object.pk])
         context['urlUser'] = reverse("users:cuentaUser", args=[self.object.pk])
+        context['deleteSaleUrl'] = reverse("sales:delete_sale", args=[self.object.pk])
         request.session["venta"] = model_to_dict(self.object)
 
         try:

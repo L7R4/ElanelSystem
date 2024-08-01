@@ -13,6 +13,8 @@ class Plan(models.Model):
         ('Premium', 'Premium'),
     ]
     tipodePlan = models.CharField(max_length=8, choices=TIPO_PLAN_CHOICES)
+    suscripcion = models.IntegerField(default=0)
+    primer_cuota = models.IntegerField(default=0)
 
     c24_porcentage = models.FloatField("Porcentaje de 24 c",default=0)
     c30_porcentage = models.FloatField("Porcentaje de 30 c",default=0)

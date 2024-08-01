@@ -11,7 +11,9 @@ urlpatterns = [
     
     #region URLs Ventas ----------------------------------
     path("ventas/cliente/<int:pk>/crear_venta/",CrearVenta.as_view(),name="create_sale"),
+    path("ventas/get_vendedores_supervisores/",requestVendedores_Supervisores,name="requestVendedores_Supervisores"),
     path("ventas/detalle_venta/<int:pk>/",DetailSale.as_view(),name="detail_sale"),
+    path("ventas/detalle_venta/<int:pk>/eliminar_venta/",eliminarVenta,name="delete_sale"),
     path("ventas/detalle_venta/descuento_cuota/",aplicarDescuentoCuota,name="descCuota"),
     path("ventas/detalle_venta/get_specific_cuota/",getUnaCuotaDeUnaVenta,name="getCuota"),
     path("ventas/detalle_venta/pay_cuota/",pagarCuota,name="payCuota"),
@@ -39,7 +41,7 @@ urlpatterns = [
     #endregion ---------------------------------------------------------
         
     #region URLs PostVentas --------------------------------------------
-    path('ventas/postventas/<int:campania>/', PostVenta.as_view(), name='postVentaList'),
+    path('ventas/postventas/', PostVenta.as_view(), name='postVentaList'),
     path('ventas/postventas/informe/', viewsPDFInformePostVenta, name='postVentaPDF'),
     #endregion ---------------------------------------------------------
     
