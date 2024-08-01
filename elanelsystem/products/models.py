@@ -14,8 +14,8 @@ class Plan(models.Model):
     ]
     tipodePlan = models.CharField(max_length=8, choices=TIPO_PLAN_CHOICES)
 
-    c24_porcentage = models.FloatField("Porcentaje de 30 c",default=0)
-    c30_porcentage = models.FloatField("Porcentaje de 24 c",default=0)
+    c24_porcentage = models.FloatField("Porcentaje de 24 c",default=0)
+    c30_porcentage = models.FloatField("Porcentaje de 30 c",default=0)
     c48_porcentage = models.FloatField("Porcentaje de 48 c",default=0)
     c60_porcentage = models.FloatField("Porcentaje de 60 c",default=0)
     

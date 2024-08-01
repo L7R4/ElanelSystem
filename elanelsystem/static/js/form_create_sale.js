@@ -81,20 +81,22 @@ inputTipoDeProducto.addEventListener("input", async () => {
 // Cuando se selecciona un producto se guarda en la variable productoHandled
 inputProducto.addEventListener("input", async () => {
     productoHandled = productos.filter((item) => item["nombre"] == inputProducto.value)[0];
+    console.log(productoHandled)
     id_importe.value = productoHandled["importe"];
     id_paquete.value = productoHandled["paquete"];
-    id_primer_cuota.value = productoHandled["primer_cuota"];
-    id_suscripcion.value = productoHandled["suscripcion"];
-    
+    rellenarCamposDeVenta();
+
 });
 
 function porcentaje_segun_nroCuotas(nroCuotas) {
-    let cuotasList =[24,30,48,60]
-    for (let i = 0; i < cuotasList.length; i++) {
-        if (nroCuotas == cuotasList[i]) {
-            return cuotasList[i]
-        }
+    let cuotasList = {
+        '24': productoHandled["c24_porcentage"],
+        '30': productoHandled["c30_porcentage"],
+        '48': productoHandled["c48_porcentage"],
+        '60': productoHandled["c60_porcentage"],
     }
+    console.log(cuotasList[nroCuotas])
+    return cuotasList[nroCuotas] ? cuotasList[nroCuotas] : 0
 }
 
 // Agrega listener de tipo input a los inputs que son necesarios para calcular los valores de venta
@@ -106,18 +108,25 @@ inputsWithEventInput.forEach(input => {
 
 function rellenarCamposDeVenta() {
     try {
-        let dineroDeCuotas = parseInt(document.querySelector("#wrapperSumaCuotasPagadas .textInputP").textContent)
-        let subTotalSinIntereses = parseInt(id_importe.value) - dineroDeCuotas
-        id_intereses_generados.value = parseInt((subTotalSinIntereses * id_tasa_interes.value) / 100)
-        id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
-        id_importe_x_cuota.value = id_nro_cuotas.value <= 0 ? 0 : parseInt(id_total_a_pagar.value / id_nro_cuotas.value);
+        // Valores de los inputs
+        let nroCuotas = parseInt(id_nro_cuotas.value)
+        let importe = parseInt(id_importe.value)
+
+
+        id_tasa_interes.value = porcentaje_segun_nroCuotas(nroCuotas)
+        id_intereses_generados.value = importe * parseFloat(id_tasa_interes.value)
+        id_importe_x_cuota.value = (importe / nroCuotas) + parseInt(id_intereses_generados.value)
+        id_primer_cuota.value = parseInt(parseInt(id_importe_x_cuota.value) * productoHandled["porcetajeParaSuscripcion"]) + parseInt(id_importe_x_cuota.value)
+        id_anticipo.value = parseInt(id_primer_cuota.value)
+
+        id_total_a_pagar.value = importe + parseInt(id_intereses_generados.value)
     }
 
     catch (error) {
         console.log(error)
 
     }
-}   
+}
 
 
 // Esto evita el comportamiento predeterminado del boton "Enter"
@@ -148,7 +157,7 @@ submitAdjudicacionButton.addEventListener("click", async () => {
     inputs.forEach(element => {
         body[element.name] = element.value
     });
-    
+
     document.getElementById('loader').style.display = 'block';
     let response = await fetchFunction(body, window.location.pathname)
 
