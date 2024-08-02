@@ -119,6 +119,27 @@
         <a href="{% url 'sales:changeTitu' object.pk %}">Cambiar titularidad</a>
     </div>
 </div>
+{% else %}
+<div class="wrapperButtonManageVenta">
+    <div class="deleteSale">
+        <button id="showDeleteWrapper" class="delete-button-default">Eliminar venta</button>
+        <div class="wrapperFormDeleteSale">
+            <form method="POST" id="formDeleteSale">
+                {% csrf_token %}
+                <h1>¿Estas seguro que quieres eliminar este contrato?</h1>
+
+                <div class="inputClaveWrapper">
+                    <p>Ingrese el <strong>N° de orden</strong> para confirmar</p>
+                    <input name="nro_orden_delete" class="input-read-write-default" type="text" id="input_confirm_delete">
+                </div>
+                <div class="confirmClaveWrapperButtons">
+                    <button id="confirmDelete" class="delete-button-default" type="button">Confirmar</button>
+                    <button id="notConfirmDelete" class="add-button-default" type="button">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {% endif %}
 <div class="wrapperBase">

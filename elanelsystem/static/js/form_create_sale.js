@@ -234,26 +234,26 @@ submitCreateSaleButton.addEventListener("click", async () => {
 })
 
 // Función para verificar si todos los inputs requeridos están completos
-// function checkInputs() {
-//     const requiredInputs = form_create_sale.querySelectorAll('input[required]');
-//     let allInputsCompleted = true;
+function checkInputs() {
+    const requiredInputs = form_create_sale.querySelectorAll('input[required]');
+    let allInputsCompleted = true;
 
-//     requiredInputs.forEach(input => {
-//         if (input.value.trim() === '') {
-//             allInputsCompleted = false;
-//         }
-//     });
+    requiredInputs.forEach(input => {
+        if (input.value.trim() === '') {
+            allInputsCompleted = false;
+        }
+    });
 
-//     if (allInputsCompleted) {
-//         submitCreateSaleButton.disabled = false;
-//     } else {
-//         submitCreateSaleButton.disabled = true;
-//     }
-// }
+    if (allInputsCompleted) {
+        submitCreateSaleButton.disabled = false;
+    } else {
+        submitCreateSaleButton.disabled = true;
+    }
+}
 
-// // Agregar evento de input a los inputs requeridos
-// const requiredInputs = form_create_sale.querySelectorAll('input[required]');
-// requiredInputs.forEach(input => {
-//     input.addEventListener('input', checkInputs);
-// });
+// Agregar evento de input a los inputs requeridos
+const requiredInputs = form_create_sale.querySelectorAll('input[required]');
+requiredInputs.forEach(input => {
+    input.addEventListener('input', checkInputs);
+});
 
