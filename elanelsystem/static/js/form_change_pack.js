@@ -1,211 +1,193 @@
-const url = window.location.pathname;
-const inputSelects = document.querySelectorAll(".select");
-const menuProducto = document.querySelector('#wrapperProducto > ul')
-// Para bloquer el input de producto
-menuProducto.previousElementSibling.classList.add("desactive")
+const listProducto = document.querySelector('#wrapperProducto ul')
+const inputTipoDeProducto = document.querySelector('#tipoProductoInput')
+const inputProducto = document.querySelector('#productoInput')
+const submitAdjudicacionButton = document.querySelector('#enviar')
 
+const inputsWithEventInput = document.querySelectorAll(".eventInput")
 
-const menuTipoProducto = document.querySelector('#wrapperTipoProducto > ul')
-
-const inputImporte = document.getElementById('id_importe')
-const inputCuotaSuscripcion = document.getElementById('id_anticipo')
-const inputPrimerCuota = document.getElementById('id_primer_cuota')
-const inputNroCuotas = document.getElementById('id_nro_cuotas')
-const inputTasaInteres = document.getElementById('id_tasa_interes')
-const inputInteresesGenerados = document.getElementById('id_intereses_generados')
-const inputImportexCuota = document.getElementById('id_importe_x_cuota')
-const inputTotalAPagar = document.getElementById('id_total_a_pagar')
-const inputPaquete = document.getElementById('id_paquete')
-const inputAnticipo = document.getElementById('id_anticipo')
-const inputNroContrato = document.getElementById("id_nro_solicitud")
-
-
-fetch(url,{
-    method: 'get',
-    headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
-    cache: 'no-store',
-}).then(
-    function(response){
-        return response.json()
+//#region Fetch data
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
     }
-).then(data =>{
-    console.log(data)
-    let objectsFiltered;
-    inputSelects.forEach(element => {
-        element.previousElementSibling.addEventListener('click', () => {
-            clearActiveMenu()
-            
-            const height = element.scrollHeight
-            element.style.height = height +'px'
-            element.classList.add('active');
+    return cookieValue;
+}
 
-            let optionsMenu = element.querySelectorAll("li")
-            optionsMenu.forEach(value => {
-                value.addEventListener("click",()=>{
-                    // Para colocar el valor en el input
-                    let inputEvent = new Event('input')
-                    element.previousElementSibling.innerHTML = value.innerHTML
-                    element.previousElementSibling.value = value.innerHTML
-
-                    // SI EL ELEMENTO ES EL INPUT DEL TIPO DE PRODUCTO que este filtre los productos segun el tipo
-                    if(element.previousElementSibling.id =="id_tipo_producto"){
-                        objectsFiltered = filterObjetsByType(data,element.previousElementSibling.value)
-                        let items ="";
-                        objectsFiltered.forEach(element => {
-                            items += "<li>" + element["nombre"] + "</li>"
-                        });
-                        menuProducto.innerHTML = items
-                        menuProducto.previousElementSibling.classList.remove("desactive")
-                    }
-                    element.previousElementSibling.dispatchEvent(inputEvent)
-                    
-                })
-            });
-        });
-    })
-
-    // PARA BUSCAR EL PRODUCTO
-    menuProducto.previousElementSibling.addEventListener("input",()=>{
-        objectsFiltered = filterObjetsByType(data[0],id_tipo_producto.value)
-        let resultado = buscar(menuProducto.previousElementSibling.value,objectsFiltered)
-        actualizarResultados(resultado,menuProducto)
-
-        // para obtener el importe del producto y colocarlo
-        let importe = objectsFiltered.filter((item) => item["nombre"] == menuProducto.previousElementSibling.value)
-        console.log(importe)
-
-        if(importe.length > 0){
-            inputImporte.value = importe[0]["importe"] 
-            // inputAnticipo.value = importe[0]["anticipo"]
-            inputPaquete.value = importe[0]["paquete"]
-
-        }else{
-            inputImporte.value = ""
-            // inputAnticipo.value = ""
-            inputPaquete.value =""
-            // Limpia la primera cuota y suscripcion
-            // inputCuotaSuscripcion.value = ""
-            // inputPrimerCuota.value = ""
-        }
-        // rellenarCamposDeVenta(data[1])
-        let optionsLis = menuProducto.querySelectorAll("li")
-        optionsLis.forEach(v =>{
-            v.addEventListener('click',()=>{
-                menuProducto.previousElementSibling.innerHTML = v.innerHTML
-                menuProducto.previousElementSibling.value = v.innerHTML
-                let inputEvent = new Event('input')
-                menuProducto.previousElementSibling.dispatchEvent(inputEvent)
-            })
-        })
-    })
-
-
-    inputNroCuotas.addEventListener('input',()=>{
-        rellenarCamposDeVenta(inputNroCuotas.value,inputTasaInteres.value)
-    })
-    inputTasaInteres.addEventListener('input',()=>{
-        rellenarCamposDeVenta(inputNroCuotas.value,inputTasaInteres.value)
-    })
-    
-})
-
-
-function testClicks(event) {
+async function fetchFunction(body, url) {
     try {
-        let menu = document.querySelector(".select.active")
-        let input = menu.previousElementSibling
-        let elementsLisClicked = Array.from(menu.children)
-        if(event.target != menu && event.target != input && menu.classList.contains("active") && !elementsLisClicked.includes(event.target)){
-            menu.classList.remove("active")
-            menu.style.height = 0 +'px'
+        let response = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: {
+                "X-CSRFToken": getCookie('csrftoken'),
+            }
+        })
+
+        if (!response.ok) {
+            throw new Error("Error")
         }
+
+        const data = await response.json();
+        return data;
     } catch (error) {
     }
-    
 }
+//#endregion - - - - - - - - - - - - - - -
 
+let productoHandled; // Variable para guardar el producto seleccionado
+let productos; // Variable para guardar los productos
 
-function clearActiveMenu() {
-    inputSelects.forEach(element => {
-        element.classList.remove("active")
-        element.style.height = 0 +'px'
-    });
-}
-document.addEventListener("click",testClicks)
+async function requestProductos() {
 
-
-function filterObjetsByType(productsList,productType) {
-    let objets = productsList.filter(object => object["tipo_de_producto"] == productType)
-    return objets
-}
-
-function rellenarCamposDeVenta(valueNroCuotas, valueInteres){
-    if(valueNroCuotas != "" && valueInteres != ""){
-        console.log(valueInteres)
-            inputInteresesGenerados.value = parseInt((valueInteres * inputImporte.value)/100)
-            inputImportexCuota.value = parseInt((inputImporte.value/valueNroCuotas)+(inputInteresesGenerados.value/valueNroCuotas))
-            inputTotalAPagar.value = parseInt(inputImporte.value) + parseInt(inputInteresesGenerados.value) - inputAnticipo.value
+    let body = {
+        // "sucursal": sucursalInput.value,
+        "tipoProducto": inputTipoDeProducto ? inputTipoDeProducto.value : null
     }
-    else{
-        inputInteresesGenerados.value = ""
-        inputImportexCuota.value = ""
-        inputTotalAPagar.value =""
+
+    let data = await fetchFunction(body, urlRequestProductos);
+
+    return data["productos"];
+}
+
+// Cuando se selecciona un tipo de producto se filtran los productos
+inputTipoDeProducto.addEventListener("input", async () => {
+    productos = await requestProductos();
+
+    listProducto.innerHTML = "" // Limpia la lista de productos
+    listProducto.previousElementSibling.value = "" // Limpia el input de producto en caso de que se haya seleccionado un producto
+    if (productos.length != 0) {
+
+        inputProducto.parentElement.parentElement.classList.remove("desactive") // Desbloquea el input de producto
+
+        productos.forEach(product => {
+            createProductoHTMLElement(listProducto, product["nombre"]);
+        });
+        updateListOptions(listProducto, inputProducto); // Actualiza los listeners de la lista de productos
+    } else {
+        inputProducto.parentElement.parentElement.classList.add("desactive") // Bloquea el input de producto
+        
+        productoHandled = null // Resetea la variable productoHandled
+        productos = null // Resetea la lista de productos
+
+        // Forzar un evento input del inputProducto para que se reseteen los valores de los inputs
+        let event = new Event('input');
+        inputProducto.dispatchEvent(event);
+    
+    }
+
+});
+
+
+// Cuando se selecciona un producto se guarda en la variable productoHandled
+inputProducto.addEventListener("input", async () => {
+    if(productos != null){
+        productoHandled = productos.filter((item) => item["nombre"] == inputProducto.value)[0];
+    }
+
+
+    if (productoHandled) {
+        id_importe.value = productoHandled["importe"];
+        id_paquete.value = productoHandled["paquete"];
+        
+    }else{
+        id_importe.value = "";
+        id_paquete.value = "";
+    }
+    rellenarCamposDeVenta();
+   
+});
+
+
+// Agrega listener de tipo input a los inputs que son necesarios para calcular los valores de venta
+inputsWithEventInput.forEach(input => {
+    input.addEventListener("input", () => {
+        rellenarCamposDeVenta();
+    });
+});
+
+
+function rellenarCamposDeVenta() {
+    let nroCuotas = parseInt(id_nro_cuotas.value)
+    let importe = parseInt(id_importe.value)
+    let dineroDeCuotas = parseInt(document.querySelector("#wrapperSumaCuotasPagadas .textInputP").textContent)
+
+    try {
+        // Valores de los inputs
+        id_tasa_interes.value = porcentaje_segun_nroCuotas(nroCuotas)
+        id_intereses_generados.value = (importe * parseFloat(id_tasa_interes.value))/100
+        let total = (id_intereses_generados.value + importe) - dineroDeCuotas
+        id_importe_x_cuota.value = (total / nroCuotas) + (parseInt(id_intereses_generados.value) / nroCuotas)
+        id_primer_cuota.value = parseInt(parseInt(id_importe_x_cuota.value) * productoHandled["porcetajeParaSuscripcion"]) + parseInt(id_importe_x_cuota.value)
+        id_anticipo.value = parseInt(id_primer_cuota.value)
+
+        id_total_a_pagar.value = total
+    }
+
+    catch (error) {
+        id_tasa_interes.value = "";
+        id_intereses_generados.value = "";
+        id_importe_x_cuota.value = "";
+        id_primer_cuota.value = "";
+        id_anticipo.value = "";
+        id_total_a_pagar.value = "";
     }
 }
 
-
-// PARA FILTRAR DATOS MEDIANTE INPUTS
-function buscar(texto, datos){
-    let listFilteredData = []
-    let dataFormat = datos.filter((item) =>{
-  
-      // Accede a unicamente a los valores de cada elemento del JSON
-        let valores = Object.values(item);
-        // Los transforma al elemento en string para que sea mas facil filtrar por "include"
-        let string = valores.join(",")
-        // console.log(string)
-        if(string.toLocaleLowerCase().includes(texto.toLocaleLowerCase())){
-          listFilteredData.push(item)
-        }
-    })
-    return listFilteredData;
+function porcentaje_segun_nroCuotas(nroCuotas) {
+    let cuotasList = {
+        '24': productoHandled["c24_porcentage"],
+        '30': productoHandled["c30_porcentage"],
+        '48': productoHandled["c48_porcentage"],
+        '60': productoHandled["c60_porcentage"],
+    }
+    return cuotasList[nroCuotas] ? cuotasList[nroCuotas] : null
 }
 
-function actualizarResultados(resultados,contenedor) {
-    // Limpia el contenedor de los datos
-    contenedor.innerHTML = "";
-    
-    // Se reccore los datos filtrados
-    let lis ="";
-    resultados.forEach((item) => {
-        // console.log(item["nombre"])
-        lis += "<li>"+item["nombre"]+"</li>";
-  
+// Esto evita el comportamiento predeterminado del boton "Enter"
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+    }
+});
+
+
+// Crear un elemento li para el producto
+function createProductoHTMLElement(contenedor, producto) {
+    let stringForHTML = "";
+
+    stringForHTML = `<li data-value="${producto}">${producto}</li>`;
+    contenedor.insertAdjacentHTML('afterbegin', stringForHTML);
+}
+
+
+submitAdjudicacionButton.addEventListener("click", async () => {
+    body = {}
+    let inputs = form_create_sale.querySelectorAll("input")
+    let textareas = form_create_sale.querySelectorAll("textarea")
+
+    inputs = [...inputs, ...textareas]
+
+    inputs.forEach(element => {
+        body[element.name] = element.value
     });
-    contenedor.insertAdjacentHTML("beforeend",lis)
-    let height = contenedor.scrollHeight
-    contenedor.style.height = height +'px'
-}
+    
+    let response = await fetchFunction(body, window.location.pathname)
 
-function putNroOrden(){
-    // Obtener el valor del campo de número de contrato
-    const nroContratoValue = inputNroContrato.value;
+    if (!response["success"]) {
+        mostrarErrores(response["errors"], form_create_sale)
+    } else {
+        window.location.href = response["urlRedirect"];
+    }
 
-    // Obtener los últimos 3 dígitos del número de contrato
-    const ultimosTresDigitos = nroContratoValue.slice(-3);
 
-    // Actualizar el campo de número de orden con los últimos 3 dígitos
-    const numeroOrdenInput = document.getElementById("id_nro_orden");
-    numeroOrdenInput.value = ultimosTresDigitos;
-}
-inputNroContrato.addEventListener("input",()=>{
-    putNroOrden()
 })
 
-
-// Esto evita el comportamiento predeterminado del botón "Tab" y el "Enter"
-document.addEventListener('keydown', function (e) {
-    if (e.key === 'Tab' || e.key === 'Enter') {
-      e.preventDefault();
-    }
-  });
