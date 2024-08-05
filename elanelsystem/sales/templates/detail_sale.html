@@ -142,6 +142,8 @@
 </div>
 
 {% endif %}
+
+
 <div class="wrapperBase">
     <div class="wrapper_information">
         <h1>Operacion n° {{object.nro_operacion}}</h1>
@@ -253,7 +255,11 @@
                     <h3>{{object.supervisor}}</h3>
                 </div>
             </div>
-            {% if object.cambioTitularidadField %}
+            
+
+        </div>
+
+        {% if object.cambioTitularidadField %}
                 <div class="changeTitularidadWrapper">
                     <h2>Cambios de titularidad</h2>
                     {% for change in changeTitularidad %}
@@ -267,17 +273,12 @@
                                 <a id="verPDFTitularidad" href="{% url 'sales:tituPDF' object.pk change.id %}" target="_blank">Ver PDF</a>
                                 <h3>Desde: <strong>{{change.lastCuota.cuota}}</strong></h3>
                                 <h3>Fecha: <strong>{{change.fecha}}</strong></h3>
-                                <h3>Responsable: <strong>{{change.user}}</strong></h3>
                             </div>
                         </div>
                     {%endfor%}
                 </div>
-            {%endif%}
-
-        </div>
+        {%endif%}
         
-        
-    
     </div>
 
     {% if  object.deBaja.status %}

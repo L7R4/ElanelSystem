@@ -195,16 +195,14 @@
             </div>
         </div>
 
-
         <div id="wrapperObservaciones">
             <label for="">Observaciones</label>
             <textarea name="observaciones" cols="40" rows="5" class="input-read-write-default" id="id_observaciones"></textarea>
         </div>
-
     </form>
 
     <div id="wrapperButtons">
-        <button type="button" form="form_create_sale" id="submitCreateSaleButton" class="add-button-default"> Terminar </button>
+        <button type="button" disabled form="form_create_sale" id="submitCreateSaleButton" class="add-button-default"> Terminar </button>
         <a id ="cancelar" class="delete-button-default" href="{% url 'users:cuentaUser' object.id%}"> Cancelar </a>
     </div>
 

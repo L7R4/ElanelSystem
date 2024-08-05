@@ -25,7 +25,6 @@ from django.http import HttpResponse, JsonResponse
 
 #region Usuarios - - - - - - - - - - - - - - - - - - - -
 
-
 class CrearUsuario(TestLogin, generic.View):
     model = Usuario
     template_name = "create_user.html"
@@ -176,7 +175,6 @@ class CrearUsuario(TestLogin, generic.View):
 
             response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
             return JsonResponse(response_data, safe=False)         
-
   
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
@@ -203,7 +201,6 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return HttpResponse(data, 'application/json')
         return render(request, self.template_name,context)
-
 
 class DetailUser(TestLogin, generic.DetailView):
     model = Usuario
@@ -364,8 +361,6 @@ class DetailUser(TestLogin, generic.DetailView):
             response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
             return JsonResponse(response_data, safe=False)         
 
-
-
 def viewsPDFNewUser(request,pk):
     import locale
     newUserObject = Usuario.objects.get(pk=pk)
@@ -375,6 +370,7 @@ def viewsPDFNewUser(request,pk):
     fecha = datetime.datetime.strptime(newUserObject.fec_ingreso, '%d/%m/%Y')
     nombre_mes = fecha.strftime('%B')
     
+
     context ={
                 "day": fecha.strftime("%d"),
                 "month": fecha.strftime("%m"),
@@ -394,9 +390,9 @@ def viewsPDFNewUser(request,pk):
                 "estado_civil" : newUserObject.estado_civil,
                 "xp_laboral" : newUserObject.xp_laboral,
                 "datos_familiares" : newUserObject.datos_familiares,
-                "agenciaNombre": newUserObject.sucursal,
-                "provincia_localidad_sucursal": newUserObject.sucursal.localidad + "," + newUserObject.sucursal.provincia,
-                "agenciaDireccion": newUserObject.sucursal.direccion,
+                "agenciaNombre": newUserObject.sucursales.all(),
+                # "provincia_localidad_sucursal": newUserObject.sucursal.localidad + "," + newUserObject.sucursal.provincia,
+                # "agenciaDireccion": newUserObject.sucursal.direccion,
             }
             
     userName = str(newUserObject.nombre)
@@ -409,7 +405,6 @@ def viewsPDFNewUser(request,pk):
         response['Content-Disposition'] = 'inline; filename='+userName+"_ficha"+'.pdf'
         return response
     
-
 def requestUsuarios(request):
     request = json.loads(request.body)
     sucursal_filter = [nombre.strip() for nombre in request["sucursal"].split('-')][0]
@@ -445,17 +440,16 @@ class ListaClientes(TestLogin, generic.View):
         customers_list = []
         for c in customers:
             data_customer = {}
-            data_customer["pk"] = c.pk
             data_customer["nombre"] = c.nombre
             data_customer["dni"] = c.dni
             data_customer["tel"] = c.tel
             data_customer["loc"] = c.loc
             data_customer["prov"] = c.prov
             customers_list.append(data_customer)
-        data = json.dumps(customers_list)
+       
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return HttpResponse(data, 'application/json')
+            return JsonResponse({'response':customers_list},safe=False)
         return render(request, self.template_name,context)
 
    

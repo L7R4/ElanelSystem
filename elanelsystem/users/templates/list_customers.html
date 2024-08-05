@@ -46,5 +46,26 @@
 
 {% endblock content %}
 {% block js %}
+<script>
+  function actualizarResultados(resultados, contenedor) {
+    // Limpia el contenedor de los datos
+    contenedor.innerHTML = "";
+
+    // Se reccore los datos filtrados
+    resultados.forEach((item) => {
+      let divs = "";
+
+      // Se reccore los campos de cada elemento y se lo guarda en un div
+      // Ademas de eso empieza en 1 porque el campo 0 es la pk para luego poder colocar el URL
+      for (let i = 1; i < item.length; i++) {
+        divs += "<div><p>" + item[i] + "</p></div>";
+      }
+
+      // Se crea la etiqueta a con el enlace de la pk (item[0]) 
+      let enlace = "<a class ='item' href='/cliente/" + item[0] + "/operaciones/'>" + divs + "</a>";
+      contenedor.insertAdjacentHTML("beforeend", enlace)
+    });
+  }
+</script>
 <script src="{% static 'js/inputs_search_customers.js' %}"></script>
 {% endblock js %}
