@@ -1,34 +1,20 @@
-.filters
-{
-    height:12%;
-    width: 100%;
+.wrapper_content {
     display: flex;
-    align-items: center;
+    flex-flow: column;
 }
-.tittleDo{
-    height: 5%;
-    width: 100%;
-    margin-top: .5rem;
-    padding: 1.8rem 0;
-    background-color: #304361;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.tittleDo > h3{
-    font-size: clamp(1.4rem, 1.4vw, 1.8rem);
-    font-family: raleway;
-    color: white;
-    padding: 0 2%;
-    letter-spacing: .1rem;
 
+.filters {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 3rem 4rem;
 }
-.filters > div{
+
+.filters>div {
     position: relative;
     display: flex;
-    height: 80%;
     width: 40%;
-    height: auto;
+    height: 3.2rem;
     flex-flow: column;
     justify-content: center;
     color: white;
@@ -37,196 +23,121 @@
     margin-left: auto;
     margin-right: 3rem;
 }
-.filters > div> img
-{
+
+.filters>div>img {
     position: absolute;
     /* rotate: -90deg; */
     filter: invert(1);
     width: 1.8rem;
-    right: 2%;
+    right: 2rem;
     z-index: 6;
 }
-.filters > div > .select{
-    position: absolute;
-    height: 0;
-    max-height: 20rem;
-    overflow-y: auto;
-    top: 70%;
-    /* left: 3px; */
-    transition: all .4s ease;
-    width: 82%;
-    z-index:1;
-    background: white;
-    border-radius: 0.5rem;
-    /* border: 3px solid var(--third-color); */
+
+/* .tittleDo {
+    padding: 1rem;
+} */
+
+.filters>h3 {
+    font-size: clamp(1.7rem, 1.5vw, 2.4rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
 }
-.filters > div > input
-{
-    height: 3.1rem;
-    width: 100%;
-    background-color: #304361;
-    border: 2px solid var(--third-color);
-    border-radius: 1rem;
-    outline: none;
-    text-indent: 1.2rem;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway;
-    color: white;
-    position: relative;
+
+.customer {
+    color: var(--third-color);
     z-index: 2;
 }
 
-#create_customer
-{
-    padding: 1.6rem 4rem;
-    color: white;
-    font-size: 1.6rem;
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    height: fit-content;
-    text-decoration: none;
-    border-radius: 1rem;
-    letter-spacing: .04rem;
-    margin-left: 2rem;
+#formSelectCustomer {
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
-
-
-.information{
-    height: 88%;
+.information {
     width: 100%;
-    /* display: flex; */
     overflow-x: auto;
+    overflow-y: none;
+    /* Quita los bordes internos */
+    border-collapse: collapse;
+
 }
 
-.information::-webkit-scrollbar{
+#formSelectCustomer::-webkit-scrollbar {
     width: 2px;
     height: 5px;
     border-radius: 5px;
 }
-.information::-webkit-scrollbar-thumb{
+
+#formSelectCustomer::-webkit-scrollbar-thumb {
     background: var(--third-color);
     border-radius: 1rem;
 }
 
-.tittles{
-    display: flex;
-    /* column-gap: calc(100% / 6); */
-    list-style: none;
-    width: 100%;
-    justify-content: space-around;  
-}
-.information > .tittlesWrapper{
-    width: 100%;
-    background-color: var(--third-color);
-}
-
-.tittlesWrapper > .tittles > li {
-    color: white;
-    font-size: 1.6rem;
+.information>thead {
+    background-color: var(--fourth-color);
+    color: var(--third-color);
     font-family: raleway-semibold;
-    padding: 1rem 0;
-    width: 16.6%;
+    font-size: clamp(1.3rem, 1.2vw, 1.7rem);
     text-align: center;
 }
 
-.valuesWrapper > .values > li
-{
-    display: flex;
-    font-size: 1.4rem;
-    align-items: center;
-    justify-content: space-around;
-    font-family: raleway;
+.information>thead>tr>th {
+    padding: 1rem;
+}
+
+
+.information>tbody {
+    color: var(--third-color);
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.1vw, 1.5rem);
+    text-align: center;
+}
+
+
+.information>tbody>tr>td {
+    padding: 1rem;
+}
+
+.information>tbody>tr {
+    cursor: pointer;
     position: relative;
-    padding: 1rem 0;
-    width: 100%;
-    color: rgb(241, 237, 237);
-    cursor: pointer;
-    text-decoration: none;
-}
-.valuesWrapper > .values > li.activeBackground{
-    background-color: #304361;
-    transition: all .1s ease;
-}
-.valuesWrapper > .values > li > .selectCheck{
-    position: absolute;
-    left: 2%;
-    border: 1px solid white;
-    border-radius: .5rem;
-    width: 1.4rem;
-    height: 1.4rem;
-}
-/* .valuesWrapper > .values > li > .selectCheck > .selectedCheck{
-    background-color: transparent;
-} */
-.valuesWrapper > .values > li > .selectCheck.selected > .selectedCheck{
-    background-color: white;
-    width: 100%;
-    height: 100%;
-    transition: all .1s ease;
-    
-}
-.valuesWrapper > .values > li:hover
-{
-    background-color: #304361;
-}
-
-.valuesWrapper > .values > li > div
-{
-    width: 16.6%;
     text-align: center;
 }
 
-.tittleDo > .buttons > h4{
-    font-size: clamp(1.1rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    color: #ff7b7b;
-    padding: 0.3rem 1rem;
-    border-radius: 0.6rem;
-    white-space: nowrap;
+.information>tbody>tr:hover {
+    background-color: #304361;
 }
 
-#yesConfirm{
-    color: white;
-    font-size: clamp(1.3rem, 1.3vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    border-radius: 1rem;
-    letter-spacing: .04rem;
-    outline: none;
-    border-color: transparent;
-    cursor: pointer;
-    min-width: 12rem;
-    height: 100%;
+.information>tbody>tr>td>.checkbox_select_client {
+    position: absolute;
+    left: 2rem;
+
 }
-.tittleDo > .buttons{
+
+
+.buttonsWrapper {
+    margin: auto 4rem 3rem 4rem;
     display: flex;
-    column-gap: 1rem;
-    margin-right: 4rem;
-    height: 3.4rem;
-    align-items: center;
+    justify-content: space-between;
 }
 
-#noConfirm{
-    min-width: 12rem;
-    background-color: #ed1717;
-    border-radius: 1rem;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-}
-#noConfirm > a{
-    text-decoration: none;
+.buttonsWrapper>h5.message_error {
+    color: #ed1717;
+    background: var(--third-color);
     font-family: raleway-semibold;
-    font-size: clamp(1.3rem, 1.3vw, 1.5rem);
-    letter-spacing: .04rem;
-    color: white;
-
+    font-size: clamp(1.6rem, 1.3vw, 2.3rem);
+    padding: .8rem 3rem;
+    border-radius: .6rem;
 }
 
+.buttonsWrapper>div {
+    display: flex;
+    gap: 1rem;
+    margin-left: auto;
+}
 
-
-
-
+.buttonsWrapper>div>* {
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.1vw, 1.5rem);
+    color: var(--third-color);
+}

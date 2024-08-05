@@ -87,7 +87,7 @@ inputTipoDeProducto.addEventListener("input", async () => {
 
 // Cuando se selecciona un producto se guarda en la variable productoHandled
 inputProducto.addEventListener("input", async () => {
-    if(productos != null){
+    if (productos != null) {
         productoHandled = productos.filter((item) => item["nombre"] == inputProducto.value)[0];
     }
 
@@ -95,10 +95,14 @@ inputProducto.addEventListener("input", async () => {
     if (productoHandled) {
         id_importe.value = productoHandled["importe"];
         id_paquete.value = productoHandled["paquete"];
-        
-    }else{
+        id_primer_cuota.value = productoHandled["primer_cuota"]
+        id_anticipo.value = productoHandled["suscripcion"]
+
+    } else {
         id_importe.value = "";
         id_paquete.value = "";
+        id_primer_cuota.value = "";
+        id_anticipo.value = "";
     }
     rellenarCamposDeVenta();
 
@@ -127,11 +131,8 @@ function rellenarCamposDeVenta() {
     try {
         // Valores de los inputs
         id_tasa_interes.value = porcentaje_segun_nroCuotas(nroCuotas)
-        id_intereses_generados.value = (importe * parseFloat(id_tasa_interes.value))/100
+        id_intereses_generados.value = (importe * parseFloat(id_tasa_interes.value)) / 100
         id_importe_x_cuota.value = (importe / nroCuotas) + (parseInt(id_intereses_generados.value) / nroCuotas)
-        id_primer_cuota.value = parseInt(parseInt(id_importe_x_cuota.value) * productoHandled["porcetajeParaSuscripcion"]) + parseInt(id_importe_x_cuota.value)
-        id_anticipo.value = parseInt(id_primer_cuota.value)
-
         id_total_a_pagar.value = importe + parseInt(id_intereses_generados.value)
     }
 
@@ -139,8 +140,6 @@ function rellenarCamposDeVenta() {
         id_tasa_interes.value = "";
         id_intereses_generados.value = "";
         id_importe_x_cuota.value = "";
-        id_primer_cuota.value = "";
-        id_anticipo.value = "";
         id_total_a_pagar.value = "";
     }
 }
@@ -170,12 +169,12 @@ id_agencia.addEventListener("input", async () => {
     let body = {
         "agencia": id_agencia.value
     }
-    let vendedores_supervisores = await fetchFunction(body,urlRequestVendedoresSupervisores)
-    
-    let vendedores = vendedores_supervisores["vendedores"] 
+    let vendedores_supervisores = await fetchFunction(body, urlRequestVendedoresSupervisores)
+
+    let vendedores = vendedores_supervisores["vendedores"]
     let supervisores = vendedores_supervisores["supervisores"]
 
-    if(id_agencia.value == ""){
+    if (id_agencia.value == "") {
         id_vendedor.value = ""
         id_supervisor.value = ""
 
@@ -183,7 +182,7 @@ id_agencia.addEventListener("input", async () => {
     document.querySelector('#wrapperVendedor ul.options').innerHTML = ""
     vendedores.forEach(element => {
         createLiHTMLElement(document.querySelector('#wrapperVendedor ul.options'), element)
-        
+
     });
 
     document.querySelector('#wrapperSupervisor ul.options').innerHTML = ""
@@ -192,10 +191,10 @@ id_agencia.addEventListener("input", async () => {
     });
 
     // Actualiza los listeners de la lista de vendedores y supervisores
-    updateListOptions(document.querySelector('#wrapperVendedor ul.options'), id_vendedor); 
-    updateListOptions(document.querySelector('#wrapperSupervisor ul.options'), id_supervisor); 
+    updateListOptions(document.querySelector('#wrapperVendedor ul.options'), id_vendedor);
+    updateListOptions(document.querySelector('#wrapperSupervisor ul.options'), id_supervisor);
 
-    
+
 })
 
 id_nro_contrato.addEventListener("input", () => {
@@ -206,7 +205,7 @@ id_nro_contrato.addEventListener("input", () => {
     // Actualizar el campo de número de orden con los últimos 3 dígitos
     const numeroOrdenInput = document.getElementById("id_nro_orden");
     numeroOrdenInput.value = ultimosTresDigitos;
-    
+
 })
 
 // Para enviar los datos del formulario
