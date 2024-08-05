@@ -275,9 +275,7 @@ class DetailSale(TestLogin,generic.DetailView):
         except IndexError as e:
             context["porcetageDefault"] = 0
         
-        data = json.dumps(status_cuotas)
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return HttpResponse(data, 'application/json')
+        
         return render(request,self.template_name,context)
     
 
@@ -553,14 +551,16 @@ class ChangePack(TestLogin,generic.DetailView):
         sale.nro_contrato = str(request.session["venta"]["nro_contrato"])
         sale.nro_orden = str(request.session["venta"]["nro_orden"])
         sale.paquete = str(request.session["venta"]["paquete"])
-        sale.nro_operacion = self.object.campania
+        sale.campania = self.object.campania
         sale.importe = int(form['importe'])
         sale.modalidad = form['modalidad']
         sale.nro_cuotas = int(form['nro_cuotas'])
-        sale.tasa_interes = int(form['tasa_interes'])
+        sale.tasa_interes = float(form['tasa_interes'])
         sale.intereses_generados = int(form['intereses_generados'])
         sale.importe_x_cuota = int(form['importe_x_cuota'])
         sale.total_a_pagar = int(form['total_a_pagar'])
+        sale.primer_cuota = int(form['primer_cuota'])
+        sale.anticipo = int(form['anticipo'])
         sale.fecha = form['fecha']
         sale.tipo_producto = form['tipo_producto']
         sale.observaciones = form['observaciones']
@@ -576,9 +576,11 @@ class ChangePack(TestLogin,generic.DetailView):
         else:
             sale.fecha = form['fecha'] + " 00:00"
             sale.crearCuotas()
-            sale.createBaja()
             sale.save()
-            return JsonResponse({'success': True,'urlRedirect':reverse_lazy('users:detail_sale',args=[sale.pk])}, safe=False)
+
+            self.object.darBaja("cambio de pack",0,"","",request.user.nombre) # Da de baja la venta que fue cambiada de pack
+            self.object.save()
+            return JsonResponse({'success': True,'urlRedirect':reverse_lazy('sales:detail_sale',args=[sale.pk])}, safe=False)
 
 
 class ChangeTitularidad(TestLogin,generic.DetailView):
@@ -593,53 +595,27 @@ class ChangeTitularidad(TestLogin,generic.DetailView):
             "customers": customers,
             "object": self.object,
         }
-
-        customers_list = []
-        for c in customers:
-            data_customer = {}
-            data_customer["pk"] = c.pk
-            data_customer["nombre"] = c.nombre
-            data_customer["dni"] = c.dni
-            data_customer["tel"] = c.tel
-            data_customer["loc"] = c.loc
-            data_customer["prov"] = c.prov
-            customers_list.append(data_customer)
-        data = json.dumps(customers_list)
-
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return HttpResponse(data, 'application/json')
         return render(request, self.template_name,context)
 
     def post(self,request,*args,**kwargs):
         self.object = self.get_object()
+        form = json.loads(request.body)
+        newCustomer = form["customer"]
 
-        if(request.method == 'POST'):
-            try:
-                newCustomer = request.POST.get("newCustomer")
-                dniNewCustomer = Cliente.objects.all().filter(dni=newCustomer)
+        dniNewCustomer = Cliente.objects.all().filter(dni=newCustomer)[0]
+        if(dniNewCustomer == self.object.nro_cliente):
+            return JsonResponse({'success': False, 'errors': "EL CLIENTE NUEVO NO PUEDE SER IGUAL AL ANTIGUO"}, safe=False)
+        else:
+            # Coloca los datos del cambio de titularidad
+            lastCuota = self.object.cuotas_pagadas()[-1]
+            self.object.createCambioTitularidad(lastCuota,request.user.nombre,self.object.nro_cliente.nombre,dniNewCustomer.nombre,self.object.nro_cliente.pk,dniNewCustomer.pk)
+            
+            # Actualiza el dueño de la venta
+            self.object.nro_cliente = dniNewCustomer
+            self.object.save()
+            return JsonResponse({'success': True,'urlRedirect': reverse("sales:detail_sale",args = [self.get_object().pk])}, safe=False) 
 
-                # Agrega el antiguo cliente a la lista de clientes anteriores
-                # self.object.clientes_anteriores.asdd(self.object.nro_cliente)
-                
-
-                # Coloca los datos del cambio de titularidad
-                lastCuota = self.object.cuotas_pagadas()
-                self.object.createCambioTitularidad(lastCuota[-1],request.user.nombre,self.object.nro_cliente.nombre,dniNewCustomer[0].nombre,self.object.nro_cliente.pk,dniNewCustomer[0].pk)
-
-                # Actualiza el dueño de la venta
-                self.object.nro_cliente = dniNewCustomer[0]
-
-                self.object.save()
-
-                return redirect("sales:detail_sale",pk= self.get_object().pk)
-            except ValueError as vE:
-                customers = Cliente.objects.all()
-                context = {
-                    "customers": customers,
-                    "object": self.object,
-                    "error": vE,
-                }
-                return render(request,self.template_name,context)
+        
    
     
 class CrearUsuarioYCambiarTitu(TestLogin,generic.DetailView):

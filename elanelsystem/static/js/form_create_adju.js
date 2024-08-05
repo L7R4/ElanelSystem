@@ -147,8 +147,8 @@ submitAdjudicacionButton.addEventListener("click", async () => {
     inputs.forEach(element => {
         body[element.name] = element.value
     });
-    
-    document.getElementById('loader').style.display = 'block';
+
+    // document.getElementById('loader').style.display = 'block';
     let response = await fetchFunction(body, window.location.pathname)
 
     if (!response["success"]) {
@@ -157,7 +157,7 @@ submitAdjudicacionButton.addEventListener("click", async () => {
         window.location.href = response["urlRedirect"];
     }
 
-    document.getElementById('loader').style.display = 'none';
+    // document.getElementById('loader').style.display = 'none';
 
 })
 
