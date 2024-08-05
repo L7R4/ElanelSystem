@@ -1185,18 +1185,17 @@
 }
 
 .changeItem {
-    background-color: rgb(41 40 40 / 91%);
+    border: 2px var(--primary-color) solid;
     display: flex;
-    width: 90%;
     justify-content: space-around;
     padding: 1rem;
     border-radius: .8rem;
-    min-height: fit-content;
     margin-bottom: 1rem;
 }
 
 .changeItem>.names>img {
-    width: 3rem;
+    width: 2rem;
+    filter: invert(1);
     transform: rotate(180deg);
 }
 
@@ -1274,9 +1273,11 @@
 .deleteSale {
     margin-right: auto;
 }
-.deleteSale > #showDeleteWrapper{
+
+.deleteSale>#showDeleteWrapper {
     font-size: clamp(1rem, 1vw, 1.5rem);
 }
+
 .wrapperFormDeleteSale {
     position: fixed;
     background-color: #060607b6;
@@ -1289,53 +1290,60 @@
     left: 0;
     top: 0;
 }
-.wrapperFormDeleteSale.active{
+
+.wrapperFormDeleteSale.active {
     display: flex;
 }
 
-.wrapperFormDeleteSale>#formDeleteSale{
+.wrapperFormDeleteSale>#formDeleteSale {
     background-color: var(--third-color);
     padding: 5rem;
     border-radius: 1rem;
 }
-.wrapperFormDeleteSale>#formDeleteSale > h1{
+
+.wrapperFormDeleteSale>#formDeleteSale>h1 {
     font-size: clamp(2rem, 1.7vw, 3rem);
     font-family: raleway-bold;
-    color: var(--secundary-color);;
+    color: var(--secundary-color);
+    ;
     text-align: center;
     margin-bottom: 1rem;
 }
 
-.wrapperFormDeleteSale>#formDeleteSale >.inputClaveWrapper>p{
+.wrapperFormDeleteSale>#formDeleteSale>.inputClaveWrapper>p {
     font-size: clamp(1.4rem, 1.4vw, 1.8rem);
     font-family: raleway-semibold;
     color: var(--background-color);
     margin-bottom: .5rem;
 }
-.wrapperFormDeleteSale>#formDeleteSale >.inputClaveWrapper>p>strong{
+
+.wrapperFormDeleteSale>#formDeleteSale>.inputClaveWrapper>p>strong {
     color: var(--primary-color);
 }
 
-.wrapperFormDeleteSale>#formDeleteSale >.inputClaveWrapper>input{
+.wrapperFormDeleteSale>#formDeleteSale>.inputClaveWrapper>input {
     font-size: clamp(1.3rem, 1.3vw, 1.7rem);
     font-family: raleway-semibold;
     height: 4rem;
 }
-.wrapperFormDeleteSale>#formDeleteSale>.confirmClaveWrapperButtons{
+
+.wrapperFormDeleteSale>#formDeleteSale>.confirmClaveWrapperButtons {
     display: flex;
     margin-top: 1rem;
     gap: 1rem;
 }
-.wrapperFormDeleteSale>#formDeleteSale>.confirmClaveWrapperButtons > button{
+
+.wrapperFormDeleteSale>#formDeleteSale>.confirmClaveWrapperButtons>button {
     font-size: clamp(1.3rem, 1.3vw, 1.7rem);
     font-family: raleway-semibold;
 }
 
-.wrapperFormDeleteSale>#formDeleteSale>p.errorMensaje{
+.wrapperFormDeleteSale>#formDeleteSale>p.errorMensaje {
     font-size: clamp(1.3rem, 1.3vw, 1.7rem);
     font-family: raleway-semibold;
     color: #ed1717;
     margin-top: 1rem;
 
 }
+
 /* #endregion */

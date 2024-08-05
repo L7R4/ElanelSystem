@@ -3,63 +3,83 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/selectNewCustomerForChange.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 {% endblock css %}
 
 {% block content %}
 <div class="filters">
-      <a href="{% url 'users:crearYCambiar' object.pk %}" id="create_customer">AGREGAR</a>
+  <h3>Elija el cliente con el que desea reemplazarlo</h3>
     <div>
-        <input 
-        type="text"
-        class = "customer"
-        id="customer">
-        <img src="{% static 'images/icons/search.svg' %}" alt="">
-    </div>
-</div>
-<div class="tittleDo">
-    <h3>Elija el cliente con el que desea reemplazarlo</h3>
-    <div class="buttons">
-      <h4>{{error}}</h4>
-      <button id="yesConfirm" type="submit" form="formSelectCustomer">Confirmar</button>
-      
-      <div id="noConfirm">
-        <a href="{% url 'sales:detail_sale' object.id %}">Cancelar</a>
-      </div>
-    </div>
-</div>
-<div class="information">
-    <div class="tittlesWrapper">
-      <ul class="tittles">
-          <li>Nombre</li>
-          <li>DNI</li>
-          <li>Telefono</li>
-          <li>Localidad</li>
-          <li>Provincia</li>
-      </ul>   
+      <input 
+      type="text"
+      class = "customer input-read-write-default"
+      id="customer_search">
+      <img src="{% static 'images/icons/search.svg' %}" alt="">
     </div>
 
-    <form method="POST" id="formSelectCustomer" class="valuesWrapper">
-        {% csrf_token %}
-        <input type="hidden" value="" name="newCustomer" id="newCustomerInput">
-        <ul class="values">
+</div>
+<form method="POST" id="formSelectCustomer" class="valuesWrapper">
+  <input type="hidden" name="customer" id="customer_input">
+  {% csrf_token %}
+  <table class="information">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>DNI</th>
+            <th>Teléfono</th>
+            <th>Localidad</th>
+            <th>Provincia</th>
+        </tr>
+    </thead>
+    <tbody class="values">
           {% for customer in customers %}
-            <li class ="item">
-              <div class="selectCheck">
-                <div class="selectedCheck"></div>
-              </div>
-              <div><p>{{customer.nombre|truncatechars:24}}</p></div>
-              <div><p>{{customer.dni}}</p></div>
-              <div><p>{{customer.tel}}</p></div>
-              <div><p>{{customer.loc}}</p></div>
-              <div><p>{{customer.prov}}</p></div>
-            </li>
+          <tr class="customer_item">
+              <td id="name"><input id="select_client" class="checkbox_select_client" type="checkbox" name="select_client">{{customer.nombre}}</td>
+              <td id="dni">{{customer.dni}}</td>
+              <td id="tel">{{customer.tel}}</td>
+              <td id="loc">{{customer.loc}}</td>
+              <td id="prov">{{customer.prov}}</td>
+          </tr>
           {% endfor %} 
-        </ul>       
-    </form>
-</div> 
+    </tbody>
+  </table>
+</form>
+<div class="buttonsWrapper">
+  <div>
+    <button id="yesConfirm" class="add-button-default" type="button" form="formSelectCustomer">Confirmar</button>
+    <a class ="delete-button-default" href="{% url 'sales:detail_sale' object.id %}">Cancelar</a>
+  </div>
+</div>
 
 {% endblock content %}
 {% block js %}
-<script src="{% static 'js/selectCustomerChangeTitularidad.js' %}"></script>
+<script>
 
+  var urlGetCustomers = "{% url 'users:list_customers' %}";
+  var urlGetCustomers = "{% url 'sales:changeTitu' object.pk%}";
+
+  function actualizarResultados(resultados, contenedor) {
+    // Limpia el contenedor de los datos
+    contenedor.innerHTML = "";
+
+    
+    for (let i = 0; i < resultados.length; i++) {
+      let element = resultados[i];
+      let cliente = `
+      <tr class="customer_item">
+        <td id="name"><input class="checkbox_select_client" type="checkbox" name="select_client">${element.nombre}</td>
+        <td id="dni">${element.dni}</td>
+        <td id="tel">${element.tel}</td>
+        <td id="loc">${element.loc}</td>
+        <td id="prov">${element.prov}</td>
+      </tr>
+      `;
+      contenedor.insertAdjacentHTML("beforeend", cliente);
+    }
+    
+    seleccionarNuevoCliente();
+  }
+</script>
+<script src="{% static 'js/selectCustomerChangeTitularidad.js' %}"></script>
+<script src="{% static 'js/inputs_search_customers.js' %}"></script>
 {% endblock js %}

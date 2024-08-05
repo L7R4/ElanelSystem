@@ -1,7 +1,7 @@
 const listProducto = document.querySelector('#wrapperProducto ul')
 const inputTipoDeProducto = document.querySelector('#tipoProductoInput')
 const inputProducto = document.querySelector('#productoInput')
-const submitAdjudicacionButton = document.querySelector('#enviar')
+const submitChangePackButton = document.querySelector('#enviar')
 
 const inputsWithEventInput = document.querySelectorAll(".eventInput")
 
@@ -74,14 +74,14 @@ inputTipoDeProducto.addEventListener("input", async () => {
         updateListOptions(listProducto, inputProducto); // Actualiza los listeners de la lista de productos
     } else {
         inputProducto.parentElement.parentElement.classList.add("desactive") // Bloquea el input de producto
-        
+
         productoHandled = null // Resetea la variable productoHandled
         productos = null // Resetea la lista de productos
 
         // Forzar un evento input del inputProducto para que se reseteen los valores de los inputs
         let event = new Event('input');
         inputProducto.dispatchEvent(event);
-    
+
     }
 
 });
@@ -89,7 +89,7 @@ inputTipoDeProducto.addEventListener("input", async () => {
 
 // Cuando se selecciona un producto se guarda en la variable productoHandled
 inputProducto.addEventListener("input", async () => {
-    if(productos != null){
+    if (productos != null) {
         productoHandled = productos.filter((item) => item["nombre"] == inputProducto.value)[0];
     }
 
@@ -97,13 +97,17 @@ inputProducto.addEventListener("input", async () => {
     if (productoHandled) {
         id_importe.value = productoHandled["importe"];
         id_paquete.value = productoHandled["paquete"];
-        
-    }else{
+        id_primer_cuota.value = productoHandled["primer_cuota"]
+        id_anticipo.value = productoHandled["suscripcion"]
+
+    } else {
         id_importe.value = "";
         id_paquete.value = "";
+        id_primer_cuota.value = "";
+        id_anticipo.value = "";
     }
     rellenarCamposDeVenta();
-   
+
 });
 
 
@@ -123,12 +127,9 @@ function rellenarCamposDeVenta() {
     try {
         // Valores de los inputs
         id_tasa_interes.value = porcentaje_segun_nroCuotas(nroCuotas)
-        id_intereses_generados.value = (importe * parseFloat(id_tasa_interes.value))/100
-        let total = (id_intereses_generados.value + importe) - dineroDeCuotas
-        id_importe_x_cuota.value = (total / nroCuotas) + (parseInt(id_intereses_generados.value) / nroCuotas)
-        id_primer_cuota.value = parseInt(parseInt(id_importe_x_cuota.value) * productoHandled["porcetajeParaSuscripcion"]) + parseInt(id_importe_x_cuota.value)
-        id_anticipo.value = parseInt(id_primer_cuota.value)
-
+        id_intereses_generados.value = (importe * parseFloat(id_tasa_interes.value)) / 100
+        let total = (parseInt(id_intereses_generados.value) + importe) - dineroDeCuotas
+        id_importe_x_cuota.value = parseInt((parseInt(total) / nroCuotas) + (parseInt(id_intereses_generados.value) / nroCuotas))
         id_total_a_pagar.value = total
     }
 
@@ -169,7 +170,7 @@ function createProductoHTMLElement(contenedor, producto) {
 }
 
 
-submitAdjudicacionButton.addEventListener("click", async () => {
+submitChangePackButton.addEventListener("click", async () => {
     body = {}
     let inputs = form_create_sale.querySelectorAll("input")
     let textareas = form_create_sale.querySelectorAll("textarea")
@@ -179,7 +180,7 @@ submitAdjudicacionButton.addEventListener("click", async () => {
     inputs.forEach(element => {
         body[element.name] = element.value
     });
-    
+
     let response = await fetchFunction(body, window.location.pathname)
 
     if (!response["success"]) {
@@ -191,3 +192,26 @@ submitAdjudicacionButton.addEventListener("click", async () => {
 
 })
 
+// Función para verificar si todos los inputs requeridos están completos
+function checkInputs() {
+    const requiredInputs = form_create_sale.querySelectorAll('input[required]');
+    let allInputsCompleted = true;
+
+    requiredInputs.forEach(input => {
+        if (input.value.trim() === '') {
+            allInputsCompleted = false;
+        }
+    });
+
+    if (allInputsCompleted) {
+        submitChangePackButton.disabled = false;
+    } else {
+        submitChangePackButton.disabled = true;
+    }
+}
+
+// Agregar evento de input a los inputs requeridos
+const requiredInputs = form_create_sale.querySelectorAll('input[required]');
+requiredInputs.forEach(input => {
+    input.addEventListener('input', checkInputs);
+});
