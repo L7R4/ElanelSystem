@@ -47,6 +47,10 @@
                                     <a href="{% url 'sales:bajaPDF' operacion.pk %}" target="_blank" id="downloadPDF">Descargar PDF</a>
                                 {% endif %}
 
+                                {% if operacion.deBaja.motivo == "plan recupero" %}
+                                    <a href="{% url 'sales:detail_sale' operacion.deBaja.nuevaVentaPK %}" target="_blank" id="downloadPDF">Ver nuevo plan</a>
+                                {% endif %}
+
                                 {% else %}
                                     {% if operacion.suspendida %}
                                         <img src="{% static 'images/icons/operationSuspendido.svg' %}" alt="">

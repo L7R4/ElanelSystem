@@ -106,11 +106,11 @@ function rellenarCamposDeVenta() {
             id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
             id_importe_x_cuota.value = parseInt(parseInt(id_total_a_pagar.value) / parseInt(id_nro_cuotas.value))
         } else {
-            let subTotalSinIntereses = parseInt(id_importe.value) - dineroDeCuotas
-            id_intereses_generados.value = parseInt((subTotalSinIntereses * id_tasa_interes.value) / 100)
+            id_intereses_generados.value = parseInt((parseInt(id_importe.value) * id_tasa_interes.value) / 100)
 
-            id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
-            id_importe_x_cuota.value = id_nro_cuotas.value <= 0 ? 0 : parseInt(id_total_a_pagar.value / id_nro_cuotas.value);
+            id_total_a_pagar.value = (parseInt(id_importe.value) + parseInt(id_intereses_generados.value)) - parseInt(dineroDeCuotas)
+            id_importe_x_cuota.value = parseInt((importe / nroCuotas) + (parseInt(id_intereses_generados.value) / nroCuotas))
+
         }
 
     } catch (error) {
@@ -161,3 +161,25 @@ submitAdjudicacionButton.addEventListener("click", async () => {
 
 })
 
+function checkInputs() {
+    const requiredInputs = formSelectCustomer.querySelectorAll('input[required]');
+    let allInputsCompleted = true;
+
+    requiredInputs.forEach(input => {
+        if (input.value.trim() === '') {
+            allInputsCompleted = false;
+        }
+    });
+
+    if (allInputsCompleted) {
+        submitAdjudicacionButton.disabled = false;
+    } else {
+        submitAdjudicacionButton.disabled = true;
+    }
+}
+
+// Agregar evento de input a los inputs requeridos
+const requiredInputs = formSelectCustomer.querySelectorAll('input[required]');
+requiredInputs.forEach(input => {
+    input.addEventListener('input', checkInputs);
+});

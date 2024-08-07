@@ -132,8 +132,11 @@ btnPayCuota.addEventListener("click", () => {
     let form = { "cobrador": cobrador.value, "typePayment": typePaymentSelected.value, "metodoPago": metodoPago.value, "ventaID": ventaID.value, "cuota": cuotaID.value, "valorParcial": amountParcial.value }
 
     formFETCH(form, "/ventas/detalle_venta/pay_cuota/").then(data => {
-        console.log(data.message, data.detalleError)
-
+        // Verificamos si la operacion esta en estado suspendida para eliminar el boton "Crear plan recupero"
+        if(document.querySelector(".wrapperUrlRecupero")){
+            document.querySelector(".wrapperUrlRecupero").remove()
+        }
+        
         actualizarEstadoCuota(cuotaID.value) //Primero actualizamos la cuota operada
         desbloquearProximaCuota(cuotaID.value) // Desbloqueamos la siguiente cuota
 

@@ -157,9 +157,6 @@ class CrearVenta(TestLogin,generic.DetailView):
 
         # Comprobar el supervisor
         supervisor = form['supervisor']
-        print("supervisor")
-        print(supervisor)
-        print(Usuario.objects.filter(nombre__iexact=supervisor).exists())
         if not Usuario.objects.filter(nombre__iexact=supervisor).exists():
             errors['supervisor'] = 'Supervisor invalido.' 
         else:
@@ -186,6 +183,8 @@ class CrearVenta(TestLogin,generic.DetailView):
         sale.paquete = form['paquete']
         sale.nro_orden = form['nro_orden']
         sale.campania = form['campania']
+        sale.observaciones = form['observaciones']
+
         
         try:
             sale.full_clean()
@@ -199,6 +198,8 @@ class CrearVenta(TestLogin,generic.DetailView):
             sale.fecha = form['fecha'] + " 00:00"
             sale.crearCuotas()
             sale.save()
+            sale.testVencimientoCuotas()
+
             return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
 
 
@@ -215,7 +216,6 @@ def eliminarVenta(request,pk):
             return JsonResponse({"status": False,"message":"Error al eliminar la venta"}, safe=False)
     else:
         return JsonResponse({"status": False,"message":"Codigo incorrecto"}, safe=False)
-
 
 
 def requestVendedores_Supervisores(request):
@@ -250,8 +250,6 @@ class DetailSale(TestLogin,generic.DetailView):
         self.object.testVencimientoCuotas()
         request.session["statusKeyPorcentajeBaja"] = False
 
-        status_cuotas = self.object.cuotas
-
         if(self.object.adjudicado):
             self.object.addPorcentajeAdjudicacion()
 
@@ -279,17 +277,18 @@ class DetailSale(TestLogin,generic.DetailView):
         return render(request,self.template_name,context)
     
 
-
 # Aplica el descuento a una cuota
 def aplicarDescuentoCuota(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            venta = Ventas.objects.get(pk=request.session["venta"].pk)
             cuota = data.get('cuota')
-            venta = Ventas.objects.get(pk=int(data.get('ventaID')))
             descuento = data.get('descuento')
+            autorizado = data.get('autorizado')
 
-            venta.aplicarDescuento(cuota,int(descuento))
+            venta.aplicarDescuento(cuota,int(descuento),autorizado)
+
             return JsonResponse({"status": True,"message":"Descuento aplicado correctamente"}, safe=False)
 
         except Exception as error:   
@@ -366,7 +365,128 @@ def darBaja(request,pk):
         except Exception as error:
             return JsonResponse({'status': False, 'message':str(error)}, safe=False)
             
+
+class PlanRecupero(generic.DetailView):
+    model = Ventas
+    template_name = "plan_recupero.html"
+
+    def get(self,request,*args, **kwargs):
+        self.object = self.get_object()
+        url = request.path
+        cuotasPagadas = self.object.cuotas_pagadas()
+
+        sucursal = request.user.sucursales.all()[0]
+
+        vendedores = Usuario.objects.filter(sucursales__in=[sucursal], rango__in=["Vendedor","Supervisor"])
+        supervisores = Usuario.objects.filter(sucursales__in = [sucursal], rango="Supervisor")
+
+        # Suma las cuotas pagadas para calcular el total a adjudicar
+        valoresCuotasPagadas = [item["pagado"] for item in cuotasPagadas]
+        sumaCuotasPagadas = sum(valoresCuotasPagadas)
+        campaniaActual = getCampaniaActual()
+
+        #region Para determinar si se habilita la campaña anterior
+        fechaActual = datetime.datetime.now()
+        ultimo_dia_mes_pasado = datetime.datetime.now().replace(day=1) - relativedelta(days=1)
+        diferencia_dias = (fechaActual - ultimo_dia_mes_pasado).days
+
+        context = {
+            'venta': self.object,
+            'agencias': request.user.sucursales.all(), 
+            'agenciaActual': request.user.sucursales.all()[0],
+            'campania': campaniaActual,
+            'sumaCuotasPagadas' : int(sumaCuotasPagadas),
+            'autorizado_por':  Sucursal.objects.get(pseudonimo = request.user.sucursales.all()[0].pseudonimo).gerente.nombre,
+            'cantidad_cuotas_pagadas': len(cuotasPagadas),
+            'idCliente': self.object.nro_cliente.nro_cliente,
+            'vendedores': vendedores, 
+            'supervisores': supervisores, 
+        }
         
+        return render(request,self.template_name,context)
+    
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form =json.loads(request.body)
+        errors ={}
+        sale = Ventas()
+
+        
+        # Para guardar como objeto Producto
+        producto = form["producto"]
+        if producto and not Products.objects.filter(nombre=producto).exists():
+            errors['producto'] = 'Producto invalido.' 
+        else:
+            producto = Products.objects.get(nombre=producto)
+            sale.producto = producto
+
+        # Validar la sucursal
+        agencia = form["agencia"] 
+
+        if agencia and not Sucursal.objects.filter(pseudonimo=agencia).exists():
+            errors['agencia'] = 'Agencia invalida.'
+        else:
+            agencia = Sucursal.objects.get(pseudonimo=agencia)
+            sale.agencia = agencia
+
+        
+        # Comprobar el vendendor
+        vendedor = form['vendedor']
+        if  not Usuario.objects.filter(nombre__iexact=vendedor).exists():
+            errors['vendedor'] = 'Vendedor invalido.' 
+        else:
+            vendedor_instance = Usuario.objects.get(nombre__iexact=form['vendedor'])
+            sale.vendedor = vendedor_instance
+
+        # Comprobar el supervisor
+        supervisor = form['supervisor']
+        if not Usuario.objects.filter(nombre__iexact=supervisor).exists():
+            errors['supervisor'] = 'Supervisor invalido.' 
+        else:
+            supervisor_instance = Usuario.objects.get(nombre__iexact=form['supervisor'])
+            sale.supervisor = supervisor_instance
+
+
+
+
+        sale.nro_cliente = Cliente.objects.get(nro_cliente__iexact=self.get_object().nro_cliente.nro_cliente)
+        
+        sale.nro_contrato = form['nro_contrato']
+        sale.modalidad = form['modalidad'] if form['modalidad'] else ""
+        sale.importe = int(form['importe'])
+        sale.primer_cuota = int(form['primer_cuota']) if form['primer_cuota'] else 0
+        sale.anticipo = int(form['anticipo']) if form['anticipo'] else 0
+        sale.tasa_interes = float(form['tasa_interes']) if form['tasa_interes'] else 0
+        sale.intereses_generados = int(form['intereses_generados']) if form['intereses_generados'] else 0
+        sale.importe_x_cuota = int(form['importe_x_cuota']) if form['importe_x_cuota'] else 0
+        sale.nro_cuotas = int(form['nro_cuotas'])
+        sale.total_a_pagar = int(form['total_a_pagar']) if form['total_a_pagar'] else 0
+        sale.fecha = form['fecha']
+        sale.tipo_producto = form['tipo_producto']
+        sale.paquete = form['paquete']
+        sale.nro_orden = form['nro_orden']
+        sale.campania = form['campania']
+        sale.observaciones = form['observaciones']
+        
+        try:
+            sale.full_clean()
+        except ValidationError as e:
+            errors.update(e.message_dict)
+       
+        if len(errors) != 0:
+            print(errors)
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)
+        else:
+            sale.fecha = form['fecha'] + " 00:00"
+            sale.crearCuotas()
+            sale.save()
+
+            # Dar de baja la venta a la que se le aplico el plan de recupero
+            self.object.planRecupero("plan recupero",request.user.nombre, sale.observaciones,sale.pk)
+            self.object.save()
+            return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
+
 
 class CreateAdjudicacion(TestLogin,generic.DetailView):
     model = Ventas
@@ -376,9 +496,9 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         self.object = self.get_object()
         url = request.path
         cuotasPagadas = self.object.cuotas_pagadas()
-
+        print(cuotasPagadas)
         # Suma las cuotas pagadas para calcular el total a adjudicar
-        valoresCuotasPagadas = [item["total"] for item in cuotasPagadas]
+        valoresCuotasPagadas = [item["pagado"] for item in cuotasPagadas]
         sumaCuotasPagadas = sum(valoresCuotasPagadas)
 
         tipoDeAdjudicacion = "NEGOCIACIÓN" if "negociacion" in url else "SORTEO"
@@ -405,6 +525,11 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         self.object = self.get_object()
         numeroAdjudicacion = self.object.nro_operacion
         errors ={}
+        cuotasPagadas = self.object.cuotas_pagadas()
+
+        # Suma las cuotas pagadas para calcular el total a adjudicar
+        valoresCuotasPagadas = [item["pagado"] for item in cuotasPagadas]
+        sumaCuotasPagadas = sum(valoresCuotasPagadas)
 
         sale = Ventas()
 
@@ -470,6 +595,8 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         else:
             sale.crearCuotas() # Crea las cuotas
             sale.crearAdjudicacion(numeroAdjudicacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
+            if(tipo_adjudicacion == "sorteo"):
+                sale.acreditarCuotasPorAnticipo(sumaCuotasPagadas)
             sale.save()
             
             self.object.darBaja("adjudicacion",0,"","",request.user.nombre) # Da de baja la venta que fue adjudicada
@@ -506,7 +633,7 @@ class ChangePack(TestLogin,generic.DetailView):
         cuotasPagadas = self.object.cuotas_pagadas()
 
         # Suma las cuotas pagadas para calcular el total a adjudicar
-        valoresCuotasPagadas = [item["total"] for item in cuotasPagadas]
+        valoresCuotasPagadas = [item["pagado"] for item in cuotasPagadas]
         sumaCuotasPagadas = sum(valoresCuotasPagadas)
 
         
@@ -530,7 +657,12 @@ class ChangePack(TestLogin,generic.DetailView):
         self.object = self.get_object()
         form =json.loads(request.body)
         errors ={}
-        
+        cuotasPagadas = self.object.cuotas_pagadas()
+
+        # Suma las cuotas pagadas para calcular el total a adjudicar
+        valoresCuotasPagadas = [item["pagado"] for item in cuotasPagadas]
+        sumaCuotasPagadas = sum(valoresCuotasPagadas)
+
         sale = Ventas()
 
         # Validar el producto
@@ -576,6 +708,7 @@ class ChangePack(TestLogin,generic.DetailView):
         else:
             sale.fecha = form['fecha'] + " 00:00"
             sale.crearCuotas()
+            sale.acreditarCuotasPorAnticipo(sumaCuotasPagadas)
             sale.save()
 
             self.object.darBaja("cambio de pack",0,"","",request.user.nombre) # Da de baja la venta que fue cambiada de pack
@@ -615,61 +748,7 @@ class ChangeTitularidad(TestLogin,generic.DetailView):
             self.object.save()
             return JsonResponse({'success': True,'urlRedirect': reverse("sales:detail_sale",args = [self.get_object().pk])}, safe=False) 
 
-        
    
-    
-class CrearUsuarioYCambiarTitu(TestLogin,generic.DetailView):
-    model = Ventas
-    template_name = 'crearclienteycambiar.html'
-    # form_class = CreateClienteForm
-
-    def get(self, request,*args, **kwargs):
-        self.object = self.get_object()
-        context = {}
-        context["customer_number"] = Cliente.returNro_Cliente
-        context["object"] = self.object
-        context['form'] = self.form_class
-
-        return render(request, self.template_name, context)
-    
-
-    def post(self,request,*args,**kwargs):
-        form =self.form_class(request.POST)
-        self.object = self.get_object()
-        
-        if form.is_valid():
-                customer = Cliente()
-                customer.nro_cliente = form.cleaned_data["nro_cliente"]
-                customer.nombre = form.cleaned_data['nombre']
-                customer.dni = form.cleaned_data['dni']
-                customer.domic = form.cleaned_data['domic']
-                customer.loc = form.cleaned_data['loc']
-                customer.prov = form.cleaned_data['prov']
-                customer.cod_postal = form.cleaned_data['cod_postal']
-                customer.tel = form.cleaned_data['tel']
-                customer.estado_civil = form.cleaned_data['estado_civil']
-                customer.fec_nacimiento = form.cleaned_data['fec_nacimiento']
-                customer.ocupacion = form.cleaned_data['ocupacion']
-                customer.save()
-
-
-                # Coloca los datos del cambio de titularidad
-                lastCuota = self.object.cuotas_pagadas()
-                self.object.createCambioTitularidad(lastCuota[-1],request.user.nombre,self.object.nro_cliente.nombre,customer.nombre,self.object.nro_cliente.pk,customer.pk)
-                self.object.nro_cliente = customer
-                self.object.save()
-                
-                return redirect("sales:detail_sale",pk= self.get_object().pk)
-
-        else:
-            print(form)
-            context = {}
-            context["customer_number"] = Cliente.returNro_Cliente
-            context["object"] = self.object
-            context['form'] = self.form_class
-            return render(request, self.template_name, context)
-
-
 class PostVenta(TestLogin,generic.View):
     template_name = 'postVenta.html'
 
@@ -787,7 +866,7 @@ class SimuladorPlanRecupero(TestLogin,generic.DetailView):
         cuotasPagadas = self.object.cuotas_pagadas()
 
         # Suma las cuotas pagadas para calcular el total a adjudicar
-        valoresCuotasPagadas = [item["total"] for item in cuotasPagadas]
+        valoresCuotasPagadas = [item["pagado"] for item in cuotasPagadas]
         sumaCuotasPagadas = sum(valoresCuotasPagadas)
 
         context = {

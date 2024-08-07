@@ -24,6 +24,8 @@ urlpatterns = [
     path("ventas/<int:pk>/cambiotitularidad",ChangeTitularidad.as_view(),name="changeTitu"),
     path("ventas/ventas_suspendidas",PanelVentasSuspendidas.as_view(),name="ventasSuspendidas"),
     path("ventas/simulador_plan_recupero/<int:pk>/",SimuladorPlanRecupero.as_view(),name="simuladorPlanrecupero"),
+    path("ventas/crear_plan_recupero/<int:pk>/",PlanRecupero.as_view(),name="planRecupero"),
+
     #endregion ----------------------------------------------------------
 
     #region URLs Caja -----------------------------------------------------
