@@ -19,7 +19,7 @@
 
 </div>
 <form method="POST" id="formSelectCustomer" class="valuesWrapper">
-  <input type="hidden" name="customer" id="customer_input">
+  <input type="hidden" name="customer" required id="customer_input">
   {% csrf_token %}
   <table class="information">
     <thead>
@@ -46,7 +46,7 @@
 </form>
 <div class="buttonsWrapper">
   <div>
-    <button id="yesConfirm" class="add-button-default" type="button" form="formSelectCustomer">Confirmar</button>
+    <button id="yesConfirm" disabled class="add-button-default" type="button" form="formSelectCustomer">Confirmar</button>
     <a class ="delete-button-default" href="{% url 'sales:detail_sale' object.id %}">Cancelar</a>
   </div>
 </div>

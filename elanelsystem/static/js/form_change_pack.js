@@ -129,7 +129,7 @@ function rellenarCamposDeVenta() {
         id_tasa_interes.value = porcentaje_segun_nroCuotas(nroCuotas)
         id_intereses_generados.value = (importe * parseFloat(id_tasa_interes.value)) / 100
         let total = (parseInt(id_intereses_generados.value) + importe) - dineroDeCuotas
-        id_importe_x_cuota.value = parseInt((parseInt(total) / nroCuotas) + (parseInt(id_intereses_generados.value) / nroCuotas))
+        id_importe_x_cuota.value = parseInt((importe / nroCuotas) + (parseInt(id_intereses_generados.value) / nroCuotas))
         id_total_a_pagar.value = total
     }
 

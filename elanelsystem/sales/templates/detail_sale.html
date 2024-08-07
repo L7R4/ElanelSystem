@@ -411,6 +411,13 @@
                     </div>
                 </div> 
 
+                {% if object.suspendida %}
+                <div class="wrapperUrlRecupero button-default-style">
+                    <a href="{% url "sales:planRecupero" object.pk %}">Crear plan recupero</a>
+                </div>
+                
+                {% endif %}
+
         </div>
 
     {% endif %}

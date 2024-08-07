@@ -482,6 +482,7 @@
     min-width: 23rem;
     min-height: 35rem;
     max-height: 65rem;
+    height: 70vh;
     display: flex;
     align-items: center;
     position: relative;
@@ -1268,6 +1269,16 @@
 
 }
 
+.wrapperUrlRecupero{
+    margin-top: 1rem;
+}
+
+.wrapperUrlRecupero > a{
+    text-decoration: none;
+    color: var(--third-color);
+    font-size: clamp(1rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+}
 
 /* #region Eliminar la venta */
 .deleteSale {

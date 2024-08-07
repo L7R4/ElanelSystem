@@ -52,11 +52,12 @@ class Ventas(models.Model):
                        'cobrador': "",
                        "fecha_pago": "",
                        "metodoPago": "",
-                       "descuento": 0,
+                       "descuento": {'autorizado': "", 'monto': 0},
                        "bloqueada": True,
                        "fechaDeVencimiento":"", 
                        "diasRetraso": 0,
                        "pagoParcial":{"status": False, "amount": []},
+                       'responsable_pago': ""
                        })
         
         # Otras cuotas
@@ -102,9 +103,11 @@ class Ventas(models.Model):
                 "fecha_pago": "",
                 "metodoPago": "",
                 "fechaDeVencimiento" : fechaDeVencimiento.strftime('%d/%m/%Y %H:%M'),
-                "descuento": 0,
+                "descuento": {'autorizado': "", 'monto': 0},
                 "diasRetraso": 0,
-                "pagoParcial":{"status": False, "amount": []}
+                "pagoParcial":{"status": False, "amount": []},
+                'responsable_pago': ""
+
             })
 
 
@@ -141,7 +144,8 @@ class Ventas(models.Model):
         "motivo" : "",
         "detalleMotivo" : "",
         "observacion" : "",
-        "responsable" : ""
+        "responsable" : "",
+        "nuevaVentaPK": ""
     }
 
     DEFAULT_STATUS_ADJUDICACION = {
@@ -397,8 +401,9 @@ class Ventas(models.Model):
 
     def cuotas_pagadas(self):
         try:
-            cuotas = [cuota for cuota in self.cuotas if cuota["status"] == "Pagado"]
-            cuotas.pop(0)
+            cuotas = [cuota for cuota in self.cuotas if cuota["status"] == "Pagado" or cuota["status"] == "Parcial"]
+            if(cuotas[0] =="Cuota 0"):
+                cuotas.pop(0)
             return cuotas
         except IndexError as e:
             return []
@@ -413,8 +418,17 @@ class Ventas(models.Model):
         self.deBaja["responsable"] = responsable
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         # self.save()
-         
+        
+
+    def planRecupero(self,motivo,responsable,observacion,nuevaVentaPK):
+        self.deBaja["status"] = True
+        self.deBaja["motivo"] = motivo
+        self.deBaja["observacion"] = observacion
+        self.deBaja["responsable"] = responsable
+        self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+        self.deBaja["nuevaVentaPK"] = nuevaVentaPK
     
+
     def porcentajeADevolver(self):
         porcentageValido = 0
         if len(self.cuotas_pagadas()) >= 6:
@@ -456,7 +470,27 @@ class Ventas(models.Model):
         elif(self.suspendida == True and contAtrasados==0):
             self.suspendida = False
             self.save()
-        
+    
+
+    def acreditarCuotasPorAnticipo(self, dineroAFavor):
+        cantidad_cuotas = len(self.cuotas) - 1
+
+            # Un for que reccorra de la ultima cuota hasta la cuota 1
+        for i in range(cantidad_cuotas,0,-1):
+            cuota = self.cuotas[i]
+            if dineroAFavor >= cuota["total"]:
+                cuota["bloqueada"] = False # Desbloquea la cuota para que se pueda pagar
+                self.pagoTotal(cuota["cuota"],"Credito","")
+                cuota["bloqueada"] = True # Se vuelve a bloquear la cuota para que no se pueda acceder hasta que haya completado las cuotas anteriores
+                dineroAFavor -= cuota["total"]
+            elif dineroAFavor > 0:
+                cuota["bloqueada"] = False # Desbloquea la cuota para que se pueda pagar
+                self.pagoParcial(cuota["cuota"],"Credito",dineroAFavor,"")
+                cuota["bloqueada"] = True # Se vuelve a bloquear la cuota para que no se pueda acceder hasta que haya completado las cuotas anteriores
+                dineroAFavor = 0
+            else:
+                break
+
         
     def crearAdjudicacion(self,nroDeVenta,tipo):
         self.cuotas.pop(0) # Elimina la cuota 0
@@ -527,10 +561,11 @@ class Ventas(models.Model):
         self.save()
          
 
-    def aplicarDescuento(self,cuota,dinero):
+    def aplicarDescuento(self,cuota,dinero,autorizado):
         cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))[0]
         if(cuotaSeleccionada["status"] != "Pagado" and (cuotaSeleccionada["cuota"] == "Cuota 0" or cuotaSeleccionada["cuota"] == "Cuota 1")):
-            cuotaSeleccionada["descuento"] += dinero
+            cuotaSeleccionada["descuento"]['monto'] += dinero
+            cuotaSeleccionada["descuento"]['autorizado'] = autorizado
         else:
             raise ValueError("Solo se puede aplicar descuento a la cuota 0 y 1. En otro caso, esta cuota está pagada")
         self.save()

@@ -2,7 +2,6 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import *
-from sales.views import CrearUsuarioYCambiarTitu
  
 app_name="users"
 
@@ -14,7 +13,6 @@ urlpatterns = [
     path("usuario/administracion/requestusuarios/",requestUsuarios,name="requestUsuarios"),
     path("cliente/crear_cliente/",CrearCliente.as_view(),name="create_customer"),
     path("cliente/<int:pk>/operaciones/",CuentaUser.as_view(),name="cuentaUser"),
-    path("crearclienteycambiar/<int:pk>/",CrearUsuarioYCambiarTitu.as_view(),name="crearYCambiar"),
     path("usuario/administracion/",PanelAdmin.as_view(),name="panelAdmin"),
     path("usuario/administracion/permisos/",PanelPermisos.as_view(),name="panelPermisos"),
 

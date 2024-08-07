@@ -9,6 +9,12 @@ function seleccionarNuevoCliente() {
       let id = item.querySelector("#dni").textContent;
       customer_input.value = id != customer_input.value ? id : "";
 
+      // Crea un nuevo evento Change
+      const inputEvent = new Event('input');
+
+      // Forzar el evento Change en el elemento input
+      customer_input.dispatchEvent(inputEvent);
+
       let checkbox = item.querySelector(".checkbox_select_client");
 
       if (checkbox.checked) {
@@ -17,6 +23,7 @@ function seleccionarNuevoCliente() {
         limpiarCheckboxsActivos(customer_items);
         checkbox.checked = true;
       }
+      
     });
   });
 
@@ -31,7 +38,7 @@ function limpiarCheckboxsActivos(customer_items) {
   });
 
 }
-console.log(window.location.href)
+
 buttonSubmitChange.addEventListener("click", async () => {
 
   let reponse = await fetch(window.location.href, {
@@ -53,6 +60,30 @@ buttonSubmitChange.addEventListener("click", async () => {
   }
 
 });
+
+function checkInputs() {
+  const requiredInputs = formSelectCustomer.querySelectorAll('input[required]');
+  let allInputsCompleted = true;
+
+  requiredInputs.forEach(input => {
+      if (input.value.trim() === '') {
+          allInputsCompleted = false;
+      }
+  });
+
+  if (allInputsCompleted) {
+      buttonSubmitChange.disabled = false;
+  } else {
+      buttonSubmitChange.disabled = true;
+  }
+}
+
+// Agregar evento de input a los inputs requeridos
+const requiredInputs = formSelectCustomer.querySelectorAll('input[required]');
+requiredInputs.forEach(input => {
+  input.addEventListener('input', checkInputs);
+});
+
 
 
 function createMessageError(errorMessage) {

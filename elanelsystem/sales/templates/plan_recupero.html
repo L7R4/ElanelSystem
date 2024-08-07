@@ -11,7 +11,7 @@
 {% block content %}
     <div id="loader"></div>
     <div class="wrapper_tittle">
-        <h1>ADJUDICACION POR {{tipoDeAdjudicacion}}</h1>
+        <h1>PLAN RECUPERO VENTA N° {{venta.nro_operacion}}</h1>
     </div>
     
     <form method="POST" id="form_create_sale" autocomplete="off">
@@ -44,11 +44,13 @@
 
         <div id="wrapperNroSolicitud">
             <label for="">Nro contrato</label>
-            <input type="text" value="{{venta.nro_contrato}}" class="not_ed input-read-write-default" name="nro_contrato" maxlength="10" required id="id_nro_contrato">
+            <input type="text" class="input-read-write-default" name="nro_contrato" maxlength="10" required id="id_nro_contrato">
         </div>
 
-
-        
+        <div id="wrapperNroOrden">
+            <label for="">Nro orden</label>
+            <input type="text" name="nro_orden" class="input-read-write-default" readonly oninput="this.value=this.value.replace(/[^0-9]/g, '');" required id="id_nro_orden">
+        </div>
 
         <div id="wrapperFecha">
             <label for="">Fecha</label>
@@ -64,7 +66,7 @@
         <div id="wrapperTasaIntereses">
             <label for="">Tasa interes</label>
             <div>
-                <input type="number" name="tasa_interes" class="input-read-write-default eventInput" required id="id_tasa_interes">
+                <input type="number" name="tasa_interes" class="not_ed input-read-write-default eventInput" required id="id_tasa_interes">
                 <p class="iconValueInput">%</p>
             </div>
         </div>
@@ -73,29 +75,27 @@
         <div id="wrapperImporte">
             <label for="">Importe</label>
             <div>
-                <input type="number" name="importe" class="input-read-write-default eventInput {% if  'sorteo' in request.path %}not_ed{% endif %}" required id="id_importe">
+                <input type="number" name="importe" class="not_ed input-read-write-default eventInput {% if  'sorteo' in request.path %}not_ed{% endif %}" required id="id_importe">
                 <p class="iconValueInput">$</p>
             </div>
         </div>
 
-        {% if "negociacion" in request.path%}
-        <div id="wrapperSuscripcion">
-            <label for="">Anticipo</label>
-            <div>
-                <input type="number" name="anticipo" class="input-read-write-default eventInput" required id="id_anticipo">
+        <div id="wrapperCuota1">
+            <label for="">Primer cuota</label>
+            <div class="containerIcon_Input">
+                <input type="number" name="primer_cuota" class="not_ed input-read-write-default" readonly required id="id_primer_cuota">
                 <p class="iconValueInput">$</p>
             </div>
         </div>
-        
-        <div id="wrapperPorcetajeAReconocer">
-            <label for="">Porcentaje a reconocer</label>
-            <div>
-                <input type="number" class="input-read-write-default eventInput not_ed" value="50" name="porcentaje_a_reconocer" required id="id_porcentaje_a_reconocer">
-                <input type="hidden" name="autorizado_por" id="id_autorizado_por" value="{{autorizado_por}}">
-                <p class="iconValueInput">%</p>
+
+        <div id="wrapperSuscripcion">
+            <label for="">Suscripción</label>
+            <div class="containerIcon_Input">
+                <input type="number" name="anticipo" class="not_ed input-read-write-default" readonly required id="id_anticipo">
+                <p class="iconValueInput">$</p>
             </div>
         </div>
-        {% endif %}
+
 
         <div id="wrapperCantidadCuotasPagadas">
             <label for="">Cantidad de cuotas pagadas</label>
@@ -120,19 +120,6 @@
             </div>
         </div>
         
-        <div id="wrapperAgencia" class="inputWrapper">
-            <label class="labelInput">Agencia</label>
-            <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" readonly name="agencia" id="id_agencia" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
-                <ul class="list-select-custom options">
-                    {% for agencia in agencias %}
-                        <li data-value="{{agencia}}">{{agencia}}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-
         <div id="wrapperModalidad" class="inputWrapper">
             <label class="labelInput">Modalidad</label>
             <div class="containerInputAndOptions">
@@ -163,6 +150,57 @@
                 <p class="iconValueInput">$</p>
             </div>
         </div>
+        
+        <div id="wrapperPaquete">
+            <label for="">Paquete</label>
+            <input type="text" name="paquete" class="not_ed input-read-write-default" readonly required id="id_paquete">
+        </div>
+
+        <div id="wrapperCampania">
+            <label for="">Campaña</label>
+            <input type="text" name="campania" value="{{campania}}" readonly class="not_ed input-select-custom onlySelect" required id="id_campania">
+        </div>
+        
+        <div id="wrapperAgencia" class="inputWrapper">
+            <label class="labelInput">Agencias</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" readonly name="agencia" id="id_agencia" required autocomplete="off" maxlength="30" value="{{agenciaActual}}" class="input-select-custom onlySelect">
+                <ul class="list-select-custom options">
+                    {% for agencia in agencias %}
+                        <li>{{agencia}}</li>
+                    {% endfor %}
+                    
+                </ul>
+            </div>
+        </div>
+
+        <div id="wrapperVendedor" class="inputWrapper">
+            <label class="labelInput">Vendedor</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" name="vendedor" readonly class="input-select-custom onlySelect" required id="id_vendedor">
+                <ul class="list-select-custom options">
+                    {% for vendedor in vendedores %}
+                        <li data-value="{{vendedor}}">{{vendedor}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+
+        <div id="wrapperSupervisor" class="inputWrapper">
+            <label class="labelInput">Supervisor</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" name="supervisor" readonly class="input-select-custom onlySelect" required="" id="id_supervisor">
+                <ul class="list-select-custom options">
+                    {% for supervisor in supervisores %}
+                        <li data-value="{{supervisor}}">{{supervisor}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
 
         <div id="wrapperObservaciones">
             <label for="">Observaciones</label>
@@ -178,9 +216,6 @@
 
 {% endblock content %}
 {% block js %}
-    <script src="{% static 'js/menuContextual.js' %}"></script>
-    <script src="{% static 'js/porcentajeAdjudicacion.js' %}"></script>
-
     <script>
         document.getElementById('id_fecha').addEventListener('input', function (e) {
         var input = e.target;
@@ -188,10 +223,12 @@
         input.value = !val[2] ? val[1] : val[1] + '/' + val[2] + (val[3] ? '/' + val[3] : '');
         });
         var urlRequestProductos = "{% url 'products:get_products' %}";
+        var urlRequestVendedoresSupervisores = "{% url 'sales:requestVendedores_Supervisores' %}";
+
     </script>
 
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
     <script src="{% static 'js/errorsFormManagement.js' %}"></script>
-    <script src="{% static 'js/form_create_adju.js' %}"></script>
+    <script src="{% static 'js/form_create_plan_recupero.js' %}"></script>
     
 {% endblock js %}

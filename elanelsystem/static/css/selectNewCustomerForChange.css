@@ -141,3 +141,8 @@
     font-size: clamp(1.3rem, 1.1vw, 1.5rem);
     color: var(--third-color);
 }
+
+button#yesConfirm:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
