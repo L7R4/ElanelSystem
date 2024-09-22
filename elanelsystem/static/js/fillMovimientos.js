@@ -30,11 +30,10 @@ async function movsGet(page) {
 // Funcion para actualizar la informacion de los movimientos
 async function updateMovs(page) {
     let dataMovs = await movsGet(page); // Solicita los movimientos
-
     movsPages.textContent = page + " / " + dataMovs["numbers_pages"] // Actualiza en la pagina en la que estamos
 
     textFilters(dataMovs["filtros"]) // Actualiza los filtros que estamos usando para mostrar los movimientos
-
+    refillFilterValues()
     // Verifica si el numero de paginas solicitado es el maximo para blockear el boton de "siguiente"
     page == dataMovs["numbers_pages"] ? buttonNext.classList.add("blocked") : buttonNext.classList.remove("blocked");
 
@@ -106,10 +105,6 @@ closeModalMovsButtons.forEach(element => {
 });
 
 
-
-
-
-
 function createItemSegunMovimiento(mov) {
     let fechaRecortada = mov.fecha.slice(0, 10)
 
@@ -122,13 +117,13 @@ function createItemSegunMovimiento(mov) {
         `;
         if ("Ingreso" == mov["tipo_mov"]) {
             stringForHTML += `
-            <div><p class="monto">$${mov.pagado}</p></div>
+            <div><p class="monto">$${mov.monto}</p></div>
             <div><p class="monto"> - </p></div>
             `;
         } else if ("Egreso" == mov["tipo_mov"]) {
             stringForHTML += `
             <div><p class="monto"> - </p></div>
-            <div><p class="monto">$${mov.pagado}</p></div>
+            <div><p class="monto">$${mov.monto}</p></div>
             `;
         }
     } else {
@@ -137,7 +132,7 @@ function createItemSegunMovimiento(mov) {
         stringForHTML += `
         <div><p class="concept">${conceptoStringRecortado}</p></div>
         <div><p class="nCuotas">${cuotaStringRecortada} </p></div>
-        <div><p class="monto">$${mov.pagado}</p></div>
+        <div><p class="monto">$${mov.monto}</p></div>
         <div><p class="monto"> - </p></div>
         `;
     }
@@ -145,7 +140,6 @@ function createItemSegunMovimiento(mov) {
 }
 
 // Actualiza rellena el modal de acuerdo al tipo de 
-
 function fillModalWithMovData(mov, movSelected) {
     console.log(mov)
     if (movSelected) {
@@ -164,8 +158,8 @@ function fillModalWithMovData(mov, movSelected) {
         nroIdentificacionMovExterno.innerHTML = mov["nroIdentificacion"]
         denominacionMovExterno.innerHTML = mov["denominacion"]
         tipoMonedaMovExterno.innerHTML = mov["tipoMoneda"]
-        dineroMovExterno.innerHTML = mov["pagado"]
-        metodoPagoMovExterno.innerHTML = mov["tipo_pago"]
+        dineroMovExterno.innerHTML = mov["monto"]
+        metodoPagoMovExterno.innerHTML = mov["metodoPago"]
         fechaMovExterno.innerHTML = mov["fecha"]
         enteMovExterno.innerHTML = mov["ente"]
         conceptoMovExterno.innerHTML = mov["concepto"]
@@ -174,10 +168,10 @@ function fillModalWithMovData(mov, movSelected) {
         modalForCuotas.style.visibility = "visible"
 
         numeroVenta.innerHTML = mov["nro_operacion"]
-        numeroCliente.innerHTML = mov["nro_cliente"]
+        numeroCliente.innerHTML = mov["nro_del_cliente"]
         numeroCuota.innerHTML = mov["cuota"]
-        dinero.innerHTML = mov["pagado"]
-        metodoPago.innerHTML = mov["tipo_pago"]
+        dinero.innerHTML = mov["monto"]
+        metodoPago.innerHTML = mov["metodoPago"]
         cobrador.innerHTML = mov["cobrador"]
         fechaPago.innerHTML = mov["fecha"]
         sucursal.innerHTML = mov["sucursal"]
@@ -202,6 +196,41 @@ function textFilters(dicc) {
     }
 }
 
+
+function refillFilterValues() {
+    const queryString = window.location.search;
+    const params = new URLSearchParams(queryString);
+
+
+    document.querySelectorAll('#filterForm input[name]').forEach(input => {
+        const paramName = input.name; // Nombre del parámetro del input
+        const paramValue = params.get(paramName); // Obtiene el valor del parámetro de la URL
+    
+        // Si existe un valor para ese parámetro, lo asigna al input
+        if (paramValue) {
+          input.value = paramValue;
+    
+            // Si el input es de tipo radio, selecciona el radio button correspondiente
+            if (input.type === 'radio' && input.value === paramValue) {
+              input.checked = true;
+            }
+
+            // Si el input es de tipo texto (como los menús desplegables), actualiza el menú
+            if (input.type === 'text') {
+                const list = input.nextElementSibling; // La lista desplegable asociada
+                if (list) {
+                    list.querySelectorAll('li').forEach(li => {
+                        if (li.getAttribute('data-value') === paramValue) {
+                            li.classList.add('selected');
+                        } else {
+                            li.classList.remove('selected');
+                        }
+                    });
+                }
+            }
+        }
+      });
+}
 
 
 

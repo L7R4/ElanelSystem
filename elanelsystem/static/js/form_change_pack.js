@@ -5,6 +5,7 @@ const submitChangePackButton = document.querySelector('#enviar')
 
 const inputsWithEventInput = document.querySelectorAll(".eventInput")
 
+
 //#region Fetch data
 function getCookie(name) {
     let cookieValue = null;
@@ -106,7 +107,7 @@ inputProducto.addEventListener("input", async () => {
         id_primer_cuota.value = "";
         id_anticipo.value = "";
     }
-    rellenarCamposDeVenta();
+    rellenarCamposDeVenta(cantidadChances);
 
 });
 
@@ -114,22 +115,25 @@ inputProducto.addEventListener("input", async () => {
 // Agrega listener de tipo input a los inputs que son necesarios para calcular los valores de venta
 inputsWithEventInput.forEach(input => {
     input.addEventListener("input", () => {
-        rellenarCamposDeVenta();
+        rellenarCamposDeVenta(cantidadChances);
     });
 });
 
 
-function rellenarCamposDeVenta() {
+function rellenarCamposDeVenta(cantidadContratos) {
     let nroCuotas = parseInt(id_nro_cuotas.value)
-    let importe = parseInt(id_importe.value)
     let dineroDeCuotas = parseInt(document.querySelector("#wrapperSumaCuotasPagadas .textInputP").textContent)
 
     try {
         // Valores de los inputs
-        id_tasa_interes.value = porcentaje_segun_nroCuotas(nroCuotas)
-        id_intereses_generados.value = (importe * parseFloat(id_tasa_interes.value)) / 100
-        let total = (parseInt(id_intereses_generados.value) + importe) - dineroDeCuotas
-        id_importe_x_cuota.value = parseInt((importe / nroCuotas) + (parseInt(id_intereses_generados.value) / nroCuotas))
+        id_importe.value = productoHandled["importe"] * cantidadContratos
+        id_primer_cuota.value = productoHandled["primer_cuota"] * cantidadContratos
+        id_anticipo.value = productoHandled["suscripcion"] * cantidadContratos
+
+        id_tasa_interes.value = (porcentaje_segun_nroCuotas(nroCuotas) * cantidadContratos).toFixed(2);
+        id_intereses_generados.value = parseInt((productoHandled["importe"] * parseFloat(id_tasa_interes.value)) / 100)
+        let total = (parseInt(id_intereses_generados.value) + parseInt(id_importe.value)) - dineroDeCuotas
+        id_importe_x_cuota.value = ((productoHandled["importe"] / nroCuotas) * cantidadContratos + (parseInt(id_intereses_generados.value) / nroCuotas))
         id_total_a_pagar.value = total
     }
 

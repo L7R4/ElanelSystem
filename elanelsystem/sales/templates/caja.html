@@ -48,7 +48,7 @@
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
 
-                      <input type="text" name="tipo_pago" class = "input-select-custom multipleSelect" id ="tipoDePago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
+                      <input type="text" name="metodoPago" class = "input-select-custom multipleSelect" id ="tipoDePago" placeholder ="Seleccionar" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                             <li data-value="Efectivo">Efectivo</li>
                             <li data-value="Banco">Banco</li>
@@ -63,7 +63,7 @@
                     <h3 class="labelInput">Filtrar por sucursal</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="agencia" class = "multipleSelect input-select-custom" id ="sucursalInput" value=""placeholder ="Elija la sucursal" autocomplete="off" readonly>
+                      <input type="text" name="agencia" class = "multipleSelect input-select-custom" id ="sucursalInput" value=""placeholder ="Seleccionar" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                         {% for  agencia in agencias %}
 
@@ -75,19 +75,14 @@
                 </div>
 
                 <div id="selectWrapperSelectCobrador"class="wrapperTypeFilter">
-                    <h3 class="labelInput">Filtrar por cobrador</h3>
+                    <h3 class="labelInput">Filtrar por ente recaudador</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="cobrador" class = "multipleSelect input-select-custom" id ="cobradorInput" value="" placeholder ="Elija el cobrador" autocomplete="off" readonly>
+                      <input type="text" name="ente" class = "multipleSelect input-select-custom" id ="cobradorInput" value="" placeholder ="Seleccionar" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                             {% for cobrador in cobradores %}
-                                <li>{{cobrador.nombre}}</li>
+                                <li>{{cobrador.alias}}</li>
                             {% endfor %}
-                            <li data-value="Efectivo">Efectivo</li>
-                            <li data-value="Banco">Banco</li>
-                            <li data-value="Mercado Pago">Mercado Pago</li>
-                            <li data-value="Posnet">Posnet</li>
-                            <li data-value="Transferencia">Transferencia</li>
                       </ul>
                     </div>
                 </div>  
@@ -108,7 +103,7 @@
         </div>
     </div> 
 
-
+    <!-- INFORMACION DE CAJA -->
     <div class ="caja">
         
         <div class="movimientos">
@@ -168,7 +163,9 @@
                     <h3>Filtrado por: </h3>
                     <ul>
                     </ul>
+                    <a href="{% url 'sales:caja' %}">Limpiar filtros</a>
                 </div>
+                
             {% endif %}
             <div class="wrapperButtonInforme">
                 <a href="{% url 'sales:informePDF' %}" target="_blank">Hacer informe</a>
@@ -178,7 +175,7 @@
         </div>
     </div>
 
-
+    <!--  MODAL DE VER MOVIMIENTOS -->
     <div class="main_modalCuota">
         <div class="background"></div>
         <div class="modal"id="modalForCuotas">
@@ -327,7 +324,7 @@
     </div>
 
 
-    
+    <!--  MODAL DE NUEVO INGRESOS O EGRESOS -->
     <div class="main_modalNewEgresoIngreso">
         <div class="background__newEgresoIngreso"></div>
         <div class="modal_newEgresoIngreso">
@@ -346,7 +343,7 @@
                     <h3 class="labelInput">Tipo de Comprobante</h3>
                     <div class="containerInputAndOptions">
                         <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                        <input name="tipoComprobante" id="tipoComprobante" class="input-select-custom onlySelect" placeholder ="Elegir" autocomplete="off" readonly>
+                        <input name="tipoComprobante" id="tipoComprobante" class="input-select-custom onlySelect" placeholder ="Seleccionar" autocomplete="off" readonly>
                         <ul class="list-select-custom options">
                             <li data-value="A">A</li>
                             <li data-value="B">B</li>
@@ -367,7 +364,7 @@
                     <h3 class="labelInput">Tipo de Identificacion</h3>
                     <div class="containerInputAndOptions">
                         <img id="tipoIDIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                        <input name="tipoID" id="tipoID" class="input-select-custom onlySelect" placeholder ="Elegir" autocomplete="off" readonly>
+                        <input name="tipoID" id="tipoID" class="input-select-custom onlySelect" placeholder ="Seleccionar" autocomplete="off" readonly>
                         <ul class="list-select-custom options">
                               <li data-value="DNI">DNI</li>
                               <li data-value="CUIT">CUIT</li>
@@ -388,17 +385,39 @@
                 </div>
 
                 <div id="selectWrapperSelectTypeMoneda" class="wrapperInput">
-                    <h3 class="labelInput">Tipo de Moneda</h3>
+                    <h3 class="labelInput">Tipo de moneda</h3>
                     <div class="containerInputAndOptions">
                         <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
                         <input name="tipoMoneda" id="tipoMoneda" class="input-select-custom onlySelect" placeholder ="Elegir" autocomplete="off" readonly>
                         <ul class="list-select-custom options">
                             <li data-value="ARS">ARS</li>
                             <li data-value="USD">USD</li>
-                            <li data-value="BRL">BRL</li>
                         </ul>
                     </div>
                 </div>
+                {% if agenciasDisponibles|length > 1 %}
+                
+                <div id="selectWrapperAgencia" class="wrapperInput">
+                    <h3 class="labelInput">Agencia</h3>
+                    <div class="containerInputAndOptions">
+                        <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                        <input name="agencia" id="agencia" class="input-select-custom onlySelect" placeholder ="Elegir" autocomplete="off" readonly>
+                        <ul class="list-select-custom options">
+                            {% for agencia in agenciasDisponibles  %}
+                                <li data-value="{{agencia.pseudonimo}}">{{agencia.pseudonimo}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% else %}
+                <div class="wrapperInput">
+                    <h3 class="labelInput">Agencia</h3>
+                    <input name="agencia" id="agencia" value="{{agenciasDisponibles.0.pseudonimo}}" class="input-read-only-default notClear" readonly>
+
+                </div>
+                
+                {% endif %}
+                
 
                 <div class="wrapperInput">
                     <h3 class="labelInput">Importe</h3>
@@ -408,8 +427,8 @@
                 <div id="selectWrapperSelectTypePayments" class="wrapperInput">
                     <h3 class="labelInput">Tipo de pago</h3>
                     <div class="containerInputAndOptions">
-                      <img id="tipoPagoIconDisplay"class="iconDesplegar" src="/static/images/icons/arrowDown.png" alt="">
-                      <input type="text" name="tipoPago" class="onlySelect input-select-custom " id="tipoDePago" placeholder="Elegir" autocomplete="off" readonly="">
+                      <img id="tipoPagoIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                      <input type="text" name="tipoPago" class="onlySelect input-select-custom " id="tipoDePago" placeholder="Seleccionar" autocomplete="off" readonly="">
                       <ul class="list-select-custom options">
                             <li data-value="Efectivo">Efectivo</li>
                             <li data-value="Banco">Banco</li>
@@ -425,9 +444,18 @@
                     <input name="fecha" id="fechaMov" class="input-read-only-default inputEgresoIngreso" readonly>
                 </div>
 
-                <div class="wrapperInput">
+                <div id="selectWrapperSelectEnte" class="wrapperInput">
                     <h3 class="labelInput">Ente recaudador</h3>
-                    <input name="ente" id="enteMov" class="input-read-write-default inputEgresoIngreso">
+
+                    <div class="containerInputAndOptions">
+                        <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                        <input type="text" name="ente" id="enteMov" class="input-select-custom onlySelect" placeholder="Seleccionar" autocomplete="off" readonly>
+                        <ul class="list-select-custom options">
+                            {% for cobrador in cobradores %}
+                                <li data-value="{{cobrador.alias}}">{{cobrador.alias}}</li>
+                            {% endfor %}        
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="wrapperInput">

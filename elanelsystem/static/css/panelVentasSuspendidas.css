@@ -6,6 +6,9 @@
     width: 100%;
     align-items: center;
     padding-bottom: 3rem;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 2rem;
 }
 
 
@@ -14,12 +17,14 @@
     display: flex;
     align-items: center;
     max-width: 30rem;
+    width: 30%;
 }
 
 .filters>h2 {
     font-size: clamp(1.3rem, 1.2vw, 2.3rem);
     font-family: raleway-bold;
     color: var(--third-color);
+    flex-basis: 100%;
     padding-bottom: .6rem;
     letter-spacing: .1rem;
 }
@@ -30,6 +35,13 @@
     font-size: clamp(1.2rem, 1.1vw, 1.8rem);
 
     padding: .5rem;
+}
+#submitFormVenta{
+    padding: .5rem 1rem;
+}
+#submitFormVenta:disabled{
+    opacity: .5;
+    pointer-events: none;
 }
 
 .searchFilter>img {
@@ -81,7 +93,6 @@
     background: var(--third-color);
     width: 90%;
     max-width: 120rem;
-    padding: 3rem;
     margin-bottom: 1.4rem;
 }
 
@@ -155,7 +166,6 @@
     font-size: clamp(1.1rem, 1.1vw, 1.4rem);
     color: var(--backgorund-color);
     font-family: raleway-semibold;
-
 }
 
 .attributes>div.information#cliente_information {

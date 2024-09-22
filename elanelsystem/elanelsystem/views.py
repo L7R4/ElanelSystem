@@ -2,6 +2,7 @@ import datetime
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.views import LoginView
 from django.views import generic
 from django.urls import reverse, reverse_lazy
 from users.forms import CustomLoginForm
@@ -14,38 +15,49 @@ from sales.utils import exportar_excel, obtener_ultima_campania
 from django.contrib.auth.models import Permission
 
 
-class IndexLoginView(generic.FormView):
-    form_class = CustomLoginForm
+# class IndexLoginView(generic.FormView):
+#     form_class = CustomLoginForm
+#     template_name = "index.html"
+
+#     @method_decorator(csrf_protect)
+#     @method_decorator(never_cache)
+#     def dispatch(self, request, *args, **kwargs):
+#         if request.user.is_authenticated:
+#             print("-  - - - - - - - - - Dispatch")
+#             return redireccionar_por_permisos(request.user)
+#         else:
+#             print("Else del dispatch")
+#             return super(IndexLoginView, self).dispatch(request, *args, **kwargs)
+
+#     def form_valid(self, form):
+#         """
+#         Si el formulario es válido, inicia sesión en el usuario
+#         """
+#         username = form.cleaned_data.get('username')
+#         password = form.cleaned_data.get('password')
+#         user = authenticate(username=username, password=password)
+#         if user is not None:
+#             print("- - - - - - - -Form valid")
+#             login(self.request, user)
+#             return redireccionar_por_permisos(self.request.user)
+#         return super(IndexLoginView, self).form_invalid(form)
+
+class IndexLoginView(LoginView):
     template_name = "index.html"
+    redirect_authenticated_user = True
 
-    @method_decorator(csrf_protect)
-    @method_decorator(never_cache)
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redireccionar_por_permisos(request.user)
-        return super(IndexLoginView, self).dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        """
-        Si el formulario es válido, inicia sesión en el usuario
-        """
-        username = form.cleaned_data.get('username')
-        password = form.cleaned_data.get('password')
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            login(self.request, user)
-            return redireccionar_por_permisos(user)
-        return super(IndexLoginView, self).form_invalid(form)
-
-
+    def get_success_url(self):
+        return redireccionar_por_permisos(self.request.user)
+        
+    
 def redireccionar_por_permisos(usuario):
     
     secciones = {
         # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
         "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
         "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
-        "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
-        "Post Venta": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList",args=[obtener_ultima_campania()])},
+        # "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
+        # "Post Venta": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList",args=[obtener_ultima_campania()])},
         "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
         "Liquidaciones": {"permisos": ["liquidacion.my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
         "Administracion": {"permisos": ["users.my_ver_administracion"], "url": reverse("users:panelAdmin")},
@@ -59,7 +71,7 @@ def redireccionar_por_permisos(usuario):
             secciones_permitidas[k] = v
 
     for k, v in secciones_permitidas.items():
-        return redirect(v["url"])
+        return v["url"]
 
 
 def logout_view(request):
@@ -113,10 +125,15 @@ class ReportesView(generic.View):
 
         return render(request,self.template_name,context)
 
+# Convierte los valores de cada clave a una lista
+def convertirValoresALista(diccValores):
+    for key, value in diccValores.items():
+        diccValores[key] = [val.strip() for val in value.split("-")]
+    return diccValores
+
 
 def filterMainManage(request,dataStructure):
     # Obtenemos los parámetros del POST y la estructura de datos de la sesión
-    print(request)
     params_dict = request
     # Limpiamos los parámetros para eliminar campos vacíos y otros no relevantes
     # Claves a excluir del filtrado
@@ -126,11 +143,14 @@ def filterMainManage(request,dataStructure):
         for key, value in params_dict.items()
         if value.strip() and key not in keys_to_exclude
     }
-
+    
+    params_dict_clear = convertirValoresALista(params_dict_clear) # Convertimos los valores  de cada clave a una lista
+    print(params_dict_clear)
     # Mapeo de filtros a funciones
     possible_filters = {
         "fecha": filterDataBy_date,
-        "tipo_pago": filterDataBy_typePayments,
+        "metodoPago": filterDataBy_typePayments,
+        "ente": filterDataBy_enteRecaudadores,
         "tipo_mov": filterDataBy_typeMovements,
         # "agencia": filterDataBy_agency,
         "mora": filterDataBy_cannonsMora,
@@ -195,12 +215,14 @@ def filterDataBy_date(data_structure, fecha):
 
 
 def filterDataBy_typePayments(dataStructure, typePayment):
-    return list(filter(lambda item:item["tipo_pago"] == typePayment,dataStructure))
+    return list(filter(lambda item:item["metodoPago"] in typePayment,dataStructure))
 
 
 def filterDataBy_typeMovements(dataStructure, typeMovement):
-    return list(filter(lambda item:item["tipo_mov"] == typeMovement, dataStructure))
+    return list(filter(lambda item:item["tipo_mov"] in typeMovement, dataStructure))
 
+def filterDataBy_enteRecaudadores(dataStructure, typeEnteRecaudador):
+    return list(filter(lambda item: item.get("cobrador") in typeEnteRecaudador or item.get("ente") in typeEnteRecaudador, dataStructure))
 
 
 # def filterDataBy_agency(dataStructure, agency):

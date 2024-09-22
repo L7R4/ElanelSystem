@@ -137,13 +137,6 @@ aside.menu{
 #close_session > img{
   rotate: 180deg;
 }
-*::-webkit-scrollbar{
-  width: 4px;
-  border-radius: 5px;
-}
-*::-webkit-scrollbar-thumb{
-  background: #fff;
-  border-radius: 1rem;
-}
+
 /* #endregion */
 

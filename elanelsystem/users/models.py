@@ -104,15 +104,41 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=True)
     accesosTodasSucursales = models.BooleanField(default=False)
     objects = UserManager()
-
+    additional_passwords = models.JSONField("Contraseñas adicionales",default=dict,blank=True,null=True)
 
     def __str__(self):
         return self.nombre
     
+    def save(self, *args, **kwargs):
+
+        # Capitalizar campos seleccionados
+        self.nombre = self.nombre.title()
+        self.domic = self.domic.capitalize()
+        self.prov = self.prov.title()
+        self.loc = self.loc.title()
+        self.lugar_nacimiento = self.lugar_nacimiento.title()
+        self.estado_civil = self.estado_civil.capitalize()
+        self.xp_laboral = self.xp_laboral.capitalize()
+
+
+        super(Usuario, self).save(*args, **kwargs)
 
     USERNAME_FIELD ="email"
     REQUIRED_FIELDS= ["nombre","dni"]
     
+    def setAdditionalPasswords(self):
+        permisos = list(self.get_all_permissions())
+        permisos = [permiso.split(".")[1] for permiso in permisos]
+        
+        if('my_anular_cuotas' in permisos):
+            self.additional_passwords["anular_cuotas"] = {"password":self.c, "descripcion": "Contraseña para anular cuotas"} #Seteamos por default la contraseña con la de la cuenta incialmente.
+
+        # Agregar mas condicionales si se quiere agregar alguna contraseña adicional . . . . .
+        # if('my_anular_cuotas' in permisos):
+        #     self.additional_passwords["anular_cuotas"] = self.c
+
+
+
     def clean(self):
         errors = {}
         validation_methods = [
@@ -133,7 +159,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
         if errors:
             raise ValidationError(errors)
-        
+    
+
 
     #region Clean area de los campos
     def validation_nombre(self):

@@ -100,33 +100,46 @@ p.iconValueInput {
 /* #region Z INDEX INPUTS */
 
 #form_create_sale #wrapperTipoProducto img.iconDesplegar {
-    z-index: 18;
+    z-index: 21;
     filter: invert(1);
 }
 
 #form_create_sale #wrapperTipoProducto input {
     position: relative;
-    z-index: 17;
+    z-index: 20;
 }
 
 #form_create_sale #wrapperTipoProducto ul.options {
-    z-index: 16;
+    z-index: 19;
 }
 
 #form_create_sale #wrapperProducto img.iconDesplegar {
-    z-index: 15;
+    z-index: 18;
     filter: invert(1);
 }
 
 #form_create_sale #wrapperProducto input {
     position: relative;
-    z-index: 14;
+    z-index: 17;
 }
 
 #form_create_sale #wrapperProducto ul.options {
-    z-index: 13;
+    z-index: 16;
 }
 
+#form_create_sale #wrapperNroSolicitud img.iconDesplegar {
+    z-index: 15;
+    filter: invert(1);
+}
+
+#form_create_sale #wrapperNroSolicitud input {
+    position: relative;
+    z-index: 14;
+}
+
+#form_create_sale #wrapperNroSolicitud ul.options {
+    z-index: 13;
+}
 
 #form_create_sale #wrapperModalidad img.iconDesplegar {
     z-index: 12;

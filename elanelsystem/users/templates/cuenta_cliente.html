@@ -2,6 +2,8 @@
 {% load static %}
 {% load humanize %}
 {% load i18n %}
+{% load util %}
+
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/cuentaCustomer.css' %}">
@@ -11,16 +13,35 @@
 {% block content %}
 <div class="filters">
     <a class="add-button-default" href="{% url 'sales:create_sale' customer.id %}" id="create_customer">Agregar</a>
-    <div>
-        <!-- <h3>N° operacion</h3> -->
-        <div class="searchFilter">
-            <input 
-            type="text"
-            class = "customer input-read-write-default"
-            id="operation">
-            <img src="{% static 'images/icons/search.svg' %}" alt="">
+    <form id="formFilterVentas" method="POST">
+        {% csrf_token %}
+        <div>
+            <div class="searchFilter">
+                <input 
+                type="text"
+                class = "customer input-read-write-default"
+                placeholder = "N° Venta"
+                id="operation"
+                name="nro_operacion"
+                >
+                
+                <img src="{% static 'images/icons/search.svg' %}" alt="">
+            </div>
+            <div id="productoWrapper" class="inputWrapper">
+                <div class="containerInputAndOptions">
+                    <img id="tipoComprobanteIconDisplay" class="iconDesplegar" src="/static/images/icons/arrowDown.png" alt="">
+                    <input type="text" readonly="" placeholder = "Producto" name="producto" id="productoInput" required="required" autocomplete="off" maxlength="50" class="input-read-write-default onlySelect">
+                    <ul id="contenedorProducto" class="list-select-custom options">
+                        {% for producto in productoDelCliente %}
+                            <li data-value="{{producto}}">{{producto}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <button type="button" id="submitSearchVenta" disabled class="add-button-default">Buscar</button>
         </div>
-    </div>
+    </form>
+   
     
 </div>
 <div class="accountWrapper">
@@ -30,19 +51,17 @@
             <ul class="operationsList">
               {% for operacion in ventas %} 
                 <li class="operationItem">
-                    <div class="iconWrapper">
-                        <img src="{% static 'images/icons/iconMoto.png' %}" alt="">
-                    </div>
-                    <div class="attributes">
-                        <div class = "nameStatus">
-                            <h1>{{operacion.producto.nombre}}</h1>
-                            {% if  operacion.adjudicado.status%}
-                                <img src="{% static 'images/icons/operationAdjudicado.svg' %}" alt="">
-                                <h3>Adjudicado por {{operacion.adjudicado.tipo}}</h3>
-                            {% else %}
-                                {% if operacion.deBaja.status %}
-                                <img src="{% static 'images/icons/operationBaja.svg' %}" alt="">
-                                <h3>De baja por {{operacion.deBaja.motivo}}</h3>
+                    <div class="nameStatus">
+                        <img class="iconProducto" src="{% static 'images/icons/moto_icon.svg' %}" alt="">
+
+                        <h1>{{operacion.producto.nombre}}</h1>
+                        {% if  operacion.adjudicado.status%}
+                            <div class="iconStatus adjudicada"></div>
+                            <h3>Adjudicado por {{operacion.adjudicado.tipo}}</h3>
+                        {% else %}
+                            {% if operacion.deBaja.status %}
+                            <div class="iconStatus baja"></div>
+                            <h3>De baja por {{operacion.deBaja.motivo}}</h3>
                                 {% if operacion.deBaja.motivo == "cliente" %}
                                     <a href="{% url 'sales:bajaPDF' operacion.pk %}" target="_blank" id="downloadPDF">Descargar PDF</a>
                                 {% endif %}
@@ -50,41 +69,50 @@
                                 {% if operacion.deBaja.motivo == "plan recupero" %}
                                     <a href="{% url 'sales:detail_sale' operacion.deBaja.nuevaVentaPK %}" target="_blank" id="downloadPDF">Ver nuevo plan</a>
                                 {% endif %}
-
+                            {% else %}
+                                {% if operacion.suspendida %}
+                                    <div class="iconStatus suspendida"></div>
+                                    <h3>Suspendido</h3>
                                 {% else %}
-                                    {% if operacion.suspendida %}
-                                        <img src="{% static 'images/icons/operationSuspendido.svg' %}" alt="">
-                                        <h3>Suspendido</h3>
-                                    {% else %}
-                                        <img src="{% static 'images/icons/operationActivo.svg' %}" alt="">
-                                        <h3>Activo</h3>
-                                    {% endif %}
+                                    <div class="iconStatus activo"></div>
+                                    <h3>Activo</h3>
                                 {% endif %}
                             {% endif %}
-                        </div>
-                        <div class ="information">
-                            {% language 'de' %}
+                        {% endif %}
+                    </div>
+                    <div class="attributes">
+
+                        <div class="information">
                             <h2>Importe</h2>
                             <h3>${{operacion.importe|floatformat:0}}</h3>
-                            {% endlanguage %}
                         </div>
-                        {% if operacion.nro_orden == "" %}
-                        {% else %}
-                        <div class ="information">
-                            <h2>N° Orden</h2>
-                            <h3>{{operacion.nro_orden}}</h3>
-                        </div>
-                        {% endif %}
                         
                         <div class ="information">
                             <h2>Fecha Inscripcion</h2>
-                            <h3>{{operacion.fecha}}</h3>
+                            <h3>{{operacion.fecha|slice:":10"}}</h3>
                         </div>
 
                         <div class ="information">
                             <h2>N° Operacion</h2>
                             <h3>{{operacion.nro_operacion}}</h3>
                         </div>
+                        
+                        <div class="information">
+                            <h2>Cuotas pagadas</h2>
+                            <h3>{{operacion|cuotas_pagadas_len}}</h3>
+                        </div>
+                        <div class="information">
+                            <h2>N° Orden/es</h2>
+                            <div class="ordenesWrapper">
+                                {% for contrato in operacion.cantidadContratos %}
+                                    {% if operacion.adjudicado.status and contrato.nro_contrato == operacion.adjudicado.contratoAdjudicado%}
+                                        <h3 class="adjudicadoTag">{{contrato.nro_orden}}</h3>
+                                    {% else %}
+                                        <h3>{{contrato.nro_orden}}</h3>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div> 
                     </div>
                     <div class="iconsAttributes">
                         <a href="{% url 'sales:detail_sale' operacion.id %}" class="buttonMore">
@@ -94,6 +122,7 @@
                             </div>
                         </a>
                     </div>
+                    
                 </li>
               {% endfor %}  
             </ul>       
@@ -102,6 +131,7 @@
     
     <div class="informationUser">
         <div class="informationUserWrapper">
+            <h2>Informacion del cliente</h2>
             <ul class="data">
                 <li id="nombre">
                     <h2>Nombre completo</h2>
@@ -167,4 +197,5 @@
 
 {% block js %}
 <script src="{% static 'js/input_search_operation.js' %}"></script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 {% endblock js %}

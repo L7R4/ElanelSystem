@@ -11,7 +11,7 @@ from users.models import Cliente, Sucursal,Usuario
 from .models import Ventas
 from products.models import Products,Plan
 import datetime
-import os
+import os,re
 import json
 from django.shortcuts import reverse
 from dateutil.relativedelta import relativedelta
@@ -20,8 +20,10 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .utils import *
 from collections import defaultdict
 import elanelsystem.settings as settings
-from elanelsystem.views import filterMainManage
+from elanelsystem.views import filterMainManage, convertirValoresALista
 from django.forms.models import model_to_dict
+from django.templatetags.static import static
+
 
 
 
@@ -162,16 +164,39 @@ class CrearVenta(TestLogin,generic.DetailView):
         else:
             supervisor_instance = Usuario.objects.get(nombre__iexact=form['supervisor'])
             sale.supervisor = supervisor_instance
+            
+        # Para guardar la cantidad de contratos que se haga
+        chances = []
+        chance_counter = 1
+        while f'nro_contrato_{chance_counter}' in form:
 
+            # Obtenemos y validamos el nro de contrato
+            nro_contrato = form.get(f'nro_contrato_{chance_counter}')
+            if not re.match(r'^\d+$', nro_contrato):
+                raise ValidationError({f'nro_contrato_{chance_counter}': 'Debe contener solo números.'})
+            
+            # Obtenemos y validamos el nro de orden
+            nro_orden = form.get(f'nro_orden_{chance_counter}')
+            if not re.match(r'^\d+$', nro_orden):
+                raise ValidationError({f'nro_orden_{chance_counter}': 'Debe contener solo números.'})
+            
+            # Si ambos campos son validos, los añadimos a la lista de chances
+            if nro_contrato and nro_orden:
+                chances.append({
+                    'nro_contrato': nro_contrato,
+                    'nro_orden': nro_orden
+                })
+            chance_counter += 1
 
+        # Guardar las chances en el campo JSONField
+        sale.cantidadContratos = chances
 
 
         sale.nro_cliente = Cliente.objects.get(nro_cliente__iexact=self.get_object().nro_cliente)
         
-        sale.nro_contrato = form['nro_contrato']
         sale.modalidad = form['modalidad'] if form['modalidad'] else ""
         sale.importe = int(form['importe'])
-        sale.primer_cuota = int(form['primer_cuota']) if form['primer_cuota'] else 0
+        sale.primer_cuota = int(form['primer_cuota'])  if form['primer_cuota'] else 0
         sale.anticipo = int(form['anticipo']) if form['anticipo'] else 0
         sale.tasa_interes = float(form['tasa_interes']) if form['tasa_interes'] else 0
         sale.intereses_generados = int(form['intereses_generados']) if form['intereses_generados'] else 0
@@ -181,7 +206,6 @@ class CrearVenta(TestLogin,generic.DetailView):
         sale.fecha = form['fecha']
         sale.tipo_producto = form['tipo_producto']
         sale.paquete = form['paquete']
-        sale.nro_orden = form['nro_orden']
         sale.campania = form['campania']
         sale.observaciones = form['observaciones']
 
@@ -203,21 +227,6 @@ class CrearVenta(TestLogin,generic.DetailView):
             return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
 
 
-def eliminarVenta(request,pk):
-    form = json.loads(request.body)
-    nro_orden = form["nro_orden_delete"]
-
-    venta = Ventas.objects.get(pk=pk)
-    if(venta.nro_orden == nro_orden):
-        try:
-            venta.delete()
-            return JsonResponse({"status": True,'urlRedirect': reverse('users:cuentaUser', args=[venta.nro_cliente.pk])}, safe=False)
-        except Exception:
-            return JsonResponse({"status": False,"message":"Error al eliminar la venta"}, safe=False)
-    else:
-        return JsonResponse({"status": False,"message":"Codigo incorrecto"}, safe=False)
-
-
 def requestVendedores_Supervisores(request):
     request = json.loads(request.body)
     sucursal = request["agencia"] if request["agencia"] else ""
@@ -237,7 +246,7 @@ def requestVendedores_Supervisores(request):
 
     return JsonResponse({"vendedores":vendedores,"supervisores":supervisores}, safe=False)
 
-
+#region Detalle de ventas y funciones de ventas
 class DetailSale(TestLogin,generic.DetailView):
     model = Ventas
     template_name = "detail_sale.html"
@@ -252,9 +261,6 @@ class DetailSale(TestLogin,generic.DetailView):
 
         if(self.object.adjudicado):
             self.object.addPorcentajeAdjudicacion()
-
-    
-        
         context["changeTitularidad"] = list(reversed(self.object.cambioTitularidadField))
         context['cuotas'] = sale_target.cuotas
         context['cobradores'] = CuentaCobranza.objects.all()
@@ -276,13 +282,56 @@ class DetailSale(TestLogin,generic.DetailView):
         
         return render(request,self.template_name,context)
     
+# Eliminar una venta
+def eliminarVenta(request,pk):
+    form = json.loads(request.body)
+    nro_operacion = form["nro_operacion_delete"]
+    print("nro_operacion")
+    print(type(nro_operacion))
+
+    venta = Ventas.objects.get(pk=pk)
+    if(venta.nro_operacion == int(nro_operacion)):
+        try:
+            venta.delete()
+            return JsonResponse({"status": True,'urlRedirect': reverse('users:cuentaUser', args=[venta.nro_cliente.pk])}, safe=False)
+        except Exception:
+            return JsonResponse({"status": False,"message":"Error al eliminar la venta"}, safe=False)
+    else:
+        return JsonResponse({"status": False,"message":"Numero incorrecto"}, safe=False)
+
+
+# Anula una cuota de una venta
+def anularCuota(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            permisosUser = request.user.get_all_permissions()
+
+            venta = Ventas.objects.get(pk=request.session["venta"]["id"])
+            cuota = data.get('cuota')
+            cuotasPagadas = venta.cuotas_pagadas()
+
+            ultima_cuotaPagadaSinCredito = getCuotasPagadasSinCredito(cuotasPagadas)[-1]
+
+            if  ultima_cuotaPagadaSinCredito["cuota"] == cuota and "sales.my_anular_cuotas" in permisosUser:            
+                if(request.user.additional_passwords["anular_cuotas"]["password"] == data.get("password")):
+                    venta.anularCuota(cuota)
+                else:
+                    return JsonResponse({"status": False,"password": False,"message":"Contraseña incorrecta"}, safe=False)
+                
+            return JsonResponse({"status": True,"password":True,"message":"Cuota anulada correctamente"}, safe=False)
+        except Exception as error:
+            print("Error")
+            print(error)
+            return JsonResponse({"status": False,"password":True,"message":"Error al anular la cuota","detalleError":str(error)}, safe=False)
+
 
 # Aplica el descuento a una cuota
 def aplicarDescuentoCuota(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            venta = Ventas.objects.get(pk=request.session["venta"].pk)
+            venta = Ventas.objects.get(pk=request.session["venta"]["id"])
             cuota = data.get('cuota')
             descuento = data.get('descuento')
             autorizado = data.get('autorizado')
@@ -303,13 +352,20 @@ def getUnaCuotaDeUnaVenta(request):
             venta = Ventas.objects.get(pk=int(data.get("ventaID")))
             cuotas = venta.cuotas
             cuotaRequest = data.get("cuota")
+            bloqueado_path = static('images/icons/iconBloqueado.png')
+            permisosUser = request.user.get_all_permissions()
+            buttonAnularCuota = '<button type="button" id="anularButton" onclick="htmlPassAnularCuota()" class="delete-button-default">Anular cuota</button>'
+
+            cuotasPagadas_parciales = venta.cuotas_pagadas() + venta.cuotas_parciales()
+            lista_cuotasPagadasSinCredito = getCuotasPagadasSinCredito(cuotasPagadas_parciales)
             
-            cuotaEncontrada = ""
             for cuota in cuotas:
                 if cuota["cuota"] == cuotaRequest:
-                    cuotaEncontrada = cuota
-                    break
-            return JsonResponse(cuotaEncontrada, safe=False)
+                    cuota["styleBloqueado"] = f"background-image: url('{bloqueado_path}')"
+                    if len(lista_cuotasPagadasSinCredito) != 0 and lista_cuotasPagadasSinCredito[-1]["cuota"] == cuota["cuota"] and "sales.my_anular_cuotas" in permisosUser:
+                        cuota["buttonAnularCuota"] = buttonAnularCuota
+                    return JsonResponse(cuota, safe=False)
+
         except Exception as error:
             return JsonResponse({"status": False,"message":"Error al obtener la cuota","detalleError":str(error)}, safe=False)
 
@@ -320,16 +376,21 @@ def pagarCuota(request):
         try:
             data = json.loads(request.body)
             venta = Ventas.objects.get(pk=int(data.get("ventaID")))
+
             cuotaRequest = data.get("cuota")
             metodoPago = data.get("metodoPago")
             formaPago = data.get("typePayment") # Si es parcial o total
             cobrador = data.get('cobrador')
-
+            monto = 0
             if(formaPago =="total"):
-                venta.pagoTotal(cuotaRequest,metodoPago,cobrador) #Funcion que paga el total
+                cuota = list(filter(lambda x:x["cuota"] == cuotaRequest,venta.cuotas))[0]
+                monto = cuota["total"]
+                # print("Pagado")
             elif(formaPago =="parcial"):
-                amountParcial = data.get('valorParcial')
-                venta.pagoParcial(cuotaRequest,metodoPago,amountParcial,cobrador) #Funcion que paga parcialmente
+                monto = data.get('valorParcial')
+                # print("Parcial")
+
+            venta.pagarCuota(cuotaRequest,int(monto),metodoPago,cobrador,request.user.nombre) #Funcion que paga parcialmente
                 
             return JsonResponse({"status": True,"message":f"Pago de {cuotaRequest.lower()} exitosa"}, safe=False)
         except Exception as error:
@@ -365,6 +426,8 @@ def darBaja(request,pk):
         except Exception as error:
             return JsonResponse({'status': False, 'message':str(error)}, safe=False)
             
+#endregion 
+
 
 class PlanRecupero(generic.DetailView):
     model = Ventas
@@ -495,11 +558,14 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
     def get(self,request,*args, **kwargs):
         self.object = self.get_object()
         url = request.path
-        cuotasPagadas = self.object.cuotas_pagadas()
-        print(cuotasPagadas)
+        cuotasPagadas_parciales = self.object.cuotas_pagadas() + self.object.cuotas_parciales()
+        sumaDePagos = 0
+
         # Suma las cuotas pagadas para calcular el total a adjudicar
-        valoresCuotasPagadas = [item["pagado"] for item in cuotasPagadas]
-        sumaCuotasPagadas = sum(valoresCuotasPagadas)
+        for cuota in cuotasPagadas_parciales:
+            pagos = cuota["pagos"]
+            sumaDePagos += sum([pago["monto"] for pago in pagos])
+
 
         tipoDeAdjudicacion = "NEGOCIACIÓN" if "negociacion" in url else "SORTEO"
         
@@ -509,9 +575,9 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
             'venta': self.object,
             'intereses' : intereses,
             'agencias': Sucursal.objects.all(),
-            'sumaCuotasPagadas' : int(sumaCuotasPagadas),
+            'sumaCuotasPagadas' : int(sumaDePagos),
             'autorizado_por':  Sucursal.objects.get(pseudonimo = request.user.sucursales.all()[0].pseudonimo).gerente.nombre,
-            'cantidad_cuotas_pagadas': len(cuotasPagadas),
+            'cantidad_cuotas_pagadas': len(self.object.cuotas_pagadas()),
             'tipoDeAdjudicacion' : tipoDeAdjudicacion,
             'idCliente': self.object.nro_cliente.nro_cliente,
         }
@@ -523,13 +589,16 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
 
         form =json.loads(request.body)
         self.object = self.get_object()
-        numeroAdjudicacion = self.object.nro_operacion
+        numeroOperacion = self.object.nro_operacion
         errors ={}
-        cuotasPagadas = self.object.cuotas_pagadas()
+        cuotasPagadas_parciales = self.object.cuotas_pagadas() + self.object.cuotas_parciales()
+
 
         # Suma las cuotas pagadas para calcular el total a adjudicar
-        valoresCuotasPagadas = [item["pagado"] for item in cuotasPagadas]
-        sumaCuotasPagadas = sum(valoresCuotasPagadas)
+        sumaDePagos = 0
+        for cuota in cuotasPagadas_parciales:
+            pagos = cuota["pagos"]
+            sumaDePagos += sum([pago["monto"] for pago in pagos])
 
         sale = Ventas()
 
@@ -558,18 +627,17 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
             agencia = Sucursal.objects.get(pseudonimo=agencia)
             sale.agencia = agencia
 
-
+        contratoAdjudicado = form["nro_contrato"]
         sale.adjudicado["status"] = True
-
+    
         sale.nro_cliente = Cliente.objects.get(pk=request.session["venta"]["nro_cliente"])
         sale.nro_operacion = request.session["venta"]["nro_operacion"]
         sale.agencia = Sucursal.objects.get(pseudonimo = form["agencia"])
         sale.vendedor = Usuario.objects.get(pk = request.session["venta"]["vendedor"])
         sale.supervisor = Usuario.objects.get(pk = request.session["venta"]["supervisor"])
-        sale.nro_contrato = str(request.session["venta"]["nro_solicitud"])
-        sale.nro_orden = str(request.session["venta"]["nro_orden"])
+        sale.cantidadContratos = request.session["venta"]["cantidadContratos"]
         sale.paquete = str(request.session["venta"]["paquete"])
-        #sale.nro_operacion = request.session["venta"]["nro_operacion"] --> Ver como hacer la campaña
+        sale.campania = getCampaniaActual()
         sale.importe = int(form['importe'])
         sale.modalidad = form['modalidad']
         sale.nro_cuotas = int(form['nro_cuotas'])
@@ -577,8 +645,9 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         sale.intereses_generados = int(form['intereses_generados'])
         sale.importe_x_cuota = int(form['importe_x_cuota'])
         sale.total_a_pagar = int(form['total_a_pagar'])
-        sale.fecha = form['fecha']
         sale.tipo_producto = form['tipo_producto']
+        sale.fecha = form['fecha']
+
         sale.observaciones = form['observaciones']
 
         
@@ -590,26 +659,27 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
             errors.update(e.message_dict)
        
         if len(errors) != 0:
-            print(errors)
             return JsonResponse({'success': False, 'errors': errors}, safe=False)  
         else:
+            sale.fecha = form['fecha'] + " 00:00"
             sale.crearCuotas() # Crea las cuotas
-            sale.crearAdjudicacion(numeroAdjudicacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
             if(tipo_adjudicacion == "sorteo"):
-                sale.acreditarCuotasPorAnticipo(sumaCuotasPagadas)
+                sale.acreditarCuotasPorAnticipo(sumaDePagos,request.user.nombre)
+            sale.crearAdjudicacion(contratoAdjudicado,numeroOperacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
+            
             sale.save()
             
             self.object.darBaja("adjudicacion",0,"","",request.user.nombre) # Da de baja la venta que fue adjudicada
             self.object.save()
 
-            #region Para enviar el correo
-            subject = 'Se envio una adjudicacion'
-            template = 'adjudicacion_correo.html'
-            context = {'nombre': 'Usuario'}  # Contexto para renderizar el template
-            from_email = 'lautaror@elanelsys.com'
-            to_email = 'lautaro.rodriguez553@gmail.com'
+            # #region Para enviar el correo
+            # subject = 'Se envio una adjudicacion'
+            # template = 'adjudicacion_correo.html'
+            # context = {'nombre': 'Usuario'}  # Contexto para renderizar el template
+            # from_email = 'lautaror@elanelsys.com'
+            # to_email = 'lautaro.rodriguez553@gmail.com'
 
-            send_html_email(subject, template, context, from_email, to_email)
+            # send_html_email(subject, template, context, from_email, to_email)
             #endregion
             return JsonResponse({'success': True,'urlRedirect':reverse_lazy('users:cuentaUser',args=[request.session["venta"]["nro_cliente"]])}, safe=False)          
         
@@ -620,7 +690,6 @@ class ChangePack(TestLogin,generic.DetailView):
 
     def get(self,request,*args, **kwargs):
         self.object = self.get_object()
-        url = request.path
 
         customers = Cliente.objects.all()
         products = Products.objects.all()
@@ -630,18 +699,25 @@ class ChangePack(TestLogin,generic.DetailView):
         supervisores = Usuario.objects.filter(sucursales__in = [sucursal], rango="Supervisor")
 
 
-        cuotasPagadas = self.object.cuotas_pagadas()
+        cuotasPagadas_parciales = self.object.cuotas_pagadas() + self.object.cuotas_parciales()
+        sumaDePagos = 0
 
         # Suma las cuotas pagadas para calcular el total a adjudicar
-        valoresCuotasPagadas = [item["pagado"] for item in cuotasPagadas]
-        sumaCuotasPagadas = sum(valoresCuotasPagadas)
+        for cuota in cuotasPagadas_parciales:
+            pagos = cuota["pagos"]
+            sumaDePagos += sum([pago["monto"] for pago in pagos])
 
+        contratosAsociados = ""
+        for contrato in self.object.cantidadContratos:
+            contratosAsociados += f" {contrato['nro_contrato']} -"
+        contratosAsociados = contratosAsociados[:-1] # Elimina el ultimo guion
         
         context = {
             'venta': self.object,
             'agencias': Sucursal.objects.all(),
-            'sumaCuotasPagadas' : int(sumaCuotasPagadas),
-            'cantidad_cuotas_pagadas': len(cuotasPagadas),
+            "contratosAsociados": contratosAsociados,
+            'sumaCuotasPagadas' : int(sumaDePagos),
+            'cantidad_cuotas_pagadas': len(self.object.cuotas_pagadas()),
             'idCliente': self.object.nro_cliente.nro_cliente,
             'customers': customers,
             'vendedores': vendedores, 
@@ -657,11 +733,12 @@ class ChangePack(TestLogin,generic.DetailView):
         self.object = self.get_object()
         form =json.loads(request.body)
         errors ={}
-        cuotasPagadas = self.object.cuotas_pagadas()
+        cuotasPagadas_parciales = self.object.cuotas_pagadas() + self.object.cuotas_parciales()
 
-        # Suma las cuotas pagadas para calcular el total a adjudicar
-        valoresCuotasPagadas = [item["pagado"] for item in cuotasPagadas]
-        sumaCuotasPagadas = sum(valoresCuotasPagadas)
+        sumaDePagos = 0
+        for cuota in cuotasPagadas_parciales:
+            pagos = cuota["pagos"]
+            sumaDePagos += sum([pago["monto"] for pago in pagos])
 
         sale = Ventas()
 
@@ -674,16 +751,40 @@ class ChangePack(TestLogin,generic.DetailView):
         elif producto:
             producto = Products.objects.get(nombre=producto)
             sale.producto = producto
+    
+        # Para guardar la cantidad de contratos que se haga
+        chances = []
+        chance_counter = 1
+        while f'nro_contrato_{chance_counter}' in form:
+
+            # Obtenemos y validamos el nro de contrato
+            nro_contrato = form.get(f'nro_contrato_{chance_counter}')
+            if not re.match(r'^\d+$', nro_contrato):
+                raise ValidationError({f'nro_contrato_{chance_counter}': 'Debe contener solo números.'})
+            
+            # Obtenemos y validamos el nro de orden
+            nro_orden = form.get(f'nro_orden_{chance_counter}')
+            if not re.match(r'^\d+$', nro_orden):
+                raise ValidationError({f'nro_orden_{chance_counter}': 'Debe contener solo números.'})
+            
+            # Si ambos campos son validos, los añadimos a la lista de chances
+            if nro_contrato and nro_orden:
+                chances.append({
+                    'nro_contrato': nro_contrato,
+                    'nro_orden': nro_orden
+                })
+            chance_counter += 1
+
+        # Guardar las chances en el campo JSONField
+        sale.cantidadContratos = chances
 
         sale.nro_cliente = Cliente.objects.get(pk=request.session["venta"]["nro_cliente"])
         sale.nro_operacion = request.session["venta"]["nro_operacion"]
         sale.agencia = self.object.agencia
         sale.vendedor = Usuario.objects.get(pk = request.session["venta"]["vendedor"])
         sale.supervisor = Usuario.objects.get(pk = request.session["venta"]["supervisor"])
-        sale.nro_contrato = str(request.session["venta"]["nro_contrato"])
-        sale.nro_orden = str(request.session["venta"]["nro_orden"])
         sale.paquete = str(request.session["venta"]["paquete"])
-        sale.campania = self.object.campania
+        sale.campania = getCampaniaActual()
         sale.importe = int(form['importe'])
         sale.modalidad = form['modalidad']
         sale.nro_cuotas = int(form['nro_cuotas'])
@@ -703,12 +804,11 @@ class ChangePack(TestLogin,generic.DetailView):
             errors.update(e.message_dict)
        
         if len(errors) != 0:
-            print(errors)
             return JsonResponse({'success': False, 'errors': errors}, safe=False) 
         else:
             sale.fecha = form['fecha'] + " 00:00"
             sale.crearCuotas()
-            sale.acreditarCuotasPorAnticipo(sumaCuotasPagadas)
+            sale.acreditarCuotasPorAnticipo(sumaDePagos,request.user.nombre)
             sale.save()
 
             self.object.darBaja("cambio de pack",0,"","",request.user.nombre) # Da de baja la venta que fue cambiada de pack
@@ -740,7 +840,9 @@ class ChangeTitularidad(TestLogin,generic.DetailView):
             return JsonResponse({'success': False, 'errors': "EL CLIENTE NUEVO NO PUEDE SER IGUAL AL ANTIGUO"}, safe=False)
         else:
             # Coloca los datos del cambio de titularidad
-            lastCuota = self.object.cuotas_pagadas()[-1]
+            cuotasPagadas_parciales = self.object.cuotas_pagadas() + self.object.cuotas_parciales()
+            lastCuota = getCuotasPagadasSinCredito(cuotasPagadas_parciales)[-1]
+
             self.object.createCambioTitularidad(lastCuota,request.user.nombre,self.object.nro_cliente.nombre,dniNewCustomer.nombre,self.object.nro_cliente.pk,dniNewCustomer.pk)
             
             # Actualiza el dueño de la venta
@@ -830,9 +932,13 @@ class PanelVentasSuspendidas(TestLogin,generic.View):
     def post(self,request,*args,**kwargs):
         data = json.loads(request.body)
         sucursal = request.user.sucursales.all()[0]
+        saldo_Afavor = 0
         try:
             venta = Ventas.objects.get(nro_operacion=data["nro_operacion"], suspendida=True, agencia=sucursal)
-            saldo_Afavor = sum(cuota["pagado"] for cuota in venta.cuotas_pagadas())
+            for cuotaPagada in venta.cuotas_pagadas():
+                pagosDeCuota = cuotaPagada["pagos"]
+                saldo_Afavor += sum(pago["monto"] for pago in pagosDeCuota)
+
             cuotas_pagadas = len(venta.cuotas_pagadas())
             cuotas_atrasadas = len([cuota for cuota in venta.cuotas if cuota["status"] == "Atrasado"])
 
@@ -840,8 +946,8 @@ class PanelVentasSuspendidas(TestLogin,generic.View):
                 "cliente": venta.nro_cliente.nombre,
                 "tipo_producto": venta.producto.tipo_de_producto,
                 "producto": venta.producto.nombre,
-                "importe": venta.producto.importe,
-                "nro_orden": venta.nro_orden,
+                "importe": venta.producto.plan.valor_nominal,
+                "nro_orden": 1,
                 "fecha_inscripcion": venta.fecha,
                 "nro_operacion": venta.nro_operacion,
                 "cuotas_atrasadas": cuotas_atrasadas,
@@ -851,8 +957,8 @@ class PanelVentasSuspendidas(TestLogin,generic.View):
 
             }
             return JsonResponse({"status": True,"venta":context}, safe=False)
-        except:
-            
+        except Exception as e:
+            print(e)
             return JsonResponse({"status": True,"venta":None}, safe=False)
 
 
@@ -1044,7 +1150,7 @@ def viewsPDFInforme(request):
 
     datos_modificado = [
         {
-            "Moviem.": d.get("tipoMovimiento", "-"),
+            "Moviem.": d.get("tipo_mov", "-"),
             "Compro.": "---" if d.get("tipoComprobante") is None or d.get("tipoComprobante") == "null" else d.get("tipoComprobante", "---"),
             "Nro Comprob.": "---" if d.get("nroComprobante") is None or d.get("nroComprobante") == "null" else d.get("nroComprobante", "---"),
             "Denominacion": "---" if d.get("denominacion") is None or d.get("denominacion") == "null" else d.get("denominacion", "---"),
@@ -1052,9 +1158,9 @@ def viewsPDFInforme(request):
             "Nro de ID.": "---" if d.get("nroIdentificacion") is None or d.get("nroIdentificacion") == "null" else d.get("nroIdentificacion", "---"),
             "Sucursal": d.get("sucursal", "-"),
             "Moneda": "---" if d.get("tipoMoneda") is None or d.get("tipoMoneda") == "null" else d.get("tipoMoneda", "---"),
-            "Dinero": d.get("pagado", "-"),
+            "Dinero": d.get("monto", "-"),
             "Metodo de pago": d.get("metodoPago", "-"),
-            "Ente recau.": d.get("ente", "-"),
+            "Ente recau.": d.get("ente") if d.get("ente") is not None else d.get("cobrador"),
             "Concepto": d.get("concepto", "-"),
             "Fecha": d.get("fecha", "-"),
         }
@@ -1072,8 +1178,8 @@ def viewsPDFInforme(request):
     montoTotal = 0
     for clave in tiposDePago.keys():
         itemsTypePayment = list(filter(lambda x: x['metodoPago'] == tiposDePago[clave], datos))
-        montoTypePaymentEgreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipoMovimiento'] == 'Egreso'])
-        montoTypePaymentIngreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipoMovimiento'] == 'Ingreso'])
+        montoTypePaymentEgreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Egreso'])
+        montoTypePaymentIngreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Ingreso'])
         montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso
         montoTotal += montoTypePayment 
         metodosPagosResumen[clave] = montoTypePayment
@@ -1139,7 +1245,7 @@ class Caja(TestLogin,generic.View):
     template_name = "caja.html"
     FILTROS_EXISTENTES = (
         ("tipo_mov","Tipo de movimiento"),
-        ("tipo_pago", "Metodo de pago"),
+        ("metodoPago", "Metodo de pago"),
         ("fecha", "Fecha"),
         ("cobrador","Cobrador"),
         ("agencia","Agencia"),
@@ -1147,8 +1253,10 @@ class Caja(TestLogin,generic.View):
 
     def get(self,request,*args, **kwargs):
         context ={}
-        context["cobradores"] = Usuario.objects.all()
+        context["cobradores"] = CuentaCobranza.objects.all()
         context["agencias"] = Sucursal.objects.all()
+        context["agenciasDisponibles"] = request.user.sucursales.all()
+        
         # print(os.path.join(settings.BASE_DIR, "templates/mailPlantilla.html"))
         paramsDict = (request.GET).dict()
         clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
@@ -1160,8 +1268,7 @@ class Caja(TestLogin,generic.View):
         # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
         # Es lo mismo que decir clearContext["metodoPago"], etc, etc
         context["filtros"] = list(map(lambda x: {x[1], clearContext[x[0]]}, filtros_activados))
-
-
+        
         return render(request, self.template_name, context)
         
 
@@ -1282,24 +1389,34 @@ class OldArqueosView(TestLogin,generic.View):
 #region Specifics Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def requestMovimientos(request):
     #region Logica para obtener los movimientos segun los filtros aplicados 
-    agencia = "Todas" if not request.GET.get("agencia") else request.GET.get("agencia")
+    agencia = request.user.sucursales.first().pseudonimo if not request.GET.get("agencia") else request.GET.get("agencia") # Si no hay agencia seleccionada, se coloca la primera sucursal del usuario
+    
     all_movimientos = dataStructureMoviemientosYCannons(agencia)
 
     all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha'], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
-  
+    
+    #region Limpiar los cannos que tienen pagos en forma de credito
+    movsDePagosEnFormaCredito = [mov for mov in all_movimientosTidy if mov["metodoPago"] == "Credito"]
+
+    #Elimina los pagos en forma de credito segun los indices
+    for movs in movsDePagosEnFormaCredito:
+        if (movs in all_movimientosTidy):
+            all_movimientosTidy.remove(movs)
+    #endregion
+
     response_data ={
         "request": request.GET,
         "movs": all_movimientosTidy
     }
-    
     movs = filterMainManage(response_data["request"], response_data["movs"])
+    
     #endregion
     
     #region Logica para pasar al template los filtros aplicados a los movimientos
     paramsDict = (request.GET).dict()
     FILTROS_EXISTENTES = (
         ("tipo_mov","Tipo de movimiento"),
-        ("tipo_pago", "Metodo de pago"),
+        ("metodoPago", "Metodo de pago"),
         ("fecha", "Fecha"),
         ("cobrador","Cobrador"),
         ("agencia","Agencia"),
@@ -1314,8 +1431,8 @@ def requestMovimientos(request):
     filtros = list(map(lambda x: {x[1]: clearContext[x[0]]}, filtros_activados))
     #endregion
     
-    request.session["informe_data"] = movs
-    
+    request.session["informe_data"] = movs # Por si se quiere imprimir el informe
+
     # region Logica para obtener el resumen de cuenta de los diferentes tipos de pagos
     resumenEstadoCuenta={}
     tiposDePago = {"efectivo":"Efectivo",
@@ -1326,15 +1443,14 @@ def requestMovimientos(request):
 
     montoTotal = 0
     for clave in tiposDePago.keys():
-        itemsTypePayment = list(filter(lambda x: x['tipo_pago'] == tiposDePago[clave], movs))
-        montoTypePaymentEgreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Egreso'])
-        montoTypePaymentIngreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Ingreso'])
+        itemsTypePayment = list(filter(lambda x: x['metodoPago'] == tiposDePago[clave], movs))
+        montoTypePaymentEgreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Egreso'])
+        montoTypePaymentIngreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Ingreso'])
         montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso  
         montoTotal += montoTypePayment 
         resumenEstadoCuenta[clave] = montoTypePayment
     resumenEstadoCuenta["total"] = montoTotal
 
-    print(resumenEstadoCuenta)
     #endregion
 
     #region Paginación
@@ -1358,7 +1474,7 @@ def createNewMov(request):
         newMov = MovimientoExterno()
         movimiento = request.POST.get("movimiento")
         newMov.movimiento=movimiento
-        newMov.agencia = request.user.sucursal
+        newMov.agencia = Sucursal.objects.get(pseudonimo = request.POST.get('agencia'))
         newMov.metodoPago= request.POST.get('metodoPago')
         newMov.ente= request.POST.get('ente')
         newMov.fecha=datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
@@ -1382,10 +1498,10 @@ def createNewMov(request):
             return HttpResponseBadRequest('Fallo en el servidor', status=405)
                  
         newMov.save()
-        return JsonResponse({'status': 'success', 'message': 'Movimiento creado exitosamente'})
+        return JsonResponse({'status': True, 'message': 'Movimiento creado exitosamente'})
         
 
-    return JsonResponse({'status': 'error', 'message': 'Método no permitido'})
+    return JsonResponse({'status': False, 'message': ' Ha sucedido un error y no se pudo completar la operacion'})
 
 # Funcion para devolver las ventas (Utilizada en el sector de auditorias)
 def requestVentas(request):

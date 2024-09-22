@@ -407,6 +407,9 @@
     width: 65%;
     box-sizing: border-box;
     min-width: 50rem;
+    height: 70vh;
+    overflow-y: auto;
+    padding: .4rem;
 }
 
 .information {
@@ -450,6 +453,49 @@
 #producto,
 #paquete {
     grid-column: 2 span;
+}
+
+#wrapperContratos{
+    grid-column: 1/ -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(12rem, 1fr));
+    gap: 2rem;
+    /* border: 2px solid var(--third-color); */
+    /* padding: 1.3rem; */
+    border-radius: .6rem;
+}
+
+#wrapperContratos > .contratosItem{
+    border: 2px solid #ffffff69;
+    padding: 1.5rem;
+    border-radius: .6rem;
+}
+#wrapperContratos > .contratosItem.contratoAdjudicado{
+    box-shadow: 0px 0px 9px 2px rgba(0,0,0,0.34);
+}
+
+#wrapperContratos > .contratosItem.contratoDisable{
+    opacity: .5;
+}
+
+#wrapperContratos > .contratosItem > h2{
+    color: var(--third-color);
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    font-family: raleway-semibold;
+}
+
+#wrapperContratos > .contratosItem > h2.adjText{
+    color: var(--secundary-color);
+    background-color: var(--third-color);
+    padding: .4rem;
+    margin-bottom: .5rem;
+    text-align: center;
+    border-radius: .6rem;
+}
+
+
+#wrapperContratos > .contratosItem > .inputs{
+    margin-top: 1rem;
 }
 
 
@@ -598,10 +644,10 @@
 
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota.Pagado {
+/* .wrapperCuotasList>.cuotas_list>.cuota.Pagado {
     cursor: default;
     pointer-events: none;
-}
+} */
 
 .wrapperCuotasList>.cuotas_list>.cuota>.marca.Pagado {
     background-color: rgb(7, 240, 7);
@@ -670,10 +716,7 @@
 
 /* #endregion */
 
-
-/* #region FORM PAY CUOTA */
-
-#payCuotaForm {
+.containerDetalleCuota {
     padding: 1.5rem;
     box-sizing: border-box;
     position: absolute;
@@ -685,6 +728,8 @@
     width: 100%;
     transition: all .3s ease-in-out;
 }
+
+/* #region FORM PAY CUOTA */
 
 #payCuotaForm::-webkit-scrollbar {
     width: 4px;
@@ -733,10 +778,30 @@
     margin-top: 1rem;
 }
 
-.descuentoWrapperBackground>div>#descuentoCuotaForm>#dineroDescuento {
-    width: 80%;
-
+.descuentoWrapperBackground>div>#descuentoCuotaForm > input{
+    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+    font-family: raleway;
+    color: var(--background-color);
 }
+
+.descuentoWrapperBackground>div>#descuentoCuotaForm>#dineroDescuento {
+    margin-bottom: 1.2rem;
+}
+
+.descuentoWrapperBackground>div> h2{
+    font-size: clamp(1.4rem, 1.4vw, 1.8rem);
+    font-family: raleway-semibold;
+    color: var(--secundary-color);
+    margin-bottom: .4rem;
+}
+
+.descuentoWrapperBackground>div>#descuentoCuotaForm>h3{
+    font-size: clamp(1rem, 1.1vw, 1.3rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+    margin-bottom: .4rem;
+}
+
 
 .descuentoWrapperBackground>div>#descuentoCuotaForm>#dineroDescuento::-webkit-inner-spin-button,
 .descuentoWrapperBackground>div>#descuentoCuotaForm>#dineroDescuento::-webkit-outer-spin-button {
@@ -754,6 +819,11 @@
 #descuentoCuotaForm>.buttonsActionsDescuentoWrapper>#submitDescuento {
     font-size: clamp(1.1rem, 1vw, 1.5rem);
     padding: .8rem 1.5rem;
+}
+
+#descuentoCuotaForm>.buttonsActionsDescuentoWrapper>#submitDescuento:disabled{
+    opacity: .5;
+    pointer-events: none;
 }
 
 .buttonsActions {
@@ -969,8 +1039,105 @@
 /* #endregion */
 
 
+/* #region WRAPPER VIEW DETALLE DE CUOTA */
 
+#wrapperVerDetallesPago.active{
+    right: 0%;
+    display: flex;
+    flex-direction: column;
+}
+#wrapperVerDetallesPago > .wrapperInfo_cuota{
+    max-height: 70%;
+    overflow-y: auto;
+}
 
+#wrapperVerDetallesPago > .cuotaPicked{
+    font-size: clamp(1.5rem, 2vw, 3rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+    padding: .6rem 0;
+    text-align: center;
+}
+#wrapperVerDetallesPago .info_cuota{
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid #00000021;
+    
+    padding: .7rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    border-radius: .6rem;
+    row-gap: .7rem;
+}
+#wrapperVerDetallesPago .info_cuota > h3:first-child{
+    color: var(--secundary-color);
+}
+#wrapperVerDetallesPago .info_cuota.detail_view_more >h3{
+    font-size: clamp(1.1rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+    
+}
+#wrapperVerDetallesPago .info_cuota.detail_view_more >h3:first-child{
+    color: var(--secundary-color);
+}
+#wrapperVerDetallesPago .info_cuota.view_more >img{
+    width: 1.5rem;
+}
+#wrapperVerDetallesPago .info_cuota.view_more >img.active{
+    rotate: 180deg;
+}
+#wrapperVerDetallesPago .info_cuota >h3{
+    font-size: clamp(1.2rem, 1.1vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+}
+.view_more > .wrapperDetail_view_more.active{
+    display: block;
+}
+.view_more > .wrapperDetail_view_more{
+    display: none;
+    flex-basis: 100%;
+    padding-left: .5rem;
+}
+.view_more > .wrapperDetail_view_more >h3{
+    font-size: clamp(1rem, 1vw, 1.4rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+}
+
+#wrapperVerDetallesPago> #anularButton{
+    margin-top: auto;
+    cursor: pointer;
+}
+
+#formAnularCuota{
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 2rem;
+    left: 0;
+    border-top: 2px solid var(--primary-color);
+    background-color: var(--third-color);
+    z-index: 10;
+    border-radius: .8rem;
+    display: flex;
+    flex-direction: column ;
+    row-gap: 1rem;
+    box-shadow: 0px 1px 8px 4px rgba(0, 0, 0, .2);
+}
+#formAnularCuota > h3{
+    font-size: clamp(1rem, 1vw, 1.4rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+}
+#formAnularCuota #cancelarAnularButton{
+    color: var(--background-color);
+}
+.buttonsWrapperAnularCuota{
+    display: flex;
+    gap: 1rem;
+}
+/* #endregion */
 .selectMotivoWrapper {
     width: 100%;
     position: relative;

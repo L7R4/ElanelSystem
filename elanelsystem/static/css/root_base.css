@@ -286,4 +286,18 @@ ul.list-select-custom.open {
    }
 }
 
+
+/* #endregion */
+
+/* #region Scroller */
+
+*::-webkit-scrollbar{
+   width: 4px;
+   border-radius: 5px;
+ }
+ *::-webkit-scrollbar-thumb{
+   background: #ffffff58;
+   border-radius: 1rem;
+ }
+ 
 /* #endregion */

@@ -126,7 +126,7 @@ function getCookie(name) {
 //#endregion -----------------------------------------------------------------------------------------------------------------
 
 function clearInputs() {
-    let inputs = document.querySelectorAll(".wrapperInput input")
+    let inputs = document.querySelectorAll(".wrapperInput input:not(.notClear)")
     inputs.forEach(element => element.value = "")
     let inputsSelectPremio_Adelanto = document.querySelectorAll(".inputSelectPremio_Adelanto")
     inputsSelectPremio_Adelanto.forEach(element => element.checked = false)

@@ -59,6 +59,10 @@ def format_dd_mm_yyyy(valor):
 
     return fechaFormated
 
+@register.filter(name='cuotas_pagadas_len')
+def cuotas_pagadas_len(venta):
+    print(venta.cuotas_pagadas())
+    return len(venta.cuotas_pagadas())
 
 @register.simple_tag
 def obtener_ultima_campania():

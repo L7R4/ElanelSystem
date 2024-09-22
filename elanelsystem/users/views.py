@@ -12,8 +12,10 @@ from django.views import generic
 from users.utils import printPDFNewUSer
 
 from .models import Usuario,Cliente,Sucursal,Key
+from products.models import Products
 from sales.models import CuentaCobranza
 from sales.models import Ventas,ArqueoCaja,MovimientoExterno
+from sales.utils import getEstadoVenta
 # from .forms import CreateClienteForm
 from django.urls import reverse_lazy
 from django.contrib.auth.models import Permission
@@ -23,7 +25,41 @@ from django.core.validators import validate_email
 import json
 from django.http import HttpResponse, JsonResponse
 
+
+from django.views.decorators.cache import cache_control
+from django.utils.decorators import method_decorator
 #region Usuarios - - - - - - - - - - - - - - - - - - - -
+
+class ConfiguracionPerfil(TestLogin,generic.View):
+    model = Usuario
+    template_name = "configurarPerfil.html"
+
+    def get(self,request,*args,**kwargs):
+        context = {}
+        context["additional_passwords"] = request.user.additional_passwords
+        return render(request, self.template_name, context)
+    
+    def post(self,request,*args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            message = ""
+            for key, value in data.items():
+                if key == "inputContrasenia":
+                    request.user.set_password(value)
+                    request.user.c = value
+                    message = 'Contraseña de tu usuario actualizada'
+                else:
+                    request.user.additional_passwords[key]["password"] = value
+                    message = f'{request.user.additional_passwords[key]["descripcion"]} actualizada'
+            
+            request.user.save()
+            return JsonResponse({'success': True,"message" : message}, safe=False)
+        
+        except Exception as e:
+            message = f' Hubo un error inesperado al actualizar la contraseña'
+            return JsonResponse({'success': False,"message" : message}, safe=False)
+            
+
 
 class CrearUsuario(TestLogin, generic.View):
     model = Usuario
@@ -171,6 +207,7 @@ class CrearUsuario(TestLogin, generic.View):
                 usuario.sucursales.add(sucursal_object)
 
             usuario.groups.add(rango)
+            usuario.setAdditionalPasswords() # Seteamos las contraseñas adicionales segun los permisos
             usuario.save()
 
             response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
@@ -497,7 +534,7 @@ class CrearCliente(TestLogin, generic.CreateView):
             response_data = {"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
             return JsonResponse(response_data, safe=False)     
 
-
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch') # Para no guardar el cache cuando se presiona el boton de atras
 class CuentaUser(TestLogin, generic.DetailView):
     model = Cliente
     template_name = "cuenta_cliente.html"
@@ -510,11 +547,59 @@ class CuentaUser(TestLogin, generic.DetailView):
 
         for i in range (ventas.count()):
             ventas[i].suspenderOperacion()
-
+        
+        productosDelCliente = [venta.producto.nombre for venta in self.object.ventas_nro_cliente.all()]
+        productosDelCliente_no_repetidos = list(set(productosDelCliente))
         ventasOrdenadas = ventas.order_by("-adjudicado","deBaja","-nro_operacion")
         context = {"customer": self.object,
-                   "ventas": ventasOrdenadas}
+                   "ventas": ventasOrdenadas,
+                   "productoDelCliente": productosDelCliente_no_repetidos,
+                   }
         return render(request, self.template_name, context)
+    
+    def post(self,request,*args,**kwargs):
+        try:
+
+            form = json.loads(request.body)
+
+            # Obtenemos los valores de las claves del JSON o None si no existen
+            nro_operacion = form.get("nro_operacion", None)
+            producto = form.get("producto", None)
+
+            # Construimos un diccionario de filtros dinámicamente basado en los valores existentes
+            filters = {}
+            if nro_operacion is not None:
+                filters["nro_operacion"] = nro_operacion
+            if producto is not None:
+                filters["producto"] = Products.objects.get(nombre=producto).pk
+
+            # Realizar la consulta solo con los filtros disponibles
+            ventas = Ventas.objects.filter(**filters)
+
+            ventas_list = []
+            ventaDict ={}
+            for venta in ventas:
+                ventaDict = {
+                    "nro_operacion": venta.nro_operacion,
+                    "cuotas_pagadas": len(venta.cuotas_pagadas()),
+                    "nro_ordenes" : [contrato["nro_orden"] for contrato in venta.cantidadContratos],
+                    "producto": venta.producto.nombre,
+                    "tipo_producto": venta.producto.tipo_de_producto,
+                    "img_tipo_producto": "",
+                    "fecha_inscripcion": venta.fecha,
+                    "estado": getEstadoVenta(venta),
+                    "importe": venta.importe,
+                }
+                ventas_list.append(ventaDict)
+
+
+            # Convertir el QuerySet a una lista para que sea serializable por JSON
+
+
+            return JsonResponse({"status": True,"ventas":ventas_list}, safe=False)
+
+        except Exception as error:   
+            return JsonResponse({"status": False,"message":"Filtro fallido","detalleError":str(error)}, safe=False)
 
 
 class PanelAdmin(TestLogin,PermissionRequiredMixin,generic.View):

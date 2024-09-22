@@ -91,15 +91,9 @@ class Products(models.Model):
         ("Electrodomestico","Electrodomestico"),
     )
 
-    # PAQUETES = (
-    #     ("Basico","Basico"),
-    #     ("Estandar","Estandar"),
-    #     ("Premium","Premium"),
-    # )
 
     tipo_de_producto = models.CharField(max_length=20,choices=TIPO_PRODUCTO)
     nombre = models.CharField(max_length=100)
-    # paquete = models.CharField(max_length=20,choices=PAQUETES)
     plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, related_name="plan_producto", null=True, blank=True)
 
 
