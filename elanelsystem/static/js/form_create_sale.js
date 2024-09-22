@@ -4,6 +4,7 @@ const inputProducto = document.querySelector('#productoInput')
 const submitCreateSaleButton = document.querySelector('#submitCreateSaleButton')
 
 const inputsWithEventInput = document.querySelectorAll(".eventInput")
+let cantidadChances = 1;
 
 //#region Fetch data
 function getCookie(name) {
@@ -104,7 +105,7 @@ inputProducto.addEventListener("input", async () => {
         id_primer_cuota.value = "";
         id_anticipo.value = "";
     }
-    rellenarCamposDeVenta();
+    rellenarCamposDeVenta(cantidadChances);
 
 });
 
@@ -121,19 +122,23 @@ function porcentaje_segun_nroCuotas(nroCuotas) {
 // Agrega listener de tipo input a los inputs que son necesarios para calcular los valores de venta
 inputsWithEventInput.forEach(input => {
     input.addEventListener("input", () => {
-        rellenarCamposDeVenta();
+        rellenarCamposDeVenta(cantidadChances);
     });
 });
 
-function rellenarCamposDeVenta() {
+function rellenarCamposDeVenta(cantidadContratos) {
     let nroCuotas = parseInt(id_nro_cuotas.value)
-    let importe = parseInt(id_importe.value)
     try {
         // Valores de los inputs
-        id_tasa_interes.value = porcentaje_segun_nroCuotas(nroCuotas)
-        id_intereses_generados.value = (importe * parseFloat(id_tasa_interes.value)) / 100
-        id_importe_x_cuota.value = (importe / nroCuotas) + (parseInt(id_intereses_generados.value) / nroCuotas)
-        id_total_a_pagar.value = importe + parseInt(id_intereses_generados.value)
+        
+        id_importe.value = productoHandled["importe"] * cantidadContratos
+        id_primer_cuota.value = productoHandled["primer_cuota"] * cantidadContratos
+        id_anticipo.value = productoHandled["suscripcion"] * cantidadContratos
+
+        id_tasa_interes.value = (porcentaje_segun_nroCuotas(nroCuotas) * cantidadContratos).toFixed(2);
+        id_intereses_generados.value = parseInt((productoHandled["importe"] * parseFloat(id_tasa_interes.value)) / 100)
+        id_importe_x_cuota.value = ((productoHandled["importe"] / nroCuotas) * cantidadContratos + (parseInt(id_intereses_generados.value) / nroCuotas))
+        id_total_a_pagar.value = (parseInt(id_importe.value) + parseInt(id_intereses_generados.value))
     }
 
     catch (error) {
@@ -197,21 +202,10 @@ id_agencia.addEventListener("input", async () => {
 
 })
 
-id_nro_contrato.addEventListener("input", () => {
-
-    // Obtener los últimos 3 dígitos del número de contrato
-    const ultimosTresDigitos = id_nro_contrato.value.slice(-3);
-
-    // Actualizar el campo de número de orden con los últimos 3 dígitos
-    const numeroOrdenInput = document.getElementById("id_nro_orden");
-    numeroOrdenInput.value = ultimosTresDigitos;
-
-})
 
 // Para enviar los datos del formulario
 submitCreateSaleButton.addEventListener("click", async () => {
     body = {}
-    console.log("submitCreateSaleButton")
     let inputs = form_create_sale.querySelectorAll("input")
     let textareas = form_create_sale.querySelectorAll("textarea")
 

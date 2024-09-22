@@ -16,7 +16,7 @@ buttonNotConfirmDelete.addEventListener("click", () => {
 
 buttonConfirmDelete.addEventListener("click", async () => {
     let body = {
-        "nro_orden_delete": input_confirm_delete.value
+        "nro_operacion_delete": input_confirm_delete.value
     }
     let response = await formFETCH(body, deleteSaleUrl)
     console.log(response)

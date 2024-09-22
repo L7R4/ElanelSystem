@@ -333,10 +333,11 @@
 .wrapperData>.input-read-only-default {
     background-color: var(--third-color);
     border-radius: 1rem;
+    border: 2px solid var(--secundary-color);
     display: flex;
     font: unset;
     align-items: center;
-    width: 80%;
+    width: 100%;
     padding: .8rem;
     height: fit-content;
     min-height: unset;
@@ -362,7 +363,6 @@
 /* #region TEXTO DE FILTROS DE MOVIMIENTOS */
 .wrapperFiltroTexto {
     width: 80%;
-    margin: 0 auto;
     margin-top: 2rem;
 }
 
@@ -389,7 +389,14 @@
     font-family: raleway-semibold;
     color: white;
 }
-
+.wrapperFiltroTexto > a{
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
+    /* text-decoration: none; */
+    margin-top: 1rem;
+    display: block;
+}
 /* #endregion */
 
 
@@ -477,12 +484,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 1rem;
 }
 
 .modal_newEgresoIngreso>.tittleModal>h3 {
     font-size: clamp(2rem, 1.7vw, 3rem);
     font-family: raleway-semibold;
-    color: var(--third-color);
+    color: var(--secundary-color);
 }
 
 .modal_newEgresoIngreso>.tittleModal>button {
@@ -534,54 +542,83 @@
 }
 
 #formNewIngresoEgreso #tipoComprobanteIconDisplay {
-    z-index: 10;
+    z-index: 18;
 }
 
 #formNewIngresoEgreso #tipoComprobante {
-    z-index: 9;
+    z-index: 17;
 }
 
 #formNewIngresoEgreso #tipoComprobante+ul.list-select-custom {
-    z-index: 8;
+    z-index: 16;
 }
 
 #formNewIngresoEgreso #tipoIDIconDisplay {
-    z-index: 7;
+    z-index: 15;
 }
 
 #formNewIngresoEgreso #tipoID {
-    z-index: 6;
+    z-index: 14;
 }
 
 #formNewIngresoEgreso #tipoID+ul.list-select-custom {
-    z-index: 5;
+    z-index: 13;
 }
 
 #formNewIngresoEgreso #tipoMonedaIconDisplay {
-    z-index: 6;
+    z-index: 12;
 
 }
 
 #formNewIngresoEgreso #tipoMoneda {
-    z-index: 5;
+    z-index: 11;
 
 }
 
 #formNewIngresoEgreso #tipoMoneda+ul.list-select-custom {
-    z-index: 4;
+    z-index: 10;
 }
 
+#formNewIngresoEgreso #selectWrapperAgencia .iconDesplegar {
+    z-index: 9;
+
+}
+
+#formNewIngresoEgreso #agencia {
+    z-index: 8;
+
+}
+
+#formNewIngresoEgreso #agencia+ul.list-select-custom {
+    z-index: 7;
+}
+
+
 #formNewIngresoEgreso #tipoPagoIconDisplay {
-    z-index: 3;
+    z-index: 6;
 
 }
 
 #formNewIngresoEgreso #tipoDePago {
-    z-index: 2;
+    z-index: 5;
 
 }
 
 #formNewIngresoEgreso #tipoDePago+ul.list-select-custom {
+    z-index: 4;
+}
+
+#formNewIngresoEgreso #selectWrapperSelectEnte .iconDesplegar {
+    z-index: 3;
+
+}
+
+#formNewIngresoEgreso #selectWrapperSelectEnte #enteMov {
+    z-index: 2;
+
+}
+
+#formNewIngresoEgreso #selectWrapperSelectEnte #enteMov+ul.list-select-custom {
     z-index: 1;
 }
 

@@ -15,6 +15,8 @@ urlpatterns = [
     path("cliente/<int:pk>/operaciones/",CuentaUser.as_view(),name="cuentaUser"),
     path("usuario/administracion/",PanelAdmin.as_view(),name="panelAdmin"),
     path("usuario/administracion/permisos/",PanelPermisos.as_view(),name="panelPermisos"),
+    path("usuario/configurar_perfil/",ConfiguracionPerfil.as_view(),name="configurarPerfil"),
+
 
     #region Sucursal CRUD - - - - - - - -
     path("usuario/administracion/sucursales/",PanelSucursales.as_view(),name="panelSucursales"),

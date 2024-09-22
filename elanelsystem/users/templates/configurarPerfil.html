@@ -1,0 +1,52 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/configuracion_perfil.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+{% endblock css %}
+
+{% block content %}
+    <div class="wrapperConfg" id="wrapperConfg">
+        <form method="POST" class="formConfg" id="formContrasenia">
+            {% csrf_token %}
+            <div class="containerInputs">
+                <div class="wrapperInput">
+                    <label for="">Contraseña</label>
+                    <input type="text" class="not_ed input-read-write-default" id="inputContrasenia" name="inputContrasenia" value="{{request.user.c}}">
+                </div>
+            </div>
+            
+            <div class="buttonsActions">
+                <button type="button" class="uploadForm add-button-default">Confirmar</button>
+                <button type="button" class="desableForm button-default-style">Cancelar</button>
+                <button type="button" class="enableForm add-button-default">Editar</button>
+            </div>
+        </form>
+        {% for key, value in additional_passwords.items %}
+            <form method="POST" class="formConfg">
+                {% csrf_token %}
+                <div class="containerInputs">
+                    <div class="wrapperInput">
+                        <label for="">{{value.descripcion}}</label>
+                        <input type="text" class="not_ed input-read-write-default" id="inputContrasenia" name="{{key}}" value="{{value.password}}">
+                    </div>
+                </div>
+                
+                <div class="buttonsActions">
+                    <button type="button" class="uploadForm add-button-default">Confirmar</button>
+                    <button type="button" class="desableForm button-default-style">Cancelar</button>
+                    <button type="button" class="enableForm add-button-default">Editar</button>
+                </div>
+            </form>
+        {% endfor %}
+    </div>
+    <div class="messageWrapper">
+        <h3>Contraseña de tu usuario actualizada</h3>
+    </div>
+    
+{% endblock content %}
+{% block js %}
+<script src="{% static 'js/fetch_upload_passwords.js' %}"></script>
+
+{% endblock js %}

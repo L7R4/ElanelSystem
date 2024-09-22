@@ -39,16 +39,23 @@
                 </ul>
             </div>
         </div>
-
-        <div id="wrapperNroSolicitud">
-            <label for="">Nro contrato</label>
-            <input type="text" name="nro_contrato" maxlength="10" class="input-read-write-default" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required id="id_nro_contrato">
-
-        </div>
-
-        <div id="wrapperNroOrden">
-            <label for="">Nro orden</label>
-            <input type="text" name="nro_orden" class="input-read-write-default" readonly oninput="this.value=this.value.replace(/[^0-9]/g, '');" required id="id_nro_orden">
+        <div id="wrapperChances" class="inputWrapper">
+            <div class="wrapperChanceItem">
+                <div class="chanceItem">
+                    <h5>Chance 1)</h5>
+                    <div class="wrapperNroSolicitud">
+                        <label for="">Nro contrato</label>
+                        <input type="text" name="nro_contrato_1" maxlength="10" class="input-read-write-default" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required id="nroContrato_1">
+                    </div>
+            
+                    <div class="wrapperNroOrden">
+                        <label for="">Nro orden</label>
+                        <input type="text" name="nro_orden_1" class="input-read-write-default" readonly oninput="this.value=this.value.replace(/[^0-9]/g, '');" required id="nroOrden_1">
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="add-button-default" id="agregarNewChance" onclick="agregarChance()">Agregar chance</button>
+            
         </div>
 
         <div id="wrapperFecha">
@@ -220,6 +227,7 @@
     </script>
 
     <script src="{% static 'js/form_create_sale.js' %}"></script>
+    <script src="{% static 'js/seleccionarChances.js' %}"></script>
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
     <script src="{% static 'js/errorsFormManagement.js' %}"></script>
 {% endblock js %}

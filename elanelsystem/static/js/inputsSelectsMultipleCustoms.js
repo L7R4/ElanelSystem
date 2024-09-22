@@ -16,8 +16,7 @@
 */
 
 let inputSelectMultipleCustom = document.querySelectorAll(".containerInputAndOptions > input.multipleSelect");
-console.log("Input select multiple custom")
-console.log(inputSelectMultipleCustom)
+
 
 inputSelectMultipleCustom.forEach(input => {
     let optionsList = input.nextElementSibling;

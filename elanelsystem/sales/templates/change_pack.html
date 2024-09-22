@@ -5,6 +5,8 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/create_adjudicacion.css' %}">
+<link rel="stylesheet" href="{% static 'css/change_pack.css' %}">
+
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 {% endblock css %}
 
@@ -42,11 +44,29 @@
             </div>
         </div>
 
-        <div id="wrapperNroSolicitud">
-            <label for="">Nro contrato</label>
-            <input type="text" value="{{venta.nro_contrato}}" class="not_ed input-read-write-default" name="nro_contrato" maxlength="10" required id="id_nro_contrato">
+        <div id="wrapperChances" class="inputWrapper">
+            <div class="wrapperChanceItem">
+            {% for contrato in venta.cantidadContratos %}
+                
+                <div class="chanceItem">
+                    <h5>Chance {{ forloop.counter }})</h5>
+                    <div class="wrapperNroSolicitud">
+                        <label for="">Nro contrato</label>
+                        <input type="text" name="nro_contrato_{{ forloop.counter }}" value="{{ contrato.nro_contrato }}" readonly maxlength="10" class="input-read-write-default not_ed" required id="nroContrato_{{ forloop.counter }}">
+                    </div>
+            
+                    <div class="wrapperNroOrden">
+                        <label for="">Nro orden</label>
+                        <input type="text" name="nro_orden_{{ forloop.counter }}" value="{{ contrato.nro_orden }}" class="input-read-write-default not_ed" readonly required id="nroOrden_{{ forloop.counter }}">
+                    </div>
+                    {% if forloop.counter != 1 %} 
+                    <button type="button" class="quitarChanceButton delete-button-default" onclick="quitarChance(this)">Quitar chance</button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </div>
+            <button type="button" class="add-button-default" id="agregarNewChance" onclick="agregarChance()">Agregar chance</button>
         </div>
-
 
         <div id="wrapperFecha">
             <label for="">Fecha</label>
@@ -191,10 +211,13 @@
         input.value = !val[2] ? val[1] : val[1] + '/' + val[2] + (val[3] ? '/' + val[3] : '');
         });
         var urlRequestProductos = "{% url 'products:get_products' %}";
+        var cantidadChances = {{venta.cantidadContratos|length}};
     </script>
 
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
     <script src="{% static 'js/errorsFormManagement.js' %}"></script>
+    <script src="{% static 'js/seleccionarChances.js' %}"></script>
+
     <script src="{% static 'js/form_change_pack.js' %}"></script>
     
 {% endblock js %}

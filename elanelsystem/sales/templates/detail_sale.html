@@ -20,7 +20,7 @@
                 <h1>¿Estas seguro que quieres eliminar este contrato?</h1>
 
                 <div class="inputClaveWrapper">
-                    <p>Ingrese el <strong>N° de orden</strong> para confirmar</p>
+                    <p>Ingrese el <strong>N° de operación</strong> para confirmar</p>
                     <input name="nro_orden_delete" class="input-read-write-default" type="text" id="input_confirm_delete">
                 </div>
                 <div class="confirmClaveWrapperButtons">
@@ -172,18 +172,62 @@
             {% endif %}
             
 
-            <div class="inputs" id="n_solicitud">
-                <h2>N° Contrato</h2>
-                <div>
-                    <h3>{{object.nro_contrato}}</h3>
-                </div>
-            </div>
-
-            <div class="inputs" id="n_orden">
-                <h2>N° Orden</h2>
-                <div>
-                    <h3>{{object.nro_orden}}</h3>
-                </div>
+            <div id="wrapperContratos" class="wrapperContratos">
+                {% for contrato in object.cantidadContratos  %}
+                {% if object.adjudicado.status %}
+                    {% if contrato.nro_contrato == object.adjudicado.contratoAdjudicado%}
+                    <div class="contratosItem contratoAdjudicado">
+                        <h2 class="adjText">Adjudicado</h2>
+                        <h2>Chance {{ forloop.counter }}</h2>
+                        <div class="inputs" id="n_solicitud">
+                            <h2>N° Contrato</h2>
+                            <div>
+                                <h3>{{contrato.nro_contrato}}</h3>
+                            </div>
+                        </div>
+                        <div class="inputs" id="n_orden">
+                            <h2>N° Orden</h2>
+                            <div>
+                                <h3>{{contrato.nro_orden}}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                        <div class="contratosItem contratoDisable">
+                            <h2>Chance {{ forloop.counter }}</h2>
+                            <div class="inputs" id="n_solicitud">
+                                <h2>N° Contrato</h2>
+                                <div>
+                                    <h3>{{contrato.nro_contrato}}</h3>
+                                </div>
+                            </div>
+                            <div class="inputs" id="n_orden">
+                                <h2>N° Orden</h2>
+                                <div>
+                                    <h3>{{contrato.nro_orden}}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    {%endif%}
+                {% else %}
+                    <div class="contratosItem">
+                        <h2>Chance {{ forloop.counter }}</h2>
+                        <div class="inputs" id="n_solicitud">
+                            <h2>N° Contrato</h2>
+                            <div>
+                                <h3>{{contrato.nro_contrato}}</h3>
+                            </div>
+                        </div>
+                        <div class="inputs" id="n_orden">
+                            <h2>N° Orden</h2>
+                            <div>
+                                <h3>{{contrato.nro_orden}}</h3>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% endfor %}
             </div>
 
             <div class="inputs" id="fec_inscripcion">
@@ -409,6 +453,13 @@
                         <img id="failedPostPagoImg" src="{% static 'images/icons/error_icon.png' %}"  alt="">
                         <h2 class="infoCuotaStatus"></h2>
                     </div>
+
+                    <div class="containerDetalleCuota" id="wrapperVerDetallesPago">
+                        <div class="buttonsActions">
+                            <button type="button" id="closeViewCuota"><img src="{% static 'images/icons/close.svg' %}" alt=""></button>
+                        </div>
+                        <h4 class ="cuotaPicked"></h4>
+                    </div>
                 </div> 
 
                 {% if object.suspendida %}
@@ -434,7 +485,7 @@
     
     var venta_id = {{object.id}}
     var deleteSaleUrl = "{{deleteSaleUrl}}"
-
+    var crsf_token = '{%csrf_token%}'
 </script>
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 

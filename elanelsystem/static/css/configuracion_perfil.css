@@ -1,0 +1,165 @@
+.wrapper_content
+{
+    padding: 2rem;
+    box-sizing: border-box;
+}
+
+.sucursalItem{
+    width: 80%;
+    background-color: #fff;
+    margin-bottom: 1.4rem;
+    border-radius: .7rem;
+    box-sizing: border-box;
+    padding: 1rem 2rem;
+}
+.sucursalItem > h2{
+    font-size: clamp(1.8rem, 1.5vw, 2.2rem);
+    font-family: raleway-semibold;
+    color:var(--primary-color); 
+}
+.containerInputs{
+    display: flex;
+    gap: 1rem;
+    margin: .7rem 0rem;
+    width: 100%;
+    flex-wrap: wrap;
+}
+.wrapperInput{
+    width: 30%;
+    height: fit-content;
+}
+
+.wrapperInput:first-child{
+    width: 50%;
+}
+
+.wrapperInput > label{
+    display: block;
+    font-size: clamp(1.5rem, 1.2vw, 1.8rem);
+    font-family: raleway-semibold;
+    margin-bottom: .3rem;
+    color:var(--third-color); 
+}
+
+.formConfg .wrapperInput > input{
+    opacity: 1;
+    padding: .7rem 0;
+    color: var(--third-color);
+    font-family: raleway-semibold;
+    pointer-events: unset;
+
+}
+.wrapperInput > input.not_ed{
+    pointer-events: none;
+    background-color: #c8c8c81f;
+}
+
+.wrapperInputNew{
+    width: 47%;
+}
+.wrapperInputNew > label{
+    display: block;
+    font-size: clamp(1.3rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+    margin-bottom: .3rem;
+    /* color:var(--primary-color);  */
+}
+.wrapperInputNew > input{
+    width: 100%;
+    box-sizing: border-box;
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    border: 2px solid var(--third-color);
+    background-color: #3043615e;
+    color: #000000c2;
+    border-radius: 0.6rem;
+    display: flex;
+    align-items: center;
+    padding: .6rem;
+    text-indent: 1.2rem;
+    outline: none;
+}
+
+.wrapperInputNew> input.open{
+    color: var(--background-color);
+    pointer-events: unset;
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+
+}
+
+.buttonsActions{
+    width: 100%;
+    display: flex;
+    gap: 1rem;
+    height: 3rem;
+}
+.deleteSucursal{
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    color: var(--third-color);
+}
+#buttonStopAddSucursal{
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    color: var(--background-color);
+}
+.enableForm,.uploadForm, #buttonConfirmAddSucursal{
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    color: var(--third-color);
+}
+
+.desableForm{
+    color: var(--background-color);
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+}
+
+#buttonAddSucursal{
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    color: var(--third-color);
+    width: 20%;
+    padding: 1.2rem .9rem;
+    cursor: pointer;
+}
+#buttonAddSucursal.blocked{
+    display: none;
+}
+.div{
+    width: 2rem;
+    height: 2rem;
+    background-color: red;
+}
+.formConfg{
+    margin-bottom: 2rem;
+}
+
+.formConfg > .buttonsActions > .desableForm,.formConfg > .buttonsActions > .uploadForm{
+    display: none;
+}
+.formConfg > .buttonsActions > .desableForm.active,.formConfg > .buttonsActions > .uploadForm.active{
+    display: flex;
+}
+
+.formSucursal{
+    position: relative;
+}
+
+.messageWrapper {
+    background-color: var(--third-color);
+    padding: 1.5rem 2rem;
+    border-radius: .6rem;
+    width: fit-content;
+    border: var(--secundary-color) 2px solid;
+    position: absolute;
+    bottom: 3%;
+    z-index: 100;
+    opacity: 0;
+    transition: all 1s ease;
+}
+.messageWrapper.active{
+    opacity: 1;
+}
+
+.messageWrapper > h3{
+    font-size: clamp(1.4rem, 1.2vw, 2rem);
+    color: var(--primary-color);
+    font-family: raleway-semibold;
+}

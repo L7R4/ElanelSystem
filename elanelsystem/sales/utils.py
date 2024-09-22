@@ -240,7 +240,7 @@ def searchSucursalFromStrings(sucursal):
 
 def get_ventasBySucursal(sucursal):
     from sales.models import Ventas
-    if sucursal == "Todas":
+    if sucursal == "":
         return Ventas.objects.all()
     return Ventas.objects.filter(agencia__pseudonimo=sucursal)
 
@@ -252,20 +252,27 @@ def getInfoBaseCannon(venta, cuota):
     return {
         'cuota' : cuota["cuota"],
         'nro_operacion': cuota["nro_operacion"],
-        'nro_orden': venta.nro_orden,
-        'nro_cliente' :cliente.nro_cliente,
+        'contratos': venta.cantidadContratos,
         'nombre_del_cliente' : cliente.nombre,
+        'nro_del_cliente' : cliente.nro_cliente,
         'sucursal' : venta.agencia.pseudonimo,
         'tipo_mov' : "Ingreso",
         'fecha_de_vencimiento' : cuota['fechaDeVencimiento'],
         'descuento' : cuota['descuento'],
         'estado' : cuota['status'],
         'dias_de_mora' : cuota['diasRetraso'],
+        'total_final' : cuota.get('totalFinal',None),
+        'interes_por_mora' : cuota.get('interesPorMora',None),
     }
 
 
 def dataStructureCannons(sucursal):
-    ventas = get_ventasBySucursal(sucursal)
+    from sales.models import Ventas
+    from elanelsystem.views import convertirValoresALista
+    
+    listaAgencias = convertirValoresALista({"agencia":sucursal})["agencia"]
+    
+    ventas = Ventas.objects.filter(agencia__pseudonimo__in=listaAgencias)
 
     cuotas_data = []
 
@@ -276,31 +283,12 @@ def dataStructureCannons(sucursal):
             cuota = ventas[i].cuotas[k]
 
             if ventas[i].cuotas[k]["status"] in ["Pagado", "Parcial", "Atrasado"]:
-                if(ventas[i].cuotas[k]["pagoParcial"]["status"]):
-
-                    for j in range (len(ventas[i].cuotas[k]["pagoParcial"]["amount"])):
-                        pagoParcial = cuota["pagoParcial"]["amount"][j]
-                        movimiento_dataParcial ={
-                            **getInfoBaseCannon(venta,cuota), # Metodo para desempaquetar un diccionario con **
-                            'fecha' : pagoParcial["date"],
-                            'pagado' : pagoParcial["value"],
-                            "cobrador" : pagoParcial["cobrador"],
-                            'tipo_pago': pagoParcial["metodo"],
-                        }
-                        cuotas_data.append(movimiento_dataParcial)
-
-                else:
-                    movimiento_dataTotal = {
-                        **getInfoBaseCannon(venta,cuota), # Metodo para desempaquetar un diccionario con **
-                        'fecha' : cuota["fecha_pago"],
-                        'pagado' : cuota["pagado"],
-                        "cobrador" : cuota["cobrador"],
-                        'tipo_pago': cuota["metodoPago"],
-                    }
-                    cuotas_data.append(movimiento_dataTotal)
+                for pago in cuota["pagos"]:
+                    mov = {**getInfoBaseCannon(venta,cuota),**pago}
+                    cuotas_data.append(mov)
 
 
-
+    
     cuotas_data.reverse()
     return cuotas_data
 
@@ -359,13 +347,11 @@ def dataStructureVentas(sucursal):
 
 def dataStructureMovimientosExternos(sucursal):
     from sales.models import MovimientoExterno
+    from elanelsystem.views import convertirValoresALista
+
     movs_externos = ""
-
-    if(sucursal == "Todas"):
-        movs_externos = MovimientoExterno.objects.all()
-    else:
-        movs_externos = MovimientoExterno.objects.filter(agencia__pseudonimo=sucursal)
-
+    listaAgencias = convertirValoresALista({"agencia":sucursal})["agencia"]
+    movs_externos = MovimientoExterno.objects.filter(agencia__pseudonimo__in=listaAgencias)
     return [
         {
             "tipoIdentificacion": movs_externo.tipoIdentificacion,
@@ -375,9 +361,9 @@ def dataStructureMovimientosExternos(sucursal):
             "denominacion": movs_externo.denominacion,
             "tipoMoneda": movs_externo.tipoMoneda,
             "tipo_mov": movs_externo.movimiento,
-            "pagado": movs_externo.dinero,
-            "tipo_pago": movs_externo.metodoPago,
-            "agencia": movs_externo.agencia.id if movs_externo.agencia else None,
+            "monto": movs_externo.dinero,
+            "metodoPago": movs_externo.metodoPago,
+            "sucursal": movs_externo.agencia.pseudonimo,
             "ente": movs_externo.ente,
             "fecha": movs_externo.fecha,
             "campania": movs_externo.campania,
@@ -404,6 +390,8 @@ def dataStructureMoviemientosYCannons(sucursal):
 
 #endregion
 
+
+#region Other functions
 def deleteFieldsInDataStructures(lista_dicts, campos_a_eliminar):
     # Iterar sobre cada diccionario en la lista
     for item in lista_dicts:
@@ -436,6 +424,31 @@ def formatKeys(lista_dicts):
 
     return lista_formateada
 
+def getEstadoVenta(venta):
+    if(venta.deBaja["status"]):
+        return f"De baja por {venta.deBaja['motivo']}"
+    elif(venta.suspendida):
+        return "Suspendida"
+    elif(venta.adjudicado["status"]):
+        return f"Adjudicada por {venta.adjudicado['tipo']}"
+    else:
+        return "Activo"
+    
+
+def getCuotasPagadasSinCredito(cuotas):
+    cuotasPagadasSinCredito = []
+    for cuota in cuotas:
+        pagos = cuota["pagos"]
+        metodoDePagoDeCuota = [pago["metodoPago"] for pago in pagos] # Obtiene los metodos de pago de la cuota
+        # Me aseguro que si se aplico un credito a una cuota y no fue el unico metodo de pago, se tome como ultima cuota porque quiere decir que el cliente abono un monto de la cuota
+        if("Credito" in metodoDePagoDeCuota and len(metodoDePagoDeCuota) != 1):
+            cuotasPagadasSinCredito.append(cuota)
+        # Si la cuota no tiene credito, se toma como ultima cuota
+        elif ("Credito" not in metodoDePagoDeCuota):
+            cuotasPagadasSinCredito.append(cuota)
+    return cuotasPagadasSinCredito
+
+#endregion
 
 
 #region Para enviar correos electrónicos

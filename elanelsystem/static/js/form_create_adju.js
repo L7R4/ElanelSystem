@@ -46,6 +46,7 @@ async function fetchFunction(body, url) {
 let productoHandled; // Variable para guardar el producto seleccionado
 let productos; // Variable para guardar los productos
 
+
 async function requestProductos() {
 
     let body = {
@@ -57,6 +58,7 @@ async function requestProductos() {
 
     return data["productos"];
 }
+
 
 // Cuando se selecciona un tipo de producto se filtran los productos
 inputTipoDeProducto.addEventListener("input", async () => {
@@ -75,17 +77,18 @@ inputTipoDeProducto.addEventListener("input", async () => {
     } else {
         inputProducto.parentElement.parentElement.classList.add("desactive") // Bloquea el input de producto
     }
-
 });
 
 
 // Cuando se selecciona un producto se guarda en la variable productoHandled
 inputProducto.addEventListener("input", async () => {
-    productoHandled = productos.filter((item) => item["nombre"] == inputProducto.value)[0];
-
-    if (window.location.href.includes("sorteo")) {
-        id_importe.value = productoHandled["importe"];
+    if (productos != null) {
+        productoHandled = productos.filter((item) => item["nombre"] == inputProducto.value)[0];
     }
+    if (window.location.href.includes("sorteo")) {
+        id_importe.value = productoHandled ? productoHandled["importe"] * cantidadChances : "";
+    }
+    rellenarCamposDeVenta();
 });
 
 
@@ -95,6 +98,7 @@ inputsWithEventInput.forEach(input => {
         rellenarCamposDeVenta();
     });
 });
+
 
 function rellenarCamposDeVenta() {
     try {
@@ -106,10 +110,12 @@ function rellenarCamposDeVenta() {
             id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
             id_importe_x_cuota.value = parseInt(parseInt(id_total_a_pagar.value) / parseInt(id_nro_cuotas.value))
         } else {
+            // let importeAFinanciar = parseInt(document.querySelector("#wrapperImporte .textInputP").textContent)
+
             id_intereses_generados.value = parseInt((parseInt(id_importe.value) * id_tasa_interes.value) / 100)
 
             id_total_a_pagar.value = (parseInt(id_importe.value) + parseInt(id_intereses_generados.value)) - parseInt(dineroDeCuotas)
-            id_importe_x_cuota.value = parseInt((importe / nroCuotas) + (parseInt(id_intereses_generados.value) / nroCuotas))
+            id_importe_x_cuota.value = parseInt((parseInt(id_importe.value) / parseInt(id_nro_cuotas.value)) + (parseInt(id_intereses_generados.value) / parseInt(id_nro_cuotas.value)))
 
         }
 
@@ -141,8 +147,9 @@ submitAdjudicacionButton.addEventListener("click", async () => {
     body = {}
     let inputs = form_create_sale.querySelectorAll("input")
     let textareas = form_create_sale.querySelectorAll("textarea")
+    let inputsAsP_tag = form_create_sale.querySelectorAll(".textInputP")
 
-    inputs = [...inputs, ...textareas]
+    inputs = [...inputs, ...textareas, ...inputsAsP_tag]
 
     inputs.forEach(element => {
         body[element.name] = element.value
@@ -161,8 +168,9 @@ submitAdjudicacionButton.addEventListener("click", async () => {
 
 })
 
+
 function checkInputs() {
-    const requiredInputs = formSelectCustomer.querySelectorAll('input[required]');
+    const requiredInputs = form_create_sale.querySelectorAll('input[required]');
     let allInputsCompleted = true;
 
     requiredInputs.forEach(input => {
@@ -179,7 +187,7 @@ function checkInputs() {
 }
 
 // Agregar evento de input a los inputs requeridos
-const requiredInputs = formSelectCustomer.querySelectorAll('input[required]');
+const requiredInputs = form_create_sale.querySelectorAll('input[required]');
 requiredInputs.forEach(input => {
     input.addEventListener('input', checkInputs);
 });
