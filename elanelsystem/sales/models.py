@@ -123,30 +123,7 @@ class Ventas(models.Model):
     
     PORCENTAJE_ANUALIZADO = 15
     
-    # Estados inciales de campos deBaja, adjudicacion, auditorias
-    DEFAULT_STATUS_BAJA ={
-        "status" : False,
-        "motivo" : "",
-        "detalleMotivo" : "",
-        "observacion" : "",
-        "responsable" : "",
-        "nuevaVentaPK": ""
-    }
-
-    DEFAULT_STATUS_ADJUDICACION = {
-        "status" : False,
-        "tipo" : "",
-        "autorizado_por": "",
-        "contratoAdjudicado": "",
-    }
-
-    DEFAULT_STATUS_AUDITORIAS =[{
-            "version":0,
-            "realizada":False,
-            "grade":False,
-            "comentarios":"",
-            "fecha_hora": "",
-        }]
+    
     
     #region Campos
     nro_cliente = models.ForeignKey(Cliente,on_delete=models.CASCADE,related_name="ventas_nro_cliente")
@@ -155,7 +132,6 @@ class Ventas(models.Model):
     nro_operacion = models.IntegerField(default=returnOperacion)
     agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     campania = models.CharField("Campaña:",max_length=50,default="")
-    cambioTitularidadField = models.JSONField(default=list,blank=True,null=True)
     
     suspendida = models.BooleanField(default=False)
     importe = models.FloatField("Importe:",default=0)
@@ -172,11 +148,13 @@ class Ventas(models.Model):
     vendedor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="ventas_ven_usuario",default="",blank=True,null=True)
     supervisor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="venta_super_usuario",default="",blank=True,null=True)
     observaciones = models.CharField("Obeservaciones:",max_length=255,blank=True,null=True)
-    auditoria = models.JSONField(default=DEFAULT_STATUS_AUDITORIAS)
-    adjudicado = models.JSONField(default=DEFAULT_STATUS_ADJUDICACION)
-    deBaja = models.JSONField(default=DEFAULT_STATUS_BAJA)
-    cuotas = models.JSONField(default=list,blank=True,null=True)
     cantidadContratos = models.JSONField("Chances", default=list, blank=True, null=True)
+
+    cambioTitularidadField = models.JSONField(default=list,blank=True,null=True)
+    auditoria = models.JSONField(default=list,blank=True,null=True)
+    adjudicado = models.JSONField(default=dict,blank=True,null=True)
+    deBaja = models.JSONField(default=dict,blank=True,null=True)
+    cuotas = models.JSONField(default=list,blank=True,null=True)
     # realizada_por = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="ventas_real_usuario")
     #endregion
     
@@ -312,6 +290,28 @@ class Ventas(models.Model):
     #endregion
 
 
+    def setDefaultFields(self):
+        self.adjudicado ={
+            "status" : False,
+            "tipo" : "",
+            "autorizado_por": "",
+            "contratoAdjudicado": "",
+        }
+        self.auditoria =[{
+            "version":0,
+            "realizada":False,
+            "grade":False,
+            "comentarios":"",
+            "fecha_hora": "",
+        }]
+        self.deBaja ={
+            "status" : False,
+            "motivo" : "",
+            "detalleMotivo" : "",
+            "observacion" : "",
+            "responsable" : "",
+            "nuevaVentaPK": ""
+        }
 
     def contarDiasSegunModalidad(self,modalidad,ultimaFechaDevencimiento = ""):
         modalidad = modalidad.lower()
@@ -605,6 +605,11 @@ class CuentaCobranza(models.Model):
 
     def __str__(self):
         return self.alias
+    
+    def save(self, *args, **kwargs):
+        self.alias = self.alias.capitalize()
+
+        super(CuentaCobranza, self).save(*args, **kwargs)
     
     #region Validaciones
     def clean(self):

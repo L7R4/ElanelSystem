@@ -21,6 +21,10 @@ class Sucursal(models.Model):
         return self.pseudonimo
 
     def save(self, *args, **kwargs):
+        self.direccion = self.direccion.capitalize()
+        self.provincia = self.provincia.title()
+        self.localidad = self.localidad.title()
+
         if((self.localidad).lower() in "resistencia"):
             self.pseudonimo = "Sucursal central"
         else:    
@@ -80,7 +84,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         ('Dueños', 'Dueños'), 
     )
     nombre = models.CharField("Nombre Completo",max_length=100)
-    sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios',blank=True,null = True)
+    sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios',blank=True)
     # sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
     rango = models.CharField("Rango:",max_length=40)
@@ -119,7 +123,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         self.lugar_nacimiento = self.lugar_nacimiento.title()
         self.estado_civil = self.estado_civil.capitalize()
         self.xp_laboral = self.xp_laboral.capitalize()
-
 
         super(Usuario, self).save(*args, **kwargs)
 
@@ -264,6 +267,18 @@ class Cliente(models.Model):
     
     def __str__(self):
         return f'{self.nro_cliente}: {self.nombre} - {self.dni}'
+    
+    def save(self, *args, **kwargs):
+
+        # Capitalizar campos seleccionados
+        self.nombre = self.nombre.title()
+        self.domic = self.domic.capitalize()
+        self.prov = self.prov.title()
+        self.loc = self.loc.title()
+        self.estado_civil = self.estado_civil.capitalize()
+        self.ocupacion = self.ocupacion.capitalize()
+        super(Cliente, self).save(*args, **kwargs)
+
 
     def clean(self):
         errors = {}

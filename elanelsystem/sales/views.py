@@ -24,6 +24,9 @@ from elanelsystem.views import filterMainManage, convertirValoresALista
 from django.forms.models import model_to_dict
 from django.templatetags.static import static
 
+from django.views.decorators.cache import cache_control
+from django.utils.decorators import method_decorator
+
 
 
 
@@ -81,6 +84,7 @@ class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
 #endregion
 
 #region Ventas - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch') # Para no guardar el cache 
 class CrearVenta(TestLogin,generic.DetailView):
     model = Cliente
     template_name = "create_sale.html"
@@ -208,6 +212,10 @@ class CrearVenta(TestLogin,generic.DetailView):
         sale.paquete = form['paquete']
         sale.campania = form['campania']
         sale.observaciones = form['observaciones']
+        sale.fecha = form['fecha'] + " 00:00"
+
+        sale.crearCuotas()
+        sale.setDefaultFields()
 
         
         try:
@@ -219,10 +227,7 @@ class CrearVenta(TestLogin,generic.DetailView):
             print(errors)
             return JsonResponse({'success': False, 'errors': errors}, safe=False)
         else:
-            sale.fecha = form['fecha'] + " 00:00"
-            sale.crearCuotas()
             sale.save()
-            sale.testVencimientoCuotas()
 
             return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
 
@@ -241,8 +246,7 @@ def requestVendedores_Supervisores(request):
     vendedores = [vendedor.nombre for vendedor in vendedores]
     supervisores = [supervisor.nombre for supervisor in supervisores]
 
-    print(vendedores)
-    print(supervisores)
+ 
 
     return JsonResponse({"vendedores":vendedores,"supervisores":supervisores}, safe=False)
 
@@ -286,8 +290,6 @@ class DetailSale(TestLogin,generic.DetailView):
 def eliminarVenta(request,pk):
     form = json.loads(request.body)
     nro_operacion = form["nro_operacion_delete"]
-    print("nro_operacion")
-    print(type(nro_operacion))
 
     venta = Ventas.objects.get(pk=pk)
     if(venta.nro_operacion == int(nro_operacion)):
@@ -385,10 +387,8 @@ def pagarCuota(request):
             if(formaPago =="total"):
                 cuota = list(filter(lambda x:x["cuota"] == cuotaRequest,venta.cuotas))[0]
                 monto = cuota["total"]
-                # print("Pagado")
             elif(formaPago =="parcial"):
                 monto = data.get('valorParcial')
-                # print("Parcial")
 
             venta.pagarCuota(cuotaRequest,int(monto),metodoPago,cobrador,request.user.nombre) #Funcion que paga parcialmente
                 
@@ -550,7 +550,7 @@ class PlanRecupero(generic.DetailView):
             self.object.save()
             return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
 
-
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch') # Para no guardar el cache 
 class CreateAdjudicacion(TestLogin,generic.DetailView):
     model = Ventas
     template_name = "create_adjudicacion.html"
@@ -649,7 +649,13 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         sale.fecha = form['fecha']
 
         sale.observaciones = form['observaciones']
+        sale.fecha = form['fecha'] + " 00:00"
 
+        sale.setDefaultFields()
+        sale.crearCuotas() # Crea las cuotas
+        if(tipo_adjudicacion == "sorteo"):
+            sale.acreditarCuotasPorAnticipo(sumaDePagos,request.user.nombre)
+        sale.crearAdjudicacion(contratoAdjudicado,numeroOperacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
         
 
 
@@ -659,19 +665,15 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
             errors.update(e.message_dict)
        
         if len(errors) != 0:
+            print(errors)
             return JsonResponse({'success': False, 'errors': errors}, safe=False)  
         else:
-            sale.fecha = form['fecha'] + " 00:00"
-            sale.crearCuotas() # Crea las cuotas
-            if(tipo_adjudicacion == "sorteo"):
-                sale.acreditarCuotasPorAnticipo(sumaDePagos,request.user.nombre)
-            sale.crearAdjudicacion(contratoAdjudicado,numeroOperacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
-            
             sale.save()
             
             self.object.darBaja("adjudicacion",0,"","",request.user.nombre) # Da de baja la venta que fue adjudicada
             self.object.save()
 
+            
             # #region Para enviar el correo
             # subject = 'Se envio una adjudicacion'
             # template = 'adjudicacion_correo.html'
