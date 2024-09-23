@@ -393,6 +393,8 @@ class DetailUser(TestLogin, generic.DetailView):
 
             usuario.groups.add(rango)
             usuario.set_password(form['password'])
+            usuario.setAdditionalPasswords() # Seteamos las contraseñas adicionales segun los permisos
+
             usuario.save()
 
             response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
@@ -540,9 +542,7 @@ class CuentaUser(TestLogin, generic.DetailView):
     template_name = "cuenta_cliente.html"
 
     def get(self,request,*args,**kwargs):
-        # planes = Plan.objects.all()
         self.object = self.get_object()
-        # print(self.object.agencia_registrada)
         ventas = self.object.ventas_nro_cliente.all()
 
         for i in range (ventas.count()):
