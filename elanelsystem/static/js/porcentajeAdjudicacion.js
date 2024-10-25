@@ -20,8 +20,6 @@ if (document.querySelector('#wrapperPorcetajeAReconocer')) {
 
     createContextMenu(menuHtml, inputWrapper);
 
-
-
 }
 
 function editarProcentaje(element) {

@@ -102,7 +102,7 @@
 }
 
 .tittlesWrapper>.tittles>li {
-    color: white;
+    color: var(--third-color);
     font-size: 1.6rem;
     font-family: raleway-semibold;
     padding: 1rem 0;
@@ -135,4 +135,67 @@
 .valuesWrapper>.values>a>div {
     width: 20%;
     text-align: center;
+}
+
+.context-menu{
+    background-color: aliceblue;
+    padding: 2rem;
+}
+
+#formNewDescuento{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
+    gap: 2rem;
+    padding: 2rem 0;
+}
+
+#tittleModalEgresoIngreso{
+    color: var(--secundary-color);
+    font-size: clamp(2rem, 1.6vw, 3rem);
+    font-family: raleway-semibold;
+}
+.tingle-modal-box__footer > button{
+    color: var(--third-color);
+    font-size: clamp(1.5rem, 1.2vw, 1.8rem);
+    font-family: raleway-semibold;
+    border-radius: .6rem;
+}
+
+#formNewDescuento > .wrapperInput{
+    display: flex;
+    flex-direction: column;
+}
+
+#formNewDescuento > .wrapperInput >input{
+    height: 3.1rem;
+}
+
+#formNewDescuento .labelInput{
+    color: var(--background-color);
+    font-size: clamp(1.5rem, 1.2vw, 1.8rem);
+    font-family: raleway-semibold;
+}
+
+#formNewDescuento>#selectWrapperSelectTypePayments .iconDesplegar {
+    z-index: 6;
+}
+
+#formNewDescuento>#selectWrapperSelectTypePayments #metodoPagoInput {
+    z-index: 5;
+}
+
+#formNewDescuento>#selectWrapperSelectTypePayments .options {
+    z-index: 4;
+}
+
+#formNewDescuento>#selectWrapperSelectCampania .iconDesplegar {
+    z-index: 3;
+}
+
+#formNewDescuento>#selectWrapperSelectCampania #campaniaInput {
+    z-index: 2;
+}
+
+#formNewDescuento>#selectWrapperSelectCampania .options {
+    z-index: 1;
 }

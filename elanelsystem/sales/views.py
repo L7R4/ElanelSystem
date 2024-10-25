@@ -27,7 +27,8 @@ from django.templatetags.static import static
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
 
-
+import pandas as pd
+from django.core.files.storage import FileSystemStorage
 
 
 class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
@@ -231,6 +232,65 @@ class CrearVenta(TestLogin,generic.DetailView):
 
             return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
 
+def importar_ventas(request):
+    if request.method == "POST":
+        # Obtener el archivo subido
+        archivo_excel = request.FILES['archivo_excel']
+
+        # Guardar temporalmente el archivo
+        fs = FileSystemStorage()
+        filename = fs.save(archivo_excel.name, archivo_excel)
+        file_path = fs.path(filename)
+
+        try:
+            # Leer la hoja "Cuotas" del archivo Excel
+            df = pd.read_excel(file_path, sheet_name="Cuotas")
+
+            # Iterar sobre las filas del DataFrame
+            for _, row in df.iterrows():
+                # Obtener la venta correspondiente por nro_operacion
+                nro_operacion = row['Nro Operación']
+                venta = Ventas.objects.get(nro_operacion=nro_operacion)
+
+                # Verificar si la cuota ya existe en la venta
+                cuota_encontrada = None
+                for cuota in venta.cuotas:
+                    if cuota['cuota'] == row['Cuota']:
+                        cuota_encontrada = cuota
+                        break
+
+                # Si la cuota ya existe, actualizarla
+                if cuota_encontrada:
+                    cuota_encontrada['status'] = row['Estado']
+                    cuota_encontrada['total'] = row['Total']
+                    cuota_encontrada['pagos'] = [{
+                        'monto_pagado': row['Pagado'],
+                        'fecha_pago': row['Fecha de Pago'] if not pd.isna(row['Fecha de Pago']) else None
+                    }]
+                    
+                    # Calcular días de retraso si está pendiente
+                    if row['Estado'] == "Pendiente":
+                        fecha_vencimiento = datetime.strptime(row['Fecha de Vencimiento'], '%d/%m/%Y')
+                        hoy = datetime.now()
+                        if hoy > fecha_vencimiento:
+                            dias_retraso = (hoy - fecha_vencimiento).days
+                            cuota_encontrada['diasRetraso'] = dias_retraso
+                        else:
+                            cuota_encontrada['diasRetraso'] = 0
+
+                # Guardar los cambios en la venta
+                venta.save()
+
+            # Eliminar el archivo después de procesarlo
+            fs.delete(filename)
+            
+            return HttpResponse("Cuotas actualizadas correctamente")
+
+        except Exception as e:
+            print(f"Error al importar: {e}")
+            return HttpResponse("Error al procesar el archivo. Verifique el formato y los datos.")
+
+    return render(request, 'importar_cuotas.html')
 
 def requestVendedores_Supervisores(request):
     request = json.loads(request.body)

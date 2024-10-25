@@ -85,12 +85,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     )
     nombre = models.CharField("Nombre Completo",max_length=100)
     sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios',blank=True)
-    # sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
     rango = models.CharField("Rango:",max_length=40)
     dni = models.CharField("DNI",max_length=9, blank = True, null = True)
     tel = models.CharField("Telefono",max_length=11, blank = True, null = True)
-    
     c = models.CharField("Contraseña_depuracion:",max_length=250)
     fec_ingreso = models.CharField("Fecha de ingreso", max_length = 10, default ="")
     domic = models.CharField("Domicilio",max_length=200, default="")
@@ -101,28 +99,30 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     fec_nacimiento = models.CharField("Fecha de nacimiento", max_length = 10, default ="")
     estado_civil = models.CharField("Estado civil", max_length =30,default ="")
     xp_laboral = models.TextField("Experiencia laboral", blank=True,null=True, default="")
+    
+    descuentos = models.JSONField("Descuentos", default=list,blank=True,null=True)
     datos_familiares = models.JSONField("Datos familiares", default=list,blank=True,null=True)
     vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
     faltas_tardanzas = models.JSONField("Faltas o tardanzas", default=list,blank=True,null=True)
+    additional_passwords = models.JSONField("Contraseñas adicionales",default=dict,blank=True,null=True)
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     accesosTodasSucursales = models.BooleanField(default=False)
     objects = UserManager()
-    additional_passwords = models.JSONField("Contraseñas adicionales",default=dict,blank=True,null=True)
-
     def __str__(self):
         return self.nombre
     
     def save(self, *args, **kwargs):
 
         # Capitalizar campos seleccionados
-        self.nombre = self.nombre.title()
-        self.domic = self.domic.capitalize()
-        self.prov = self.prov.title()
-        self.loc = self.loc.title()
-        self.lugar_nacimiento = self.lugar_nacimiento.title()
-        self.estado_civil = self.estado_civil.capitalize()
-        self.xp_laboral = self.xp_laboral.capitalize()
+        self.nombre = str(self.nombre.title())
+        self.domic = str(self.domic.capitalize())
+        self.prov = str(self.prov.title())
+        self.loc = str(self.loc.title())
+        self.lugar_nacimiento = str(self.lugar_nacimiento.title())
+        self.estado_civil = str(self.estado_civil.capitalize())
+        self.xp_laboral = str(self.xp_laboral.capitalize())
 
         super(Usuario, self).save(*args, **kwargs)
 
@@ -254,36 +254,38 @@ class Cliente(models.Model):
         
     nro_cliente = models.CharField(max_length=15,default=returNro_Cliente)
     nombre = models.CharField(max_length=100)
-    dni = models.CharField(max_length=9)
-    agencia_registrada = models.CharField(max_length=30,default="")
-    domic = models.CharField(max_length=100)
-    loc = models.CharField(max_length=40)
-    prov = models.CharField(max_length=40)
-    cod_postal = models.CharField(max_length=7)
-    tel = models.CharField(max_length=11)
+    dni = models.CharField(max_length=9,default="")
+    # agencia_registrada = models.CharField(max_length=30,default="")
+    agencia_registrada = models.ForeignKey(Sucursal, on_delete=models.PROTECT, related_name="cliente_sucursal")
+
+    domic = models.CharField(max_length=100,default="")
+    loc = models.CharField(max_length=40,default="")
+    prov = models.CharField(max_length=40,default="")
+    cod_postal = models.CharField(max_length=7,default="")
+    tel = models.CharField(max_length=11,default="")
     fec_nacimiento = models.CharField(max_length=10, default="")
-    estado_civil = models.CharField(max_length=20)
-    ocupacion = models.CharField(max_length=50)
+    estado_civil = models.CharField(max_length=20, blank=True, null=True)
+    ocupacion = models.CharField(max_length=50, blank=True, null=True)
     
     def __str__(self):
         return f'{self.nro_cliente}: {self.nombre} - {self.dni}'
     
     def save(self, *args, **kwargs):
-
-        # Capitalizar campos seleccionados
-        self.nombre = self.nombre.title()
-        self.domic = self.domic.capitalize()
-        self.prov = self.prov.title()
-        self.loc = self.loc.title()
-        self.estado_civil = self.estado_civil.capitalize()
-        self.ocupacion = self.ocupacion.capitalize()
+        # Convertir a string y luego capitalizar los campos que puedan tener valores nulos o numéricos
+        self.nombre = str(self.nombre).title()
+        self.domic = str(self.domic).capitalize()
+        self.prov = str(self.prov).title()
+        self.loc = str(self.loc).title()
+        self.estado_civil = str(self.estado_civil).capitalize() if self.estado_civil else None
+        self.ocupacion = str(self.ocupacion).capitalize() if self.ocupacion else None
+        
         super(Cliente, self).save(*args, **kwargs)
 
 
     def clean(self):
         errors = {}
         validation_methods = [
-            self.clean_nro_cliente,
+            # self.clean_nro_cliente,
             self.validation_nombre,
             self.validation_estado_civil,
             self.validation_dni,

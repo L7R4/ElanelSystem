@@ -4,12 +4,21 @@
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/list_customers.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/loader.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+
 {% endblock css %}
 
 {% block content %}
+<div id="wrapperLoader">
+  <span id="loader"></span>
+</div>
+
 <div class="filters">
       <a href="{% url 'users:create_customer' %}" class="add-button-default" id="create_customer">Agregar</a>
-    <div>
+      <button type="button" id="showModalImport" class="add-button-default" onclick="newModalImport()">Importar clientes</button>
+
+      <div>
         <input 
         type="text"
         class = "customer input-read-write-default"
@@ -47,6 +56,11 @@
 {% endblock content %}
 {% block js %}
 <script>
+  var csrf_token = '{%csrf_token%}'
+  var urlImportData = "{% url 'users:importClientes' %}"
+  var sucursalesDisponibles = {{ sucursalesDisponibles|safe }};
+  var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}"
+
   function actualizarResultados(resultados, contenedor) {
     // Limpia el contenedor de los datos
     contenedor.innerHTML = "";
@@ -67,5 +81,9 @@
     });
   }
 </script>
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/inputs_search_customers.js' %}"></script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/importDataCliente.js' %}"></script>
+
 {% endblock js %}

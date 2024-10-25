@@ -10,6 +10,7 @@ from django.shortcuts import redirect, render
 from django.views import generic
 
 from users.utils import printPDFNewUSer
+from sales.utils import getAllCampaniaOfYear, getCampaniaActual
 
 from .models import Usuario,Cliente,Sucursal,Key
 from products.models import Products
@@ -24,10 +25,15 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.validators import validate_email
 import json
 from django.http import HttpResponse, JsonResponse
-
+from dateutil.relativedelta import relativedelta
+from elanelsystem.utils import format_date, handle_nan
 
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
+
+import pandas as pd
+from django.core.files.storage import FileSystemStorage
+
 #region Usuarios - - - - - - - - - - - - - - - - - - - -
 
 class ConfiguracionPerfil(TestLogin,generic.View):
@@ -84,7 +90,7 @@ class CrearUsuario(TestLogin, generic.View):
         rango = form['rango']
         sucursales_text = form['sucursal']
         sucursales_split = [nombre.strip() for nombre in sucursales_text.split('-')]
-        print(sucursales_split)
+        
         email=form['email']
         dni=form['dni']
 
@@ -219,8 +225,28 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     permission_required = "sales.my_ver_resumen"
     def get(self,request,*args, **kwargs):
         users = Usuario.objects.all()
+
+        #region Para determinar si se habilita la campaña anterior
+        campaniasDisponibles = []
+        campaniasDelAño = getAllCampaniaOfYear()
+        campaniaActual = getCampaniaActual()
+        
+        campaniaAnterior = campaniasDelAño[campaniasDelAño.index(campaniaActual) - 1]
+        fechaActual = datetime.datetime.now()
+        ultimo_dia_mes_pasado = datetime.datetime.now().replace(day=1) - relativedelta(days=1)
+        diferencia_dias = (fechaActual - ultimo_dia_mes_pasado).days
+
+        if(diferencia_dias > 5): # Si la diferencia de dias es mayor a 5 dias, no se puede asignar la campania porque ya paso el tiempo limite para dar de alta una venta en la campania anterior
+            campaniasDisponibles = [campaniaActual]
+        else:
+            campaniasDisponibles = [campaniaActual,campaniaAnterior]
+        #endregion
+
+        print(campaniasDisponibles)
         context = {
-            "users": users
+            "users": users,
+            "urlPostDescuento": reverse_lazy("users:realizarDescuento"),
+            "campaniasDisponibles": json.dumps(campaniasDisponibles)
         }
         users_list = []
         for c in users:
@@ -443,6 +469,7 @@ def viewsPDFNewUser(request,pk):
         response = HttpResponse(pdf_file,content_type="application/pdf")
         response['Content-Disposition'] = 'inline; filename='+userName+"_ficha"+'.pdf'
         return response
+   
     
 def requestUsuarios(request):
     request = json.loads(request.body)
@@ -462,6 +489,125 @@ def requestUsuarios(request):
 
     return JsonResponse({"data":usuarios_filtrados_listDict})
 
+
+def realizarDescuento(request):
+    form = json.loads(request.body)
+    try:
+        usuario = Usuario.objects.get(email = form["usuarioEmail"])
+        metodoPago = form["metodoPago"]
+        dinero = form["dinero"]
+        campania = form["campania"]
+        # fecha = datetime.date.today().strftime("%d/%m/%Y")
+        fecha = form["fecha"]
+        operationType = form["operationType"]
+        agencia = usuario.sucursales.all()[0].pseudonimo
+        concepto = form["concepto"]
+
+        # Crear el diccionario de descuento
+        descuentoDict ={
+            "operationType": operationType,
+            "metodoPago": metodoPago,
+            "dinero": dinero,
+            "campania": campania,
+            "fecha": fecha,
+            "agencia": agencia,
+            "concepto": concepto
+        }
+
+        # Obtener la lista actual de descuentos, o inicializarla si está vacía
+        descuentos_actuales = usuario.descuentos
+
+        # Agregar el nuevo descuento
+        descuentos_actuales.append(descuentoDict)
+
+        # Asignar la lista actualizada al campo descuentos
+        usuario.descuentos = descuentos_actuales
+
+        # Guardar los cambios
+        usuario.save()
+
+        return JsonResponse({"status": True, "message": "Descuento aplicado correctamente"},safe=False)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"status": False, "message": "Error al aplicar descuento"},safe=False)
+
+
+def importar_usuarios(request):
+    if request.method == "POST":
+
+        # Recibir el archivo y el dato adicional 'agencia'
+        uploaded_file = request.FILES['file']
+        agencia = request.POST.get('agencia')
+
+        fs = FileSystemStorage()
+        filename = fs.save(uploaded_file.name, uploaded_file)
+        file_path = fs.path(filename)
+        new_number_rows_cont = 0
+
+        try:
+            # Leer la hoja "CLIENTES" del archivo Excel
+            df = pd.read_excel(file_path, sheet_name="CLIENTES")
+            
+            # Procesar cada fila
+            for _, row in df.iterrows():
+                # Aquí puedes realizar la lógica de creación de cliente
+                dni=handle_nan(row['DNI'])
+                usuario_existente = Usuario.objects.filter(dni=dni).first()
+
+                if not usuario_existente:
+                    new_number_rows_cont +=1                        
+
+                    usuario = Usuario.objects.create_user(
+                        email=row['Email'],
+                        nombre=row['Nombre'],
+                        dni=row['DNI'],
+                        rango=row['Rango'],
+                        password=row['DNI'] + '_elanel'
+                    )
+                
+
+                    # Asignar campos adicionales
+                    usuario.tel = handle_nan(row['Telefono'])
+                    usuario.domic = handle_nan(row['Domicilio'])
+                    usuario.prov = handle_nan(row['Provincia'])
+                    usuario.loc = handle_nan(row['Localidad'])
+                    usuario.cp = handle_nan(row['CP'])
+                    usuario.lugar_nacimiento = handle_nan(row['Lugar de nacimiento'])
+                    usuario.fec_nacimiento = handle_nan(row['Fec-Nacimiento'])
+                    usuario.fec_ingreso = handle_nan(row['Fecha ingreso'])
+                    usuario.estado_civil = handle_nan(row['Estado civil'])
+                    usuario.xp_laboral = handle_nan(row['XP Laboral'])
+                    usuario.c = row['DNI'] + '_elanel'
+                    usuario.groups.add(row["Rango"])
+
+                        
+                    usuario.save()
+
+            # Recorrer nuevamente las filas porque es necesario que todos los usuarios esten cargados antes para poder COLOCAR LOS VENDEDORES A CARGO DE LOS SUPERVISORES
+            vendedores_a_cargo =[]
+            for _, row in df.iterrows():
+                supervisor = Usuario.objects.filter(dni=row["Supervisor"])
+                
+                vendedores_a_cargo.append({
+                    'nombre': Usuario.objects.get(dni=supervisor).nombre,
+                    'email': Usuario.objects.get(dni=supervisor).email,
+                })
+
+                
+            # Eliminar el archivo después de procesar
+            fs.delete(filename)
+
+            iconMessage = "/static/images/icons/checkMark.png"
+            message= f"Datos importados correctamente. Se agregaron {new_number_rows_cont} clientes nuevos"
+            return JsonResponse({"message": message,"iconMessage": iconMessage, "status": True})
+
+        except Exception as e:
+            print(f"Error al importar: {e}")
+
+            iconMessage = "/static/images/icons/error_icon.png"
+            message= "Error al procesar el archivo"
+            return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
+
     
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
@@ -473,8 +619,14 @@ class ListaClientes(TestLogin, generic.View):
 
     def get(self,request,*args, **kwargs):
         customers = Cliente.objects.filter(agencia_registrada = request.user.sucursales.all()[0])
+        sucursalesObject = Sucursal.objects.all()
+        sucursales = [sucursal.pseudonimo for sucursal in sucursalesObject ]
+
         context = {
-            "customers": customers
+            "customers": customers,
+            "importClientesURL" : reverse_lazy("users:importClientes"),
+            "sucursalesDisponibles": json.dumps(sucursales)
+
         }
         customers_list = []
         for c in customers:
@@ -491,7 +643,62 @@ class ListaClientes(TestLogin, generic.View):
             return JsonResponse({'response':customers_list},safe=False)
         return render(request, self.template_name,context)
 
-   
+def importar_clientes(request):
+    if request.method == "POST":
+
+        # Recibir el archivo y el dato adicional 'agencia'
+        uploaded_file = request.FILES['file']
+        agencia = request.POST.get('agencia')
+
+        fs = FileSystemStorage()
+        filename = fs.save(uploaded_file.name, uploaded_file)
+        file_path = fs.path(filename)
+        new_number_rows_cont = 0
+
+        try:
+            # Leer la hoja "CLIENTES" del archivo Excel
+            df = pd.read_excel(file_path, sheet_name="CLIENTES")
+            
+            # Procesar cada fila
+            for _, row in df.iterrows():
+                # Aquí puedes realizar la lógica de creación de cliente
+                dni=handle_nan(row['DNI'])
+                # cliente_existente2 = Cliente.objects.filter(dni=dni)
+                # print(cliente_existente2)
+                cliente_existente = Cliente.objects.filter(dni=dni).first()
+                print(cliente_existente)
+                if not cliente_existente:
+                    new_number_rows_cont +=1
+                    Cliente.objects.create(
+                        nro_cliente = row['Nro'],
+                        nombre=handle_nan(row['CLIENTE']),
+                        dni=handle_nan(row['DNI']) ,
+                        agencia_registrada = Sucursal.objects.get(pseudonimo = agencia),
+                        domic=handle_nan(row['DOMIC']) ,
+                        loc = handle_nan(row["LOC"]) ,
+                        prov = handle_nan(row["PROV"]) ,
+                        cod_postal = handle_nan(row["CP"]),
+                        tel=handle_nan(row['Telefono']) ,
+                        fec_nacimiento = format_date(handle_nan(row["FECHA DE NAC"])),
+                        estado_civil = handle_nan(row["ESTADO CIVIL"]) ,
+                        ocupacion = handle_nan(row["OCUPACION"]) 
+                    )
+                
+
+            # Eliminar el archivo después de procesar
+            fs.delete(filename)
+
+            iconMessage = "/static/images/icons/checkMark.png"
+            message= f"Datos importados correctamente. Se agregaron {new_number_rows_cont} clientes nuevos"
+            return JsonResponse({"message": message,"iconMessage": iconMessage, "status": True})
+
+        except Exception as e:
+            print(f"Error al importar: {e}")
+
+            iconMessage = "/static/images/icons/error_icon.png"
+            message= "Error al procesar el archivo"
+            return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
+
 class CrearCliente(TestLogin, generic.CreateView):
     model = Cliente
     template_name = 'create_customers.html'

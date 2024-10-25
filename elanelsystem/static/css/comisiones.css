@@ -8,13 +8,68 @@
     justify-content: space-between;
     box-sizing: border-box;
     padding: 2rem;
-    /* height: 20%; */
+    height: 12vh;
+    max-height:80rem ;
 }
 .wrapperManageLiquidacion{
+    opacity: .3 ;
     box-sizing: border-box;
     padding: 1rem 2rem;
     position: relative;
-    height: 80%;
+    height: 88vh;
+    pointer-events: none;
+}
+.wrapperManageLiquidacion.active{
+    pointer-events: all;
+    opacity: 1;
+}
+
+
+#campaniaWrapper img {
+    z-index: 6;
+    filter: invert(1);
+}
+#campaniaWrapper #campaniaInput {
+    z-index: 5;
+    background-color: var(--background-color);
+    color: var(--third-color);
+    font-family: raleway-semibold;
+}
+
+#campaniaWrapper ul.options {
+    z-index: 4;
+    background-color: var(--background-color);
+}
+
+
+#sucursalWrapper img {
+    z-index: 3;
+    filter: invert(1);
+}
+
+#sucursalWrapper #sucursalInput {
+    z-index: 2;
+    background-color: var(--background-color);
+    color: var(--third-color);
+    font-family: raleway-semibold;
+}
+
+#sucursalWrapper ul.options {
+    z-index: 1;
+    background-color: var(--background-color);
+}
+
+
+
+#rangoInput {
+    background-color: var(--background-color);
+    color: var(--third-color);
+    z-index: 2;
+}
+
+#rangoWrapper ul.options {
+    z-index: 1;
+    background-color: var(--background-color);
 }
 
 .wrapperManageLiquidacion > div#backgroundLiquidacion.blocked{
