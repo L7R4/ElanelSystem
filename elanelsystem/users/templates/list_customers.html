@@ -59,7 +59,7 @@
   var csrf_token = '{%csrf_token%}'
   var urlImportData = "{% url 'users:importClientes' %}"
   var sucursalesDisponibles = {{ sucursalesDisponibles|safe }};
-  var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}"
+  var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
 
   function actualizarResultados(resultados, contenedor) {
     // Limpia el contenedor de los datos

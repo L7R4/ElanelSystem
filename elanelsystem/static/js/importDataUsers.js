@@ -1,5 +1,7 @@
+console.log(csrf_token)
+
 function renderFormImportData() {
-    return`
+    return `
     <div id="importDataContainer">
         <h2 class="tittleModal">Importar clientes</h2>
         <form id="importForm" enctype="multipart/form-data">
@@ -29,8 +31,8 @@ function renderFormImportData() {
     `
 }
 
-function renderMessage(message,iconMessage) {
-    return`
+function renderMessage(message, iconMessage) {
+    return `
         <div id="messageStatusContainer">
             <img src="${iconMessage}" alt="">
             <h2>${message}</h2>
@@ -44,33 +46,33 @@ function showLoader() {
     document.getElementById('wrapperLoader').style.display = 'flex';
 }
 
-function hiddenLoader(){
+function hiddenLoader() {
     document.getElementById('wrapperLoader').style.display = 'none';
 }
 //#endregion
 
-function newModalImport(){
+function newModalImport() {
     let modal = new tingle.modal({
         footer: true,
         closeMethods: [''],
         cssClass: ['modalContainerImport'],
-        
-        onOpen: function() {
+
+        onOpen: function () {
             cargarListenersEnInputs() // Para cargar los listeners de los inputs selects custom
             enableImportButton()
         },
-        onClose: function() {
+        onClose: function () {
             modal.destroy();
         },
     });
-    
+
     // set content
     modal.setContent(renderFormImportData());
-    
+
 
     // add a button
-    modal.addFooterBtn('Importar', 'tingle-btn tingle-btn--primary', async function() {
-        
+    modal.addFooterBtn('Importar', 'tingle-btn tingle-btn--primary', async function () {
+
         const inputFile = document.getElementById('importDataInput').files[0];
         let body = {
             "file": inputFile,
@@ -78,9 +80,9 @@ function newModalImport(){
         }
 
         showLoader()
-        setTimeout(async function() {
+        setTimeout(async function () {
             let response = await fetchFunction(body, urlImportData);
-            
+
             if (response.status) {
                 console.log("Salio todo bien");
                 hiddenLoader();
@@ -109,19 +111,19 @@ function newModalImport(){
         // newModalMessage(response.message,response.iconMessage)
 
     });
-    
+
     // add another button
-    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default', function() {
+    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default', function () {
         // here goes some logic
         modal.close();
         modal.destroy();
     });
-    
+
     // open modal
     modal.open();
 
     // Se bloquea hasta que los campos esten todos completos
-    document.querySelector(".tingle-btn--primary").disabled = true; 
+    document.querySelector(".tingle-btn--primary").disabled = true;
 
 }
 
@@ -152,33 +154,33 @@ function enableImportButton() {
     importDataInput.addEventListener("input", checkInputs);
 }
 
-function newModalMessage(message, iconMessage){
+function newModalMessage(message, iconMessage) {
     let modalMessage = new tingle.modal({
         footer: true,
         closeMethods: ['overlay', 'button', 'escape'],
         cssClass: ['modalContainerMessage'],
-        
+
     });
-    
+
     // set content
-    modalMessage.setContent(renderMessage(message,iconMessage));
+    modalMessage.setContent(renderMessage(message, iconMessage));
 
 
-    modalMessage.addFooterBtn('Cerrar', 'tingle-btn tingle-btn--default', function() {
+    modalMessage.addFooterBtn('Cerrar', 'tingle-btn tingle-btn--default', function () {
         // here goes some logic
         modalMessage.close();
         modalMessage.destroy();
     });
-    
+
     // open modal
     modalMessage.open();
 }
 
-function displayNameFile(input){
-    if(input.files[0]){
+function displayNameFile(input) {
+    if (input.files[0]) {
         document.getElementById("nameFile").textContent = input.files[0].name
 
-    }else{
+    } else {
         document.getElementById("nameFile").textContent = ""
     }
 }

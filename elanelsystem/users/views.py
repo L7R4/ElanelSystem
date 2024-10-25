@@ -30,7 +30,7 @@ from elanelsystem.utils import format_date, handle_nan
 
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
-
+from django.middleware import csrf
 import pandas as pd
 from django.core.files.storage import FileSystemStorage
 
@@ -219,10 +219,11 @@ class CrearUsuario(TestLogin, generic.View):
             response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
             return JsonResponse(response_data, safe=False)         
   
-class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
+class ListaUsers(TestLogin,generic.View):
     model = Usuario
     template_name = "list_users.html"
-    permission_required = "sales.my_ver_resumen"
+    # permission_required = "sales.my_ver_resumen"
+    
     def get(self,request,*args, **kwargs):
         users = Usuario.objects.all()
 
@@ -242,11 +243,12 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
             campaniasDisponibles = [campaniaActual,campaniaAnterior]
         #endregion
 
-        print(campaniasDisponibles)
+        # print(campaniasDisponibles)
         context = {
             "users": users,
             "urlPostDescuento": reverse_lazy("users:realizarDescuento"),
-            "campaniasDisponibles": json.dumps(campaniasDisponibles)
+            "campaniasDisponibles": json.dumps(campaniasDisponibles),
+            'csrf_token': csrf.get_token(request),
         }
         users_list = []
         for c in users:
@@ -262,7 +264,7 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
         data = json.dumps(users_list)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return HttpResponse(data, 'application/json')
+            return JsonResponse(data,safe=False)
         return render(request, self.template_name,context)
 
 class DetailUser(TestLogin, generic.DetailView):
