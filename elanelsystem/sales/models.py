@@ -683,7 +683,7 @@ class MovimientoExterno(models.Model):
     agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     ente = models.CharField("Ente:",max_length=40)
     fecha = models.CharField("Fecha:",max_length=16)
-    campania = models.IntegerField("Campaña:",default=0)
+    campania = models.CharField("Campaña:",max_length=30)
     concepto = models.CharField("Concepto:",max_length=200)
     premio = models.BooleanField("Premio:", default=False)
     adelanto = models.BooleanField("Adelanto:",default=False)

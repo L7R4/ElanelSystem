@@ -31,6 +31,24 @@ inputSelectOnlyCustom.forEach(input => {
     });
 });
 
+// Esta funcion sirve para que cuando cargamos un selects input desde JS y no se han aplicado los listeners desde un principio
+function cargarListenersEnInputs(){
+    let inputSelectOnlyCustom = document.querySelectorAll(".containerInputAndOptions > input.onlySelect");
+    inputSelectOnlyCustom.forEach(input => {
+        let optionsList = input.nextElementSibling;
+        let options = optionsList.querySelectorAll("li");
+        toggleOptionsList(input, optionsList);
+    
+        options.forEach(option => {
+            option.addEventListener("click", () => {
+                toggleOption(input, option)
+                // Disparar el evento "input" en el input después de seleccionar una opción
+                input.dispatchEvent(new Event('input'));
+            });
+        });
+    });
+}
+
 // Funcion que controla la seleccion de las opciones del menu select
 function toggleOption(input, option) {
     // Obtenemos el valor del input

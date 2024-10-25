@@ -3,11 +3,14 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/list_colaboradores.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 {% endblock css %}
 
 {% block content %}
 <div class="filters">
     <a href="{% url 'users:create_user' %}" class="add-button-default" id="create_user">Agregar</a>
+    <button type="button" id="showModalImport" class="add-button-default" onclick="newModalImport()">Importar usuarios</button>
+
     <div>
         <input 
         type="text"
@@ -28,14 +31,15 @@
           <li>Rango</li>
       </ul>   
     </div>
+    
 
     <div class="valuesWrapper">
         <ul class="values">
           {% for u in users %}
             <a class ="item" href="{% url 'users:detailUser' u.id %}">
-              <div><p>{{u.nombre|truncatechars:24}}</p></div>
+              <div class="nombreUser"><p>{{u.nombre}}</p></div>
               <div><p>{{u.dni}}</p></div>
-              <div><p>{{u.email}}</p></div>
+              <div class="emailUser"><p>{{u.email}}</p></div>
               <div><p>{{u.sucursal}}</p></div>
               <div><p>{{u.tel}}</p></div>
               <div><p>{{u.rango}}</p></div>
@@ -43,9 +47,27 @@
           {% endfor %} 
         </ul>       
     </div>
+
 </div> 
+{% comment %} <button type="submit" id="confirmDescuento" class="add-button-default" form="formNewDescuento">Confirmar</button> {% endcomment %}
 
 {% endblock content %}
 {% block js %}
+<script>
+  var csrf_token = '{%csrf_token%}'
+  var campaniasDisponibles = {{ campaniasDisponibles|safe }};
+  var urlPostDescuento = "{{urlPostDescuento}}"
+  var urlImportData = "{% url 'users:importUsuarios' %}"
+  var sucursalesDisponibles = {{ sucursalesDisponibles|safe }};
+  var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}"
+
+</script>
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/menuContextCreateDescuentoUser.js' %}"></script>
 <script src="{% static 'js/inputs_search_users.js' %}"></script>
+<script src="{% static 'js/modalCreateDescuento.js' %}"></script>
+<script src="{% static 'js/importDataCliente.js' %}"></script>
+
+
 {% endblock js %}

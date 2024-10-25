@@ -2,13 +2,11 @@
     box-sizing: border-box;
 }
 .wrapper_content{
-    padding: 1rem;
+    padding: 2rem;
     overflow-y: unset;
 }
 .wrapperTittle{
     width: 100%;
-    padding: 1rem 2rem;
-    height: 10%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -16,303 +14,256 @@
 .wrapperTittle > h2{
     font-size: clamp(3rem, 3vw, 7rem);
     font-family: raleway-semibold;
-    color: white;   
-}
-.values{
-    list-style: none;
+    color: var(--third-color);   
 }
 
-
-.containerSupervisores{
+/*#region Filtros  */
+.wrapperInputsSearchs{
+    display: flex;
+    flex-wrap: wrap;
     width: 100%;
-    padding: 1rem;
-    height: 90%;
-    overflow-y: auto;
+    margin-top: 1.5rem;
+    column-gap: 1rem;
+    row-gap: .5rem;
 }
-.information > h2{
-    color: white;
-    font-size: clamp(1.5rem, 1.6vw, 2rem);
+.wrapperInputsSearchs >h2{
+    color: var(--third-color);
     font-family: raleway-semibold;
-    padding-left: 1rem;
-    padding-bottom: .5rem;
+    font-size: clamp(1.4rem, 1.3vw, 2rem);
+    flex-basis: 100%;
+
+}
+
+.wrapperInputsSearchs > .inputWrapper{
+    width: 25%;
+    max-width: 30rem;
+}
+
+.wrapperInputsSearchs > .inputWrapper input{
+    color: var(--third-color);
+    font-family: raleway-semibold;
+    background-color: var(--background-color);
+}
+.wrapperInputsSearchs > .inputWrapper img{
+    filter: invert(1);
+}
+
+.wrapperInputsSearchs #sucursalIconDisplay {
+    z-index: 8;
+}
+
+.wrapperInputsSearchs #sucursalInput {
+    z-index: 7;
+}
+
+.wrapperInputsSearchs #sucursalInput+ul.list-select-custom {
+    z-index: 6;
+}
+
+.wrapperInputsSearchs #rangoIconDisplay {
+    z-index: 5;
+}
+
+.wrapperInputsSearchs #rangoInput {
+    z-index: 4;
+}
+
+.wrapperInputsSearchs #rangoInput+ul.list-select-custom {
+    z-index: 3;
+}
+/*#endregion  */
+
+/*#region Tabla de ausencias y tardanzas  */
+.containerWrapper{
+    margin-top: 1.5rem;
+}
+
+.colaboradoresContainer {
     width: 100%;
-    border-bottom: 1px solid #ffffff99;
+    border-collapse: collapse; /* Elimina el espacio entre las celdas */
+    border-spacing: 0;
+    table-layout: fixed;
 }
 
-.information::-webkit-scrollbar{
-    width: 2px;
-    height: 5px;
-    border-radius: 5px;
-}
-.information::-webkit-scrollbar-thumb{
-    background: var(--third-color);
-    border-radius: 1rem;
+.colaboradoresContainer > thead > tr{
+    font-size: clamp(1.4rem, 1.2vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);   
 }
 
-.tittles{
-    display: flex;
-    /* column-gap: calc(100% / 6); */
-    list-style: none;
-    padding: 0 1rem;
-
+.colaboradoresDataWrapper{
     width: 100%;
-    justify-content: space-around;  
 }
 
 
-.valuesWrapper > .values > li
-{
-    font-family: raleway;
-    position: relative;
-    width: 90%;
-    color: rgb(241, 237, 237);
-    text-decoration: none;
-    position: relative;
-    margin-top: 1rem;
+.colaboradoresDataWrapper > .wrapperShortInfo > td{
+    font-size: clamp(1.4rem, 1.2vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
+    padding: 1rem;
+    text-align: center; /* Centrar el contenido horizontalmente */
+    vertical-align: middle; /* Centrar el contenido verticalmente */
 }
 
-.valuesWrapper > .values > li > .wrapperShortInfo{
-    background-color: #131820;
-    cursor: pointer;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+table.colaboradoresContainer tr td:first-child {
+    border-top-left-radius: .7rem;
+    border-bottom-left-radius: .7rem;
+
+}
+
+table.colaboradoresContainer tr td:last-child {
+    border-top-right-radius: .7rem;
+    border-bottom-right-radius: .7rem;
+
+}
+
+
+.wrapperShortInfo {
+    
     width: 100%;
-    display: flex;
-    align-items: center;
-    /* justify-content: space-around; */
     position: relative;
     z-index: 2;
-    padding: 1rem 0;
+    cursor: pointer;
+    background-color: #27283b; /* Color de fondo de la parte corta */
+    padding: 10px;
     border-radius: .6rem;
-    border: 1px solid #000000c4;
-    transition: .2s all ease;
-}
-.valuesWrapper > .values > li > .wrapperShortInfo > div{
-    margin-left: 3rem;
-}
-.valuesWrapper > .values > li > .wrapperShortInfo >.imageMore{
-    width: 2rem;
-    position: absolute;
-    right: 2rem;
+    transition: background-color 0.3s ease;
+
 }
 
-.wrapperDetailInfo{
-    background-color: #304361;
-    border-bottom-left-radius: 0.6rem;
-    border-bottom-right-radius: 0.6rem;
-    position: relative;
+.wrapperShortInfo:hover {
+    background-color: #35354d; /* Color de fondo al pasar el cursor */
+}
+
+.wrapperShortInfo p {
+    font-size: clamp(1.4rem, 1.2vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);   
+}
+
+.wrapperDetailInfo {
     width: 100%;
-    bottom: .5rem;
-    padding: 0rem;
-    height: 0px;
-    margin-bottom: 0px;
-    overflow-y:auto;
-    min-height: fit-content;
-    max-height: 400px;
-    transition: .2s all ease;
+    background-color: #27283b;
+    border-radius: .6rem;
+    padding: 1rem;
+    display: none;
+    position: relative;
+    top: -1rem;
+    z-index: 1;
 }
-/* .detallesItem.active{
+.wrapperDetailInfo > td{
+    padding: 1rem;
+}
+.detailTable {
+    width: 100%;
+    border-collapse: separate;
+    margin-top: 2rem;
+    overflow: hidden;
+    border-spacing: 0;
+    table-layout: fixed;
+}
 
+/* .detailTable th, .detailTable td {
+    padding: 8px;
+    text-align: left;
+    color: #fff;
 } */
-.containerTittleAndData{
-    width: 90%;
-    margin: 0 auto;
-    padding: 1rem;
-}
-.wrapperDetailInfo > h2{
-    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+
+
+
+.detailTable > thead > tr > th {
+    font-size: clamp(1.4rem, 1.2vw, 1.6rem);
     font-family: raleway-semibold;
-    color: white; 
-    margin-top: 1rem;
-    padding: 1rem 2rem;
+    color: var(--third-color); 
+    padding: .5rem;
+    border: 1px solid var(--third-color);
+    text-align: center; /* Centrar el contenido horizontalmente */
+    vertical-align: middle; /* Centrar el contenido verticalmente */
+
+}
+.detailTable > tbody > tr > td{
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: var(--third-color); 
+    padding: .8rem;
+    text-align: center; /* Centrar el contenido horizontalmente */
+    vertical-align: middle; /* Centrar el contenido verticalmente */
+
 }
 
-.wrapperDetailInfo__tittles > .tittles > li{
-    color: rgba(255, 255, 255, 0.883);
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    padding: 1rem 0;
-    width: 33.3%;
-    text-align: center;
+table.detailTable tr td:first-child, 
+table.detailTable tr th:first-child {
+    border-top-left-radius: .6rem;
+    border-bottom-left-radius: .6rem;
+
 }
 
-.wrapperDetailInfo__tittles > ul{
-    list-style: none;
-    display: flex;
-    padding: 1rem;
-    list-style: none;
-    width: 100%;
-    justify-content: space-around;  
+table.detailTable tr td:last-child, 
+table.detailTable tr th:last-child {
+    border-top-right-radius: .6rem;
+    border-bottom-right-radius: .6rem;
+
+}
+.itemsWrapper{
+    max-height: 22rem;
+    overflow-y: auto;
 }
 
-.wrapperDetailInfo__tittles > ul > .itemValores{
-    color: rgba(255, 255, 255, 0.883);
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    padding: 1rem 0;
-    width: 33.3%;
-    text-align: center;
-    width: 100%;
+.new_item input.input-read-write-default{
+    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+    font-family: raleway;
+    color: var(--third-color);
+    width: 70%;
+}
+
+.time-picker-container{
     display: flex;
-    justify-content: center;
-}
-.itemsVendedores{
-    display: flex;
-    justify-content: center;
-    list-style: none;
-}
-.itemsVendedores > li {
-    background-color: #232D41;
-    width: 100%;
-    border-radius: .7rem;
-    position: relative;
-}
-.itemsVendedores > li > .wrapperShortInfo{
-    display: flex;
-    cursor:pointer;
-    width: 100%;
-    justify-content: space-around;
-    position: relative;
-    padding: 1rem;
-}
-.wrapperDetailInfo__subtittles{
-    margin-top: 1rem;
-}
-.wrapperDetailInfo__subtittles > .tittles > li{
-    color: rgba(255, 255, 255, 0.883);
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    padding: 1rem 0;
-    width: 33.3%;
-    text-align: center;
-}
-.itemsVendedores > li > .wrapperShortInfo > div{
-    color: rgba(255, 255, 255, 0.883);
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    /* padding: 1rem 0; */
-    width: 33.3%;
-    text-align: center; 
-}
-.itemsVendedores > li > .wrapperShortInfo >.imageMore{
-    width: 2rem;
-    position: absolute;
-    right: 2rem;
-}
-.itemsVendedores > li>.wrapperDetailInfo{
-    background-color: #232D41;
-    border-radius: 0;
-    left: 0;
-    max-height: 500px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    /* border-top: 1px solid #304361; */
-}
-.listTardanzasAusencias{
-    width: 100%;
-    display: flex;
+    gap: .7rem;
     justify-content: center;
     flex-wrap: wrap;
-}
-.listTardanzasAusencias > li{
-    display: flex;
-    padding: 1rem;
-    background-color: #1B2230;
-    width: 100%;
-    margin-bottom: 1rem;
-    border-radius: 0.6rem;
-
-}
-.listTardanzasAusencias > li > div{
-    color: rgba(255, 255, 255, 0.883);
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    /* padding: 1rem 0; */
-    width: 33.3%;
-    text-align: center; 
     
 }
-.buttonsAddItem{
-    display: flex;
-    gap: 1rem;
-    width: 90%;
-    margin: 1rem auto;
-    padding: 1rem;
-    justify-content: flex-end;
-}
-.buttonsAddItem > button{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: .5% 3%;
-    font-size: clamp(1rem, 1.1vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: transparent;
-    color: white;
-    outline: none;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    border: 2px solid var(--primary-color);
-}
-.new_item{
-    display: flex;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-}
-#formCreateNewItem{
-    display: flex;
-    width: 100%;
-}
 
-#formCreateNewItem > div{
-    color: rgba(255, 255, 255, 0.883);
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    width: 33.3%;
-    text-align: center;
-}
-
-#formCreateNewItem > div > input{
-    width: 60%;
-    background-color: rgba(19, 24, 32, 0.502);
-    border: 1px #ffffff8a solid;
-    border-radius: .5rem;
-    height: 2.3rem;
-    outline: none;
-    font-size: clamp(1rem, 1.1vw, 1.3rem);
-    font-family: raleway-semibold;
-    text-indent: 1rem;
-    color: white;
-}
-#formCreateNewItem > div > input:last-child{
-    margin-left: .4rem;
+.time-picker-container>input#hoursInput,.time-picker-container>input#minutesInput{
+    width: 40%;
 }
 
 .wrapperButtonsSendItem{
     display: flex;
-    gap: 2rem;
-    margin-top: 2rem;
-    margin-right: 3%;
-}
-.wrapperButtonsSendItem> button{
-    font-size: clamp(1rem, 1.1vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: white;
-    display: flex;
-    align-items: center;
+    gap: 1rem;
     justify-content: center;
-    padding: 2% 8%;
+}
+.wrapperButtonsSendItem > .add-button-default,.wrapperButtonsSendItem > .delete-button-default{
+    height: fit-content;
+    padding: .5rem 2rem;
+}
+
+
+.time-picker-container > p{
+    font-size: clamp(1.3rem, 1.3vw, 1.6rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
+}
+.buttonsAddItem {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.buttonsAddItem button {
+    padding: .6rem 1.5rem;
+    background-color: transparent;
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: var(--secundary-color);
+    border: 1px solid var(--secundary-color);
+    border-radius: .6rem;
     cursor: pointer;
-    border: none;
-    outline: none;
-    border-radius: 0.6rem;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-
-#sendNewItem{
-    background-color: var(--primary-color);
-    
+.buttonsAddItem button:hover {
+    background-color: var(--secundary-color);
+    color: var(--third-color);
 }
-#closeSendNewItem{
-    background-color: #ed1717;
-}
+/*#endregion  */

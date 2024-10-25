@@ -9,7 +9,7 @@ from users.models import Usuario,Sucursal
 from .models import *
 from django.urls import reverse_lazy
 from django.contrib.auth.models import Group
-
+from sales.utils import getAllCampaniaOfYear
 import datetime
 import json
 from .utils import (
@@ -18,6 +18,7 @@ from .utils import (
     obtener_ultima_campania,
     searchSucursalFromStrings,
     getComisionTotal,
+    getDetalleComisionPorCantVentasPropias
 )
 
 class LiquidacionesPanel(TestLogin,generic.View):
@@ -34,23 +35,24 @@ class LiquidacionesPanel(TestLogin,generic.View):
 class LiquidacionesComisiones(TestLogin,generic.View):
     template_name = 'comisiones.html'
     def get(self,request,*args,**kwargs):
-        try:
+        # try:
             context = {}
             context["urlPDFLiquidacion"] = reverse_lazy("liquidacion:viewPDFLiquidacion")
             lastCampania = obtener_ultima_campania()
             context["defaultSucursal"] = Sucursal.objects.first()
             context["sucursales"] = Sucursal.objects.all()
-            context["urlRequestColaboradores"] = reverse_lazy('liquidacion:requestColaboradores')
+            context["campanias"] = getAllCampaniaOfYear()
+            context["urlRequestColaboradores"] = reverse_lazy('liquidacion:requestColaboradoresWithComisiones')
             usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor","Gerente sucursal"])
             admins = Usuario.objects.filter(rango = "Admin")
-            context["colaboradores"] = [{"nombre": user.nombre, "comisionTotal":getComisionTotal(user,lastCampania,request.user.sucursal)["total_comisionado"]} for user in usuarios]
+            # context["colaboradores"] = [{"nombre": user.nombre, "comisionTotal":getComisionTotal(user,lastCampania,request.user.sucursal)["total_comisionado"]} for user in usuarios]
             context["admins"] = admins
-            context["totalDeComisiones"] = sum([user["comisionTotal"] for user in context["colaboradores"]])
+            # context["totalDeComisiones"] = sum([user["comisionTotal"] for user in context["colaboradores"]])
         
             return render(request, self.template_name, context)
-        except:
-            context = {}
-            return render(request, self.template_name, context)
+        # except:
+        #     context = {}
+        #     return render(request, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
         tipo_colaborador= json.loads(request.body)["tipo_colaborador"]
@@ -72,34 +74,34 @@ class LiquidacionesComisiones(TestLogin,generic.View):
 
 
 
-def requestColaboradores(request):
-    paramsDict = (request.GET).dict()
-    lastCampania = obtener_ultima_campania()
+def requestColaboradoresWithComisiones(request):
+    form =json.loads(request.body)
+    
+    sucursalObject = Sucursal.objects.get(pseudonimo = form["sucursal"])
+    campania = form["campania"]
 
-    sucursalDefault = request.user.sucursal.localidad +", "+request.user.sucursal.provincia
-    sucursalString = request.GET.get('sucursal',sucursalDefault)
-    sucursalObject = searchSucursalFromStrings(sucursalString)
+    tipo_colaborador = form["tipoColaborador"]
+    colaboradores = Usuario.objects.filter(sucursales__in=[sucursalObject])
 
-    tipo_colaborador = request.GET.get('tipoColaborador',False)
-    colaboradores = Usuario.objects.all()
     rangos = [item.name for item in Group.objects.all()]
 
-    if(sucursalString):
-        colaboradores = colaboradores.filter(sucursal = sucursalObject)
-    if(tipo_colaborador):
-        if(tipo_colaborador not in  rangos):
-            colaboradores = Usuario.objects.filter(sucursal = sucursalObject)
-        else:
-            colaboradores = colaboradores.filter(rango = tipo_colaborador)
+    if(tipo_colaborador and tipo_colaborador in rangos):
+        colaboradores = colaboradores.filter(rango = tipo_colaborador)
 
-    
-
-    colaboradores_list = [{"tipo_colaborador":item.rango, "nombre": item.nombre, "id": item.pk, "dni":item.dni,"comisionTotal": getComisionTotal(item,lastCampania,sucursalObject)["total_comisionado"],"detalle": getComisionTotal(item,lastCampania,sucursalObject)["detalle"]} for item in colaboradores if item.rango != "Admin"]
+    colaboradores_list = [{
+        "tipo_colaborador":item.rango, 
+        "nombre": item.nombre, "id": item.pk, 
+        "dni":item.dni,
+        "detalle": getComisionTotal(item,campania,sucursalObject)["detalle"],
+        "comisionTotal": getComisionTotal(item,campania,sucursalObject)["total_comisionado"],
+        } 
+        for item in colaboradores if item.rango != "Admin"]
     
     totalDeComisiones = sum([user["comisionTotal"] for user in colaboradores_list])
-    request.session["liquidacion_data"] = {"colaboradores_list":colaboradores_list, "sucursal": sucursalString, "fecha":datetime.date.today().strftime("%d-%m-%Y")}
+    # request.session["liquidacion_data"] = {"colaboradores_list":colaboradores_list, "sucursal": sucursalString, "fecha":datetime.date.today().strftime("%d-%m-%Y")}
+    # return JsonResponse({"colaboradores_data": colaboradores_list,"totalDeComisiones": totalDeComisiones} , safe=False)
 
-    return JsonResponse({"data": paramsDict,"colaboradores": colaboradores_list,"totalDeComisiones": totalDeComisiones} , safe=False)
+    return JsonResponse({"colaboradores_data": colaboradores_list, "totalDeComisiones": totalDeComisiones} , safe=False)
 
 def viewPDFLiquidacion(request):
     datos = request.session.get('liquidacion_data', {})
@@ -165,36 +167,72 @@ class LiquidacionesAusenciaYTardanzas(TestLogin,generic.View):
     template_name = 'liquidaciones_ausencias_tardanzas.html'
 
     def get(self,request,*args,**kwargs):
-        sucursalDelUsuario = request.user.sucursal
-        supervisores = Usuario.objects.filter(rango="Supervisor") if str(sucursalDelUsuario) == "Todas, Todas" else Usuario.objects.filter(sucursal=sucursalDelUsuario, rango="Supervisor")
 
+        sucursalDelUsuario = request.user.sucursales.all()[0]
+        supervisores = Usuario.objects.filter(rango="Supervisor", sucursales__in=[sucursalDelUsuario])
+        sucursalesDisponibles = request.user.sucursales.all()
+        rangosDisponibles = ["Vendedor", "Administracion local", "Supervisor", "Gerente sucursal"]
         context = {
             "supervisores": supervisores,
-            "amountTardanza": 350,
-            "amountFalta": 2000,
-            "fecha_hoy":datetime.date.today().strftime("%d-%m-%Y"),
+            "sucursales": sucursalesDisponibles,
+            "rangos": rangosDisponibles,
+            "urlRequestColaboradores": reverse_lazy('liquidacion:requestColaboradores_TardanzasAusencias'),
+            "urlNewItem": reverse_lazy('liquidacion:newAusenciaTardanza'),
         }
 
         return render(request, self.template_name, context)
-
-    def post(self, request, *args, **kwargs):
-        if(HttpResponse.status_code == 200):
-            colaborador= json.loads(request.body)["colaborador"]
-            fecha= json.loads(request.body)["fecha"]
-            hora= json.loads(request.body)["hora"]
-            descuento= json.loads(request.body)["descuento"]
-            campania = obtener_ultima_campania()
-
-            colaboradorObject = Usuario.objects.get(email=colaborador)
-            colaboradorObject.faltas_tardanzas.append({"fecha":fecha,"hora":hora,"descuento":descuento,"campania":campania})
-            colaboradorObject.save()
-            
-            countFaltas = liquidaciones_countFaltas(colaboradorObject)
-            countTardanzas = liquidaciones_countTardanzas(colaboradorObject)
-
-            response_data = {"countFaltas": countFaltas,"countTardanzas": countTardanzas,"fecha":fecha,"hora": hora,"descuento":descuento}
-            return JsonResponse(response_data, safe=False)
-        else:
-            response_data = {"status": "500", "create": False}
-            return JsonResponse(response_data, safe=False)
         
+def requestColaboradores_TardanzasAusencias(request):
+    form =json.loads(request.body)
+    sucursalObject = Sucursal.objects.get(pseudonimo = form["sucursal"])
+    rango = form["rango"]
+    colaboradores = Usuario.objects.filter(sucursales__in=[sucursalObject],rango=rango)
+    # rangosDisponibles = {"Vendedor": "Vendedores/as", "Administracion local": "Administrativos/as", "Supervisor": "Supervisores/as", "Gerente sucursal": "Gerentes/as"  }
+
+    colaboradoresDict = [{
+        "nombre": colaborador.nombre,
+        "rango": colaborador.rango,
+        "email": colaborador.email,
+        "vendedoresACargo": colaborador.vendedores_a_cargo,
+        "tardanzasAusencias": colaborador.faltas_tardanzas,
+        "horaSucursal": sucursalObject.hora_apertura,
+        "countFaltas": liquidaciones_countFaltas(colaborador),
+        "countTardanzas": liquidaciones_countTardanzas(colaborador),
+        "fechaHoy":datetime.date.today().strftime("%d/%m/%Y"),
+
+        } 
+        for colaborador in colaboradores]
+    return JsonResponse({"colaboradores_data": colaboradoresDict} , safe=False)
+
+def newAusenciaTardanza(request):
+    form =json.loads(request.body)
+    try:
+        colaborador= form["colaborador"]
+        fecha= form["fecha"]
+        tipoEvento = form["tipoEvento"]
+        hora = form["hora"] if tipoEvento == "Tardanza" else ""
+
+        campania = obtener_ultima_campania()
+        colaboradorObject = Usuario.objects.get(email=colaborador)
+
+        colaboradorObject.faltas_tardanzas.append({
+            "tipoEvento": tipoEvento, 
+            "fecha": fecha, 
+            "hora": hora, 
+            "campania": campania
+        })
+        colaboradorObject.save()
+
+        response_data = {
+            "countFaltas": liquidaciones_countFaltas(colaboradorObject),
+            "countTardanzas": liquidaciones_countTardanzas(colaboradorObject),
+            "tipoEvento": tipoEvento,
+            "fecha": fecha,
+            "hora": hora,
+            "status": True
+        }
+        return JsonResponse(response_data, safe=False)
+    
+    except Exception as e:
+        print(e)
+        return JsonResponse({"status": False, "errorMessage": "Ocurrio un error al guardar"},safe=False)

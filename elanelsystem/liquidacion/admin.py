@@ -6,5 +6,6 @@ admin.site.register(Asegurado)
 admin.site.register(CoeficientePorCantidadVendedor)
 admin.site.register(CoeficientePorProductividadVendedor)
 admin.site.register(CoeficientePorProductividadSupervisor)
+admin.site.register(MontoTardanzaAusencia)
 
 # Register your models here.

@@ -7,19 +7,30 @@
 
 {% block content %}
     <div class="wrapperHeader">
+        
         <div class="wrapperInputsSearchs">
-            <div id="sucursalWrapper">
-                <h5>Elige la sucursal</h5>
-                <input type="text" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" value ="{{sucursal}}" form="formArqueoCaja" class="selectInput">
-                <ul id="contenedorAgencia" class="select">
-                    {% for agencia in sucursales %}
-                        <li>{{agencia.localidad}}, {{agencia.provincia}}</li>
-                    {% endfor %}
-                </ul>
+            <div id="sucursalWrapper" class="inputWrapper">
+                <div class="containerInputAndOptions">
+                    <img id="tipoComprobanteIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                    <input type="text" readonly="" placeholder="Sucursal" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" class="input-read-write-default onlySelect">
+                    <ul id="contenedorSucursal" class="list-select-custom options">
+                        {% for sucursal in sucursales %}
+                            <li>{{sucursal}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
-            <div id="camapañaFilterWrapper">
-                <h5>Campaña</h5>
-                <input type="number" class="inputCampania" id="inputCampania" value="0" min="0" max="0">
+
+            <div id="campaniaWrapper" class="inputWrapper">
+                <div class="containerInputAndOptions">
+                    <img id="tipoComprobanteIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                    <input type="text" readonly="" placeholder="Campaña" name="campania" id="campaniaInput" required="required" autocomplete="off" maxlength="50" class="input-read-write-default onlySelect">
+                    <ul id="contenedorCampania" class="list-select-custom options">
+                        {% for campania in campanias %}
+                            <li>{{campania}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
         </div>
         <div class="wrapperButtonsActions blocked" id="wrapperButtonsActions">
@@ -28,7 +39,6 @@
         </div>
     </div>
     <div class="wrapperManageLiquidacion">
-        <div class="blocked" id="backgroundLiquidacion"></div>
         <div class="colaboradoresWrapper">
             <h3>Elige los colaboradores</h3>
             <div>
@@ -128,9 +138,10 @@
 {% endblock content %}
 {% block js %}
     <script> 
-        const urlRequestColaboradores = "{{urlRequestColaboradores}}?"
+        const urlRequestColaboradores = "{{urlRequestColaboradores}}"
     </script>
     <script src="{% static 'js/input_select_create_user.js' %}"></script>
     <script src="{% static 'js/filters_liquidacion.js' %}"></script>
+    <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 
 {% endblock js %}
