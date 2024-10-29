@@ -15,42 +15,71 @@
 </div>
 
 <div class="filters">
-      <a href="{% url 'users:create_customer' %}" class="add-button-default" id="create_customer">Agregar</a>
-      <button type="button" id="showModalImport" class="add-button-default" onclick="newModalImport()">Importar clientes</button>
+  <div class="buttonsActionsWrapper">
+    <a href="{% url 'users:create_customer' %}" class="add-button-default" id="create_customer">Agregar</a>
+    <button type="button" id="showModalImport" class="button-default-style" onclick="newModalImport()">Importar</button>
+  </div>
 
-      <div>
+  <form method="POST" id="formFilter">
+    {% csrf_token %}
+    <div class="filtersActionWrapper">
+
+      <div id="wrapperSucursal" class="inputWrapper">
+        <div class="containerInputAndOptions">
+            <img id="sucursalIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+            <input type="text" placeholder="Sucursal" readonly name="sucursal" id="sucursalInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
+            <ul class="list-select-custom options">
+              {% for s in sucursales %}
+                <li>{{s}}</li>
+              {% endfor %}
+            </ul>
+        </div>
+      </div>
+
+      <div class="searchActionWrapper">
         <input 
         type="text"
         class = "customer input-read-write-default"
         id="customer_search">
         <img src="{% static 'images/icons/search.svg' %}" alt="">
+      </div>
+
     </div>
+    <button type="button" id="submitFilter" class="add-button-default">Filtrar</button>
+    
+  </form>   
+
 </div>
 
-<div class="information">
-    <div class="tittlesWrapper">
-      <ul class="tittles">
-          <li>Nombre</li>
-          <li>DNI</li>
-          <li>Telefono</li>
-          <li>Localidad</li>
-          <li>Provincia</li>
-      </ul>   
-    </div>
 
-    <div class="valuesWrapper">
-        <ul class="values">
-          {% for customer in customers %}
-            <a class ="item" href="{% url 'users:cuentaUser' customer.id %}">
-              <div><p>{{customer.nombre|truncatechars:24}}</p></div>
-              <div><p>{{customer.dni}}</p></div>
-              <div><p>{{customer.tel}}</p></div>
-              <div><p>{{customer.loc}}</p></div>
-              <div><p>{{customer.prov}}</p></div>
-            </a>
-          {% endfor %} 
-        </ul>       
-    </div>
+
+
+
+<div class="informationWrapper">
+  <table class="information">
+    <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>DNI</th>
+          <th>Telefono</th>
+          <th>Localidad</th>
+          <th>Provincia</th>
+        </tr>
+    </thead>
+    
+    <tbody class="values">
+      {% for customer in customers %}
+          <tr class="customer_item" data-url="{% url 'users:cuentaUser' customer.id %}">
+            <td><p>{{customer.nombre}}</p></td>
+            <td><p>{{customer.dni}}</p></td>
+            <td><p>{{customer.tel}}</p></td>
+            <td><p>{{customer.loc}}</p></td>
+            <td><p>{{customer.prov}}</p></td>
+          </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
 </div> 
 
 {% endblock content %}
@@ -58,31 +87,24 @@
 <script>
   var csrf_token = '{%csrf_token%}'
   var urlImportData = "{% url 'users:importClientes' %}"
-  var sucursalesDisponibles = {{ sucursalesDisponibles|safe }};
+  var sucursalesDisponibles = {{ sucursalesDisponiblesJSON|safe }};
   var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
 
-  function actualizarResultados(resultados, contenedor) {
-    // Limpia el contenedor de los datos
-    contenedor.innerHTML = "";
-
-    // Se reccore los datos filtrados
-    resultados.forEach((item) => {
-      let divs = "";
-
-      // Se reccore los campos de cada elemento y se lo guarda en un div
-      // Ademas de eso empieza en 1 porque el campo 0 es la pk para luego poder colocar el URL
-      for (let i = 1; i < item.length; i++) {
-        divs += "<div><p>" + item[i] + "</p></div>";
-      }
-
-      // Se crea la etiqueta a con el enlace de la pk (item[0]) 
-      let enlace = "<a class ='item' href='/cliente/" + item[0] + "/operaciones/'>" + divs + "</a>";
-      contenedor.insertAdjacentHTML("beforeend", enlace)
-    });
-  }
 </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Selecciona todos los <tr> con la clase 'user_item'
+    document.querySelectorAll('.customer_item').forEach(row => {
+      row.addEventListener('click', function() {
+        // Redirecciona a la URL almacenada en el atributo 'data-url' del <tr>
+        window.location.href = row.getAttribute('data-url');
+      });
+    });
+  });
+</script>
+
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
-<script src="{% static 'js/inputs_search_customers.js' %}"></script>
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 <script src="{% static 'js/importDataCliente.js' %}"></script>
 
