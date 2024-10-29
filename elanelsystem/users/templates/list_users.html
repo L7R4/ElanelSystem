@@ -14,10 +14,12 @@
 </div>
 
 <div class="filters">
-    <a href="{% url 'users:create_user' %}" class="add-button-default" id="create_user">Agregar</a>
-    <button type="button" id="showModalImport" class="add-button-default" onclick="newModalImport()">Importar usuarios</button>
+    <div class="buttonsActionsWrapper">
+      <a href="{% url 'users:create_user' %}" class="add-button-default" id="create_user">Agregar</a>
+      <button type="button" id="showModalImport" class="button-default-style " onclick="newModalImport()">Importar</button>
+    </div>
 
-    <div>
+    <div class="searchActionWrapper">
         <input 
         type="text"
         class = "user input-read-write-default"
@@ -26,57 +28,70 @@
     </div>
 </div>
 
-<div class="information">
-    <div class="tittlesWrapper">
-      <ul class="tittles">
-          <li>Nombre</li>
-          <li>DNI</li>
-          <li>Correo</li>
-          <li>Sucursal</li>
-          <li>Telefono</li>
-          <li>Rango</li>
-      </ul>   
-    </div>
-    
-
-    <div class="valuesWrapper">
-        <ul class="values">
-          {% for u in users %}
-            <a class ="item" href="{% url 'users:detailUser' u.id %}">
-              <div class="nombreUser"><p>{{u.nombre}}</p></div>
-              <div><p>{{u.dni}}</p></div>
-              <div class="emailUser"><p>{{u.email}}</p></div>
-              <div><p>{{u.sucursal}}</p></div>
-              <div><p>{{u.tel}}</p></div>
-              <div><p>{{u.rango}}</p></div>
-            </a>
-          {% endfor %} 
-        </ul>       
-    </div>
+<div class="informationWrapper">
+    <table class="information">
+      <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>DNI</th>
+            <th>Correo</th>
+            <th>Sucursal</th>
+            <th>Teléfono</th>
+            <th>Rango</th>
+          </tr>
+      </thead>
+      
+      <tbody class="values">
+        {% for u in users %}
+            <tr class="user_item" data-url="{% url 'users:detailUser' u.id %}">
+              <td class="nombreUser">{{ u.nombre }}</td>
+              <td><p>{{ u.dni }}</p></td>
+              <td class="emailUser"><p>{{ u.email }}</p></td>
+              <td>
+                {% for sucursal in u.sucursales %}
+                  <p>{{ sucursal }}</p>
+                {% endfor %}
+              </td>
+              <td><p>{{ u.tel }}</p></td>
+              <td><p>{{ u.rango }}</p></td>
+            </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
 </div> 
+
+
 {% comment %} <button type="submit" id="confirmDescuento" class="add-button-default" form="formNewDescuento">Confirmar</button> {% endcomment %}
 
 {% endblock content %}
 {% block js %}
 
-<meta name="csrf-token" content="{{ csrf_token }}">
 <script>
-    var csrf_token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  var csrf_token = '{%csrf_token%}'
+  var campaniasDisponibles = {{ campaniasDisponibles|safe }}
+  var urlPostDescuento = "{{urlPostDescuento}}"
+  var urlImportData = "{% url 'users:importUsuarios' %}"
+  var sucursalesDisponibles = {{ sucursalesDisponibles|safe }}
+  var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}"
 </script>
 
 <script>
-  var campaniasDisponibles = {{ campaniasDisponibles|safe }};
-  var urlPostDescuento = "{{urlPostDescuento}}";
-  var urlImportData = "{% url 'users:importUsuarios' %}";
-  var sucursalesDisponibles = {{ sucursalesDisponibles|safe }};
-  var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}"
+  document.addEventListener('DOMContentLoaded', function() {
+    // Selecciona todos los <tr> con la clase 'user_item'
+    document.querySelectorAll('.user_item').forEach(row => {
+      row.addEventListener('click', function() {
+        // Redirecciona a la URL almacenada en el atributo 'data-url' del <tr>
+        window.location.href = row.getAttribute('data-url');
+      });
+    });
+  });
 </script>
 
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 <script src="{% static 'js/menuContextCreateDescuentoUser.js' %}"></script>
-<script src="{% static 'js/inputs_search_users.js' %}"></script>
+{% comment %} <script src="{% static 'js/inputs_search_users.js' %}"></script> {% endcomment %}
 <script src="{% static 'js/modalCreateDescuento.js' %}"></script>
 <script src="{% static 'js/importDataUsers.js' %}"></script>
 

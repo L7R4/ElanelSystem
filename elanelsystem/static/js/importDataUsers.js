@@ -1,5 +1,3 @@
-console.log(csrf_token)
-
 function renderFormImportData() {
     return `
     <div id="importDataContainer">

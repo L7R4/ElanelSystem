@@ -123,6 +123,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         self.lugar_nacimiento = str(self.lugar_nacimiento.title())
         self.estado_civil = str(self.estado_civil.capitalize())
         self.xp_laboral = str(self.xp_laboral.capitalize())
+        self.email = str(self.email.lower())
+
 
         super(Usuario, self).save(*args, **kwargs)
 
