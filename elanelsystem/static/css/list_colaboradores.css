@@ -1,19 +1,15 @@
 .filters {
     width: 100%;
+    height: 15%;
     display: flex;
     align-items: center;
-    padding: 3rem 4rem;
+    padding: 3rem;
     justify-content: space-between;
 
 }
 
-#create_user {
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    color: var(--third-color);
-    padding: 1rem 3rem;
-}
 
-.filters>div {
+.filters>div.searchActionWrapper {
     position: relative;
     display: flex;
     align-items: center;
@@ -21,7 +17,8 @@
     height: 100%;
 }
 
-.filters>div>img {
+
+.filters>div.searchActionWrapper>img {
     position: absolute;
     /* rotate: -90deg; */
     filter: invert(1);
@@ -30,22 +27,8 @@
     z-index: 6;
 }
 
-.filters>div>.select {
-    position: absolute;
-    height: 0;
-    max-height: 20rem;
-    overflow-y: auto;
-    top: 70%;
-    /* left: 3px; */
-    transition: all .4s ease;
-    width: 82%;
-    z-index: 1;
-    background: white;
-    border-radius: 0.5rem;
-    /* border: 3px solid var(--third-color); */
-}
 
-.filters>div>input {
+.filters>div.searchActionWrapper>input {
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     font-family: raleway;
     color: var(--third-color);
@@ -54,28 +37,81 @@
     z-index: 2;
 }
 
-#create_customer {
-    padding: 1.6rem 4rem;
-    color: white;
-    font-size: 1.6rem;
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    height: fit-content;
-    text-decoration: none;
-    border-radius: 1rem;
-    letter-spacing: .04rem;
-    margin-left: 2rem;
+.filters>div.buttonsActionsWrapper {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    gap: 1.5rem;
+}
+
+.filters>div.buttonsActionsWrapper > * {
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    color: var(--third-color);
+    padding: 1rem 3rem;
 }
 
 
-
-.information {
-    height: 88%;
+.informationWrapper{
+    height: 85%;
     width: 100%;
-    /* display: flex; */
-    overflow-x: auto;
-    overflow-y: none;
+    padding: 3rem;
+    padding-top: 0;
+    overflow: auto;
 }
+
+table.information {
+    width: 100%;
+    table-layout: auto;
+    height: 100%;
+}
+table.information tr > *{
+    padding: 1rem;
+    text-align: center;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    color: var(--third-color);
+    font-family: raleway-semibold;
+}
+
+
+
+table.information > tbody > tr > td{
+    font-size: clamp(1.3rem, 1vw, 1.5rem);
+    font-family: raleway;
+} 
+table.information > tbody > tr:hover{
+    background-color: #304361;
+    cursor: pointer;
+}
+
+table.information > thead{
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-width: 18rem;
+    background-color: var(--fourth-color);
+    border-radius: .8rem;
+    height: 15%;
+}
+
+table.information > tbody {
+    height: 85%;
+}
+
+
+
+table.information tr > *:first-child{
+    border-top-left-radius: .8rem;
+    border-bottom-left-radius: .8rem;
+    
+} 
+
+
+table.information tr > *:last-child{
+    border-top-right-radius: .8rem;
+    border-bottom-right-radius: .8rem ;
+} 
+
+
 
 .information::-webkit-scrollbar {
     width: 2px;

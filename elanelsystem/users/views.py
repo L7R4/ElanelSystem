@@ -30,7 +30,7 @@ from elanelsystem.utils import format_date, handle_nan
 
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
-from django.middleware import csrf
+
 import pandas as pd
 from django.core.files.storage import FileSystemStorage
 
@@ -65,7 +65,6 @@ class ConfiguracionPerfil(TestLogin,generic.View):
             message = f' Hubo un error inesperado al actualizar la contraseña'
             return JsonResponse({'success': False,"message" : message}, safe=False)
             
-
 
 class CrearUsuario(TestLogin, generic.View):
     model = Usuario
@@ -219,11 +218,11 @@ class CrearUsuario(TestLogin, generic.View):
             response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
             return JsonResponse(response_data, safe=False)         
   
-class ListaUsers(TestLogin,generic.View):
+
+class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
     template_name = "list_users.html"
-    # permission_required = "sales.my_ver_resumen"
-    
+    permission_required = "sales.my_ver_resumen"
     def get(self,request,*args, **kwargs):
         users = Usuario.objects.all()
 
@@ -243,29 +242,33 @@ class ListaUsers(TestLogin,generic.View):
             campaniasDisponibles = [campaniaActual,campaniaAnterior]
         #endregion
 
-        # print(campaniasDisponibles)
+        sucursalesObject = Sucursal.objects.all()
+        sucursales = [sucursal.pseudonimo for sucursal in sucursalesObject ]
+
+        users_data = []
+        for user in Usuario.objects.all():
+            # Obtén los pseudónimos de las sucursales asociadas a cada usuario
+            sucursales_pseudonimos = [sucursal.pseudonimo for sucursal in user.sucursales.all()]
+            # Agrega el diccionario con la información del usuario y sus sucursales
+            users_data.append({
+                "id": user.id,
+                "nombre": user.nombre,
+                "dni": user.dni,
+                "email": user.email,
+                "tel": user.tel,
+                "rango": user.rango,
+                "sucursales": sucursales_pseudonimos
+            })
+            
         context = {
-            "users": users,
+            "users": users_data,
             "urlPostDescuento": reverse_lazy("users:realizarDescuento"),
             "campaniasDisponibles": json.dumps(campaniasDisponibles),
-            'csrf_token': csrf.get_token(request),
-        }
-        users_list = []
-        for c in users:
-            data_user = {}
-            data_user["pk"] = c.pk
-            data_user["nombre"] = c.nombre
-            data_user["dni"] = c.dni
-            data_user["email"] = c.email
-            # data_user["sucursal"] = str(c.sucursal)
-            data_user["tel"] = c.tel
-            data_user["rango"] = c.rango
-            users_list.append(data_user)
-        data = json.dumps(users_list)
+            "sucursalesDisponibles": json.dumps(sucursales)
 
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse(data,safe=False)
+        }
         return render(request, self.template_name,context)
+
 
 class DetailUser(TestLogin, generic.DetailView):
     model = Usuario
@@ -547,27 +550,26 @@ def importar_usuarios(request):
         new_number_rows_cont = 0
 
         try:
-            # Leer la hoja "CLIENTES" del archivo Excel
-            df = pd.read_excel(file_path, sheet_name="CLIENTES")
+            df = pd.read_excel(file_path, sheet_name="Colaboradores")
             
-            # Procesar cada fila
+            # Procesar cada fila y crear usuarios
             for _, row in df.iterrows():
-                # Aquí puedes realizar la lógica de creación de cliente
-                dni=handle_nan(row['DNI'])
-                usuario_existente = Usuario.objects.filter(dni=dni).first()
+                print(row)
+                dni = handle_nan(row['DNI'])
+                usuario_existente = Usuario.objects.filter(dni=str(dni)).first()
 
                 if not usuario_existente:
-                    new_number_rows_cont +=1                        
+                    new_number_rows_cont += 1                        
+                    usuario = Usuario()
 
                     usuario = Usuario.objects.create_user(
                         email=row['Email'],
                         nombre=row['Nombre'],
                         dni=row['DNI'],
                         rango=row['Rango'],
-                        password=row['DNI'] + '_elanel'
+                        password=str(row['DNI']) + '_elanel'
                     )
                 
-
                     # Asignar campos adicionales
                     usuario.tel = handle_nan(row['Telefono'])
                     usuario.domic = handle_nan(row['Domicilio'])
@@ -575,42 +577,57 @@ def importar_usuarios(request):
                     usuario.loc = handle_nan(row['Localidad'])
                     usuario.cp = handle_nan(row['CP'])
                     usuario.lugar_nacimiento = handle_nan(row['Lugar de nacimiento'])
-                    usuario.fec_nacimiento = handle_nan(row['Fec-Nacimiento'])
-                    usuario.fec_ingreso = handle_nan(row['Fecha ingreso'])
+                    usuario.fec_nacimiento = format_date(handle_nan(row['Fec-Nacimiento']))
+                    usuario.fec_ingreso = format_date(handle_nan(row['Fecha ingreso']))
                     usuario.estado_civil = handle_nan(row['Estado civil'])
                     usuario.xp_laboral = handle_nan(row['XP Laboral'])
-                    usuario.c = row['DNI'] + '_elanel'
-                    usuario.groups.add(row["Rango"])
-
-                        
+                    usuario.c = str(row['DNI']) + '_elanel'
+                    usuario.groups.add(Group.objects.filter(name=row["Rango"]).first())
+                    sucursal_object = Sucursal.objects.get(pseudonimo=agencia)
+                    usuario.sucursales.add(sucursal_object)
                     usuario.save()
 
-            # Recorrer nuevamente las filas porque es necesario que todos los usuarios esten cargados antes para poder COLOCAR LOS VENDEDORES A CARGO DE LOS SUPERVISORES
-            vendedores_a_cargo =[]
+            # Segunda pasada para asignar los vendedores a los supervisores
             for _, row in df.iterrows():
-                supervisor = Usuario.objects.filter(dni=row["Supervisor"])
-                
-                vendedores_a_cargo.append({
-                    'nombre': Usuario.objects.get(dni=supervisor).nombre,
-                    'email': Usuario.objects.get(dni=supervisor).email,
-                })
+                dni_vendedor = handle_nan(row['DNI'])
+                supervisor_dni = handle_nan(row['Supervisor'])
 
-                
+                # Obtener el supervisor basado en su DNI
+                supervisor = Usuario.objects.filter(dni=str(supervisor_dni)).first()
+
+                if supervisor:
+                    # Obtener el vendedor basado en su DNI
+                    vendedor = Usuario.objects.filter(dni=str(dni_vendedor)).first()
+                    
+                    # Crear el diccionario del vendedor
+                    vendedor_data = {
+                        'nombre': vendedor.nombre,
+                        'email': vendedor.email
+                    }
+
+                    # Verificar si el campo vendedores_a_cargo existe o está vacío
+                    if not supervisor.vendedores_a_cargo:
+                        supervisor.vendedores_a_cargo = []
+
+                    # Agregar el vendedor al campo vendedores_a_cargo del supervisor
+                    supervisor.vendedores_a_cargo.append(vendedor_data)
+
+                    # Guardar los cambios en el supervisor
+                    supervisor.save()
+
             # Eliminar el archivo después de procesar
             fs.delete(filename)
 
             iconMessage = "/static/images/icons/checkMark.png"
-            message= f"Datos importados correctamente. Se agregaron {new_number_rows_cont} clientes nuevos"
-            return JsonResponse({"message": message,"iconMessage": iconMessage, "status": True})
+            message = f"Datos importados correctamente. Se agregaron {new_number_rows_cont} usuarios nuevos"
+            return JsonResponse({"message": message, "iconMessage": iconMessage, "status": True})
 
         except Exception as e:
             print(f"Error al importar: {e}")
 
             iconMessage = "/static/images/icons/error_icon.png"
-            message= "Error al procesar el archivo"
+            message = "Error al procesar el archivo"
             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
-
-    
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
 
@@ -630,19 +647,6 @@ class ListaClientes(TestLogin, generic.View):
             "sucursalesDisponibles": json.dumps(sucursales)
 
         }
-        customers_list = []
-        for c in customers:
-            data_customer = {}
-            data_customer["nombre"] = c.nombre
-            data_customer["dni"] = c.dni
-            data_customer["tel"] = c.tel
-            data_customer["loc"] = c.loc
-            data_customer["prov"] = c.prov
-            customers_list.append(data_customer)
-       
-
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'response':customers_list},safe=False)
         return render(request, self.template_name,context)
 
 def importar_clientes(request):
