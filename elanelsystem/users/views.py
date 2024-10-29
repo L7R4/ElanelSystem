@@ -33,7 +33,7 @@ from django.utils.decorators import method_decorator
 
 import pandas as pd
 from django.core.files.storage import FileSystemStorage
-
+from django.db.models import Q
 #region Usuarios - - - - - - - - - - - - - - - - - - - -
 
 class ConfiguracionPerfil(TestLogin,generic.View):
@@ -644,10 +644,54 @@ class ListaClientes(TestLogin, generic.View):
         context = {
             "customers": customers,
             "importClientesURL" : reverse_lazy("users:importClientes"),
-            "sucursalesDisponibles": json.dumps(sucursales)
+            "sucursalesDisponiblesJSON": json.dumps(sucursales),
+            "sucursales": sucursales
 
         }
         return render(request, self.template_name,context)
+    
+    def post(self, request, *args, **kwargs):
+        # Cargar los filtros desde el body de la solicitud
+        form = json.loads(request.body)
+        
+        # Crear un diccionario para almacenar los filtros dinámicos
+        filters = {}
+        
+        # Filtrar por sucursal si se envía en el request
+        if "sucursal" in form and form["sucursal"]:
+            filters["agencia_registrada__pseudonimo"] = form["sucursal"]
+
+        # Aplicar el filtro general de búsqueda
+        if "search" in form and form["search"]:
+            search_value = form["search"]
+            # Usar Q objects para búsqueda en múltiples campos
+            search_filter = Q(nombre__icontains=search_value) | \
+                            Q(dni__icontains=search_value) | \
+                            Q(tel__icontains=search_value) | \
+                            Q(prov__icontains=search_value) | \
+                            Q(loc__icontains=search_value)
+            
+            # Filtrar clientes aplicando los filtros de búsqueda
+            customers = Cliente.objects.filter(**filters).filter(search_filter)
+        else:
+            # Si no hay búsqueda, solo aplicar los filtros
+            customers = Cliente.objects.filter(**filters)
+
+        # Preparar los datos a enviar en la respuesta
+        customer_data = [
+            {
+                "id": customer.id,
+                "nombre": customer.nombre,
+                "dni": customer.dni,
+                "tel": customer.tel,
+                "prov": customer.prov,
+                "loc": customer.loc,
+                "sucursal": customer.agencia_registrada.pseudonimo
+            } for customer in customers
+        ]
+
+        # Retornar los datos filtrados como JSON
+        return JsonResponse({"customers": customer_data, "status": True})
 
 def importar_clientes(request):
     if request.method == "POST":
