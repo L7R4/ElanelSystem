@@ -18,7 +18,7 @@ from sales.models import CuentaCobranza
 from sales.models import Ventas,ArqueoCaja,MovimientoExterno
 from sales.utils import getEstadoVenta
 # from .forms import CreateClienteForm
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.models import Permission
 from sales.mixins import TestLogin
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -223,6 +223,8 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
     template_name = "list_users.html"
     permission_required = "sales.my_ver_resumen"
+
+
     def get(self,request,*args, **kwargs):
         users = Usuario.objects.all()
 
@@ -264,11 +266,53 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
             "users": users_data,
             "urlPostDescuento": reverse_lazy("users:realizarDescuento"),
             "campaniasDisponibles": json.dumps(campaniasDisponibles),
-            "sucursalesDisponibles": json.dumps(sucursales)
-
+            "sucursalesDisponibles": json.dumps(sucursales),
+            "sucursales": sucursales
         }
         return render(request, self.template_name,context)
 
+    def post(self, request, *args, **kwargs):
+        # Cargar los filtros desde el body de la solicitud
+        form = json.loads(request.body)
+        
+        # Crear un diccionario para almacenar los filtros dinámicos
+        filters = {}
+        
+        # Filtrar por sucursal si se envía en el request
+        if "sucursal" in form and form["sucursal"]:
+            filters["sucursales__pseudonimo__icontains"] = form["sucursal"]
+
+        # Aplicar el filtro general de búsqueda
+        if "search" in form and form["search"]:
+            search_value = form["search"]
+            # Usar Q objects para búsqueda en múltiples campos
+            search_filter = (
+                Q(nombre__icontains=search_value) |
+                Q(dni__icontains=search_value) |
+                Q(email__icontains=search_value) |
+                Q(tel__icontains=search_value) |
+                Q(rango__icontains=search_value)
+            )
+            usuarios = Usuario.objects.filter(**filters).filter(search_filter).distinct()
+        else:
+            # Si no hay búsqueda, solo aplicar los filtros
+            usuarios = Usuario.objects.filter(**filters).distinct()
+
+        # Preparar los datos a enviar en la respuesta
+        user_data = [
+            {
+                "id": user.id,
+                "nombre": user.nombre,
+                "dni": user.dni,
+                "email": user.email,
+                "tel": user.tel,
+                "sucursales": [sucursal.pseudonimo for sucursal in user.sucursales.all()],
+                "rango": user.rango,
+                "url": reverse('users:detailUser', args=[user.id])
+            } for user in usuarios
+        ]
+        # Retornar los datos filtrados como JSON
+        return JsonResponse({"users": user_data, "status": True})
 
 class DetailUser(TestLogin, generic.DetailView):
     model = Usuario
@@ -618,14 +662,14 @@ def importar_usuarios(request):
             # Eliminar el archivo después de procesar
             fs.delete(filename)
 
-            iconMessage = "/static/images/icons/checkMark.png"
+            iconMessage = "/static/images/icons/checkMark.svg"
             message = f"Datos importados correctamente. Se agregaron {new_number_rows_cont} usuarios nuevos"
             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": True})
 
         except Exception as e:
             print(f"Error al importar: {e}")
 
-            iconMessage = "/static/images/icons/error_icon.png"
+            iconMessage = "/static/images/icons/error_icon.svg"
             message = "Error al procesar el archivo"
             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -686,7 +730,8 @@ class ListaClientes(TestLogin, generic.View):
                 "tel": customer.tel,
                 "prov": customer.prov,
                 "loc": customer.loc,
-                "sucursal": customer.agencia_registrada.pseudonimo
+                "sucursal": customer.agencia_registrada.pseudonimo,
+                "url": reverse('users:cuentaUser', args=[customer.id])
             } for customer in customers
         ]
 
@@ -738,14 +783,14 @@ def importar_clientes(request):
             # Eliminar el archivo después de procesar
             fs.delete(filename)
 
-            iconMessage = "/static/images/icons/checkMark.png"
+            iconMessage = "/static/images/icons/checkMark.svg"
             message= f"Datos importados correctamente. Se agregaron {new_number_rows_cont} clientes nuevos"
             return JsonResponse({"message": message,"iconMessage": iconMessage, "status": True})
 
         except Exception as e:
             print(f"Error al importar: {e}")
 
-            iconMessage = "/static/images/icons/error_icon.png"
+            iconMessage = "/static/images/icons/error_icon.svg"
             message= "Error al procesar el archivo"
             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
 

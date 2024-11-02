@@ -1,4 +1,4 @@
-const usuarios = document.querySelectorAll(".valuesWrapper > .values > .item") 
+const usuarios = document.querySelectorAll(".information > .values > .user_item") 
 
 function renderMenuContextDescuento(item){
     let nombre = item.querySelector(".nombreUser").textContent
@@ -16,27 +16,32 @@ function renderMenuContextDescuento(item){
 }
 
 var itemDOMSelected;
-usuarios.forEach(usuario => {
-    usuario.addEventListener('contextmenu', function (e) {
-        e.preventDefault();
 
-        const existingMenu = document.querySelector('.context-menu');
-        if (existingMenu) {
-            existingMenu.remove();
-        }
-        itemDOMSelected = usuario;
-        console.log(itemDOMSelected)
-
-        const contextMenu = document.createElement('div');
-        contextMenu.classList.add('context-menu');
-        contextMenu.innerHTML = renderMenuContextDescuento(itemDOMSelected);
-        document.body.appendChild(contextMenu);
-
-        contextMenu.style.top = `${e.clientY}px`;
-        contextMenu.style.left = `${e.clientX}px`;
-        contextMenu.style.display = 'block';
+function contextMenuManagement(usuarios){
+    usuarios.forEach(usuario => {
+        usuario.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+    
+            const existingMenu = document.querySelector('.context-menu');
+            if (existingMenu) {
+                existingMenu.remove();
+            }
+            itemDOMSelected = usuario;
+            console.log(itemDOMSelected)
+    
+            const contextMenu = document.createElement('div');
+            contextMenu.classList.add('context-menu');
+            contextMenu.innerHTML = renderMenuContextDescuento(itemDOMSelected);
+            document.body.appendChild(contextMenu);
+    
+            contextMenu.style.top = `${e.clientY}px`;
+            contextMenu.style.left = `${e.clientX}px`;
+            contextMenu.style.display = 'block';
+        });
     });
-});
+
+}
+contextMenuManagement(usuarios)
 
 // Evento global para cerrar el menú contextual si se hace clic fuera de él
 document.addEventListener('click', function (e) {

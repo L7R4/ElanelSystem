@@ -24,6 +24,7 @@
     {% csrf_token %}
     <div class="filtersActionWrapper">
 
+      {% comment %} Validar por permiso ------ {% endcomment %}
       <div id="wrapperSucursal" class="inputWrapper">
         <div class="containerInputAndOptions">
             <img id="sucursalIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
@@ -35,7 +36,7 @@
             </ul>
         </div>
       </div>
-
+      {% comment %} ------------ {% endcomment %}
       <div class="searchActionWrapper">
         <input 
         type="text"
@@ -45,7 +46,7 @@
       </div>
 
     </div>
-    <button type="button" id="submitFilter" class="add-button-default">Filtrar</button>
+    {% comment %} <button type="button" id="submitFilter" class="add-button-default">Filtrar</button> {% endcomment %}
     
   </form>   
 
@@ -53,9 +54,8 @@
 
 
 
-
-
 <div class="informationWrapper">
+  <a href="{% url 'users:list_customers'%}" id="buttonCleanFilter">Limpiar filtros</a>
   <table class="information">
     <thead>
         <tr>
@@ -107,5 +107,5 @@
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 <script src="{% static 'js/importDataCliente.js' %}"></script>
-
+<script src="{% static 'js/x_filter_customers.js' %}"></script>
 {% endblock js %}

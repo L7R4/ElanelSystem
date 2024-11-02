@@ -136,7 +136,6 @@ function enableImportButton() {
 
     // Función que verifica si los inputs están completos
     function checkInputs() {
-        console.log("asda")
         if (agenciaInput.value && importDataInput.files.length > 0) {
             importButton.disabled = false;  // Habilitar el botón
             importButton.classList.remove("disabled")
