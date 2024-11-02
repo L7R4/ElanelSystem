@@ -60,8 +60,6 @@ function createFilterButton() {
 }
   
 
-
-
 // Funcion para añadir nuevamente el evento click a las filas y poder rediccionar al dar click.
 function addRowClickEvent() {
     document.querySelectorAll('.customer_item').forEach(row => {
@@ -75,23 +73,29 @@ function addRowClickEvent() {
 async function submitFilter() {
     const formData = {
       sucursal: document.getElementById('sucursalInput').value,
-      search: document.getElementById('customer_search').value,
+      search: document.getElementById('user_search').value,
     };
 
     let response = await formFETCH(formData, url)
     tableInformation.innerHTML = '';
-    response["customers"].forEach(customer => {
+    response["users"].forEach(user => {
+        const sucursales = user.sucursales.map(s => `${s}`).join('');
         tableInformation.innerHTML += `
-          <tr class="customer_item" data-url="${customer.url}">
-            <td><p>${customer.nombre}</p></td>
-            <td><p>${customer.dni}</p></td>
-            <td><p>${customer.tel}</p></td>
-            <td><p>${customer.loc}</p></td>
-            <td><p>${customer.prov}</p></td>
+          <tr class="user_item" data-url="${user.url}">
+            <td class="nombreUser">${user.nombre}</td>
+            <td><p>${user.dni}</p></td>
+            <td class="emailUser">${user.email}</td>
+            <td><p>${sucursales}</p></td>
+            <td><p>${user.tel}</p></td>
+            <td><p>${user.rango}</p></td>
           </tr>
         `;
     });
     addRowClickEvent();
+
+    let usuarios = document.querySelectorAll(".information > .values > .user_item") 
+    contextMenuManagement(usuarios); // Vuelvo a reasignar los listener para aplicar los descuentos/premios
+
     buttonCleanFilter.classList.add("active") // Al presionar el boton filtrar aparece el boton de limpiar filtros
 }
 

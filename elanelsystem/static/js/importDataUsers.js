@@ -1,7 +1,7 @@
 function renderFormImportData() {
     return `
     <div id="importDataContainer">
-        <h2 class="tittleModal">Importar clientes</h2>
+        <h2 class="tittleModal">Importar colaboradores</h2>
         <form id="importForm" enctype="multipart/form-data">
           ${csrf_token}
           <div id="agenciaWrapper" class="inputWrapper">

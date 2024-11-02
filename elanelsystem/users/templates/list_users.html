@@ -6,6 +6,9 @@
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link rel="stylesheet" href="{% static 'css/loader.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+
+<link href="{% static 'js/vanilla-calendar/build/vanilla-calendar.min.css' %}" rel="stylesheet">
+<script src="{% static 'js/vanilla-calendar/build/vanilla-calendar.min.js' %}" defer></script>
 {% endblock css %}
 
 {% block content %}
@@ -19,16 +22,40 @@
       <button type="button" id="showModalImport" class="button-default-style" onclick="newModalImport()">Importar</button>
     </div>
 
-    <div class="searchActionWrapper">
-        <input 
-        type="text"
-        class = "user input-read-write-default"
-        id="user">
-        <img src="{% static 'images/icons/search.svg' %}" alt="">
-    </div>
+    <form method="POST" id="formFilter">
+      {% csrf_token %}
+      <div class="filtersActionWrapper">
+  
+        {% comment %} Validar por permiso ------ {% endcomment %}
+        <div id="wrapperSucursal" class="inputWrapper">
+          <div class="containerInputAndOptions">
+              <img id="sucursalIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+              <input type="text" placeholder="Sucursal" readonly name="sucursal" id="sucursalInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
+              <ul class="list-select-custom options">
+                {% for s in sucursales %}
+                  <li>{{s}}</li>
+                {% endfor %}
+              </ul>
+          </div>
+        </div>
+        {% comment %} ------------ {% endcomment %}
+        <div class="searchActionWrapper">
+          <input 
+          type="text"
+          class = "user input-read-write-default"
+          id="user_search">
+          <img src="{% static 'images/icons/search.svg' %}" alt="">
+        </div>
+  
+      </div>
+      
+    </form>   
+
 </div>
 
 <div class="informationWrapper">
+    <a href="{% url 'users:list_users'%}" id="buttonCleanFilter">Limpiar filtros</a>
+
     <table class="information">
       <thead>
           <tr>
@@ -91,9 +118,12 @@
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 <script src="{% static 'js/menuContextCreateDescuentoUser.js' %}"></script>
-{% comment %} <script src="{% static 'js/inputs_search_users.js' %}"></script> {% endcomment %}
 <script src="{% static 'js/modalCreateDescuento.js' %}"></script>
 <script src="{% static 'js/importDataUsers.js' %}"></script>
+<script src="{% static 'js/x_filter_users.js' %}"></script>
+<script src="{% static 'js/vanilla-calendar/simpleCalendarManage.js' %}" defer></script>
+
+
 
 
 {% endblock js %}
