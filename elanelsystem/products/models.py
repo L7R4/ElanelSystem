@@ -3,8 +3,7 @@ from django.forms import ValidationError
 
 class Plan(models.Model):
     # Campo para el valor nominal, lo configuramos como primary key
-    valor_nominal = models.PositiveIntegerField(primary_key=True)
-
+    valor_nominal = models.PositiveIntegerField()
 
     # Opciones para el campo tipoDePlan
     TIPO_PLAN_CHOICES = [
@@ -57,6 +56,7 @@ class Plan(models.Model):
         if self.c24_porcentage <= 0:
             raise ValidationError({'c24_porcentage': 'Debe contener un valor valido'})
         
+        
     def validation_c30_porcentage(self):
         if self.c30_porcentage <= 0:
             raise ValidationError({'c30_porcentage': 'Debe contener un valor valido'})
@@ -75,6 +75,10 @@ class Plan(models.Model):
 
         if self.tipodePlan not in  planes:
             raise ValidationError({'paquete': 'Tipo de plan incorrecto.'})
+        
+    def validation_valor_nominal(self):
+        if Plan.objects.filter(valor_nominal=self.valor_nominal).exists():
+            raise ValidationError({'valor_nominal': 'Este valor nominal ya esta registrado'})
 
         
     
@@ -91,7 +95,7 @@ class Products(models.Model):
         ("Electrodomestico","Electrodomestico"),
     )
 
-
+    # precio = models.PositiveIntegerField(default=0)
     tipo_de_producto = models.CharField(max_length=20,choices=TIPO_PRODUCTO)
     nombre = models.CharField(max_length=100)
     plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, related_name="plan_producto", null=True, blank=True)

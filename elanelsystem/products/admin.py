@@ -7,4 +7,4 @@ class ProductsAdmin(admin.ModelAdmin):
 
 @admin.register(Plan)
 class PlansAdmin(admin.ModelAdmin):
-    list_display = ("valor_nominal","tipodePlan")
+    list_display = ("tipodePlan",)
