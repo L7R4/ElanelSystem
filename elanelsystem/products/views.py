@@ -24,9 +24,45 @@ class ViewProducts(generic.View):
 
     def get(self,request,*args,**kwargs):
         products = Products.objects.all()
-        context = {"productos": products}
-        print(context)
+        motos = Products.objects.filter(tipo_de_producto ="Moto")
+        combos = Products.objects.filter(tipo_de_producto ="Electrodomestico")
+        prestamos = Products.objects.filter(tipo_de_producto ="Prestamo")
+        planes = [{"valor_nominal": plan.valor_nominal, "tipodePlan":plan.tipodePlan} for plan in Plan.objects.all()]
+
+        context = {
+            "productos": products,
+            "motos": motos,
+            "combos": combos,
+            "planes": json.dumps(planes),
+            "prestamos": prestamos
+            }
+        
+
         return render(request, self.template_name, context)
+    
+    def post(self,request,*args, **kwargs):
+        data = json.loads(request.body)
+        tipo = data.get('tipo')
+        nombre = data.get('nombre', None)
+        plan = data.get('plan')
+        precio = data.get('precio')
+
+        producto = Products.objects.create(
+            tipo_de_producto=tipo,
+            nombre=nombre if tipo != "soluciones" else "$" + str(precio),
+            plan=plan,
+            precio=precio
+        )
+        
+        # Retornar el nuevo producto en JSON para actualizar la vista
+        return JsonResponse({
+            'success': True,
+            'producto': {
+                'nombre': producto.nombre,
+                'plan': producto.plan.tipodePlan,
+                'precio': producto.plan.valor_nominal
+            }
+        })
     
 # class PanelSucursales(TestLogin, generic.View):
 #     template_name = "panelSucursales.html"

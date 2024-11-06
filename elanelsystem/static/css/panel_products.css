@@ -1,4 +1,59 @@
-.wrapper_content {
+.headersPanelsWrapper{
+    display: flex;
+}
+.headersPanelsWrapper > div.active{
+    color: white;
+}
+
+/* .panel-container {
+    display: flex;
+    gap: 10px;
+}
+
+.panel-container  .panel{
+    display: none;
+    padding: 20px;
+    border: 1px solid #333;
+    background-color: #2e2e2e;
+    border-radius: 5px;
+}
+
+.panel-container  .panel.active{
+    display: unset;
+}   
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 10px;
+    border: 1px solid #444;
+}
+
+table th {
+    background-color: #3c3c3c;
+    font-weight: bold;
+}
+
+table tr:nth-child(even) {
+    background-color: #333;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+    color: #1c1c1c;
+    background-color: #e1e1e1;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+ */
+
+/* .wrapper_content {
     padding: 2rem;
     box-sizing: border-box;
 }
@@ -39,7 +94,6 @@
     font-size: clamp(1.3rem, 1vw, 1.5rem);
     font-family: raleway-semibold;
     margin-bottom: .3rem;
-    /* color:var(--primary-color);  */
 }
 
 .wrapperInput>input {
@@ -76,7 +130,6 @@
     font-size: clamp(1.3rem, 1vw, 1.5rem);
     font-family: raleway-semibold;
     margin-bottom: .3rem;
-    /* color:var(--primary-color);  */
 }
 
 .wrapperInputNew>input {
@@ -166,4 +219,4 @@
 
 .formSucursal {
     position: relative;
-}
+} */
