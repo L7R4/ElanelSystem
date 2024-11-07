@@ -1,222 +1,107 @@
-.headersPanelsWrapper{
+.wrapper_content {
+    padding: 5rem;
+}
+
+.headersPanelsWrapper {
     display: flex;
-}
-.headersPanelsWrapper > div.active{
-    color: white;
-}
-
-/* .panel-container {
-    display: flex;
-    gap: 10px;
+    gap: 2rem;
+    justify-content: center;
+    margin-bottom: 2rem;
 }
 
-.panel-container  .panel{
-    display: none;
-    padding: 20px;
-    border: 1px solid #333;
-    background-color: #2e2e2e;
-    border-radius: 5px;
-}
-
-.panel-container  .panel.active{
-    display: unset;
-}   
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-table th, table td {
-    padding: 10px;
-    border: 1px solid #444;
-}
-
-table th {
-    background-color: #3c3c3c;
-    font-weight: bold;
-}
-
-table tr:nth-child(even) {
-    background-color: #333;
-}
-
-button {
-    margin-top: 10px;
-    padding: 10px;
-    color: #1c1c1c;
-    background-color: #e1e1e1;
-    border: none;
-    cursor: pointer;
-    border-radius: 3px;
-}
-
- */
-
-/* .wrapper_content {
-    padding: 2rem;
-    box-sizing: border-box;
-}
-
-.sucursalItem {
-    width: 80%;
-    background-color: #fff;
-    margin-bottom: 1.4rem;
-    border-radius: .7rem;
-    box-sizing: border-box;
+.headersPanelsWrapper>div {
+    border: 1px solid var(--third-color);
     padding: 1rem 2rem;
-}
-
-.sucursalItem>h2 {
-    font-size: clamp(1.8rem, 1.5vw, 2.2rem);
-    font-family: raleway-semibold;
-    color: var(--primary-color);
-}
-
-.containerInputs {
-    display: flex;
-    gap: 1rem;
-    margin: .7rem 0rem;
-    width: 100%;
-    flex-wrap: wrap;
-}
-
-.wrapperInput {
-    width: 30%;
-}
-
-.wrapperInput:first-child {
-    width: 50%;
-}
-
-.wrapperInput>label {
-    display: block;
-    font-size: clamp(1.3rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    margin-bottom: .3rem;
-}
-
-.wrapperInput>input {
-    width: 100%;
-    box-sizing: border-box;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    background-color: #3043615e;
-    color: #000000c2;
-    border: 2px solid var(--third-color);
-    border-radius: 0.6rem;
-    display: flex;
-    align-items: center;
-    padding: .6rem;
-    text-indent: 1rem;
-    outline: none;
-    pointer-events: none;
-}
-
-.wrapperInput>input.open {
-    color: var(--background-color);
-    pointer-events: unset;
-    background-color: transparent;
-    border: 2px solid var(--primary-color);
-
-}
-
-.wrapperInputNew {
-    width: 47%;
-}
-
-.wrapperInputNew>label {
-    display: block;
-    font-size: clamp(1.3rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    margin-bottom: .3rem;
-}
-
-.wrapperInputNew>input {
-    width: 100%;
-    box-sizing: border-box;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    border: 2px solid var(--third-color);
-    background-color: #3043615e;
-    color: #000000c2;
-    border-radius: 0.6rem;
-    display: flex;
-    align-items: center;
-    padding: .6rem;
-    text-indent: 1.2rem;
-    outline: none;
-}
-
-.wrapperInputNew>input.open {
-    color: var(--background-color);
-    pointer-events: unset;
-    background-color: transparent;
-    border: 2px solid var(--primary-color);
-
-}
-
-.buttonsActions {
-    width: 100%;
-    display: flex;
-    gap: 1rem;
-}
-
-.deleteSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-}
-
-#buttonStopAddSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--background-color);
-}
-
-.enableForm,
-.uploadForm,
-#buttonConfirmAddSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-}
-
-.desableForm {
-    color: var(--background-color);
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-}
-
-#buttonAddSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-    width: 20%;
-    padding: 1.2rem .9rem;
+    opacity: .7;
     cursor: pointer;
+    border-radius: .6rem;
 }
 
-#buttonAddSucursal.blocked {
-    display: none;
+.headersPanelsWrapper>div.active {
+    border: 1px solid var(--primary-color);
+    background-color: var(--primary-color);
+    opacity: 1;
 }
 
-.div {
-    width: 2rem;
-    height: 2rem;
-    background-color: red;
+.headersPanelsWrapper>div>h2 {
+    font-size: clamp(1.5rem, 1.3vw, 1.8rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
 }
 
-.desableForm,
-.uploadForm {
-    display: none;
-}
-
-.desableForm.active,
-.uploadForm.active {
+#formNewProuducto {
     display: flex;
+    justify-content: center;
 }
 
-.div.active {
-    background-color: green;
+#formNewProuducto>.panel {
+    width: 70%;
+    display: none;
+}
+
+#formNewProuducto>.panel.active {
+    display: unset;
+}
+
+#formNewProuducto>.panel>table {
+    width: 100%;
+    margin-bottom: 2rem;
 
 }
 
-.formSucursal {
-    position: relative;
-} */
+#formNewProuducto>.panel>table>thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-width: 18rem;
+    background-color: var(--fourth-color);
+    border-radius: .6rem;
+}
+
+#formNewProuducto>.panel>table>thead tr>* {
+    padding: 1rem;
+    text-align: center;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    color: var(--third-color);
+    font-family: raleway-semibold;
+}
+
+#formNewProuducto>.panel>table tr>*:last-child {
+    border-top-right-radius: .8rem;
+    border-bottom-right-radius: .8rem;
+}
+
+#formNewProuducto>.panel>table tr>*:first-child {
+    border-top-left-radius: .8rem;
+    border-bottom-left-radius: .8rem;
+}
+
+#formNewProuducto>.panel>table>tbody>tr>td {
+    padding: 1rem;
+}
+
+#formNewProuducto>.panel>table>tbody>tr>td input {
+    padding: .6rem;
+    color: var(--third-color);
+    font-family: raleway-semibold;
+    background-color: var(--background-color);
+}
+
+#formNewProuducto>.panel>table>tbody>tr>td input#paquete {
+    padding: .8rem;
+    background-color: rgba(255, 255, 255, 0.171);
+
+}
+
+#rowNewFormProduct .containerInputAndOptions>.iconDesplegar {
+    filter: invert(1);
+    z-index: 4;
+}
+
+#rowNewFormProduct .containerInputAndOptions>input {
+    z-index: 3;
+}
+
+#rowNewFormProduct.containerInputAndOptions>ul.options {
+    z-index: 2;
+}

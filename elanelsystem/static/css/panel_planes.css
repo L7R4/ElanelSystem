@@ -1,0 +1,85 @@
+.wrapper_content {
+    padding: 5rem;
+}
+
+#formNewPlan {
+    display: flex;
+    justify-content: center;
+}
+
+#formNewPlan>.panel {
+    width: 100%;
+}
+
+#formNewPlan>.panel>.buttonsActions {
+    display: flex;
+    gap: 1rem;
+}
+
+#formNewPlan>.panel>table {
+    width: 100%;
+    margin-bottom: 2rem;
+
+}
+
+#formNewPlan>.panel>table>thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-width: 18rem;
+    background-color: var(--fourth-color);
+    border-radius: .6rem;
+}
+
+#formNewPlan>.panel>table>thead tr>* {
+    padding: 1rem;
+    text-align: center;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    color: var(--third-color);
+    font-family: raleway-semibold;
+}
+
+#formNewPlan>.panel>table tr>*:last-child {
+    border-top-right-radius: .8rem;
+    border-bottom-right-radius: .8rem;
+}
+
+#formNewPlan>.panel>table tr>*:first-child {
+    border-top-left-radius: .8rem;
+    border-bottom-left-radius: .8rem;
+}
+
+#formNewPlan>.panel>table>tbody>tr>td {
+    padding: 1rem;
+    color: var(--third-color);
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    text-align: center;
+}
+
+#formNewPlan>.panel>table>tbody>tr>td input {
+    padding: .6rem;
+    color: var(--third-color);
+    font-family: raleway-semibold;
+    background-color: var(--background-color);
+}
+
+
+#rowNewFormPlan .containerInputAndOptions>.iconDesplegar {
+    filter: invert(1);
+    z-index: 4;
+}
+
+#rowNewFormPlan .containerInputAndOptions>input {
+    z-index: 3;
+}
+
+#rowNewFormPlan.containerInputAndOptions>ul.options {
+    z-index: 2;
+}
+
+#rowNewFormPlan input[type="number"]::-webkit-inner-spin-button,
+#rowNewFormPlan input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}

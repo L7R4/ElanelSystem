@@ -7,15 +7,58 @@ import os
 from django.http import JsonResponse
 from dateutil.relativedelta import relativedelta
 
-class CRUDPlanes(generic.View):
+class Planes(generic.View):
     template_name = "planes.html"
     model = Plan
     def get(self,request,*args,**kwargs):
         planes = Plan.objects.all()
         context = {"planes": planes}
-        print(context)
         return render(request, self.template_name, context)
     
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+
+            precio = data.get('precio')
+            paquete = data.get('paquete')
+            suscripcion = data.get('suscripcion')
+            primer_cuota = data.get('primer_cuota')
+            p_24 = data.get('p_24')
+            p_30 = data.get('p_30')
+            p_48 = data.get('p_48')
+            p_60 = data.get('p_60')
+
+            plan = Plan.objects.create(
+                valor_nominal=precio,
+                tipodePlan=paquete,
+                suscripcion=suscripcion,
+                primer_cuota=primer_cuota,
+                c24_porcentage=p_24,
+                c30_porcentage=p_30,
+                c48_porcentage=p_48,
+                c60_porcentage=p_60,
+            )
+
+            # Retornar el nuevo producto en JSON para actualizar la vista
+            return JsonResponse({
+                'success': True,
+                'plan': {
+                    "precio": plan.valor_nominal,
+                    "paquete": plan.tipodePlan,
+                    "suscripcion": plan.suscripcion,
+                    "primer_cuota": plan.primer_cuota,
+                    "p_24": plan.c24_porcentage,
+                    "p_30": plan.c30_porcentage,
+                    "p_48": plan.c48_porcentage,
+                    "p_60": plan.c60_porcentage,
+                }
+            })
+        except Exception as e:
+            print(e)  # Para depuración
+            return JsonResponse({
+                'success': False,
+                'message': str(e)  # Convertimos el error a string
+            })
 
 #region Productos
 class ViewProducts(generic.View):
@@ -41,102 +84,34 @@ class ViewProducts(generic.View):
         return render(request, self.template_name, context)
     
     def post(self,request,*args, **kwargs):
-        data = json.loads(request.body)
-        tipo = data.get('tipo')
-        nombre = data.get('nombre', None)
-        plan = data.get('plan')
-        precio = data.get('precio')
+        try:
+            data = json.loads(request.body)
+            tipo = data.get('tipo')
+            nombre = data.get('nombre', None)
+            plan = Plan.objects.get(valor_nominal=int(data.get('precio')))
 
-        producto = Products.objects.create(
-            tipo_de_producto=tipo,
-            nombre=nombre if tipo != "soluciones" else "$" + str(precio),
-            plan=plan,
-            precio=precio
-        )
+            producto = Products.objects.create(
+                tipo_de_producto= tipo.capitalize(),
+                nombre=nombre if tipo != "solucion" else "$" + str(plan.valor_nominal),
+                plan=plan,
+            )
+            
+            # Retornar el nuevo producto en JSON para actualizar la vista
+            return JsonResponse({
+                'success': True,
+                'producto': {
+                    'nombre': producto.nombre,
+                    'plan': producto.plan.tipodePlan,
+                    'precio': producto.plan.valor_nominal
+                }
+            })
         
-        # Retornar el nuevo producto en JSON para actualizar la vista
-        return JsonResponse({
-            'success': True,
-            'producto': {
-                'nombre': producto.nombre,
-                'plan': producto.plan.tipodePlan,
-                'precio': producto.plan.valor_nominal
-            }
-        })
-    
-# class PanelSucursales(TestLogin, generic.View):
-#     template_name = "panelSucursales.html"
-#     # permission_required = "sales.my_ver_resumen"
-#     def get(self,request,*args,**kwargs):
-#         sucursales = Sucursal.objects.all()
-#         context= {
-#             "sucursales": sucursales,
-#             }
-#         return render(request, self.template_name, context)
-
-#     def post(self,request,*args,**kwargs):
-#         context = {}
-#         pk = request.POST.get("inputID")
-#         direccion = request.POST.get("inputDireccion")
-#         hora = request.POST.get("inputHora")
-
-#         # Para editar la sucursal 
-#         sucursal = Sucursal.objects.get(pk=pk)
-#         sucursal.direccion = direccion
-#         sucursal.hora_apertura = hora
-
-#         sucursal.save()  
-#         response_data = {'message': 'Datos recibidos correctamente'}
-#         return JsonResponse(response_data)
-    
-# def updateSucursal(request):
-#     if request.method == "POST":
-#         pk = json.loads(request.body)["sucursalPk"]
-#         direccion = json.loads(request.body)["direccion"]
-#         hora = json.loads(request.body)["horaApertura"]
-        
-#         sucursal = Sucursal.objects.get(pk=pk)
-#         sucursal.direccion = direccion
-#         sucursal.hora_apertura = hora
-#         sucursal.save()
-        
-#         response_data = {"message":"Sucursal actualizada con exito!!"}
-#         return JsonResponse(response_data)
-
-# def addSucursal(request):
-#     if request.method == "POST":
-#         provincia = json.loads(request.body)["provincia"]
-#         localidad = json.loads(request.body)["localidad"]
-#         direccion = json.loads(request.body)["direccion"]
-#         hora = json.loads(request.body)["horaApertura"]
-        
-#         newSucursal = Sucursal()
-#         newSucursal.provincia = provincia.title()
-#         newSucursal.localidad = localidad.title()
-#         newSucursal.direccion = direccion.capitalize()
-#         newSucursal.hora_apertura = hora
-#         newSucursal.save()
-        
-#         response_data = {"message":"Sucursal creada exitosamente!!","pk":str(newSucursal.pk),'name': str(newSucursal.pseudonimo), "direccion": str(newSucursal.direccion), "hora": str(newSucursal.hora_apertura)}
-#         return JsonResponse(response_data)
-    
-# def removeSucursal(request):
-#     if request.method == "POST":
-#         pk = int(json.loads(request.body)["pk"]) 
-
-#         deleteSucursal = Sucursal.objects.get(pk=pk)
-
-#         Usuario.objects.filter(sucursal=deleteSucursal).update(sucursal=None) # Setear en None los usuarios asociados para que no se borren
-#         Ventas.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None las ventas asociadas para que no se borren
-#         MovimientoExterno.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los movimientos asociados para que no se borren
-#         ArqueoCaja.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los arqueos asociados para que no se borren
-
-#         deleteSucursal.delete()
-        
-#         response_data = {"message":"Eliminado correctamente"}
-#         return JsonResponse(response_data)
-
-#endregion
+        except Exception as e:
+            print(e)  # Para depuración
+            return JsonResponse({
+                'success': False,
+                'message': str(e)  # Convertimos el error a string
+            })
 
 def requestProducts(request):
     if request.method == 'POST':
@@ -158,4 +133,7 @@ def requestProducts(request):
                 })
 
       
-        return JsonResponse({"message": "OK", "productos": productos_list},safe=False)
+        return JsonResponse({"message": "OK", "productos": productos_list},safe=False)  
+
+#endregion
+

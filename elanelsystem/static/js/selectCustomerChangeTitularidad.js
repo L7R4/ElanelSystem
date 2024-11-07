@@ -23,7 +23,7 @@ function seleccionarNuevoCliente() {
         limpiarCheckboxsActivos(customer_items);
         checkbox.checked = true;
       }
-      
+
     });
   });
 
@@ -66,15 +66,15 @@ function checkInputs() {
   let allInputsCompleted = true;
 
   requiredInputs.forEach(input => {
-      if (input.value.trim() === '') {
-          allInputsCompleted = false;
-      }
+    if (input.value.trim() === '') {
+      allInputsCompleted = false;
+    }
   });
 
   if (allInputsCompleted) {
-      buttonSubmitChange.disabled = false;
+    buttonSubmitChange.disabled = false;
   } else {
-      buttonSubmitChange.disabled = true;
+    buttonSubmitChange.disabled = true;
   }
 }
 
