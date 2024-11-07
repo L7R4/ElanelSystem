@@ -262,7 +262,7 @@ ul.list-select-custom.open {
 
 
 /* #region loader */
-#wrapperLoader{
+#wrapperLoader {
    position: fixed;
    display: none;
    width: 100vw;
@@ -273,6 +273,7 @@ ul.list-select-custom.open {
    align-items: center;
    z-index: 1001;
 }
+
 #loader {
    border: 1.6rem solid #f3f3f3;
    border-radius: 50%;
@@ -297,13 +298,14 @@ ul.list-select-custom.open {
 
 /* #region Scroller */
 
-*::-webkit-scrollbar{
+*::-webkit-scrollbar {
    width: 4px;
    border-radius: 5px;
- }
- *::-webkit-scrollbar-thumb{
+}
+
+*::-webkit-scrollbar-thumb {
    background: #ffffff58;
    border-radius: 1rem;
- }
- 
+}
+
 /* #endregion */

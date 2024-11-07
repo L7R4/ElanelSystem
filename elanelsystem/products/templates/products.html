@@ -8,17 +8,16 @@
 {% block content %}
 <div class="headersPanelsWrapper">
 
-    <div class="headerPanel active" id="hmotos"><h2>Motos</h2></div>
-    <div class="headerPanel" id="hcombos"><h2>Combos</h2></div>
-    <div class="headerPanel" id="hsoluciones"><h2>Soluciones</h2></div>
+    <div class="headerPanel active" id="hmoto"><h2>Motos</h2></div>
+    <div class="headerPanel" id="hcombo"><h2>Combos</h2></div>
+    <div class="headerPanel" id="hsolucion"><h2>Soluciones</h2></div>
 
 </div>
 <div class="panel-container">
     <form method="POST" id="formNewProuducto">
         {% csrf_token %}
     <!-- Panel de Motos -->
-    <div id="panel-motos" class="panel active">
-        <h3>Motos</h3>
+    <div id="panel-moto" class="panel active">
         <table>
             <thead>
                 <tr>
@@ -37,12 +36,13 @@
                 {% endfor %}
             </tbody>            
         </table>
-        <button type="button" onclick="agregarFormularioNuevoProducto('moto')">Agregar producto</button>
+        <div class="buttonsActions">
+            <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">Agregar producto</button>
+        </div>
     </div>
 
     <!-- Panel de Soluciones Dinerarias -->
-    <div id="panel-soluciones" class="panel">
-        <h3>Soluciones dinerarias</h3>
+    <div id="panel-solucion" class="panel">
         <table>
             <thead>
                 <tr>
@@ -60,12 +60,13 @@
                 {% endfor %}
             </tbody>    
         </table>
-        <button type="button" onclick="agregarFormularioNuevoProducto('soluciones')">Agregar producto</button>
+        <div class="buttonsActions">
+            <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">Agregar producto</button>
+        </div>
     </div>
 
     <!-- Panel de Combos -->
-    <div id="panel-combos" class="panel">
-        <h3>Combos</h3>
+    <div id="panel-combo" class="panel">
         <table>
             <thead>
                 <tr>
@@ -87,7 +88,9 @@
 
             
         </table>
-        <button type="button" onclick="agregarFormularioNuevoProducto('combo')">Agregar producto</button>
+        <div class="buttonsActions">
+            <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">Agregar producto</button>
+        </div>
     </div>
     </form>
 
@@ -97,7 +100,7 @@
 {% block js %}
 <script>
     var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
-    var urlUpdateS = "{% url 'users:updateSucursal' %}"
+    {% comment %} var urlUpdateS = "{% url 'users:updateSucursal' %}" {% endcomment %}
     var planes = {{ planes|safe }};
     
 

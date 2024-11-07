@@ -90,9 +90,9 @@ class Plan(models.Model):
 
 class Products(models.Model):
     TIPO_PRODUCTO =(
-        ("Prestamo","Prestamo"),
+        ("Solucion","Solucion"),
         ("Moto","Moto"),
-        ("Electrodomestico","Electrodomestico"),
+        ("Combo","Combo"),
     )
 
     # precio = models.PositiveIntegerField(default=0)
