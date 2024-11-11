@@ -233,6 +233,74 @@ class CrearVenta(TestLogin,generic.DetailView):
 
             return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
 
+
+def generarContratoParaImportar(index_start, index_end, file_path, agencia):
+    try:
+            cantidadContratos = index_end - index_start
+
+            # Leer la hoja "Cuotas" del archivo Excel
+            sheetResumen = pd.read_excel(file_path, sheet_name="RESUMEN")
+            sheetEstados = pd.read_excel(file_path, sheet_name="ESTADOS")
+
+            row = sheetResumen.iloc[index_start] # Se extrae una fila nada mas para completar la Informacion general 
+
+            newVenta = Ventas()
+            newVenta.nro_cliente = Cliente.objects.filter(nro_cliente = row["Cod-Cli"])
+            newVenta.modalidad = row["Modalidad"]
+            newVenta.nro_operacion = row['ID Venta']
+            newVenta.importe = float(row["Importe"]) * cantidadContratos
+            newVenta.agencia = Sucursal.objects.get(pseudonimo = agencia)
+            newVenta.tasa_interes = float(row["Tasa de Inte"]) * cantidadContratos
+            newVenta.producto = Products.objects.filter(nombre = handle_nan(row["Producto"]))
+            newVenta.fecha = row["FECHA INCRIPCION"]
+            newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(row["VENDEDOR"])).first()
+            newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(row["SUPERV"])).first() 
+            newVenta.paquete = row["PAQ"]
+            newVenta.tipo_producto = Products.objects.filter(nombre = row["Producto"]).first().tipo_de_producto
+            newVenta.observaciones = row["COMENTARIOS/ OBSERVACIONES"]
+
+            for i in range(index_start, index_end):
+                fila = sheetResumen.iloc[i]
+
+                #region Guardar los contratos
+                listaContratos = []
+                nro_contrato = str(fila["CONTRATO"])
+                nro_orden = str(fila["nro de Orden"])
+                listaContratos.append({"nro_contrato": nro_contrato, "nro_orden": nro_orden})
+                #endregion
+                
+                id_venta = fila["ID Venta"]
+                cuotas = []
+                for c_index, row in sheetEstados.iterrows():
+
+                    if(row["ID Venta"] == id_venta):
+                        cuota = row["cuotas"].replace(" ", "").split("-")[1]
+                        print("Cuota ---> " + str(cuota))
+
+                        if(row["cuotas"] == "cuota -  0"):
+                            info = {
+                                {"cuota" :f'Cuota {cuota}',
+                                "nro_operacion": id_venta,
+                                "status": str(row["Estado"]).tittle() if row["Estado"] not in ["Vencido", "BAJA"] else "Atrasado" ,
+                                "total": int(row["importe Cuotas"]),
+                                "descuento": {'autorizado': "", 'monto': 0},
+                                "bloqueada": False,
+                                "fechaDeVencimiento":"", 
+                                "diasRetraso": 0,
+                                "pagos":[],
+                                }
+                            }
+                            cuotas.append()
+                        else:
+                            pass
+                    
+                newVenta.cuotas=bloquer_desbloquear_cuotas(cuotas)
+    except Exception as e:
+            print(f"Error al crear venta: {e}")
+            # print(f"Error en la fila \n {row}")
+            # return HttpResponse("Error al procesar el archivo. Verifique el formato y los datos.")
+        
+    pass
 def importVentas(request):
     if request.method == "POST":
         # Obtener el archivo subido
@@ -247,33 +315,42 @@ def importVentas(request):
         try:
             # Leer la hoja "Cuotas" del archivo Excel
             sheetResumen = pd.read_excel(file_path, sheet_name="RESUMEN")
-            sheetEstados = pd.read_excel(file_path, sheet_name="RESUMEN")
+            sheetEstados = pd.read_excel(file_path, sheet_name="ESTADOS")
 
-
-            # Iterar sobre las filas del DataFrame
-            for _, row in sheetResumen.iterrows():
-
-                # Se colocan los primeros datos de la venta desde la vista de resumen
-                if(Cliente.objects.filter(nro_cliente = row["Cod-Cli"]).exists()):
-                    newVenta = Ventas()
-                    newVenta.nro_cliente = Cliente.objects.filter(nro_cliente = row["Cod-Cli"])
-                    newVenta.modalidad = row["Modalidad"]
-                    newVenta.nro_operacion = row['ID Venta']
-                    newVenta.importe = float(row["Importe"])
-                    newVenta.agencia = Sucursal.objects.get(pseudonimo = agencia)
-                    newVenta.tasa_interes = float(row["Tasa de Inte"])
-                    newVenta.producto = Products.objects.filter(nombre = handle_nan(row["Producto"]))
-                    newVenta.fecha = row["FECHA INCRIPCION"]
-                    newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(row["VENDEDOR"])).first()
-                    newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(row["SUPERV"])).first() 
-                    newVenta.paquete = row["PAQ"]
-                    newVenta.tipo_producto = Products.objects.filter(nombre = row["Producto"]).first().tipo_de_producto
-                    newVenta.observaciones = row["COMENTARIOS/ OBSERVACIONES"]
-                    newVenta.save()
-
-
+            index_pivot,row_pivot = next(sheetResumen.iterrows())
+            i= -1
+            while i < len(sheetResumen):
+                i += 1
+                if(Cliente.objects.filter(nro_cliente = sheetEstados.iloc[i]["Cod-Cli"]).exists()):
+                    if(row_pivot["Cod-Cli"] != sheetEstados.iloc[i]["Cod-Cli"] or row_pivot["FECHA INSCRIPCION"] != sheetEstados.iloc[i]["FECHA INSCRIPCION"] or row_pivot["Producto"] != sheetEstados.iloc[i]["Producto"]):
+                        generarContratoParaImportar(index_pivot, i - 1, file_path, agencia)
+                        row_pivot = sheetEstados.iloc[i]
+                        index_pivot = i
+                        i -= 1
+                    else:
+                        continue
                 else:
                     continue
+                    # cliente = Cliente.objects.filter(nro_cliente = row["Cod-Cli"])
+                    # producto = Products.objects.filter(nombre = row["Producto"]).first()
+
+                    # if not (Ventas.objects.filter(nro_cliente=cliente, producto = producto, fecha= row["FECHA INCRIPCION"]).exists()):
+                    #     newVenta = Ventas()
+                    #     newVenta.nro_cliente = cliente
+                    #     newVenta.modalidad = row["Modalidad"]
+                    #     newVenta.nro_operacion = row['ID Venta']
+                    #     newVenta.importe = float(row["Importe"])
+                    #     newVenta.agencia = Sucursal.objects.get(pseudonimo = agencia)
+                    #     newVenta.tasa_interes = float(row["Tasa de Inte"])
+                    #     newVenta.producto = Products.objects.filter(nombre = handle_nan(row["Producto"]))
+                    #     newVenta.fecha = row["FECHA INCRIPCION"]
+                    #     newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(row["VENDEDOR"])).first()
+                    #     newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(row["SUPERV"])).first() 
+                    #     newVenta.paquete = row["PAQ"]
+                    #     newVenta.tipo_producto = Products.objects.filter(nombre = row["Producto"]).first().tipo_de_producto
+                    #     newVenta.observaciones = row["COMENTARIOS/ OBSERVACIONES"]
+                    #     newVenta.save()
+                    # else:
 
 
                 # Verificar si la cuota ya existe en la venta

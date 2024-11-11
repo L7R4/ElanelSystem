@@ -448,6 +448,23 @@ def getCuotasPagadasSinCredito(cuotas):
             cuotasPagadasSinCredito.append(cuota)
     return cuotasPagadasSinCredito
 
+
+def bloquer_desbloquear_cuotas(cuotas):
+    nuevas_cuotas = []
+    for i in range(0,len(cuotas)):
+        cuota = cuota[i]
+        if not (i == 0):
+            pagos = cuota["pagos"]
+            metodoDePagoDeCuota = [pago["metodoPago"] for pago in pagos] # Obtiene los metodos de pago de la cuota
+            if(cuotas[i-1]["status"] == "Pagado"):
+                cuota["bloqueada"] = False
+            elif("Credito" in metodoDePagoDeCuota):
+                cuota["bloqueada"] = False
+            else:
+                cuota["bloqueada"] = True
+        nuevas_cuotas.append(cuota)
+    return nuevas_cuotas
+
 #endregion
 
 
