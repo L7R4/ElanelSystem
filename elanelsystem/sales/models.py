@@ -318,6 +318,7 @@ class Ventas(models.Model):
             "nuevaVentaPK": ""
         }
 
+
     def contarDiasSegunModalidad(self,modalidad,ultimaFechaDevencimiento = ""):
         modalidad = modalidad.lower()
 

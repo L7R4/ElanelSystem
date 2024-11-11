@@ -138,9 +138,9 @@ function rellenarCamposDeVenta(cantidadContratos) {
         id_tasa_interes.value = (porcentaje_segun_nroCuotas(nroCuotas) * cantidadContratos).toFixed(2);
         id_intereses_generados.value = parseInt((productoHandled["importe"] * parseFloat(id_tasa_interes.value)) / 100)
         id_importe_x_cuota.value = ((productoHandled["importe"] / nroCuotas) * cantidadContratos + (parseInt(id_intereses_generados.value) / nroCuotas))
-        // id_total_a_pagar.value = (parseInt(id_importe.value) + parseInt(id_intereses_generados.value))
-        id_total_a_pagar.value = (parseInt(id_importe_x_cuota.value) * parseInt(nroCuotas - 2))
-        // id_total_a_pagar.value = (parseInt(id_importe_x_cuota.value) * parseInt(nroCuotas - 2) + parseInt(id_primer_cuota.value) + parseInt(id_anticipo.value)) + parseInt(id_intereses_generados.value)
+
+        // Se resta 1 cuota comerciale para sumar la cuota 0 y 1 
+        id_total_a_pagar.value = (parseInt(id_importe_x_cuota.value) * parseInt(nroCuotas) - parseInt(id_importe_x_cuota.value)) + (parseInt(id_primer_cuota.value) + parseInt(id_anticipo.value))
 
 
     }

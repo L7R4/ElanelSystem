@@ -596,8 +596,28 @@ def importar_usuarios(request):
         try:
             df = pd.read_excel(file_path, sheet_name="Colaboradores")
             
-            # Procesar cada fila y crear usuarios
-            for _, row in df.iterrows():
+            index,weps = next(df.iterrows())
+            print(index, weps)
+            print("-------------------------------------\n\n")
+            print(df.iloc[1])
+            cont = 0
+            index = 0  # Índice manual para controlar la iteración
+
+            while index < len(df):
+                row = df.iloc[index]  # Obtén la fila en el índice actual
+                
+                # Lógica de condición para el índice 10
+                if index == 10:
+                    if cont != 3:
+                        index = 0  # Reinicia el índice a 0
+                        cont += 1  # Incrementa el contador
+                    else:
+                        break  # Sal del bucle si `cont` es 3
+                else:
+                    print(index)  # Imprime el índice actual
+                    index += 1  # Avanza al siguiente índice solo si no se ha reiniciado
+                
+            for i, row in df.iterrows():
                 dni = handle_nan(row['DNI'])
                 usuario_existente = Usuario.objects.filter(dni=str(dni)).first()
 
