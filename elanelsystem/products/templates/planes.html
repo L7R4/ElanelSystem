@@ -3,9 +3,15 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/panel_planes.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+
 {% endblock css %}
 
 {% block content %}
+<div id="wrapperLoader">
+    <span id="loader"></span>
+</div>
+
 <div class="panel-container">
     <form method="POST" id="formNewPlan">
         {% csrf_token %}
@@ -26,7 +32,7 @@
                 <tbody>
                     {% for plan in planes %}
                     <tr>
-                        <td>{{ plan.valor_nominal }}</td>
+                        <td class="valorPlan">${{ plan.valor_nominal }}</td>
                         <td>{{ plan.tipodePlan }}</td>
                         <td>{{ plan.suscripcion }}</td>
                         <td>{{ plan.primer_cuota }}</td>
@@ -34,6 +40,11 @@
                         <td>{{ plan.c30_porcentage }}</td>
                         <td>{{ plan.c48_porcentage }}</td>
                         <td>{{ plan.c60_porcentage }}</td>
+                        <td class="button_cell">
+                            <button class="buttonDeleteItem" type="button">   
+                                <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                            </button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>            
@@ -50,11 +61,10 @@
 {% block js %}
 <script>
     var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
-    {% comment %} var urlUpdateS = "{% url 'users:updateSucursal' %}" {% endcomment %}
-    {% comment %} var planes = {{ planes|safe }}; {% endcomment %}
-    
-
+    var urlDeleteP = "{% url 'products:delete_plan' %}"
+    var iconDelete = "{% static 'images/icons/eliminar.svg' %}";
 </script>
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 <script src="{% static 'js/fetch_upload_planes.js' %}"></script>
 

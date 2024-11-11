@@ -60,6 +60,24 @@ class Planes(generic.View):
                 'message': str(e)  # Convertimos el error a string
             })
 
+def deletePlan(request):
+    if request.method == 'POST':
+        try:
+            form = json.loads(request.body)
+            
+            valorRequest = form.get('valor')
+            print(valorRequest)
+            if(Plan.objects.filter(valor_nominal=valorRequest).exists()):
+                Plan.objects.filter(valor_nominal=valorRequest).delete()
+                return JsonResponse({"status":True},safe=False) 
+            else:
+                return JsonResponse({"status":False},safe=False) 
+                
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({"status":False},safe=False) 
+
 #region Productos
 class ViewProducts(generic.View):
     template_name = "products.html"
@@ -68,8 +86,8 @@ class ViewProducts(generic.View):
     def get(self,request,*args,**kwargs):
         products = Products.objects.all()
         motos = Products.objects.filter(tipo_de_producto ="Moto")
-        combos = Products.objects.filter(tipo_de_producto ="Electrodomestico")
-        prestamos = Products.objects.filter(tipo_de_producto ="Prestamo")
+        combos = Products.objects.filter(tipo_de_producto ="Combo")
+        prestamos = Products.objects.filter(tipo_de_producto ="Solucion")
         planes = [{"valor_nominal": plan.valor_nominal, "tipodePlan":plan.tipodePlan} for plan in Plan.objects.all()]
 
         context = {
@@ -134,6 +152,39 @@ def requestProducts(request):
 
       
         return JsonResponse({"message": "OK", "productos": productos_list},safe=False)  
+
+
+def deleteProduct(request):
+    if request.method == 'POST':
+        try:
+            form = json.loads(request.body)
+            
+            nombreRequest = form.get('nombre')
+            print(nombreRequest)
+            if(Products.objects.filter(nombre=nombreRequest).exists()):
+                Products.objects.filter(nombre=nombreRequest).delete()
+                return JsonResponse({"status":True},safe=False) 
+            else:
+                return JsonResponse({"status":False},safe=False) 
+                
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({"status":False},safe=False) 
+
+        # productos_list = []
+        # for producto in productos:
+        #     productos_list.append(
+        #         {"nombre": producto.nombre, 
+        #         "paquete": producto.plan.tipodePlan,
+        #         "primer_cuota": producto.plan.primer_cuota,
+        #         "suscripcion": producto.plan.suscripcion,
+        #         "importe": producto.plan.valor_nominal,
+        #         "c24_porcentage": producto.plan.c24_porcentage,
+        #         "c30_porcentage": producto.plan.c30_porcentage,
+        #         "c48_porcentage": producto.plan.c48_porcentage,
+        #         "c60_porcentage": producto.plan.c60_porcentage,
+        #         })
 
 #endregion
 

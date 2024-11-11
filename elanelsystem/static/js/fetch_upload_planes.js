@@ -5,7 +5,7 @@ function actualizarPanel(plan) {
     const table = panel.querySelector("table > tbody ");
     let row = `
         <tr>
-            <td>${plan.precio}</td>
+            <td class="valorPlan">$${plan.precio}</td>
             <td>${plan.paquete}</td>
             <td>${plan.suscripcion}</td>
             <td>${plan.primer_cuota}</td>
@@ -13,10 +13,20 @@ function actualizarPanel(plan) {
             <td>${plan.p_30}</td>
             <td>${plan.p_48}</td>
             <td>${plan.p_60}</td>
+            <td class="button_cell">
+                <button class="buttonDeleteItem" type="button">   
+                    <img src="${iconDelete}" alt="">
+                </button>
+            </td>
         </tr>`;
 
-    table.insertAdjacentHTML("beforeend", row);
+    table.insertAdjacentHTML("afterbegin", row);
+
+    // Seleccionar la última fila recién añadida y pasarla a `loadListenerDelete`
+    const lastRow = table.firstElementChild;
+    loadListenerDelete(lastRow)
 }
+
 
 function agregarFormularioNuevoPlan() {
     const panel = document.getElementById(`panel`);
@@ -65,7 +75,6 @@ function agregarFormularioNuevoPlan() {
         cargarListenersEnInputs()
     }
 }
-
 
 
 async function guardarPlan() {
@@ -143,6 +152,100 @@ function submitButton() {
         wrapperButtonOfTable.insertAdjacentHTML("beforeend", buttonSubmit); //Agregamos nuevamente el boton de agregar plan
     }
 }
+
+// #region Codigo para la eliminacion de un producto
+
+const filas = document.querySelectorAll("table > tbody > tr");
+console.log(filas)
+filas.forEach(fila => {
+    loadListenerDelete(fila)
+});
+
+// Función para mostrar el modal de confirmación
+function mostrarModalConfirmacionParaEliminar(fila) {
+    const modal = new tingle.modal({
+        footer: true,
+        closeMethods: ['button', 'overlay'],
+        cssClass: ['modalConfirmacion'],
+
+        onClose: function () {
+            modal.destroy();
+        },
+    });
+
+    // Contenido del modal
+    modal.setContent("<h2>¿Estás seguro de que deseas eliminar este plan?</h2>");
+
+    // Botón de confirmación
+    modal.addFooterBtn("Eliminar", "tingle-btn tingle-btn--danger", async function () {
+        // Aquí llamamos a la función de eliminación, pasando la fila correspondiente
+        eliminarPlan(fila);
+        modal.close();
+    });
+
+    // Botón de cancelación
+    modal.addFooterBtn("Cancelar", "tingle-btn tingle-btn--default", function () {
+        modal.close();
+    });
+
+    // Abre el modal
+    modal.open();
+}
+
+
+// Funcion para cargar los listener del boton de eliminar para la fila
+function loadListenerDelete(fila) {
+    let button = fila.querySelector(".buttonDeleteItem")
+
+    // Mostrar el botón al pasar el mouse por encima
+    fila.addEventListener("mouseover", () => {
+        button.style.display = "inline";
+    });
+
+    // Ocultar el botón al salir con el mouse
+    fila.addEventListener("mouseout", () => {
+        button.style.display = "none";
+    });
+
+    // Evento para abrir el modal de confirmación al hacer clic en "Eliminar"
+    button.addEventListener("click", () => {
+        mostrarModalConfirmacionParaEliminar(fila); // Pasamos la fila actual para su posible eliminación
+    });
+}
+
+// Función para eliminar el plan
+async function eliminarPlan(fila) {
+    const valorPlan = fila.querySelector("td.valorPlan").textContent.slice(1);
+
+    let form = {
+        "valor": valorPlan,
+    };
+
+    // Realizar la solicitud al backend para eliminar el producto
+    showLoader()
+    let response = await fetchCRUD(form, urlDeleteP);
+    if (response["status"]) {
+        hiddenLoader()
+        fila.remove(); // Eliminar la fila de la tabla en caso de éxito
+    } else {
+        hiddenLoader()
+        console.log("Error al eliminar el plan.");
+    }
+}
+
+//#endregion
+
+
+//#region Manejar el display del loader
+function showLoader() {
+    document.getElementById('wrapperLoader').style.display = 'flex';
+}
+
+function hiddenLoader() {
+    document.getElementById('wrapperLoader').style.display = 'none';
+}
+//#endregion
+
 
 // #region FUNCTION FETCH - - - - - - - - - 
 function getCookie(name) {

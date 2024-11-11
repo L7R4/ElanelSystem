@@ -26,6 +26,7 @@ from django.templatetags.static import static
 
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
+from elanelsystem.utils import format_date, handle_nan
 
 import pandas as pd
 from django.core.files.storage import FileSystemStorage
@@ -232,10 +233,11 @@ class CrearVenta(TestLogin,generic.DetailView):
 
             return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
 
-def importar_ventas(request):
+def importVentas(request):
     if request.method == "POST":
         # Obtener el archivo subido
         archivo_excel = request.FILES['archivo_excel']
+        agencia = request.POST.get('agencia')
 
         # Guardar temporalmente el archivo
         fs = FileSystemStorage()
@@ -244,42 +246,63 @@ def importar_ventas(request):
 
         try:
             # Leer la hoja "Cuotas" del archivo Excel
-            df = pd.read_excel(file_path, sheet_name="Cuotas")
+            sheetResumen = pd.read_excel(file_path, sheet_name="RESUMEN")
+            sheetEstados = pd.read_excel(file_path, sheet_name="RESUMEN")
+
 
             # Iterar sobre las filas del DataFrame
-            for _, row in df.iterrows():
-                # Obtener la venta correspondiente por nro_operacion
-                nro_operacion = row['Nro Operación']
-                venta = Ventas.objects.get(nro_operacion=nro_operacion)
+            for _, row in sheetResumen.iterrows():
+
+                # Se colocan los primeros datos de la venta desde la vista de resumen
+                if(Cliente.objects.filter(nro_cliente = row["Cod-Cli"]).exists()):
+                    newVenta = Ventas()
+                    newVenta.nro_cliente = Cliente.objects.filter(nro_cliente = row["Cod-Cli"])
+                    newVenta.modalidad = row["Modalidad"]
+                    newVenta.nro_operacion = row['ID Venta']
+                    newVenta.importe = float(row["Importe"])
+                    newVenta.agencia = Sucursal.objects.get(pseudonimo = agencia)
+                    newVenta.tasa_interes = float(row["Tasa de Inte"])
+                    newVenta.producto = Products.objects.filter(nombre = handle_nan(row["Producto"]))
+                    newVenta.fecha = row["FECHA INCRIPCION"]
+                    newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(row["VENDEDOR"])).first()
+                    newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(row["SUPERV"])).first() 
+                    newVenta.paquete = row["PAQ"]
+                    newVenta.tipo_producto = Products.objects.filter(nombre = row["Producto"]).first().tipo_de_producto
+                    newVenta.observaciones = row["COMENTARIOS/ OBSERVACIONES"]
+                    newVenta.save()
+
+
+                else:
+                    continue
+
 
                 # Verificar si la cuota ya existe en la venta
-                cuota_encontrada = None
-                for cuota in venta.cuotas:
-                    if cuota['cuota'] == row['Cuota']:
-                        cuota_encontrada = cuota
-                        break
+                # cuota_encontrada = None
+                # for cuota in venta.cuotas:
+                #     if cuota['cuota'] == row['Cuota']:
+                #         cuota_encontrada = cuota
+                #         break
 
-                # Si la cuota ya existe, actualizarla
-                if cuota_encontrada:
-                    cuota_encontrada['status'] = row['Estado']
-                    cuota_encontrada['total'] = row['Total']
-                    cuota_encontrada['pagos'] = [{
-                        'monto_pagado': row['Pagado'],
-                        'fecha_pago': row['Fecha de Pago'] if not pd.isna(row['Fecha de Pago']) else None
-                    }]
+                # # Si la cuota ya existe, actualizarla
+                # if cuota_encontrada:
+                #     cuota_encontrada['status'] = row['Estado']
+                #     cuota_encontrada['total'] = row['Total']
+                #     cuota_encontrada['pagos'] = [{
+                #         'monto_pagado': row['Pagado'],
+                #         'fecha_pago': row['Fecha de Pago'] if not pd.isna(row['Fecha de Pago']) else None
+                #     }]
                     
-                    # Calcular días de retraso si está pendiente
-                    if row['Estado'] == "Pendiente":
-                        fecha_vencimiento = datetime.strptime(row['Fecha de Vencimiento'], '%d/%m/%Y')
-                        hoy = datetime.now()
-                        if hoy > fecha_vencimiento:
-                            dias_retraso = (hoy - fecha_vencimiento).days
-                            cuota_encontrada['diasRetraso'] = dias_retraso
-                        else:
-                            cuota_encontrada['diasRetraso'] = 0
+                #     # Calcular días de retraso si está pendiente
+                #     if row['Estado'] == "Pendiente":
+                #         fecha_vencimiento = datetime.strptime(row['Fecha de Vencimiento'], '%d/%m/%Y')
+                #         hoy = datetime.now()
+                #         if hoy > fecha_vencimiento:
+                #             dias_retraso = (hoy - fecha_vencimiento).days
+                #             cuota_encontrada['diasRetraso'] = dias_retraso
+                #         else:
+                #             cuota_encontrada['diasRetraso'] = 0
 
-                # Guardar los cambios en la venta
-                venta.save()
+                # # Guardar los cambios en la venta
 
             # Eliminar el archivo después de procesarlo
             fs.delete(filename)
@@ -288,6 +311,7 @@ def importar_ventas(request):
 
         except Exception as e:
             print(f"Error al importar: {e}")
+            print(f"Error en la fila \n {row}")
             return HttpResponse("Error al procesar el archivo. Verifique el formato y los datos.")
 
     return render(request, 'importar_cuotas.html')

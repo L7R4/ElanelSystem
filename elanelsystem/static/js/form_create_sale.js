@@ -130,7 +130,7 @@ function rellenarCamposDeVenta(cantidadContratos) {
     let nroCuotas = parseInt(id_nro_cuotas.value)
     try {
         // Valores de los inputs
-        
+
         id_importe.value = productoHandled["importe"] * cantidadContratos
         id_primer_cuota.value = productoHandled["primer_cuota"] * cantidadContratos
         id_anticipo.value = productoHandled["suscripcion"] * cantidadContratos
@@ -138,7 +138,11 @@ function rellenarCamposDeVenta(cantidadContratos) {
         id_tasa_interes.value = (porcentaje_segun_nroCuotas(nroCuotas) * cantidadContratos).toFixed(2);
         id_intereses_generados.value = parseInt((productoHandled["importe"] * parseFloat(id_tasa_interes.value)) / 100)
         id_importe_x_cuota.value = ((productoHandled["importe"] / nroCuotas) * cantidadContratos + (parseInt(id_intereses_generados.value) / nroCuotas))
-        id_total_a_pagar.value = (parseInt(id_importe.value) + parseInt(id_intereses_generados.value))
+        // id_total_a_pagar.value = (parseInt(id_importe.value) + parseInt(id_intereses_generados.value))
+        id_total_a_pagar.value = (parseInt(id_importe_x_cuota.value) * parseInt(nroCuotas - 2))
+        // id_total_a_pagar.value = (parseInt(id_importe_x_cuota.value) * parseInt(nroCuotas - 2) + parseInt(id_primer_cuota.value) + parseInt(id_anticipo.value)) + parseInt(id_intereses_generados.value)
+
+
     }
 
     catch (error) {

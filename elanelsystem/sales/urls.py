@@ -10,6 +10,7 @@ urlpatterns = [
     path("resumen/",Resumen.as_view(),name="resumen"),
     
     #region URLs Ventas ----------------------------------
+    path("ventas/importar/",importVentas,name="importVentas"),
     path("ventas/cliente/<int:pk>/crear_venta/",CrearVenta.as_view(),name="create_sale"),
     path("ventas/get_vendedores_supervisores/",requestVendedores_Supervisores,name="requestVendedores_Supervisores"),
     path("ventas/detalle_venta/<int:pk>/",DetailSale.as_view(),name="detail_sale"),
@@ -18,6 +19,7 @@ urlpatterns = [
     path("ventas/detalle_venta/get_specific_cuota/",getUnaCuotaDeUnaVenta,name="getCuota"),
     path("ventas/detalle_venta/pay_cuota/",pagarCuota,name="payCuota"),
     path("ventas/detalle_venta/anular_cuota/",anularCuota,name="anularCuota"),
+
     path("ventas/detalle_venta/<int:pk>/dar_baja/",darBaja,name="darBaja"),
     path("ventas/<int:pk>/adjudicacion/sorteo/",CreateAdjudicacion.as_view(),name="adjSorteo"),
     path("ventas/<int:pk>/adjudicacion/negociacion/",CreateAdjudicacion.as_view(),name="adjNegociacion"),

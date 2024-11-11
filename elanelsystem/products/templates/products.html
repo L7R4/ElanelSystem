@@ -3,9 +3,13 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/panel_products.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 {% endblock css %}
 
 {% block content %}
+<div id="wrapperLoader">
+    <span id="loader"></span>
+</div>
 <div class="headersPanelsWrapper">
 
     <div class="headerPanel active" id="hmoto"><h2>Motos</h2></div>
@@ -29,9 +33,14 @@
             <tbody>
                 {% for moto in motos %}
                 <tr>
-                    <td>{{ moto.nombre }}</td>
-                    <td>{{ moto.plan.valor_nominal }}</td>
-                    <td>{{ moto.plan.tipodePlan }}</td>
+                    <td class="nombreProduct">{{ moto.nombre }}</td>
+                    <td class="valorProduct">${{ moto.plan.valor_nominal }}</td>
+                    <td class="paqueteProduct">{{ moto.plan.tipodePlan }}</td>
+                    <td class="button_cell">
+                        <button class="buttonDeleteItem" type="button">   
+                            <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                        </button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>            
@@ -51,11 +60,15 @@
                 </tr>
             </thead>
             <tbody>
-                {% for solucion in soluciones %}
+                {% for prestamo in prestamos %}
                 <tr>
-                    <td>{{ solucion.plan.valor_nominal }}</td>
-                    <td>{{ solucion.plan.tipodePlan }}</td>
-
+                    <td class="valorProduct">${{ prestamo.plan.valor_nominal }}</td>
+                    <td class="paqueteProduct">{{ prestamo.plan.tipodePlan }}</td>
+                    <td class="button_cell">
+                        <button class="buttonDeleteItem" type="button">   
+                            <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                        </button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>    
@@ -79,9 +92,14 @@
             <tbody>
             {% for combo in combos %}
                 <tr>
-                    <td>{{ combo.nombre }}</td>
-                    <td>{{ combo.plan.valor_nominal }}</td>
-                    <td>{{ combo.plan.tipodePlan }}</td>
+                    <td class="nombreProduct">{{ combo.nombre }}</td>
+                    <td class="valorProduct">${{ combo.plan.valor_nominal }}</td>
+                    <td class="paqueteProduct">{{ combo.plan.tipodePlan }}</td>
+                    <td class="button_cell">
+                        <button class="buttonDeleteItem" type="button">   
+                            <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                        </button>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>    
@@ -100,11 +118,13 @@
 {% block js %}
 <script>
     var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
-    {% comment %} var urlUpdateS = "{% url 'users:updateSucursal' %}" {% endcomment %}
+    var iconDelete = "{% static 'images/icons/eliminar.svg' %}";
+    var urlDeleteP = "{% url 'products:delete_product' %}"
     var planes = {{ planes|safe }};
     
 
 </script>
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 <script src="{% static 'js/fetch_upload_products.js' %}"></script>
 
