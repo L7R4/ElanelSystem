@@ -39,6 +39,11 @@
     display: none;
 }
 
+#formNewProuducto>.panel>.buttonsActions {
+    display: flex;
+    gap: 1rem;
+}
+
 #formNewProuducto>.panel.active {
     display: unset;
 }
@@ -66,6 +71,19 @@
     font-family: raleway-semibold;
 }
 
+#formNewProuducto>.panel>table>tbody>tr {
+    position: relative;
+}
+
+#formNewProuducto>.panel>table>tbody>tr>td {
+    padding: 1rem;
+    color: var(--third-color);
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    text-align: center;
+}
+
+
 #formNewProuducto>.panel>table tr>*:last-child {
     border-top-right-radius: .8rem;
     border-bottom-right-radius: .8rem;
@@ -87,7 +105,7 @@
     background-color: var(--background-color);
 }
 
-#formNewProuducto>.panel>table>tbody>tr>td input#paquete {
+#formNewProuducto>.panel>table>tbody>tr>td input#paquete_input {
     padding: .8rem;
     background-color: rgba(255, 255, 255, 0.171);
 
@@ -104,4 +122,31 @@
 
 #rowNewFormProduct.containerInputAndOptions>ul.options {
     z-index: 2;
+}
+
+.button_cell {
+    width: 0;
+    position: relative;
+    left: -98%;
+}
+
+.buttonDeleteItem {
+    width: 1.4vw;
+    height: 1.4vw;
+    border-radius: 50%;
+    outline: none;
+    padding: .3rem;
+    border: 1px solid var(--third-color);
+    background-color: transparent;
+    overflow: hidden;
+    display: none;
+    cursor: pointer;
+    transform: translateY(-50%);
+    position: absolute;
+    z-index: 3;
+    left: 0;
+}
+
+.buttonDeleteItem>img {
+    width: 100%;
 }

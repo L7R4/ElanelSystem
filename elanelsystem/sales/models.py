@@ -47,7 +47,7 @@ class Ventas(models.Model):
         cuotas.append({"cuota" :f'Cuota 0',
                        "nro_operacion": self.nro_operacion,
                        "status": "Pendiente",
-                       "total": int(self.primer_cuota),
+                       "total": int(self.anticipo),
                        "descuento": {'autorizado': "", 'monto': 0},
                        "bloqueada": True,
                        "fechaDeVencimiento":"", 
@@ -56,7 +56,7 @@ class Ventas(models.Model):
                        })
         
         # Otras cuotas
-        for i in range(1,self.nro_cuotas+1):
+        for i in range(2,self.nro_cuotas+1):
             contMeses += 1
             
             #region Bloque para asignar la fecha de vencimiento a la primera cuota (Si es antes o desp del dia 25 del mes) a las ventas con modalidad MENSUAL
@@ -88,18 +88,23 @@ class Ventas(models.Model):
             #endregion
 
             cuotas.append({
-                "cuota" :f'Cuota {i}',
-                "nro_operacion": self.nro_operacion,
-                "status": "Pendiente",
-                "bloqueada": True,
-                "total": int(self.importe_x_cuota + (self.importe_x_cuota * (self.PORCENTAJE_ANUALIZADO *contYear))/100),
-                "fechaDeVencimiento" : fechaDeVencimiento.strftime('%d/%m/%Y %H:%M'),
-                "descuento": {'autorizado': "", 'monto': 0},
-                "diasRetraso": 0,
-                "interesPorMora": 0,
-                "totalFinal": 0,
-                "pagos":[],
-            })
+                    "cuota" :f'Cuota {i}',
+                    "nro_operacion": self.nro_operacion,
+                    "status": "Pendiente",
+                    "bloqueada": True,
+                    "fechaDeVencimiento" : fechaDeVencimiento.strftime('%d/%m/%Y %H:%M'),
+                    "descuento": {'autorizado': "", 'monto': 0},
+                    "diasRetraso": 0,
+                    "interesPorMora": 0,
+                    "totalFinal": 0,
+                    "pagos":[],
+                })
+            
+            if(cuotas[-1]["cuota"] == "Cuota 1"):
+               cuotas[-1]["total"]= int(self.primer_cuota),
+            else:
+               cuotas[-1]["total"]= int(self.importe_x_cuota + (self.importe_x_cuota * (self.PORCENTAJE_ANUALIZADO *contYear))/100),
+                
 
 
             if(contMeses == 12):

@@ -598,7 +598,6 @@ def importar_usuarios(request):
             
             # Procesar cada fila y crear usuarios
             for _, row in df.iterrows():
-                print(row)
                 dni = handle_nan(row['DNI'])
                 usuario_existente = Usuario.objects.filter(dni=str(dni)).first()
 

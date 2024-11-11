@@ -9,18 +9,32 @@ function actualizarPanel(producto) {
     if (typeHandle === 'solucion') {
         row = `
             <tr>
-                <td>$${producto.precio}</td>
-                <td>${producto.plan}</td>
+                <td class="valorProduct">$${producto.precio}</td>
+                <td class="paqueteProduct">${producto.plan}</td>
+                <td class="button_cell">
+                    <button class="buttonDeleteItem" type="button">   
+                        <img src="${iconDelete}" alt="">
+                    </button>
+                </td>
             </tr>`;
     } else {
         row = `
         <tr>
-            <td>${producto.nombre}</td>
-            <td>${producto.precio}</td>
-            <td>${producto.plan}</td>
+            <td class="nombreProduct">${producto.nombre}</td>
+            <td class="valorProduct">$${producto.precio}</td>
+            <td class="paqueteProduct">${producto.plan}</td>
+            <td class="button_cell">
+                <button class="buttonDeleteItem" type="button">   
+                    <img src="${iconDelete}" alt="">
+                </button>
+            </td>
         </tr>`;
     }
-    table.insertAdjacentHTML("beforeend", row);
+    table.insertAdjacentHTML("afterbegin", row);
+
+    // Seleccionar la última fila recién añadida y pasarla a `loadListenerDelete`
+    const lastRow = table.firstElementChild;
+    loadListenerDelete(lastRow)
 }
 
 function agregarFormularioNuevoProducto() {
@@ -35,7 +49,7 @@ function agregarFormularioNuevoProducto() {
                 <td>
                     <div class="containerInputAndOptions">
                         <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="${logoDisplayMore}" alt="">
-                        <input type="text" readonly name="precio" placeholder="Precio" id="id_precio" required autocomplete="off" maxlength="30" class="input-select-custom onlySelect">
+                        <input type="text" readonly name="precio" placeholder="Precio" id="precio_input" required autocomplete="off" maxlength="30" class="input-select-custom onlySelect">
                         <ul class="list-select-custom options">
                         ${planes.map(item => `
                             <li>${item.valor_nominal}</li>
@@ -43,18 +57,18 @@ function agregarFormularioNuevoProducto() {
                         </ul>
                     </div>
                 </td>
-                <td><input name="plan" class="input-read-only-default" type="text" readonly placeholder="Plan" id="paquete" /></td>
+                <td><input name="plan" class="input-read-only-default" type="text" readonly placeholder="Plan" id="paquete_input" /></td>
 
             </tr>
             `;
         } else {
             row = `
             <tr id="rowNewFormProduct">
-                <td><input name="nombre" class="input-read-write-default" type="text" placeholder="Nombre" id="nombre" /></td>
+                <td><input name="nombre" class="input-read-write-default" type="text" placeholder="Nombre" id="nombre_input" /></td>
                 <td>
                     <div class="containerInputAndOptions">
                         <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="${logoDisplayMore}" alt="">
-                        <input type="text" readonly name="precio" placeholder="Precio" id="id_precio" required autocomplete="off" maxlength="30" class="input-select-custom onlySelect">
+                        <input type="text" readonly name="precio" placeholder="Precio" id="precio_input" required autocomplete="off" maxlength="30" class="input-select-custom onlySelect">
                         <ul class="list-select-custom options">
                         ${planes.map(item => `
                             <li>${item.valor_nominal}</li>
@@ -62,7 +76,7 @@ function agregarFormularioNuevoProducto() {
                         </ul>
                     </div>
                 </td>
-                <td><input name="plan" class="input-read-only-default" type="text" readonly placeholder="Plan" id="paquete" /></td>
+                <td><input name="plan" class="input-read-only-default" type="text" readonly placeholder="Plan" id="paquete_input" /></td>
             </tr>
             `;
         }
@@ -78,21 +92,21 @@ function agregarFormularioNuevoProducto() {
 }
 
 function listenerParaActualizarCampoPaquete() {
-    id_precio.addEventListener("input", () => {
-        if (id_precio.value != "") {
-            const plan = planes.find((plan) => plan.valor_nominal == id_precio.value)
-            paquete.value = plan.tipodePlan
+    precio_input.addEventListener("input", () => {
+        if (precio_input.value != "") {
+            const plan = planes.find((plan) => plan.valor_nominal == precio_input.value)
+            paquete_input.value = plan.tipodePlan
         } else {
-            paquete.value = ""
+            paquete_input.value = ""
         }
     })
 }
 
 
 async function guardarProducto() {
-    const nombre = document.getElementById(`nombre`) ? document.getElementById(`nombre`).value : null;
-    const paquete = document.getElementById(`paquete`).value;
-    const precio = document.getElementById(`precio`).value;
+    const nombre = document.getElementById(`nombre_input`) ? document.getElementById(`nombre_input`).value : null;
+    const paquete = document.getElementById(`paquete_input`).value;
+    const precio = document.getElementById(`precio_input`).value;
 
     let form = {
         "tipo": typeHandle,
@@ -194,6 +208,100 @@ function submitButton() {
         wrapperButtonOfTable.insertAdjacentHTML("beforeend", buttonSubmit); //Agregamos nuevamente el boton de agregar plan
     }
 }
+
+// #region Codigo para la eliminacion de un producto
+
+const filas = document.querySelectorAll("table > tbody > tr");
+console.log(filas)
+filas.forEach(fila => {
+    loadListenerDelete(fila)
+});
+
+// Función para mostrar el modal de confirmación
+function mostrarModalConfirmacionParaEliminar(fila) {
+    const modal = new tingle.modal({
+        footer: true,
+        closeMethods: ['button', 'overlay'],
+        cssClass: ['modalConfirmacion'],
+
+        onClose: function () {
+            modal.destroy();
+        },
+    });
+
+    // Contenido del modal
+    modal.setContent("<h2>¿Estás seguro de que deseas eliminar este producto?</h2>");
+
+    // Botón de confirmación
+    modal.addFooterBtn("Eliminar", "tingle-btn tingle-btn--danger", async function () {
+        // Aquí llamamos a la función de eliminación, pasando la fila correspondiente
+        eliminarProducto(fila);
+        modal.close();
+    });
+
+    // Botón de cancelación
+    modal.addFooterBtn("Cancelar", "tingle-btn tingle-btn--default", function () {
+        modal.close();
+    });
+
+    // Abre el modal
+    modal.open();
+}
+
+
+// Funcion para cargar los listener del boton de eliminar para la fila
+function loadListenerDelete(fila) {
+    let button = fila.querySelector(".buttonDeleteItem")
+
+    // Mostrar el botón al pasar el mouse por encima
+    fila.addEventListener("mouseover", () => {
+        button.style.display = "inline";
+    });
+
+    // Ocultar el botón al salir con el mouse
+    fila.addEventListener("mouseout", () => {
+        button.style.display = "none";
+    });
+
+    // Evento para abrir el modal de confirmación al hacer clic en "Eliminar"
+    button.addEventListener("click", () => {
+        mostrarModalConfirmacionParaEliminar(fila); // Pasamos la fila actual para su posible eliminación
+    });
+}
+
+// Función para eliminar el producto
+async function eliminarProducto(fila) {
+    const nombreProducto = fila.querySelector("td.nombreProduct") ? fila.querySelector("td.nombreProduct").textContent : `${fila.querySelector("td.valorProduct").textContent}`;
+
+    let form = {
+        "nombre": nombreProducto,
+    };
+
+    // Realizar la solicitud al backend para eliminar el producto
+    showLoader()
+    let response = await fetchCRUD(form, urlDeleteP);
+    if (response["status"]) {
+        hiddenLoader()
+        fila.remove(); // Eliminar la fila de la tabla en caso de éxito
+    } else {
+        hiddenLoader()
+        console.log("Error al eliminar el producto.");
+    }
+}
+
+//#endregion
+
+
+//#region Manejar el display del loader
+function showLoader() {
+    document.getElementById('wrapperLoader').style.display = 'flex';
+}
+
+function hiddenLoader() {
+    document.getElementById('wrapperLoader').style.display = 'none';
+}
+//#endregion
+
 
 // #region FUNCTION FETCH - - - - - - - - - 
 function getCookie(name) {
