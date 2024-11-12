@@ -595,27 +595,6 @@ def importar_usuarios(request):
 
         try:
             df = pd.read_excel(file_path, sheet_name="Colaboradores")
-            
-            index,weps = next(df.iterrows())
-            print(index, weps)
-            print("-------------------------------------\n\n")
-            print(df.iloc[1])
-            cont = 0
-            index = 0  # Índice manual para controlar la iteración
-
-            while index < len(df):
-                row = df.iloc[index]  # Obtén la fila en el índice actual
-                
-                # Lógica de condición para el índice 10
-                if index == 10:
-                    if cont != 3:
-                        index = 0  # Reinicia el índice a 0
-                        cont += 1  # Incrementa el contador
-                    else:
-                        break  # Sal del bucle si `cont` es 3
-                else:
-                    print(index)  # Imprime el índice actual
-                    index += 1  # Avanza al siguiente índice solo si no se ha reiniciado
                 
             for i, row in df.iterrows():
                 dni = handle_nan(row['DNI'])
@@ -777,10 +756,9 @@ def importar_clientes(request):
             for _, row in df.iterrows():
                 # Aquí puedes realizar la lógica de creación de cliente
                 dni=handle_nan(row['DNI'])
-                # cliente_existente2 = Cliente.objects.filter(dni=dni)
-                # print(cliente_existente2)
                 cliente_existente = Cliente.objects.filter(dni=dni).first()
-                print(cliente_existente)
+                # print(dni)
+                # print(cliente_existente)
                 if not cliente_existente:
                     new_number_rows_cont +=1
                     Cliente.objects.create(
@@ -791,8 +769,8 @@ def importar_clientes(request):
                         domic=handle_nan(row['DOMIC']) ,
                         loc = handle_nan(row["LOC"]) ,
                         prov = handle_nan(row["PROV"]) ,
-                        cod_postal = handle_nan(row["CP"]),
-                        tel=handle_nan(row['Telefono']) ,
+                        cod_postal = handle_nan(row["COD.POS"]),
+                        tel=handle_nan(row['TEL 1']) ,
                         fec_nacimiento = format_date(handle_nan(row["FECHA DE NAC"])),
                         estado_civil = handle_nan(row["ESTADO CIVIL"]) ,
                         ocupacion = handle_nan(row["OCUPACION"]) 

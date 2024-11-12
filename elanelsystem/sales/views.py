@@ -26,7 +26,7 @@ from django.templatetags.static import static
 
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
-from elanelsystem.utils import format_date, handle_nan
+from elanelsystem.utils import format_date, handle_nan, obtenerCampaña_atraves_fecha, obtener_todos_los_contratos
 
 import pandas as pd
 from django.core.files.storage import FileSystemStorage
@@ -242,22 +242,24 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia):
             sheetResumen = pd.read_excel(file_path, sheet_name="RESUMEN")
             sheetEstados = pd.read_excel(file_path, sheet_name="ESTADOS")
 
-            row = sheetResumen.iloc[index_start] # Se extrae una fila nada mas para completar la Informacion general 
+            rowVenta = sheetResumen.iloc[index_start] # Se extrae una fila nada mas para completar la Informacion general 
 
             newVenta = Ventas()
-            newVenta.nro_cliente = Cliente.objects.filter(nro_cliente = row["Cod-Cli"])
-            newVenta.modalidad = row["Modalidad"]
-            newVenta.nro_operacion = row['ID Venta']
-            newVenta.importe = float(row["Importe"]) * cantidadContratos
+            newVenta.nro_cliente = Cliente.objects.filter(nro_cliente = rowVenta["Cod-Cli"])
+            newVenta.modalidad = rowVenta["Modalidad"]
+            newVenta.nro_operacion = rowVenta['ID Venta']
+            newVenta.importe = float(rowVenta["Importe"]) * cantidadContratos
             newVenta.agencia = Sucursal.objects.get(pseudonimo = agencia)
-            newVenta.tasa_interes = float(row["Tasa de Inte"]) * cantidadContratos
-            newVenta.producto = Products.objects.filter(nombre = handle_nan(row["Producto"]))
-            newVenta.fecha = row["FECHA INCRIPCION"]
-            newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(row["VENDEDOR"])).first()
-            newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(row["SUPERV"])).first() 
-            newVenta.paquete = row["PAQ"]
-            newVenta.tipo_producto = Products.objects.filter(nombre = row["Producto"]).first().tipo_de_producto
-            newVenta.observaciones = row["COMENTARIOS/ OBSERVACIONES"]
+            newVenta.tasa_interes = float(rowVenta["Tasa de Inte"]) * cantidadContratos
+            newVenta.producto = Products.objects.filter(nombre = handle_nan(rowVenta["Producto"]))
+            newVenta.fecha = format_date(rowVenta["FECHA INCRIPCION"])
+            newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(rowVenta["VENDEDOR"])).first()
+            newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(rowVenta["SUPERV"])).first() 
+            newVenta.paquete = rowVenta["PAQ"]
+            newVenta.campania = obtenerCampaña_atraves_fecha(format_date(rowVenta["FECHA INCRIPCION"]))
+            newVenta.tipo_producto = Products.objects.filter(nombre = rowVenta["Producto"]).first().tipo_de_producto
+            newVenta.observaciones = rowVenta["COMENTARIOS/ OBSERVACIONES"]
+            total_a_pagar = 0
 
             for i in range(index_start, index_end):
                 fila = sheetResumen.iloc[i]
@@ -269,38 +271,65 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia):
                 listaContratos.append({"nro_contrato": nro_contrato, "nro_orden": nro_orden})
                 #endregion
                 
-                id_venta = fila["ID Venta"]
-                cuotas = []
-                for c_index, row in sheetEstados.iterrows():
+            newVenta.cantidadContratos = listaContratos    
+    
+            cuotas = []
+            for c_index, row in sheetEstados.iterrows():
 
-                    if(row["ID Venta"] == id_venta):
-                        cuota = row["cuotas"].replace(" ", "").split("-")[1]
-                        print("Cuota ---> " + str(cuota))
-
-                        if(row["cuotas"] == "cuota -  0"):
-                            info = {
-                                {"cuota" :f'Cuota {cuota}',
-                                "nro_operacion": id_venta,
-                                "status": str(row["Estado"]).tittle() if row["Estado"] not in ["Vencido", "BAJA"] else "Atrasado" ,
-                                "total": int(row["importe Cuotas"]),
-                                "descuento": {'autorizado': "", 'monto': 0},
-                                "bloqueada": False,
-                                "fechaDeVencimiento":"", 
-                                "diasRetraso": 0,
-                                "pagos":[],
-                                }
-                            }
-                            cuotas.append()
-                        else:
-                            pass
+                if(row["ID Venta"] == rowVenta['ID Venta']):
+                    cuota = row["cuotas"].replace(" ", "").split("-")[1]
+                    print("Cuota ---> " + str(cuota))
+                    total_a_pagar += int(row["importe Cuotas"])
+                    if(row["cuotas"] == "cuota -  0"):
+                        info = {
+                            "cuota" :f'Cuota {cuota}',
+                            "nro_operacion": rowVenta['ID Venta'],
+                            "status": str(row["Estado"]).tittle() if row["Estado"] not in ["Vencido", "BAJA"] else "Atrasado" ,
+                            "total": int(row["importe Cuotas"]) * cantidadContratos,
+                            "descuento": {'autorizado': "", 'monto': 0},
+                            "bloqueada": False,
+                            "fechaDeVencimiento":"", 
+                            "diasRetraso": 0,
+                            "pagos":[{
+                                "monto": int(row["importe Cuotas"]) * cantidadContratos,
+                                "metodoPago": row["MEDIO DE PAGO"].tittle(),
+                                "fecha": format_date(row["Fecha de Pago"]),
+                                "cobrador": row["COBRADOR"].capitalize(),
+                            }],
+                        }
                     
-                newVenta.cuotas=bloquer_desbloquear_cuotas(cuotas)
+                    else:
+                        info = {
+                            "cuota" :f'Cuota {cuota}',
+                            "nro_operacion": rowVenta['ID Venta'],
+                            "status": str(row["Estado"]).tittle() if row["Estado"] not in ["Vencido", "BAJA"] else "Atrasado" ,
+                            "total": int(row["importe Cuotas"]) * cantidadContratos,
+                            "descuento": {'autorizado': "", 'monto': 0},
+                            "bloqueada": False,
+                            "fechaDeVencimiento":format_date(row["Fecha-Venc"]) + "00:00", 
+                            "diasRetraso": int(str(row["Dias De Mora"]).replace("-","")),
+                            "interesPorMora": 0,
+                            "totalFinal": 0,
+                        }
+                        if(info["status"] == "Pagado"):
+                            info["pagos"] = [{
+                                "monto": int(row["importe Cuotas"]) * cantidadContratos,
+                                "metodoPago": row["MEDIO DE PAGO"].tittle(),
+                                "fecha": format_date(row["Fecha de Pago"]),
+                                "cobrador": row["COBRADOR"].capitalize(),
+                            }]
+                        else:
+                            info["pagos"] = []
+                        
+                    cuotas.append(info)
+            newVenta.total_a_pagar = total_a_pagar * cantidadContratos
+            newVenta.cuotas=bloquer_desbloquear_cuotas(cuotas)
     except Exception as e:
-            print(f"Error al crear venta: {e}")
-            # print(f"Error en la fila \n {row}")
-            # return HttpResponse("Error al procesar el archivo. Verifique el formato y los datos.")
+            print(f"Error al crear cuota: {e}")
         
     pass
+
+
 def importVentas(request):
     if request.method == "POST":
         # Obtener el archivo subido
@@ -311,6 +340,8 @@ def importVentas(request):
         fs = FileSystemStorage()
         filename = fs.save(archivo_excel.name, archivo_excel)
         file_path = fs.path(filename)
+        cantidad_nuevas_ventas = 0
+        todosLosContratos = obtener_todos_los_contratos()
 
         try:
             # Leer la hoja "Cuotas" del archivo Excel
@@ -321,77 +352,35 @@ def importVentas(request):
             i= -1
             while i < len(sheetResumen):
                 i += 1
-                if(Cliente.objects.filter(nro_cliente = sheetEstados.iloc[i]["Cod-Cli"]).exists()):
-                    if(row_pivot["Cod-Cli"] != sheetEstados.iloc[i]["Cod-Cli"] or row_pivot["FECHA INSCRIPCION"] != sheetEstados.iloc[i]["FECHA INSCRIPCION"] or row_pivot["Producto"] != sheetEstados.iloc[i]["Producto"]):
-                        generarContratoParaImportar(index_pivot, i - 1, file_path, agencia)
-                        row_pivot = sheetEstados.iloc[i]
-                        index_pivot = i
-                        i -= 1
+                if not (str(sheetEstados.iloc[i]["CONTRATO"]) in todosLosContratos):
+                    cantidad_nuevas_ventas +=1
+                    if(Cliente.objects.filter(nro_cliente = sheetEstados.iloc[i]["Cod-Cli"]).exists()):
+                        if(row_pivot["Cod-Cli"] != sheetEstados.iloc[i]["Cod-Cli"] or row_pivot["FECHA INSCRIPCION"] != sheetEstados.iloc[i]["FECHA INSCRIPCION"] or row_pivot["Producto"] != sheetEstados.iloc[i]["Producto"]):
+                            generarContratoParaImportar(index_pivot, i - 1, file_path, agencia)
+                            row_pivot = sheetEstados.iloc[i]
+                            index_pivot = i
+                            i -= 1
+                        else:
+                            continue
                     else:
                         continue
-                else:
-                    continue
-                    # cliente = Cliente.objects.filter(nro_cliente = row["Cod-Cli"])
-                    # producto = Products.objects.filter(nombre = row["Producto"]).first()
-
-                    # if not (Ventas.objects.filter(nro_cliente=cliente, producto = producto, fecha= row["FECHA INCRIPCION"]).exists()):
-                    #     newVenta = Ventas()
-                    #     newVenta.nro_cliente = cliente
-                    #     newVenta.modalidad = row["Modalidad"]
-                    #     newVenta.nro_operacion = row['ID Venta']
-                    #     newVenta.importe = float(row["Importe"])
-                    #     newVenta.agencia = Sucursal.objects.get(pseudonimo = agencia)
-                    #     newVenta.tasa_interes = float(row["Tasa de Inte"])
-                    #     newVenta.producto = Products.objects.filter(nombre = handle_nan(row["Producto"]))
-                    #     newVenta.fecha = row["FECHA INCRIPCION"]
-                    #     newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(row["VENDEDOR"])).first()
-                    #     newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(row["SUPERV"])).first() 
-                    #     newVenta.paquete = row["PAQ"]
-                    #     newVenta.tipo_producto = Products.objects.filter(nombre = row["Producto"]).first().tipo_de_producto
-                    #     newVenta.observaciones = row["COMENTARIOS/ OBSERVACIONES"]
-                    #     newVenta.save()
-                    # else:
-
-
-                # Verificar si la cuota ya existe en la venta
-                # cuota_encontrada = None
-                # for cuota in venta.cuotas:
-                #     if cuota['cuota'] == row['Cuota']:
-                #         cuota_encontrada = cuota
-                #         break
-
-                # # Si la cuota ya existe, actualizarla
-                # if cuota_encontrada:
-                #     cuota_encontrada['status'] = row['Estado']
-                #     cuota_encontrada['total'] = row['Total']
-                #     cuota_encontrada['pagos'] = [{
-                #         'monto_pagado': row['Pagado'],
-                #         'fecha_pago': row['Fecha de Pago'] if not pd.isna(row['Fecha de Pago']) else None
-                #     }]
-                    
-                #     # Calcular días de retraso si está pendiente
-                #     if row['Estado'] == "Pendiente":
-                #         fecha_vencimiento = datetime.strptime(row['Fecha de Vencimiento'], '%d/%m/%Y')
-                #         hoy = datetime.now()
-                #         if hoy > fecha_vencimiento:
-                #             dias_retraso = (hoy - fecha_vencimiento).days
-                #             cuota_encontrada['diasRetraso'] = dias_retraso
-                #         else:
-                #             cuota_encontrada['diasRetraso'] = 0
-
-                # # Guardar los cambios en la venta
 
             # Eliminar el archivo después de procesarlo
             fs.delete(filename)
             
-            return HttpResponse("Cuotas actualizadas correctamente")
+            iconMessage = "/static/images/icons/checkMark.svg"
+            message = f"Datos importados correctamente. Se agregaron {cantidad_nuevas_ventas} nuevas ventas"
+            return JsonResponse({"message": message, "iconMessage": iconMessage, "status": True})
 
         except Exception as e:
             print(f"Error al importar: {e}")
-            print(f"Error en la fila \n {row}")
-            return HttpResponse("Error al procesar el archivo. Verifique el formato y los datos.")
+
+            iconMessage = "/static/images/icons/error_icon.svg"
+            message = "Error al procesar el archivo"
+            return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
 
     return render(request, 'importar_cuotas.html')
+
 
 def requestVendedores_Supervisores(request):
     request = json.loads(request.body)
