@@ -3,9 +3,14 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/panel_admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/loader.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 {% endblock css %}
 
 {% block content %}
+<div id="wrapperLoader">
+    <span id="loader"></span>
+  </div>
     <div class="wrapperSections">
         <div class ="tittleWrapper">
             <h4>Permisos</h4>
@@ -95,7 +100,31 @@
         </div>
         
     </div>
+
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Importar ventas<h4>
+        </div>
+        <div class="buttonWrapper">
+            <button type="button" id="showModalImport" class="buttonMore" onclick="newModalImport()">
+                <div>
+                    <h3>Importar</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </button>
+        </div>
+        
+    </div>
 {% endblock content %}
 {% block js %}
-    
+<script>
+    var csrf_token = '{%csrf_token%}'
+    var urlImportData = "{% url 'sales:importVentas' %}"
+    var sucursalesDisponibles = {{ sucursalesDisponibles|safe }}
+    var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}"      
+</script>
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/importDataVentas.js' %}"></script>
+
 {% endblock js %}

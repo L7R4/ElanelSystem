@@ -905,7 +905,12 @@ class PanelAdmin(TestLogin,PermissionRequiredMixin,generic.View):
     template_name = "panelAdmin.html"
     permission_required = "sales.my_ver_resumen"
     def get(self,request,*args,**kwargs):
-        context= {}
+        sucursalesObject = Sucursal.objects.all()
+        sucursales = [sucursal.pseudonimo for sucursal in sucursalesObject ]
+        context= {
+            "sucursalesDisponibles": json.dumps(sucursales)
+        }
+        
         return render(request, self.template_name, context)
 #endregion  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
