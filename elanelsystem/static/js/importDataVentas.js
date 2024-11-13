@@ -78,23 +78,22 @@ function newModalImport() {
         }
 
         showLoader()
-        setTimeout(async function () {
-            let response = await fetchFunction(body, urlImportData);
+        let response = await fetchFunction(body, urlImportData);
 
-            if (response.status) {
-                console.log("Salio todo bien");
-                hiddenLoader();
-                modal.close();
-                modal.destroy();
-            } else {
-                console.log("Salio todo mal");
-                hiddenLoader();
+        if (response.status) {
+            console.log("Salio todo bien");
+            hiddenLoader();
+            modal.close();
+            modal.destroy();
+        } else {
+            console.log("Salio todo mal");
+            hiddenLoader();
 
-                modal.close();
-                modal.destroy();
-            }
-            newModalMessage(response.message, response.iconMessage);
-        }, 5000);  // 10,000 milisegundos = 10 segundos
+            modal.close();
+            modal.destroy();
+        }
+        newModalMessage(response.message, response.iconMessage);
+        // 10,000 milisegundos = 10 segundos
         // let response = await fetchFunction(body,urlImportData)
         // if(response.status){
         //     console.log("Salio todo bien")

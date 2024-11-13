@@ -29,6 +29,19 @@ def format_date(date_value):
     return ""
 
 
+#funcion para formatear las columnas de los excels
+def formatear_columnas(file_path, sheet_name):
+    # Leer la hoja del archivo Excel
+    df = pd.read_excel(file_path, sheet_name=sheet_name)
+    
+    # Renombrar las columnas
+    df.columns = [
+        col.strip().lower().replace(" ", "_").replace("-", "_").replace(".", "_").replace("/", "_")
+        for col in df.columns
+    ]
+    
+    return df
+
 def obtenerCampaña_atraves_fecha(fecha_str):
     # Convertir la cadena de fecha en un objeto datetime
     fecha = datetime.strptime(fecha_str, "%d/%m/%Y")
