@@ -245,19 +245,19 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia):
             rowVenta = sheetResumen.iloc[index_start] # Se extrae una fila nada mas para completar la Informacion general 
 
             newVenta = Ventas()
-            newVenta.nro_cliente = Cliente.objects.filter(nro_cliente = rowVenta["Cod-Cli"])
+            newVenta.nro_cliente = Cliente.objects.filter(nro_cliente = rowVenta["Cod-Cli"]).first()
             newVenta.modalidad = rowVenta["Modalidad"]
             newVenta.nro_operacion = rowVenta['ID Venta']
-            newVenta.importe = float(rowVenta["Importe"]) * cantidadContratos
+            newVenta.importe = float(rowVenta["Importe "]) * cantidadContratos
             newVenta.agencia = Sucursal.objects.get(pseudonimo = agencia)
             newVenta.tasa_interes = float(rowVenta["Tasa de Inte"]) * cantidadContratos
-            newVenta.producto = Products.objects.filter(nombre = handle_nan(rowVenta["Producto"]))
+            newVenta.producto = Products.objects.filter(nombre = handle_nan(rowVenta["Producto "].title())).first()
             newVenta.fecha = format_date(rowVenta["FECHA INCRIPCION"])
             newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(rowVenta["VENDEDOR"])).first()
             newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(rowVenta["SUPERV"])).first() 
-            newVenta.paquete = rowVenta["PAQ"]
+            newVenta.paquete = rowVenta["PAQ"].capitalize() if rowVenta["PAQ"] != "BASE" else "Basico"
             newVenta.campania = obtenerCampaña_atraves_fecha(format_date(rowVenta["FECHA INCRIPCION"]))
-            newVenta.tipo_producto = Products.objects.filter(nombre = rowVenta["Producto"]).first().tipo_de_producto
+            newVenta.tipo_producto = Products.objects.filter(nombre = rowVenta["Producto "].title()).first().tipo_de_producto
             newVenta.observaciones = rowVenta["COMENTARIOS/ OBSERVACIONES"]
             total_a_pagar = 0
 
@@ -284,7 +284,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia):
                         info = {
                             "cuota" :f'Cuota {cuota}',
                             "nro_operacion": rowVenta['ID Venta'],
-                            "status": str(row["Estado"]).tittle() if row["Estado"] not in ["Vencido", "BAJA"] else "Atrasado" ,
+                            "status": str(row["Estado"]).title() if row["Estado"] not in ["Vencido", "BAJA"] else "Atrasado" ,
                             "total": int(row["importe Cuotas"]) * cantidadContratos,
                             "descuento": {'autorizado': "", 'monto': 0},
                             "bloqueada": False,
@@ -292,7 +292,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia):
                             "diasRetraso": 0,
                             "pagos":[{
                                 "monto": int(row["importe Cuotas"]) * cantidadContratos,
-                                "metodoPago": row["MEDIO DE PAGO"].tittle(),
+                                "metodoPago": row["MEDIO DE PAGO"].title(),
                                 "fecha": format_date(row["Fecha de Pago"]),
                                 "cobrador": row["COBRADOR"].capitalize(),
                             }],
@@ -302,7 +302,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia):
                         info = {
                             "cuota" :f'Cuota {cuota}',
                             "nro_operacion": rowVenta['ID Venta'],
-                            "status": str(row["Estado"]).tittle() if row["Estado"] not in ["Vencido", "BAJA"] else "Atrasado" ,
+                            "status": str(row["Estado"]).title() if row["Estado"] not in ["Vencido", "BAJA"] else "Atrasado" ,
                             "total": int(row["importe Cuotas"]) * cantidadContratos,
                             "descuento": {'autorizado': "", 'monto': 0},
                             "bloqueada": False,
@@ -314,7 +314,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia):
                         if(info["status"] == "Pagado"):
                             info["pagos"] = [{
                                 "monto": int(row["importe Cuotas"]) * cantidadContratos,
-                                "metodoPago": row["MEDIO DE PAGO"].tittle(),
+                                "metodoPago": row["MEDIO DE PAGO"].title(),
                                 "fecha": format_date(row["Fecha de Pago"]),
                                 "cobrador": row["COBRADOR"].capitalize(),
                             }]
@@ -333,7 +333,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia):
 def importVentas(request):
     if request.method == "POST":
         # Obtener el archivo subido
-        archivo_excel = request.FILES['archivo_excel']
+        archivo_excel = request.FILES['file']
         agencia = request.POST.get('agencia')
 
         # Guardar temporalmente el archivo
@@ -352,12 +352,14 @@ def importVentas(request):
             i= -1
             while i < len(sheetResumen):
                 i += 1
-                if not (str(sheetEstados.iloc[i]["CONTRATO"]) in todosLosContratos):
-                    cantidad_nuevas_ventas +=1
-                    if(Cliente.objects.filter(nro_cliente = sheetEstados.iloc[i]["Cod-Cli"]).exists()):
-                        if(row_pivot["Cod-Cli"] != sheetEstados.iloc[i]["Cod-Cli"] or row_pivot["FECHA INSCRIPCION"] != sheetEstados.iloc[i]["FECHA INSCRIPCION"] or row_pivot["Producto"] != sheetEstados.iloc[i]["Producto"]):
+                if(cantidad_nuevas_ventas == 5):
+                    break
+                if not (str(sheetResumen.iloc[i]["CONTRATO"]) in todosLosContratos):
+                    if(Cliente.objects.filter(nro_cliente = sheetResumen.iloc[i]["Cod-Cli"]).exists()):
+                        if(row_pivot["Cod-Cli"] != sheetResumen.iloc[i]["Cod-Cli"] or row_pivot["FECHA INCRIPCION"] != sheetResumen.iloc[i]["FECHA INCRIPCION"] or row_pivot["Producto "] != sheetResumen.iloc[i]["Producto "]):
+                            cantidad_nuevas_ventas +=1
                             generarContratoParaImportar(index_pivot, i - 1, file_path, agencia)
-                            row_pivot = sheetEstados.iloc[i]
+                            row_pivot = sheetResumen.iloc[i]
                             index_pivot = i
                             i -= 1
                         else:
