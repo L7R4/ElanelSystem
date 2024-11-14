@@ -4,7 +4,6 @@ from django.http import HttpResponse, JsonResponse
 from django.views import generic
 from elanelsystem import settings
 from sales.mixins import TestLogin
-from sales.utils import printPDFLiquidacion
 from users.models import Usuario,Sucursal
 from .models import *
 from django.urls import reverse_lazy
@@ -12,6 +11,7 @@ from django.contrib.auth.models import Group
 from sales.utils import getAllCampaniaOfYear
 import datetime
 import json
+from elanelsystem.utils import printPDF
 from .utils import (
     liquidaciones_countFaltas,
     liquidaciones_countTardanzas,
@@ -57,7 +57,7 @@ class LiquidacionesComisiones(TestLogin,generic.View):
     def post(self, request, *args, **kwargs):
         tipo_colaborador= json.loads(request.body)["tipo_colaborador"]
         datos = request.session.get('liquidacion_data', {})
-
+        
         # CONTINUAR
         if(tipo_colaborador == "Vendedor"):
             newLiquidacion = LiquidacionVendedor()
@@ -72,6 +72,9 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             newLiquidacion = LiquidacionAdmin()
             pass
 
+            
+        response_data = {"urlPDF":reverse_lazy('liquidacion:viewPDFLiquidacion'),"urlRedirect": reverse_lazy('liquidacion:liquidacionesPanel'),"success": True}
+        return JsonResponse(response_data, safe=False)         
 
 
 def requestColaboradoresWithComisiones(request):
@@ -92,37 +95,44 @@ def requestColaboradoresWithComisiones(request):
         "tipo_colaborador":item.rango, 
         "nombre": item.nombre, "id": item.pk, 
         "dni":item.dni,
+        "sucursal": form["sucursal"],
+        "campania": campania,
         "detalle": getComisionTotal(item,campania,sucursalObject)["detalle"],
         "comisionTotal": getComisionTotal(item,campania,sucursalObject)["total_comisionado"],
+        "info_total_de_comision": getComisionTotal(item,campania,sucursalObject)
         } 
         for item in colaboradores if item.rango != "Admin"]
     
     totalDeComisiones = sum([user["comisionTotal"] for user in colaboradores_list])
     # request.session["liquidacion_data"] = {"colaboradores_list":colaboradores_list, "sucursal": sucursalString, "fecha":datetime.date.today().strftime("%d-%m-%Y")}
     # return JsonResponse({"colaboradores_data": colaboradores_list,"totalDeComisiones": totalDeComisiones} , safe=False)
+    request.session["liquidacion_data"] = colaboradores_list
+
 
     return JsonResponse({"colaboradores_data": colaboradores_list, "totalDeComisiones": totalDeComisiones} , safe=False)
 
 def viewPDFLiquidacion(request):
     datos = request.session.get('liquidacion_data', {})
-
+    print(datos)
     # Para pasar el detalles de los movs
+    contexto = []
     for item in datos:
-        datos_modificado = {
+        contexto.append({
                 "tipo_colaborador": item.get("tipo_colaborador"),
+                "sucursal": item.get("sucursal"),
+                "fecha": datetime.date.today().strftime("%d-%m-%Y"),
+                "campania": item.get("campania"),
                 "nombre": item.get("nombre"),
-                "comisionTotal": item.get("comisionTotal"),
-                "detalle": item.get("detalle"),
+                "info_total_de_comision": item.get("info_total_de_comision")
             
-            }
-        if(item.tipo_colaborador == "Supervisor"):
-            pass
+            })
+        # if(item.tipo_colaborador == "Supervisor"):
+        #     pass
    
 
     informeName = "Informe"
     urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "liquidacion.pdf")
-    
-    printPDFLiquidacion({"data":datos_modificado},request.build_absolute_uri(),urlPDF)
+    printPDF({"data":contexto},request.build_absolute_uri(),urlPDF,"pdfForLiquidacion.html","static/css/pdfLiquidacion.css")
 
     
     with open(urlPDF, 'rb') as pdf_file:

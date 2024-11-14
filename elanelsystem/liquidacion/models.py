@@ -117,7 +117,8 @@ class LiquidacionAdmin(models.Model):
 
 class LiquidacionCompleta(models.Model): 
     fecha = models.CharField("Fecha", max_length=10)
-    camapania = models.IntegerField("Camapaña")
+    campania = models.IntegerField("Camapaña")
+    sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING, related_name="liquidacion_sucursal")
     total_recaudado =models.FloatField("Total recaudado",default=0)
     total_liquidado = models.FloatField("Total liquidado",default=0)
     cant_ventas = models.IntegerField("Cantidad de ventas",default=0)

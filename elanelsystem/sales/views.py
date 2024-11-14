@@ -243,41 +243,40 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
             sheetResumen = formatear_columnas(file_path, sheet_name="RESUMEN")
             sheetEstados = formatear_columnas(file_path, sheet_name="ESTADOS")
             # print(sheetEstados.columns)
-            print(sheetResumen.columns)
 
 
                 
                 
 
             rowVenta = sheetResumen.iloc[index_start] # Se extrae una fila nada mas para completar la Informacion general 
-            print(f"Numero de venta --> {rowVenta['id_venta']}")
+            # print(f"Numero de venta --> {rowVenta['id_venta']}")
             newVenta = Ventas()
             newVenta.nro_cliente = Cliente.objects.filter(nro_cliente = rowVenta["cod_cli"]).first()
-            newVenta.modalidad = rowVenta["modalidad"]
+            newVenta.modalidad = rowVenta["modalidad"].title()
             newVenta.nro_operacion = str(int(rowVenta['id_venta']))
             newVenta.importe = float(rowVenta["importe"]) * cantidadContratos
             newVenta.agencia = Sucursal.objects.get(pseudonimo = agencia)
-            newVenta.tasa_interes = float(rowVenta["tasa_de_inte"]) * cantidadContratos
+            newVenta.tasa_interes = round((float(rowVenta["tasa_de_inte"]) * cantidadContratos) * 100,2)
             newVenta.producto = Products.objects.filter(nombre = handle_nan(rowVenta["producto"].title())).first()
-            newVenta.fecha = format_date(rowVenta["fecha_incripcion"])
-            newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(rowVenta["vendedor"])).first()
-            newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(rowVenta["superv"])).first() 
+            newVenta.fecha = format_date(rowVenta["fecha_incripcion"]) + " 00:00"
+            newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(rowVenta["vendedor"]).title()).first()
+            newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(rowVenta["superv"]).title()).first() 
             newVenta.paquete = rowVenta["paq"].capitalize() if rowVenta["paq"] != "BASE" else "Basico"
             newVenta.campania = obtenerCampaña_atraves_fecha(format_date(rowVenta["fecha_incripcion"]))
-            newVenta.tipo_producto = Products.objects.filter(nombre = rowVenta["producto"].title()).first().tipo_de_producto
-            newVenta.observaciones = rowVenta["comentarios__observaciones"]
+            newVenta.tipo_producto = Products.objects.filter(nombre = rowVenta["producto"].title()).first().tipo_de_producto if Products.objects.filter(nombre = rowVenta["producto"].title()).first() else ""
+            newVenta.observaciones = handle_nan(rowVenta["comentarios__observaciones"]) 
             total_a_pagar = 0
 
 
+            listaContratos = []
 
             for i in range(index_start, index_end):
                 fila = sheetResumen.iloc[i]
 
                 #region Guardar los contratos
-                listaContratos = []
-                nro_contrato = str(fila["contrato"])
-                nro_orden = str(fila["nro_de_orden"])
-                listaContratos.append({"nro_contrato": nro_contrato, "nro_orden": nro_orden})
+                nro_contrato = str(int(fila["contrato"]))
+                nro_orden = str(int(fila["nro_de_orden"]))
+                listaContratos.append({"nro_contrato":nro_contrato, "nro_orden":nro_orden })
                 #endregion
                 
             newVenta.cantidadContratos = listaContratos    
@@ -289,7 +288,9 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                     if(int(filaEstado["id_venta"]) == int(rowVenta['id_venta'])):
 
                         cuota = filaEstado["cuotas"].replace(" ","").split("-")[1]
-                        print(f"Cuota {cuota}")
+                        print(f"Tipo de fecha de vencimiento {type(filaEstado['fecha_venc'])}")
+
+                        print(f"Fecha de vencimiento {filaEstado['fecha_venc']}")
                         
                         total_a_pagar += int(filaEstado["importe_cuotas"])
                         if(filaEstado["cuotas"] == "cuota -  0"):
@@ -318,7 +319,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                                 "total": int(filaEstado["importe_cuotas"]) * cantidadContratos,
                                 "descuento": {'autorizado': "", 'monto': 0},
                                 "bloqueada": False,
-                                "fechaDeVencimiento":format_date(filaEstado["fecha_venc"]) + "00:00", 
+                                "fechaDeVencimiento":format_date(filaEstado["fecha_venc"]) + " 00:00", 
                                 "diasRetraso": int(float(str(filaEstado["dias_de_mora"]).replace("-",""))),
                                 "interesPorMora": 0,
                                 "totalFinal": 0,
@@ -335,17 +336,21 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                             
                         cuotas.append(info)
                     else:
-                        print(filaEstado)
+                        # print(filaEstado)
                         break
                 except Exception as e:
                     print(f"Error {e}")
 
                         
-
-            print(cuotas)
-            newVenta.total_a_pagar = total_a_pagar * cantidadContratos
+            cuotas.reverse()
+            newVenta.total_a_pagar = float(total_a_pagar * cantidadContratos)
             newVenta.cuotas=bloquer_desbloquear_cuotas(cuotas)
+            newVenta.primer_cuota = newVenta.cuotas[1]["total"]
+            newVenta.anticipo = newVenta.cuotas[0]["total"]
+            newVenta.intereses_generados = newVenta.total_a_pagar - newVenta.importe
+            newVenta.importe_x_cuota = newVenta.cuotas[2]["total"]
             newVenta.nro_cuotas = len(cuotas)-1
+            newVenta.setDefaultFields()
             newVenta.save()
             return nextIndiceBusquedaCuotas + (len(cuotas) * cantidadContratos)
     except Exception as e:
@@ -376,8 +381,8 @@ def importVentas(request):
             nextIndiceBusquedaCuotas = 0 # Almacena la fila de la hoja de ESTADOs para continuar buscando las cuotas y no comenzar de 0
             while i < len(sheetResumen):
                 i += 1
-                if(cantidad_nuevas_ventas == 2):
-                    break
+                # if(cantidad_nuevas_ventas == 2):
+                #     break
                 if not (str(sheetResumen.iloc[i]["contrato"]) in todosLosContratos):
                     if(Cliente.objects.filter(nro_cliente = sheetResumen.iloc[i]["cod_cli"]).exists()):
                         if(row_pivot["cod_cli"] != sheetResumen.iloc[i]["cod_cli"] or row_pivot["fecha_incripcion"] != sheetResumen.iloc[i]["fecha_incripcion"] or row_pivot["producto"] != sheetResumen.iloc[i]["producto"]):

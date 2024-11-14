@@ -1,12 +1,17 @@
-function renderFormDescuento(item,type){
+function renderFormDescuento(item, type) {
     let nombre = item.querySelector(".nombreUser").textContent
     let email = item.querySelector(".emailUser").textContent
-    let operationType = type.id == "descuentoButton" ? "Descuento" : "Premio"
-    
+    let operationType = type.id == "descuentoButton" ? "descuento" : "premio"
+
     return `
     <div class="modal_newEgresoIngreso">
       <div class="tittleModal">
-          <h3 id="tittleModalEgresoIngreso">${operationType} a ${nombre}</h3>
+          <h3 id="tittleModalEgresoIngreso">
+            ${operationType == "descuento" ?
+            "Descuento o adelanto" :
+            "Premio"} 
+            a ${nombre}
+            </h3>
       </div>
 
       <form method="POST" class="modal_form" id="formNewDescuento">
@@ -63,32 +68,32 @@ function renderFormDescuento(item,type){
 }
 
 
-function newModal(type){
+function newModal(type) {
     var modal = new tingle.modal({
         footer: true,
         closeMethods: ['overlay', 'button', 'escape'],
         cssClass: ['custom-class-1', 'custom-class-2'],
-        onOpen: function() {
+        onOpen: function () {
             cargarListenersEnInputs() // Para cargar los listeners de los inputs selects custom
         },
         // onClose: function() {
         //     console.log('modal closed');
         // },
-        beforeClose: function() {
+        beforeClose: function () {
             // here's goes some logic
             // e.g. save content before closing the modal
             return true;
-            
+
         }
     });
-    
+
     // set content
-    modal.setContent(renderFormDescuento(itemDOMSelected,type));
-    
+    modal.setContent(renderFormDescuento(itemDOMSelected, type));
+
     // add a button
-    modal.addFooterBtn('Confirmar', 'tingle-btn tingle-btn--primary', async function() {
+    modal.addFooterBtn('Confirmar', 'tingle-btn tingle-btn--primary', async function () {
         // here goes some logic
-        
+
         let body = {
             "usuarioEmail": usuarioEmailInput.value,
             "operationType": operationTypeInput.value,
@@ -98,32 +103,30 @@ function newModal(type){
             "fecha": fechaInput.value,
             "concepto": conceptoInput.value
         }
-        let response = await fetchFunction(body,urlPostDescuento)
-        if(response.status){
+        let response = await formFETCH(body, urlPostDescuento)
+        if (response.status) {
             console.log("Salio todo bien")
             modal.close();
             modal.destroy();
         }
-        else{
+        else {
             console.log("Salio todo mal")
             modal.close();
             modal.destroy();
         }
 
     });
-    
+
     // add another button
-    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default', function() {
+    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default', function () {
         // here goes some logic
         modal.close();
         modal.destroy();
     });
-    
+
     // open modal
     modal.open();
 }
-// close modal
-// modal.close();
 
 //#region Fetch data
 function getCookie(name) {
@@ -142,21 +145,19 @@ function getCookie(name) {
     return cookieValue;
 }
 
-async function fetchFunction(body, url) {
+async function formFETCH(form, url) {
     try {
-        let response = await fetch(url, {
+        const res = await fetch(url, {
             method: 'POST',
-            body: JSON.stringify(body),
             headers: {
                 "X-CSRFToken": getCookie('csrftoken'),
-            }
+            },
+            body: JSON.stringify(form)
         })
-
-        if (!response.ok) {
+        if (!res.ok) {
             throw new Error("Error")
         }
-
-        const data = await response.json();
+        const data = await res.json()
         return data;
     } catch (error) {
     }

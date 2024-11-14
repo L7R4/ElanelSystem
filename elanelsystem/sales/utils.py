@@ -70,16 +70,6 @@ def printPDFinformePostVenta(data,url,productoName):
     # print(pdf)
     return pdf
 
-def printPDFLiquidacion(data,url,liquidacionName):
-    template = get_template("pdfForLiquidacion.html")
-    context = data
-    html_template = template.render(context)
-    css_url = os.path.join(settings.BASE_DIR, "static/css/pdfLiquidacion.css")
-    if not os.path.exists(settings.PDF_STORAGE_DIR):
-        os.makedirs(settings.PDF_STORAGE_DIR)
-    pdf = HTML(string=html_template,base_url=url).write_pdf(target=liquidacionName, stylesheets = [CSS(css_url)])
-    # print(pdf)
-    return pdf
 
 def sendEmailPDF(email,pdf_path,sujeto):
         try:

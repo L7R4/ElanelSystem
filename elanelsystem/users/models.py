@@ -101,6 +101,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     xp_laboral = models.TextField("Experiencia laboral", blank=True,null=True, default="")
     
     descuentos = models.JSONField("Descuentos", default=list,blank=True,null=True)
+    premios = models.JSONField("Premios", default=list,blank=True,null=True)
+
     datos_familiares = models.JSONField("Datos familiares", default=list,blank=True,null=True)
     vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
     faltas_tardanzas = models.JSONField("Faltas o tardanzas", default=list,blank=True,null=True)

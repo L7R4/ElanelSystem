@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body> 
+    {% for recibo in data %}
+    <div class="recibo">
+        <img class="logo" src="{% static 'images/logoElanelPDF.png' %}">
+        <h1>Recibo</h1>
+
+        <div class="agenciaWrapper">
+            <p>{{recibo.sucursal}}</p>
+        </div>
+        <div class="fechaWrapper">
+            <p>Fecha {{recibo.fecha}}</p>
+        </div>
+        <div class="campaniaWrapper">
+            <p>Campaña {{recibo.campania}}</p>
+        </div>
+        <div class="colaboradorWrapper">
+            <p><strong>{{ recibo.tipo_colaborador }}</strong></p>
+            <p>{{ recibo.nombre }}</p>
+        </div>
+        {% if recibo.tipo_colaborador == "Supervisor"%}
+        {% elif recibo.tipo_colaborador == "Vendedor" %}
+        <div class ="detalle">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Cantidad</th>
+                        <th>Dinero</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Motos (24/30 Cuotas)</td>
+                        <td>{{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_motos.cantidad_ventas}}</td>
+                        <td>${{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_motos.comision}}</td>
+
+                    </tr>
+                    <tr>
+                        <td>Combos/Soluciones (24/30 Cuotas)</td>
+                        <td>{{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_elec_soluc.cantidad_ventas}}</td>
+                        <td>${{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_elec_soluc.comision}}</td>
+                    </tr>
+                    <tr>
+                        <td>Ventas (48/60 Cuotas)</td>
+                        <td>{{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_48_60.cantidad_ventas}}</td>
+                        <td>${{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_48_60.comision}}</td>      
+                    </tr>
+                    <tr>
+                        <td>Premio por productividad</td>
+                        <td> - - - </td>
+                        <td>${{recibo.info_total_de_comision.detalle.productividad_ventasPropias_comision}}</td>      
+                    </tr>
+                    <tr>
+                        <td>Cuotas 1</td>
+                        <td>{{recibo.info_total_de_comision.detalle.cuotas1.cantidadCuotas1}}</td>
+                        <td>${{recibo.info_total_de_comision.detalle.cuotas1.totalDinero}}</td>      
+                    </tr>
+                    <tr class="subTotalWrapper">
+                        <td colspan="2">Sub-total</td> 
+                        <td>${{recibo.info_total_de_comision.subtotal_comisionado_ventasPropias}}</td>
+                    </tr>
+
+                    <tr class ="divider"><td colspan="3"></td></tr>
+                    <tr>
+                        <td class="titleDescuento" colspan="3">Descuentos</td>   
+                    </tr>
+                    <tr>
+                        <td>Tardanzas</td>
+                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.cantidad}}</td>
+                        <td>${{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.dinero}}</td>      
+                    </tr>
+                    <tr>
+                        <td>Faltas</td>
+                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.cantidad}}</td>
+                        <td>${{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.dinero}}</td>      
+                    </tr>
+
+                    <tr>
+                        <td>Adelantos o descuentos</td>
+                        <td> - - - </td>
+                        <td>${{recibo.info_total_de_comision.detalle.adelantos.dineroTotal}}</td>      
+                    </tr>
+                    <tr class="subTotalWrapper">
+                        <td colspan="2">Sub-total de descuentos</td> 
+                        <td>${{recibo.info_total_de_comision.descuentoTotal}}</td>
+                    </tr>
+                    <tr class ="divider"><td colspan="3"></td></tr>
+                    <tr class="subTotalWrapper">
+                        <td colspan="2">TOTAL COMISIONADO</td> 
+                        <td>${{recibo.info_total_de_comision.total_comisionado}}</td>
+                    </tr>
+
+
+                </tbody>
+            </table>
+        </div>
+        
+        {% elif recibo.tipo_colaborador == "Gerente sucursal" %}
+        {% endif %}
+        
+
+        <div class="page-break"></div> <!-- Salto de página -->
+    </div>
+    {% endfor %}
+    
+    {% comment %} <div id="page2" style="page-break-before: always;">
+        <div class="fecha">
+            <p>{{fechaNow}}</p>
+        </div>
+        <div id="subtittle">
+            <p>Elanel Servicios y Soluciones</p>
+            <p>Presente</p>
+        </div>
+        <div id="subtittle_p2">
+            <p>Referencia</p>
+            <p>Cambio de titularidad</p>
+            <p>Nro. Venta {{nroOperacion}}</p>
+            <p>De {{cliente}}</p>
+        </div>
+    
+        <div id ="detalle">
+            <p>De mi mayor consideración</p>
+            <p>Tengo el agrado de dirigirme a Uds. con el fin de hacerles saber que partir de la presente, asumo los compromisos correspondientes como cliente de Elanel Servicios y Soluciones.</p>
+            
+            <p>Por tal motivo, le informo los datos correspondientes para hacer posible este trámite: Apellido y Nombre: {{cliente}}, DNI: {{dni}}, Estado Civil: {{estado_civil}}, Fecha de Nac.:{{fecha_nac}}, con domicilio en {{domicilio}}, localidad: {{localidad}},{{provincia}} teléfono: {{telefono}}, ocupación: {{ocupacion}}</p>
+            <p>IG/FACEBOOK _________________________________________</p>
+            <p>Ahora bien, hago propicia la presente para noticiar que cuento con total información sobre el contrato de Servicios de Asistencia Técnica y Mecánica y los beneficios especiales de vuestro Sistema.</p>
+            <p>Sin otro particular, saludo a Uds. atentamente.</p>
+        </div>
+                <th></th>
+        <div id="firmas">
+            <div>
+            <p>Firma</p>
+            </div>
+            <div>
+                <p>Tipo y nro. de DNI</p>
+            </div>
+            <div>
+                <p>Aclaracion</p>
+            </div>
+        </div>
+    </div> {% endcomment %}
+</body>
+</html>

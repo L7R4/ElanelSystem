@@ -1,15 +1,12 @@
-const usuarios = document.querySelectorAll(".information > .values > .user_item") 
+const usuarios = document.querySelectorAll(".information > .values > .user_item")
 
-function renderMenuContextDescuento(item){
-    let nombre = item.querySelector(".nombreUser").textContent
+function renderMenuContextDescuento() {
 
     return `
     <div class="wrapperContextMenuDescuento">
-        <h3>Aplicar descuento a ${nombre}</h3>
         <div class="wrapperButton">
-            <button type="button" class="add-button-default" onclick ="newModal(this)" id="descuentoButton">Aplicar descuento</button>
+            <button type="button" class="add-button-default" onclick ="newModal(this)" id="descuentoButton">Aplicar descuento o adelanto</button>
             <button type="button" class="add-button-default" onclick ="newModal(this)" id="premioButton">Aplicar premio</button>
-
         </div>
     </div> 
     `;
@@ -17,23 +14,23 @@ function renderMenuContextDescuento(item){
 
 var itemDOMSelected;
 
-function contextMenuManagement(usuarios){
+function contextMenuManagement(usuarios) {
     usuarios.forEach(usuario => {
         usuario.addEventListener('contextmenu', function (e) {
             e.preventDefault();
-    
+
             const existingMenu = document.querySelector('.context-menu');
             if (existingMenu) {
                 existingMenu.remove();
             }
             itemDOMSelected = usuario;
-            console.log(itemDOMSelected)
-    
+            // console.log(itemDOMSelected)
+
             const contextMenu = document.createElement('div');
             contextMenu.classList.add('context-menu');
-            contextMenu.innerHTML = renderMenuContextDescuento(itemDOMSelected);
+            contextMenu.innerHTML = renderMenuContextDescuento();
             document.body.appendChild(contextMenu);
-    
+
             contextMenu.style.top = `${e.clientY}px`;
             contextMenu.style.left = `${e.clientX}px`;
             contextMenu.style.display = 'block';
@@ -49,7 +46,7 @@ document.addEventListener('click', function (e) {
 
     if (contextMenu && !contextMenu.contains(e.target)) {
         contextMenu.remove();
-    }else{
+    } else {
         e.stopPropagation();
     }
 });

@@ -1,6 +1,14 @@
 from datetime import datetime
 import pandas as pd
 from sales.models import Ventas
+import elanelsystem.settings as settings
+from django.template.loader import get_template
+import os
+from django.template.loader import get_template
+from weasyprint import HTML,CSS
+
+
+
 
 # Funcion para manejar valores NaN desde JS
 def handle_nan(value):
@@ -15,7 +23,7 @@ def format_date(date_value):
         return ""
     
     # Si es un Timestamp, formatear con strftime
-    if isinstance(date_value, pd.Timestamp):
+    if isinstance(date_value, (pd.Timestamp, datetime)):
         return date_value.strftime('%d/%m/%Y')
     
     # Si es una cadena, convertirla a datetime y formatear
@@ -42,6 +50,8 @@ def formatear_columnas(file_path, sheet_name):
     
     return df
 
+
+#Funcion para obtener una campaña a traves de la fecha en tipo STR
 def obtenerCampaña_atraves_fecha(fecha_str):
     # Convertir la cadena de fecha en un objeto datetime
     fecha = datetime.strptime(fecha_str, "%d/%m/%Y")
@@ -62,6 +72,7 @@ def obtenerCampaña_atraves_fecha(fecha_str):
     return nombre_campaña
 
 
+# Funcion para obtener todos los contratos existentes en la base de datos
 def obtener_todos_los_contratos():
     todos_los_contratos = []
     
@@ -74,3 +85,18 @@ def obtener_todos_los_contratos():
     
     return todos_los_contratos
 
+
+# Funcion para generar PDF
+def printPDF(data,url,liquidacionName,htmlPath,cssPath):
+    template = get_template(htmlPath)
+    context = data
+    html_template = template.render(context)
+    css_url = os.path.join(settings.BASE_DIR, cssPath)
+    print(f"Base dir: {settings.BASE_DIR}")
+    if not os.path.exists(settings.PDF_STORAGE_DIR):
+        os.makedirs(settings.PDF_STORAGE_DIR)
+
+    pdf = HTML(string=html_template,base_url=url).write_pdf(
+        target=liquidacionName, stylesheets = [CSS(css_url)])
+
+    return pdf
