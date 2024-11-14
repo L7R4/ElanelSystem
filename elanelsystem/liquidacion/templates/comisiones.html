@@ -35,7 +35,7 @@
         </div>
         <div class="wrapperButtonsActions blocked" id="wrapperButtonsActions">
             <a href="{% url 'liquidacion:viewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
-            <a href="{% url 'liquidacion:viewPDFLiquidacion' %}" id="liquidarButton"target="_blank">Liquidar</a>
+            <button type="button" id="liquidarButton">Liquidar</button>
         </div>
     </div>
     <div class="wrapperManageLiquidacion">
@@ -143,5 +143,6 @@
     <script src="{% static 'js/input_select_create_user.js' %}"></script>
     <script src="{% static 'js/filters_liquidacion.js' %}"></script>
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
-
+    <script src="{% static 'js/redirectToPDFNewLiquidacion.js' %}"></script>
+    
 {% endblock js %}

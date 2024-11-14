@@ -1,0 +1,23 @@
+.logo {
+    width: 400px;
+    display: block;
+    margin: 0 auto;
+}
+
+.divider {
+    height: 20px;
+}
+
+.titleDescuento,
+.subTotalWrapper {
+    background-color: #0000005d;
+}
+
+table {
+    border-spacing: 0 8px;
+}
+
+/* CSS para salto de página */
+.page-break {
+    page-break-after: always;
+}

@@ -293,6 +293,7 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
                 Q(tel__icontains=search_value) |
                 Q(rango__icontains=search_value)
             )
+
             usuarios = Usuario.objects.filter(**filters).filter(search_filter).distinct()
         else:
             # Si no hay búsqueda, solo aplicar los filtros
@@ -546,34 +547,32 @@ def realizarDescuento(request):
         metodoPago = form["metodoPago"]
         dinero = form["dinero"]
         campania = form["campania"]
-        # fecha = datetime.date.today().strftime("%d/%m/%Y")
+        agencia = usuario.sucursales.all()[0].pseudonimo
         fecha = form["fecha"]
         operationType = form["operationType"]
-        agencia = usuario.sucursales.all()[0].pseudonimo
         concepto = form["concepto"]
 
         # Crear el diccionario de descuento
-        descuentoDict ={
-            "operationType": operationType,
+        data_dict ={
             "metodoPago": metodoPago,
             "dinero": dinero,
+            "agencia": agencia,
             "campania": campania,
             "fecha": fecha,
-            "agencia": agencia,
             "concepto": concepto
         }
 
-        # Obtener la lista actual de descuentos, o inicializarla si está vacía
-        descuentos_actuales = usuario.descuentos
+        if(operationType == "descuento"):
+            descuentos_actuales = usuario.descuentos # Obtener la lista actual de descuentos, o inicializarla si está vacía
+            descuentos_actuales.append(data_dict) # Agregar el nuevo descuento
+            usuario.descuentos = descuentos_actuales # Asignar la lista actualizada al campo descuentos
+            usuario.save()
 
-        # Agregar el nuevo descuento
-        descuentos_actuales.append(descuentoDict)
-
-        # Asignar la lista actualizada al campo descuentos
-        usuario.descuentos = descuentos_actuales
-
-        # Guardar los cambios
-        usuario.save()
+        elif (operationType == "premio"): 
+            premios_actuales = usuario.premios # Obtener la lista actual de descuentos, o inicializarla si está vacía
+            premios_actuales.append(data_dict) # Agregar el nuevo descuento
+            usuario.premios = premios_actuales # Asignar la lista actualizada al campo descuentos
+            usuario.save()
 
         return JsonResponse({"status": True, "message": "Descuento aplicado correctamente"},safe=False)
     except Exception as e:

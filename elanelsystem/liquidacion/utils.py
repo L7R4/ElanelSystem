@@ -58,9 +58,9 @@ def calcularAseguradoSegunDiasTrabajados(dinero,fecha_ingreso):
 def getAsegurado(usuario,cantVentas):
     dineroAsegurado = 0
 
-    if(usuario.rango.lower() in "vendedor"):
-        aseguradoObject = Asegurado.objects.get(dirigido="Vendedor")
-        dineroAsegurado = aseguradoObject.dinero
+    # if(usuario.rango.lower() in "vendedor"):
+    #     aseguradoObject = Asegurado.objects.get(dirigido="Vendedor")
+    #     dineroAsegurado = aseguradoObject.dinero
     if(usuario.rango.lower() in "supervisor"):
         aseguradoObject = Asegurado.objects.get(dirigido="Supervisor")
         if(cantVentas < aseguradoObject.objetivo):
@@ -91,16 +91,10 @@ def getDetalleComisionPorCantVentasPropias(usuario,campania,agencia):
             coeficienteCheck = next(coef for coef in coeficientes_dict_list if coef["cantidad"] >= cantVentas)
         except StopIteration:
             coeficienteCheck = 0
-        print("Coeficiente seleccionado")
-        print(coeficienteCheck)
         # Iterar sobre las ventas y calcular la comisión total
         for venta in ventas:
             # Calcular la comisión por venta y sumarla al total
-            print("IMporte de la venta: " + str(venta.importe))
-            print("Tipo de plan: "+ str(coeficienteCheck[typePlan]))
-
             comision_por_venta = (venta.importe * coeficienteCheck[typePlan]) / 100
-            print("Calculo: "+ str(comision_por_venta))
             comision += comision_por_venta
             
         detalleDict["planes"][typePlan] = {"cantidad_ventas": cantVentas, "comision": comision}
@@ -130,21 +124,36 @@ def getPremioProductividadVentasPropias(usuario,campania,agencia):
 
 def getAusenciasTardanzas(usuario, campania):
         if(usuario.faltas_tardanzas == []):
-            return {"total_descuentos": 0, "detalle":[]}
+            return {"total_descuentos": 0, 
+                    "detalle":
+                        {"faltas":{"cantidad":0,"dinero":0},
+                         "tardanzas":{"cantidad":0,"dinero":0}
+                        }
+                    }
         else:
             ausencias_tardanzas = [item for item in usuario.faltas_tardanzas if item["campania"] == campania]
-            total_descuentos = sum(int(d["descuento"]) for d in ausencias_tardanzas)
-            return {"total_descuentos": total_descuentos, "detalle":ausencias_tardanzas}
+            faltas = [item for item in ausencias_tardanzas if item["tipoEvento"] == "Falta"]
+            tardanzas = [item for item in ausencias_tardanzas if item["tipoEvento"] == "Tardanza"]
 
-def getAdelantos(usuario,campania,agencia):
-    dniUsuario = usuario.dni
-    movsExternos = list(MovimientoExterno.objects.filter(campania=campania, agencia=agencia, nroIdentificacion=dniUsuario, adelanto=True))
-    dineroTotal = 0
+            montoPorFalta = MontoTardanzaAusencia.objects.first().monto_ausencia
+            montoPorTardanza = MontoTardanzaAusencia.objects.first().monto_tardanza
 
-    for mov in movsExternos:
-        dineroTotal += mov.dinero
+            total_descuentos = (montoPorTardanza*len(tardanzas))+(montoPorFalta*len(faltas))
+           
+            return {"total_descuentos": int(total_descuentos), 
+                    "detalle": 
+                        {"faltas":{"cantidad":len(faltas),"dinero":int(montoPorFalta*len(faltas))},
+                         "tardanzas":{"cantidad":len(tardanzas),"dinero":int(montoPorTardanza*len(tardanzas))}
+                        } 
+                    }
 
-    return {'dineroTotal': dineroTotal, 'detalle': movsExternos}
+def getAdelantos(usuario,campania):
+    print(f"\n\n\n{usuario.descuentos}\n\n\n")
+    descuentosDeCampaña = [descuento for descuento in usuario.descuentos if descuento["campania"] == campania]
+
+    dineroTotal = sum([int(item["dinero"]) for item in descuentosDeCampaña])
+
+    return {'dineroTotal': dineroTotal, 'detalle': descuentosDeCampaña}
 
 def getCuotas1(usuario,campania,agencia):
         totalDineroCuotas1 = 0
@@ -160,7 +169,7 @@ def getCuotas1(usuario,campania,agencia):
                     cuotas1Adelantadas.append(v.cuotas[1])
                     totalDineroCuotas1 += v.cuotas[2]["total"]
                     
-        return {"totalDinero": totalDineroCuotas1,"detalle":cuotas1Adelantadas}
+        return {"totalDinero": totalDineroCuotas1,"detalle":cuotas1Adelantadas, "cantidadCuotas1": len(cuotas1Adelantadas)}
 
 
 #region Funciones especificas del supervisor - - - - - - - -
@@ -271,7 +280,7 @@ def calcular_productividad_vendedor(usuario,campania,agencia):
     ventas = Ventas.objects.filter(vendedor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
 
     # Sumar los importes de los productos asociados a cada venta
-    suma_importes = sum(venta.importe for venta in ventas)
+    suma_importes = sum(venta.total_a_pagar for venta in ventas)
     return suma_importes
 
 #endregion - - - - - - - - - - - - - - - - - - -
@@ -338,9 +347,9 @@ def getComisionTotal(usuario,campania,agencia):
     detailDesempenioDict["cantidad_ventasPropias_comision"] = getDetalleComisionPorCantVentasPropias(usuario,campania,agencia) # Obtiene mas a detalle la comision por la cantidad ventas propias
     detailDesempenioDict["productividad_ventasPropias_comision"] = getPremioProductividadVentasPropias(usuario,campania,agencia) # Obtiene mas a detalle la comision por la productividad de ventas propias
     detailDesempenioDict["cuotas1"] = getCuotas1(usuario,campania,agencia) # Obtiene a detalle la comision por cuotas 1 adelantadas
-    detailDesempenioDict["adelantos"] = getAdelantos(usuario,campania,agencia) # Obtiene los adelantos de dinero que se le otorgo
+    detailDesempenioDict["adelantos"] = getAdelantos(usuario,campania) # Obtiene los adelantos de dinero que se le otorgo
 
-    # detailDesempenioDict["ausencias_tardanzas"] = getAusenciasTardanzas(usuario,campania) # Obtiene las faltas y tardanzas
+    detailDesempenioDict["ausencias_tardanzas"] = getAusenciasTardanzas(usuario,campania) # Obtiene las faltas y tardanzas
 
     # Seteamos el subtotal por rol y el asegurado, ya que depende del rol de estos usuarios pueden cambiar los valores y dejamos como "Comision base" la manera en como comisiona un vendedor.
     desempenioDeColaborador["subtotal_comisionado_fromRol"] = 0
@@ -353,11 +362,11 @@ def getComisionTotal(usuario,campania,agencia):
         if(usuario.rango.lower() in "supervisor"):
             desempenioDeColaborador["cant_ventas_fromRol"] = calcular_ventas_supervisor(usuario,campania,agencia)
             desempenioDeColaborador["productividad_fromRol"] = calcular_productividad_supervisor(usuario,campania,agencia)
-            desempenioDeColaborador["desempenioEquipo"] = desempenioEquipo
-            detailDesempenioDict["cantidad_ventasFromRol_comision"] = getComisionCantVentas(usuario,campania,agencia)
+            desempenioDeColaborador["desempenioEquipo"] = desempenioEquipo(usuario,campania,agencia)
+            desempenioDeColaborador["asegurado"] = getAsegurado(usuario,desempenioDeColaborador["cant_ventas_fromRol"])
+            detailDesempenioDict["cantidad_ventasFromRol_comision"] = getComisionCantVentas(usuario,campania,agencia) if desempenioDeColaborador["asegurado"] == 0 else 0
             detailDesempenioDict["productividad_ventasFromRol_comision"] = getPremioxProductividad(usuario,campania,agencia)
 
-            desempenioDeColaborador["asegurado"] = getAsegurado(usuario,desempenioDeColaborador["cant_ventas_fromRol"])
 
             desempenioDeColaborador["subtotal_comisionado_fromRol"] = detailDesempenioDict["cantidad_ventasFromRol_comision"] + detailDesempenioDict["productividad_ventasFromRol_comision"]
            
@@ -365,8 +374,9 @@ def getComisionTotal(usuario,campania,agencia):
             detailDesempenioDict["cuotasX"] = getCuotasX(campania,agencia)
 
             desempenioDeColaborador["subtotal_comisionado_fromRol"] = detailDesempenioDict["cuotasX"]["comisionTotal_Cuotas"]
-
-    desempenioDeColaborador["total_comisionado"] = (desempenioDeColaborador["subtotal_comisionado_fromRol"] + desempenioDeColaborador["subtotal_comisionado_ventasPropias"] + desempenioDeColaborador["asegurado"]) # . . . . Restar descuentos
+    
+    desempenioDeColaborador["descuentoTotal"] = (detailDesempenioDict["adelantos"]["dineroTotal"] + detailDesempenioDict["ausencias_tardanzas"]["total_descuentos"])
+    desempenioDeColaborador["total_comisionado"] = (desempenioDeColaborador["subtotal_comisionado_fromRol"] + desempenioDeColaborador["subtotal_comisionado_ventasPropias"] + desempenioDeColaborador["asegurado"]) - desempenioDeColaborador["descuentoTotal"]
 
     desempenioDeColaborador["detalle"] = detailDesempenioDict
     
