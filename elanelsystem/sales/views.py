@@ -107,8 +107,8 @@ class CrearVenta(TestLogin,generic.DetailView):
         campaniasDisponibles = []
 
         #region Para determinar si se habilita la campaña anterior
-        fechaActual = datetime.datetime.now()
-        ultimo_dia_mes_pasado = datetime.datetime.now().replace(day=1) - relativedelta(days=1)
+        fechaActual = datetime.now()
+        ultimo_dia_mes_pasado = datetime.now().replace(day=1) - relativedelta(days=1)
         diferencia_dias = (fechaActual - ultimo_dia_mes_pasado).days
 
         if(diferencia_dias > 5): # Si la diferencia de dias es mayor a 5 dias, no se puede asignar la campania porque ya paso el tiempo limite para dar de alta una venta en la campania anterior
@@ -234,6 +234,7 @@ class CrearVenta(TestLogin,generic.DetailView):
             return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
 
 
+
 def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextIndiceBusquedaCuotas):
     print(f"Indices {index_start}-{index_end}")
     try:
@@ -245,7 +246,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
             # print(sheetEstados.columns)
 
 
-                
+            modelosProvisorios = ["Producto","Vendedor","Supervisor"]   
                 
 
             rowVenta = sheetResumen.iloc[index_start] # Se extrae una fila nada mas para completar la Informacion general 
@@ -288,9 +289,9 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                     if(int(filaEstado["id_venta"]) == int(rowVenta['id_venta'])):
 
                         cuota = filaEstado["cuotas"].replace(" ","").split("-")[1]
-                        print(f"Tipo de fecha de vencimiento {type(filaEstado['fecha_venc'])}")
+                        # print(f"Tipo de fecha de vencimiento {type(filaEstado['fecha_venc'])}")
 
-                        print(f"Fecha de vencimiento {filaEstado['fecha_venc']}")
+                        # print(f"Fecha de vencimiento {filaEstado['fecha_venc']}")
                         
                         total_a_pagar += int(filaEstado["importe_cuotas"])
                         if(filaEstado["cuotas"] == "cuota -  0"):
@@ -339,7 +340,10 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                         # print(filaEstado)
                         break
                 except Exception as e:
-                    print(f"Error {e}")
+                    print(f"Error en la hoja de cuotas, en la fila {filaEstado}\n\n ------------------------------- \n\n")
+                    print(f"Error: {e}")
+                    raise
+                    
 
                         
             cuotas.reverse()
@@ -354,8 +358,10 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
             newVenta.save()
             return nextIndiceBusquedaCuotas + (len(cuotas) * cantidadContratos)
     except Exception as e:
-            print(f"Error al crear cuota: {e}")
-
+            print(f"Error en la venta en general, en la fila {index_start}\n\n ------------------------------- \n\n")
+            print(rowVenta)
+            print(f"Error {e}")
+            raise
 
 
 def importVentas(request):
@@ -381,18 +387,19 @@ def importVentas(request):
             nextIndiceBusquedaCuotas = 0 # Almacena la fila de la hoja de ESTADOs para continuar buscando las cuotas y no comenzar de 0
             while i < len(sheetResumen):
                 i += 1
-                # if(cantidad_nuevas_ventas == 2):
-                #     break
+                if(cantidad_nuevas_ventas == 5):
+                    break
                 if not (str(sheetResumen.iloc[i]["contrato"]) in todosLosContratos):
                     if(Cliente.objects.filter(nro_cliente = sheetResumen.iloc[i]["cod_cli"]).exists()):
                         if(row_pivot["cod_cli"] != sheetResumen.iloc[i]["cod_cli"] or row_pivot["fecha_incripcion"] != sheetResumen.iloc[i]["fecha_incripcion"] or row_pivot["producto"] != sheetResumen.iloc[i]["producto"]):
                             cantidad_nuevas_ventas +=1
-                            print(f"Indice para continuar buscando las cuotas: --> {nextIndiceBusquedaCuotas}")
+                            # print(f"Indice para continuar buscando las cuotas: --> {nextIndiceBusquedaCuotas}")
                             nextIndiceBusquedaCuotas = generarContratoParaImportar(index_pivot, i, file_path, agencia,nextIndiceBusquedaCuotas)
                             row_pivot = sheetResumen.iloc[i]
                             index_pivot = i
                             i -= 1
                         else:
+                            print(f"El cliente no existe la fila {index_pivot} de la hoja de resumen\n\n ------------------------------- \n\n")
                             continue
                     else:
                         continue

@@ -26,7 +26,7 @@ from django.core.validators import validate_email
 import json
 from django.http import HttpResponse, JsonResponse
 from dateutil.relativedelta import relativedelta
-from elanelsystem.utils import format_date, handle_nan
+from elanelsystem.utils import format_date, formatear_columnas, handle_nan
 
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
@@ -748,31 +748,30 @@ def importar_clientes(request):
         new_number_rows_cont = 0
 
         try:
-            # Leer la hoja "CLIENTES" del archivo Excel
-            df = pd.read_excel(file_path, sheet_name="CLIENTES")
+            # Leer y formatear la hoja "CLIENTES" del archivo Excel
+            df = formatear_columnas(file_path, sheet_name="CLIENTES")
             
             # Procesar cada fila
             for _, row in df.iterrows():
-                # Aquí puedes realizar la lógica de creación de cliente
-                dni=handle_nan(row['DNI'])
+
+                dni=handle_nan(row['dni'])
                 cliente_existente = Cliente.objects.filter(dni=dni).first()
-                # print(dni)
-                # print(cliente_existente)
+                
                 if not cliente_existente:
                     new_number_rows_cont +=1
                     Cliente.objects.create(
-                        nro_cliente = row['Nro'],
-                        nombre=handle_nan(row['CLIENTE']),
-                        dni=handle_nan(row['DNI']) ,
+                        nro_cliente = row['nro'],
+                        nombre=handle_nan(row['cliente']),
+                        dni=handle_nan(row['dni']) ,
                         agencia_registrada = Sucursal.objects.get(pseudonimo = agencia),
-                        domic=handle_nan(row['DOMIC']) ,
-                        loc = handle_nan(row["LOC"]) ,
-                        prov = handle_nan(row["PROV"]) ,
-                        cod_postal = handle_nan(row["COD.POS"]),
-                        tel=handle_nan(row['TEL 1']) ,
-                        fec_nacimiento = format_date(handle_nan(row["FECHA DE NAC"])),
-                        estado_civil = handle_nan(row["ESTADO CIVIL"]) ,
-                        ocupacion = handle_nan(row["OCUPACION"]) 
+                        domic=handle_nan(row['domic']) ,
+                        loc = handle_nan(row["loc"]) ,
+                        prov = handle_nan(row["prov"]) ,
+                        cod_postal = handle_nan(row["cod_pos"]),
+                        tel=handle_nan(row['tel_1']) ,
+                        fec_nacimiento = format_date(handle_nan(row["fecha_de_nac"])),
+                        estado_civil = handle_nan(row["estado_civil"]) ,
+                        ocupacion = handle_nan(row["ocupacion"]) 
                     )
                 
 

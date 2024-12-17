@@ -1,4 +1,5 @@
 import json
+from django.forms import ValidationError
 from django.shortcuts import render, redirect, HttpResponseRedirect
 from django.views import generic
 from .models import Plan, Products
@@ -102,27 +103,44 @@ class ViewProducts(generic.View):
         return render(request, self.template_name, context)
     
     def post(self,request,*args, **kwargs):
+        errors ={}
         try:
             data = json.loads(request.body)
             tipo = data.get('tipo')
             nombre = data.get('nombre', None)
             plan = Plan.objects.get(valor_nominal=int(data.get('precio')))
-
-            producto = Products.objects.create(
-                tipo_de_producto= tipo.capitalize(),
-                nombre=nombre if tipo != "solucion" else "$" + str(plan.valor_nominal),
-                plan=plan,
-            )
+            print(tipo,nombre)
+            producto = Products()
             
-            # Retornar el nuevo producto en JSON para actualizar la vista
-            return JsonResponse({
-                'success': True,
-                'producto': {
-                    'nombre': producto.nombre,
-                    'plan': producto.plan.tipodePlan,
-                    'precio': producto.plan.valor_nominal
-                }
-            })
+            producto.tipo_de_producto= tipo.capitalize()
+            producto.nombre=nombre if tipo != "solucion" else "$" + str(plan.valor_nominal)
+            producto.plan=plan
+
+            producto.nombre = producto.nombre.title() # Formatear el nombre del producto
+            
+            try:
+                producto.full_clean()
+            except ValidationError as e:
+                errors.update(e.message_dict)
+
+
+            if len(errors) != 0:
+                print(errors)
+                return JsonResponse({
+                'success': False,
+                'errors': errors
+                })
+                
+            else:
+                producto.save()
+                return JsonResponse({
+                    'success': True,
+                    'producto': {
+                        'nombre': producto.nombre,
+                        'plan': producto.plan.tipodePlan,
+                        'precio': producto.plan.valor_nominal
+                    }
+                })
         
         except Exception as e:
             print(e)  # Para depuración
