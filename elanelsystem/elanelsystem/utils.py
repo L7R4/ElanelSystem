@@ -100,3 +100,9 @@ def printPDF(data,url,liquidacionName,htmlPath,cssPath):
         target=liquidacionName, stylesheets = [CSS(css_url)])
 
     return pdf
+
+
+# Esto es para que cuando se importa en excel sino existen instancias en la BD
+# pueda crearse una provisoriamente para que no reviente todo a la mierda.
+# def crearModeloProvisorio():
+#     pass

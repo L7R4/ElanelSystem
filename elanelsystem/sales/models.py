@@ -147,7 +147,6 @@ class Ventas(models.Model):
     importe_x_cuota = models.FloatField("Importe x Cuota:",default=0)
     total_a_pagar = models.FloatField("Total a pagar:",default=0)
     fecha = models.CharField("Fecha:", max_length=30,default="")
-    tipo_producto = models.CharField(max_length=20,default="")
     producto = models.ForeignKey(Products,on_delete=models.CASCADE,related_name="ventas_producto",default="")
     paquete = models.CharField(max_length=20,default="")
     vendedor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="ventas_ven_usuario",default="",blank=True,null=True)

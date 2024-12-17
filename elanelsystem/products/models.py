@@ -93,6 +93,7 @@ class Products(models.Model):
         ("Solucion","Solucion"),
         ("Moto","Moto"),
         ("Combo","Combo"),
+        ("Default","Default")
     )
 
     # precio = models.PositiveIntegerField(default=0)
