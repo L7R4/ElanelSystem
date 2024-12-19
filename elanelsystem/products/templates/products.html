@@ -7,9 +7,9 @@
 {% endblock css %}
 
 {% block content %}
-<div id="wrapperLoader">
+{% comment %} <div id="wrapperLoader">
     <span id="loader"></span>
-</div>
+</div> {% endcomment %}
 <div class="headersPanelsWrapper">
 
     <div class="headerPanel active" id="hmoto"><h2>Motos</h2></div>
@@ -22,29 +22,31 @@
         {% csrf_token %}
     <!-- Panel de Motos -->
     <div id="panel-moto" class="panel active">
-        <table>
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Precio</th>
-                    <th>Paquete</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for moto in motos %}
-                <tr>
-                    <td class="nombreProduct">{{ moto.nombre }}</td>
-                    <td class="valorProduct">${{ moto.plan.valor_nominal }}</td>
-                    <td class="paqueteProduct">{{ moto.plan.tipodePlan }}</td>
-                    <td class="button_cell">
-                        <button class="buttonDeleteItem" type="button">   
-                            <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>            
-        </table>
+        <div class="tableContainer">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Paquete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for moto in motos %}
+                    <tr>
+                        <td class="nombreProduct">{{ moto.nombre }}</td>
+                        <td class="valorProduct">${{ moto.plan.valor_nominal }}</td>
+                        <td class="paqueteProduct">{{ moto.plan.tipodePlan }}</td>
+                        <td class="button_cell">
+                            <button class="buttonDeleteItem" type="button">   
+                                <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>            
+            </table>
+        </div>
         <div class="buttonsActions">
             <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">Agregar producto</button>
         </div>

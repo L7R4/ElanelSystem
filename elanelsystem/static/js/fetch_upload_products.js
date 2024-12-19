@@ -82,7 +82,7 @@ function agregarFormularioNuevoProducto() {
         }
         cancelarNuevoProducto()
         submitButton()
-        table.insertAdjacentHTML("beforeend", row);
+        table.insertAdjacentHTML("afterbegin", row);
         cargarListenersEnInputs()
         listenerParaActualizarCampoPaquete()
 
