@@ -12,7 +12,7 @@ class Planes(generic.View):
     template_name = "planes.html"
     model = Plan
     def get(self,request,*args,**kwargs):
-        planes = Plan.objects.all()
+        planes = Plan.objects.all().order_by('-valor_nominal')
         context = {"planes": planes}
         return render(request, self.template_name, context)
     
@@ -86,9 +86,9 @@ class ViewProducts(generic.View):
 
     def get(self,request,*args,**kwargs):
         products = Products.objects.all()
-        motos = Products.objects.filter(tipo_de_producto ="Moto")
-        combos = Products.objects.filter(tipo_de_producto ="Combo")
-        prestamos = Products.objects.filter(tipo_de_producto ="Solucion")
+        motos = Products.objects.filter(tipo_de_producto ="Moto").order_by('plan__valor_nominal')
+        combos = Products.objects.filter(tipo_de_producto ="Combo").order_by('plan__valor_nominal')
+        prestamos = Products.objects.filter(tipo_de_producto ="Solucion").order_by('plan__valor_nominal')
         planes = [{"valor_nominal": plan.valor_nominal, "tipodePlan":plan.tipodePlan} for plan in Plan.objects.all()]
 
         context = {
@@ -152,7 +152,7 @@ class ViewProducts(generic.View):
 def requestProducts(request):
     if request.method == 'POST':
         tipo = json.loads(request.body).get('tipoProducto', None)
-        productos = Products.objects.filter(tipo_de_producto=tipo) if tipo else []
+        productos = Products.objects.filter(tipo_de_producto=tipo).order_by('-plan__valor_nominal') if tipo else []
 
         productos_list = []
         for producto in productos:

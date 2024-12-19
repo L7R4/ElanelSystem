@@ -15,6 +15,8 @@ import os,re
 import json
 from django.shortcuts import reverse
 from dateutil.relativedelta import relativedelta
+from django.db.models.functions import Replace
+from django.db.models import Value
 import locale
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .utils import *
@@ -245,10 +247,6 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
             sheetEstados = formatear_columnas(file_path, sheet_name="ESTADOS")
             # print(sheetEstados.columns)
 
-
-            modelosProvisorios = ["Producto","Vendedor","Supervisor"]   
-                
-
             rowVenta = sheetResumen.iloc[index_start] # Se extrae una fila nada mas para completar la Informacion general 
             # print(f"Numero de venta --> {rowVenta['id_venta']}")
             newVenta = Ventas()
@@ -258,13 +256,29 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
             newVenta.importe = float(rowVenta["importe"]) * cantidadContratos
             newVenta.agencia = Sucursal.objects.get(pseudonimo = agencia)
             newVenta.tasa_interes = round((float(rowVenta["tasa_de_inte"]) * cantidadContratos) * 100,2)
-            newVenta.producto = Products.objects.filter(nombre = handle_nan(rowVenta["producto"].title())).first()
+            a = Products.objects.annotate(nombre_normalizado=Replace("nombre",Value(" "), Value("")))
+            print(a.values("nombre_normalizado"))
+
+            newVenta.producto = Products.objects.annotate(
+                nombre_normalizado=Replace("nombre",Value(" "), Value(""))
+            ).filter(nombre_normalizado=handle_nan(rowVenta["producto"].title().replace(" ", ""))).first()
+            
             newVenta.fecha = format_date(rowVenta["fecha_incripcion"]) + " 00:00"
-            newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(rowVenta["vendedor"]).title()).first()
-            newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(rowVenta["superv"]).title()).first() 
+
+            # newVenta.vendedor = Usuario.objects.filter(nombre = handle_nan(rowVenta["vendedor"]).title()).first()
+            newVenta.vendedor = Usuario.objects.annotate(
+                nombre_normalizado = Replace("nombre",Value(" "), Value(""))
+                ).filter(nombre_normalizado =handle_nan(rowVenta["vendedor"]).title().replace(" ", "")).first()
+
+            # newVenta.supervisor = Usuario.objects.filter(nombre = handle_nan(rowVenta["superv"]).title()).first() 
+            newVenta.supervisor = Usuario.objects.annotate(
+                nombre_normalizado = Replace("nombre",Value(" "), Value(""))
+                ).filter(nombre_normalizado =handle_nan(rowVenta["superv"]).title().replace(" ", "")).first()
+            
+
             newVenta.paquete = rowVenta["paq"].capitalize() if rowVenta["paq"] != "BASE" else "Basico"
             newVenta.campania = obtenerCampaña_atraves_fecha(format_date(rowVenta["fecha_incripcion"]))
-            newVenta.tipo_producto = Products.objects.filter(nombre = rowVenta["producto"].title()).first().tipo_de_producto if Products.objects.filter(nombre = rowVenta["producto"].title()).first() else ""
+            # newVenta.tipo_producto = Products.objects.filter(nombre = rowVenta["producto"].title()).first().tipo_de_producto if Products.objects.filter(nombre = rowVenta["producto"].title()).first() else ""
             newVenta.observaciones = handle_nan(rowVenta["comentarios__observaciones"]) 
             total_a_pagar = 0
 
@@ -387,8 +401,8 @@ def importVentas(request):
             nextIndiceBusquedaCuotas = 0 # Almacena la fila de la hoja de ESTADOs para continuar buscando las cuotas y no comenzar de 0
             while i < len(sheetResumen):
                 i += 1
-                if(cantidad_nuevas_ventas == 5):
-                    break
+                # if(cantidad_nuevas_ventas == 5):
+                #     break
                 if not (str(sheetResumen.iloc[i]["contrato"]) in todosLosContratos):
                     if(Cliente.objects.filter(nro_cliente = sheetResumen.iloc[i]["cod_cli"]).exists()):
                         if(row_pivot["cod_cli"] != sheetResumen.iloc[i]["cod_cli"] or row_pivot["fecha_incripcion"] != sheetResumen.iloc[i]["fecha_incripcion"] or row_pivot["producto"] != sheetResumen.iloc[i]["producto"]):

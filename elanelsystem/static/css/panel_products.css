@@ -1,12 +1,17 @@
 .wrapper_content {
-    padding: 5rem;
+    padding: 4rem;
+    overflow: hidden;
 }
 
 .headersPanelsWrapper {
     display: flex;
     gap: 2rem;
     justify-content: center;
-    margin-bottom: 2rem;
+    /* margin-bottom: 2rem; */
+    height: 10%;
+}
+.panel-container{
+    height: 90%;
 }
 
 .headersPanelsWrapper>div {
@@ -14,6 +19,7 @@
     padding: 1rem 2rem;
     opacity: .7;
     cursor: pointer;
+    height: fit-content;
     border-radius: .6rem;
 }
 
@@ -32,29 +38,39 @@
 #formNewProuducto {
     display: flex;
     justify-content: center;
+    height: 100%;
 }
 
 #formNewProuducto>.panel {
-    width: 70%;
+    width: 90%;
     display: none;
 }
 
 #formNewProuducto>.panel>.buttonsActions {
     display: flex;
     gap: 1rem;
+    padding: 0 3rem;
+    height: 10%;
+    align-items: end;
 }
 
 #formNewProuducto>.panel.active {
     display: unset;
 }
 
-#formNewProuducto>.panel>table {
-    width: 100%;
-    margin-bottom: 2rem;
 
+#formNewProuducto>.panel>.tableContainer{
+    height: 90%;
+    overflow-y: auto;
 }
 
-#formNewProuducto>.panel>table>thead {
+#formNewProuducto>.panel table {
+    width: 100%;
+    margin-bottom: 2rem;
+    padding: 1rem 3rem;
+}
+
+#formNewProuducto>.panel table>thead {
     position: sticky;
     top: 0;
     z-index: 1;
@@ -63,49 +79,45 @@
     border-radius: .6rem;
 }
 
-#formNewProuducto>.panel>table>thead tr>* {
-    padding: 1rem;
-    text-align: center;
+#formNewProuducto>.panel table>thead tr>* {
+    padding: 1rem 2rem;
+    text-align: start;
     font-size: clamp(1.3rem, 1.2vw, 1.6rem);
     color: var(--third-color);
     font-family: raleway-semibold;
 }
 
-#formNewProuducto>.panel>table>tbody>tr {
+#formNewProuducto>.panel table>tbody>tr {
     position: relative;
 }
 
-#formNewProuducto>.panel>table>tbody>tr>td {
-    padding: 1rem;
+#formNewProuducto>.panel table>tbody>tr>td {
+    padding: 1rem 2rem;
     color: var(--third-color);
     font-family: raleway-semibold;
     font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-    text-align: center;
+    /* text-align: center; */
 }
 
 
-#formNewProuducto>.panel>table tr>*:last-child {
+#formNewProuducto>.panel table tr>*:last-child {
     border-top-right-radius: .8rem;
     border-bottom-right-radius: .8rem;
 }
 
-#formNewProuducto>.panel>table tr>*:first-child {
+#formNewProuducto>.panel table tr>*:first-child {
     border-top-left-radius: .8rem;
     border-bottom-left-radius: .8rem;
 }
 
-#formNewProuducto>.panel>table>tbody>tr>td {
-    padding: 1rem;
-}
-
-#formNewProuducto>.panel>table>tbody>tr>td input {
+#formNewProuducto>.panel table>tbody>tr>td input {
     padding: .6rem;
     color: var(--third-color);
     font-family: raleway-semibold;
     background-color: var(--background-color);
 }
 
-#formNewProuducto>.panel>table>tbody>tr>td input#paquete_input {
+#formNewProuducto>.panel table>tbody>tr>td input#paquete_input {
     padding: .8rem;
     background-color: rgba(255, 255, 255, 0.171);
 
@@ -120,7 +132,7 @@
     z-index: 3;
 }
 
-#rowNewFormProduct.containerInputAndOptions>ul.options {
+#rowNewFormProduct .containerInputAndOptions>ul.options {
     z-index: 2;
 }
 
@@ -132,6 +144,8 @@
 
 .buttonDeleteItem {
     width: 1.4vw;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
     height: 1.4vw;
     border-radius: 50%;
     outline: none;
