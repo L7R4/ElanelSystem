@@ -177,7 +177,6 @@ class Ventas(models.Model):
             self.validation_anticipo,
             self.validation_primer_cuota,
             # self.validation_fecha,
-            self.validation_tipo_producto,
             self.validation_paquete,
             self.validation_campania,
             # self.validation_nro_operacion   
@@ -266,11 +265,6 @@ class Ventas(models.Model):
                 raise ValidationError({'fecha': 'Fecha inválida.'})
             self.fecha = self.fecha + " " + datetime.datetime.now().strftime("%H:%M")
 
-    def validation_tipo_producto(self):
-        tipoProductos = Products.TIPO_PRODUCTO
-        if self.tipo_producto not in [m[0] for m in tipoProductos]:
-            raise ValidationError({'tipo_producto': 'Tipo de producto no válido.'})
-
     def validation_paquete(self):
         paquetes = Plan.TIPO_PLAN_CHOICES
         if self.paquete not in [m[0] for m in paquetes]:
@@ -301,13 +295,13 @@ class Ventas(models.Model):
             "autorizado_por": "",
             "contratoAdjudicado": "",
         }
-        self.auditoria =[{
-            "version":0,
-            "realizada":False,
-            "grade":False,
-            "comentarios":"",
-            "fecha_hora": "",
-        }]
+        # self.auditoria =[{
+        #     "version":0,
+        #     "realizada":False,
+        #     "grade":False,
+        #     "comentarios":"",
+        #     "fecha_hora": "",
+        # }]
         self.deBaja ={
             "status" : False,
             "motivo" : "",

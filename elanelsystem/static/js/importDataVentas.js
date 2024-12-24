@@ -1,7 +1,7 @@
 function renderFormImportData() {
     return `
     <div id="importDataContainer">
-        <h2 class="tittleModal">Importar colaboradores</h2>
+        <h2 class="tittleModal">Importar ventas</h2>
         <form id="importForm" enctype="multipart/form-data">
           ${csrf_token}
           <div id="agenciaWrapper" class="inputWrapper">
@@ -93,25 +93,11 @@ function newModalImport() {
             modal.destroy();
         }
         newModalMessage(response.message, response.iconMessage);
-        // 10,000 milisegundos = 10 segundos
-        // let response = await fetchFunction(body,urlImportData)
-        // if(response.status){
-        //     console.log("Salio todo bien")
-        //     modal.close();
-        //     modal.destroy();
-        // }
-        // else{
-        //     console.log("Salio todo mal")
-        //     modal.close();
-        //     modal.destroy();
-        // }
-        // newModalMessage(response.message,response.iconMessage)
 
     });
 
     // add another button
     modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default', function () {
-        // here goes some logic
         modal.close();
         modal.destroy();
     });
@@ -180,6 +166,7 @@ function displayNameFile(input) {
         document.getElementById("nameFile").textContent = ""
     }
 }
+
 //#region Fetch data
 function getCookie(name) {
     let cookieValue = null;
