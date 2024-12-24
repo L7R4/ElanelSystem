@@ -193,17 +193,20 @@ def filtroMovimientos_fecha(fechaInicio, context ,fechaFinal):
                     movimientosFiltrados.append(context[i])
         return movimientosFiltrados
 
+
 def getCampaniaActual():
     list_mesesStr = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     mes_actual = datetime.datetime.now().month
     anio_actual = datetime.datetime.now().year
     return f'{list_mesesStr[mes_actual-1]} {anio_actual}'
 
+
 def getAllCampaniaOfYear():
     list_mesesStr = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     anio_actual = datetime.datetime.now().year
     meses_formato = [f'{mes} {anio_actual}' for mes in list_mesesStr]
     return meses_formato
+
 
 # Para obtener todas las compañas desde el inicio de la empresa (2021)
 def getTodasCampaniasDesdeInicio():
@@ -232,6 +235,7 @@ def obtener_ultima_campania():
     else:
         return ultima_campania
 
+
 def searchSucursalFromStrings(sucursal):
     from users.models import Sucursal
     sucursalObject = ""
@@ -243,6 +247,7 @@ def searchSucursalFromStrings(sucursal):
         sucursalObject = Sucursal.objects.get(localidad = localidad_buscada, provincia = provincia_buscada)
 
     return sucursalObject
+
 
 def get_ventasBySucursal(sucursal):
     from sales.models import Ventas
@@ -266,6 +271,34 @@ def obtenerStatusAuditoria(venta): # Devuelve el estado de la ultima auditoria
 
     elif ultima_auditoria.get("grade") is False:
         return {"statusText": "Desaprobado", "statusIcon": static(f"images/icons/operationBaja.svg")}  # No auditada
+
+
+def formatear_moneda(valor):
+    """
+    Formatea un número en formato de moneda, separando miles con puntos.
+    
+    Args:
+        valor (int, float, str): Número a formatear.
+    
+    Returns:
+        str: Número formateado en formato de moneda.
+    """
+    try:
+        # Convierte el valor a float, en caso de que sea string
+        valor = float(valor)
+        
+        # Divide el entero y los decimales
+        entero, decimal = divmod(valor, 1)
+        entero_formateado = f"{int(entero):,}".replace(",", ".")
+        
+        # Si hay decimales, los añade con coma, redondeando a 2 dígitos
+        if decimal > 0:
+            return f"{entero_formateado},{round(decimal * 100):02d}"
+        
+        return entero_formateado
+    except (ValueError, TypeError):
+        # Maneja valores inválidos devolviendo un string vacío
+        return ""
 
 #region Data Structures ----------------------------------------------------------
 

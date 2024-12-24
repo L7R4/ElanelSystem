@@ -4,7 +4,9 @@ from django.urls import reverse
 from users.models import Usuario
 from django.db.models import Max
 from sales.models import Ventas
-from sales.utils import obtener_ultima_campania
+from sales.utils import obtener_ultima_campania, formatear_moneda
+
+
 register = template.Library()
 
 @register.filter
@@ -94,3 +96,12 @@ def seccionesPorPermisos(context):
         if any(user.has_perm(perm) for perm in v['permisos']):
             secciones_permitidas[k] = v
     return secciones_permitidas
+
+
+
+@register.filter
+def formato_moneda(valor):
+    """
+    Filtro de template para formatear números en formato moneda.
+    """
+    return formatear_moneda(valor)

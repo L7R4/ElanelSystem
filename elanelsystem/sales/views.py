@@ -139,6 +139,7 @@ class CrearVenta(TestLogin,generic.DetailView):
         errors ={}
         sale = Ventas()
 
+        print(form)
         
         # Para guardar como objeto Producto
         producto = form["producto"]
@@ -217,6 +218,7 @@ class CrearVenta(TestLogin,generic.DetailView):
         sale.campania = form['campania']
         sale.observaciones = form['observaciones']
         sale.fecha = form['fecha'] + " 00:00"
+        sale.nro_cuotas = int(form['nro_cuotas'])
 
         sale.crearCuotas()
         sale.setDefaultFields()
@@ -1128,6 +1130,7 @@ class PostVenta(TestLogin,generic.View):
             response_data = {"status": False,"message": "Hubo un error al generar la auditoria"}
             return JsonResponse(response_data, safe=False)
 
+
 def filtroVentasAuditoria(request):
     if(request.method =="POST"):
         # try:
@@ -1171,10 +1174,10 @@ def filtroVentasAuditoria(request):
                     "statusText": obtenerStatusAuditoria(venta)["statusText"],
                     "statusIcon":obtenerStatusAuditoria(venta)["statusIcon"],
                     "nombre": venta.nro_cliente.nombre,
-                    "dni": venta.nro_cliente.dni,
+                    "dni": formatear_moneda(venta.nro_cliente.dni),
                     "nro_operacion": venta.nro_operacion,
                     "fecha": venta.fecha,
-                    "tel": venta.nro_cliente.tel,
+                    "tel": str(int(float(venta.nro_cliente.tel))),
                     "loc": venta.nro_cliente.loc,
                     "cod_postal": venta.nro_cliente.cod_postal,
                     "prov": venta.nro_cliente.prov,
@@ -1521,6 +1524,7 @@ def viewsPDFInformePostVenta(request):
 
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+
 #region Caja - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Caja(TestLogin,generic.View):
     template_name = "caja.html"
@@ -1666,6 +1670,7 @@ class OldArqueosView(TestLogin,generic.View):
             return HttpResponse(data, 'application/json')
         return render(request, self.template_name,context)
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 
 #region Specifics Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def requestMovimientos(request):

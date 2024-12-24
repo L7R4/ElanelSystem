@@ -1,7 +1,13 @@
-{% extends 'molde.html' %} {% load static %} {% load humanize %} {% load i18n %}
-{% load util %} {% obtener_ultima_campania as ultima_campania %} {% block css %}
+{% extends 'molde.html' %} 
+{% load static %} 
+{% load humanize %} 
+{% load i18n %}
+{% load util %} 
+{% obtener_ultima_campania as ultima_campania %} 
+{% block css %}
 <link rel="stylesheet" href="{% static 'css/postVenta.css' %}" />
-{% endblock css %} {% block content %}
+{% endblock css %} 
+{% block content %}
 <div class="filters">
     <form method="POST" id="formFilterVentas">
         {% csrf_token %}
@@ -22,9 +28,7 @@
             <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
                 <label class="labelInput">Sucursal</label>
                 <div class="containerInputAndOptions">
-                    <img class="iconDesplegar" src="{% static
-                    "images/icons/arrowDown.png" %}" alt="">
-
+                    <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
                     <input
                         type="text"
                         name="sucursal"
@@ -35,12 +39,9 @@
                         value="{{sucursalDefault.pseudonimo}}"
                     />
                     <ul class="list-select-custom options">
-                        {% for sucursal in sucursales %} {% if
-                        sucursal.pseudonimo == "Todas, Todas" %} {% else %}
-                        <li data-value="{{sucursal.pseudonimo}}">
-                            {{sucursal.pseudonimo}}
-                        </li>
-                        {% endif %} {% endfor %}
+                        {% for sucursal in sucursales %}
+                        <li data-value="{{sucursal.pseudonimo}}">{{sucursal.pseudonimo}}</li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
@@ -111,165 +112,166 @@
     <div class="operations">
         <div class="operationsWrapper">
             <ul class="operationsList">
-                {% for venta in ventas %} {% with
-                ultima_auditoria=venta.auditoria|postVenta_getLastAuditoria %}
+                {% for venta in ventas %} 
+                    {% with ultima_auditoria=venta.auditoria|postVenta_getLastAuditoria %}
+                        <li class="operationItem">
+                            <div class="ventaWrapper">
+                                <div class="statusWrapperShortInfo">
+                                    <img src="${statusIcon}" alt="" />
+                                    <p>${statusText}</p>
+                                </div>
+                                <div class="atributtes">
+                                    <button
+                                        type="button"
+                                        class="displayDetailInfoButton"
+                                    >
+                                        <img
+                                            src="{% static 'images/icons/nextSinBackground.png' %}"
+                                            alt=""
+                                        />
+                                    </button>
 
-                <li class="operationItem">
-                    <div class="ventaWrapper">
-                        <div class="statusWrapperShortInfo">
-                            <img src="${statusIcon}" alt="" />
-                            <p>${statusText}</p>
-                        </div>
-                        <div class="atributtes">
-                            <button
-                                type="button"
-                                class="displayDetailInfoButton"
-                            >
-                                <img
-                                    src="{% static 'images/icons/nextSinBackground.png' %}"
-                                    alt=""
-                                />
-                            </button>
-
-                            <div class="wrapperShortInfo">
-                                <div class="wrapperInfoAtributte">
-                                    <h4>Cliente</h4>
-                                    <h1>{{venta.nro_cliente.nombre}}</h1>
-                                </div>
-                                <div class="wrapperInfoAtributte">
-                                    <h4>DNI</h4>
-                                    <h1>{{venta.nro_cliente.dni}}</h1>
-                                </div>
-                                <div class="wrapperInfoAtributte">
-                                    <h4>Nro Orden</h4>
-                                    <h1>{{venta.nro_orden}}</h1>
-                                </div>
-                                <div class="wrapperInfoAtributte">
-                                    <h4>Fecha de inscripcion</h4>
-                                    <h1>{{venta.fecha}}</h1>
-                                </div>
-                                <div class="wrapperInfoAtributte">
-                                    <h4>Telefono</h4>
-                                    <h1>{{venta.nro_cliente.tel}}</h1>
-                                </div>
-                                <div class="wrapperInfoAtributte">
-                                    <h4>CP</h4>
-                                    <h1>{{venta.nro_cliente.cod_postal}}</h1>
-                                </div>
-                            </div>
-                            <div class="wrapperDetailInfo">
-                                <div class="wrapperInfoAtributte">
-                                    <h4>Localidad</h4>
-                                    <h1>{{venta.nro_cliente.loc}}</h1>
-                                </div>
-                                <div class="wrapperInfoAtributte">
-                                    <h4>Provincia</h4>
-                                    <h1>{{venta.nro_cliente.prov}}</h1>
-                                </div>
-                                <div class="wrapperInfoAtributte">
-                                    <h4>Direccion</h4>
-                                    <h1>{{venta.nro_cliente.domic}}</h1>
-                                </div>
-                                <div class="wrapperInfoAtributte">
-                                    <h4>Vendedor</h4>
-                                    <h1>{{venta.vendedor.nombre}}</h1>
-                                </div>
-                                <div class="wrapperInfoAtributte">
-                                    <h4>Supervisor</h4>
-                                    <h1>{{venta.supervisor.nombre}}</h1>
-                                </div>
-                                <div class="wrapperInfoAtributte">
-                                    <h4>Campaña</h4>
-                                    <h1>{{venta.campania}}</h1>
-                                </div>
-                                {% if ultima_auditoria.realizada %}
-                                <div class="containerHistorialAuditorias">
-                                    {% for auditoria in venta.auditoria %}
-                                    <div class="infoCheckWrapper">
-                                        <div class="wrapperComentarios">
-                                            <h4>Comentarios</h4>
-                                            <p>{{auditoria.comentarios}}</p>
+                                    <div class="wrapperShortInfo">
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>Cliente</h4>
+                                            <h1>{{venta.nro_cliente.nombre}}</h1>
                                         </div>
-                                        <div class="wrapperFechaHora">
-                                            <p>{{auditoria.fecha_hora}}</p>
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>DNI</h4>
+                                            <h1>{{venta.nro_cliente.dni|formato_moneda}}</h1>
                                         </div>
-                                        <div class="wrapperGrade">
-                                            {% if auditoria.grade %}
-                                            <p>Aprobada</p>
-                                            {%else%}
-                                            <p>Desaprobada</p>
-                                            {% endif %}
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>Nro Orden</h4>
+                                            <h1>{{venta.nro_orden}}</h1>
                                         </div>
-                                        {% if forloop.last %}
-                                        <div class="wrapperUltimo">
-                                            <p>Último</p>
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>Fecha de inscripcion</h4>
+                                            <h1>{{venta.fecha|format_dd_mm_yyyy}}</h1>
+                                        </div>
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>Telefono</h4>
+                                            <h1>{{venta.nro_cliente.tel}}</h1>
+                                        </div>
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>CP</h4>
+                                            <h1>{{venta.nro_cliente.cod_postal}}</h1>
+                                        </div>
+                                    </div>
+                                    <div class="wrapperDetailInfo">
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>Localidad</h4>
+                                            <h1>{{venta.nro_cliente.loc}}</h1>
+                                        </div>
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>Provincia</h4>
+                                            <h1>{{venta.nro_cliente.prov}}</h1>
+                                        </div>
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>Direccion</h4>
+                                            <h1>{{venta.nro_cliente.domic}}</h1>
+                                        </div>
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>Vendedor</h4>
+                                            <h1>{{venta.vendedor.nombre}}</h1>
+                                        </div>
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>Supervisor</h4>
+                                            <h1>{{venta.supervisor.nombre}}</h1>
+                                        </div>
+                                        <div class="wrapperInfoAtributte">
+                                            <h4>Campaña</h4>
+                                            <h1>{{venta.campania}}</h1>
+                                        </div>
+                                        {% if ultima_auditoria.realizada %}
+                                        <div class="containerHistorialAuditorias">
+                                            {% for auditoria in venta.auditoria %}
+                                            <div class="infoCheckWrapper">
+                                                <div class="wrapperComentarios">
+                                                    <h4>Comentarios</h4>
+                                                    <p>{{auditoria.comentarios}}</p>
+                                                </div>
+                                                <div class="wrapperFechaHora">
+                                                    <p>{{auditoria.fecha_hora}}</p>
+                                                </div>
+                                                <div class="wrapperGrade">
+                                                    {% if auditoria.grade %}
+                                                    <p>Aprobada</p>
+                                                    {%else%}
+                                                    <p>Desaprobada</p>
+                                                    {% endif %}
+                                                </div>
+                                                {% if forloop.last %}
+                                                <div class="wrapperUltimo">
+                                                    <p>Último</p>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            {% endfor %}
                                         </div>
                                         {% endif %}
                                     </div>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
 
-                            <div class="statusWrapper">
-                                <div class="buttonsWrapper">
-                                    {% if ultima_auditoria.realizada %}
-                                    <label
-                                        for="editarI"
-                                        id="editar"
-                                        onclick="formEditPostVenta('{{venta.id}}',this.offsetParent)"
-                                        >Editar</label
-                                    >
-                                    {% else %}
-                                    <input
-                                        type="radio"
-                                        name="grade"
-                                        id="aprobarI"
-                                        value="a"
-                                        form="containerModularForm"
-                                    />
-                                    <label
-                                        for="aprobarI"
-                                        id="aprobar"
-                                        class="labelInputGrade"
-                                        onclick="formComentario('{{venta.id}}',this.offsetParent.parentElement,this.id)"
-                                        >Aprobar</label
-                                    >
-                                    <input
-                                        type="radio"
-                                        name="grade"
-                                        id="desaprobarI"
-                                        value="d"
-                                        form="containerModularForm"
-                                    />
-                                    <label
-                                        for="desaprobarI"
-                                        id="desaprobar"
-                                        class="labelInputGrade"
-                                        onclick="formComentario('{{venta.id}}',this.offsetParent.parentElement,this.id)"
-                                        >Desaprobar</label
-                                    >
-                                    {% endif %}
-                                </div>
+                                    <div class="statusWrapper">
+                                        <div class="buttonsWrapper">
+                                            {% if ultima_auditoria.realizada %}
+                                            <label
+                                                for="editarI"
+                                                id="editar"
+                                                onclick="formEditPostVenta('{{venta.id}}',this.offsetParent)"
+                                                >Editar</label
+                                            >
+                                            {% else %}
+                                            <input
+                                                type="radio"
+                                                name="grade"
+                                                id="aprobarI"
+                                                value="a"
+                                                form="containerModularForm"
+                                            />
+                                            <label
+                                                for="aprobarI"
+                                                id="aprobar"
+                                                class="labelInputGrade"
+                                                onclick="formComentario('{{venta.id}}',this.offsetParent.parentElement,this.id)"
+                                                >Aprobar</label
+                                            >
+                                            <input
+                                                type="radio"
+                                                name="grade"
+                                                id="desaprobarI"
+                                                value="d"
+                                                form="containerModularForm"
+                                            />
+                                            <label
+                                                for="desaprobarI"
+                                                id="desaprobar"
+                                                class="labelInputGrade"
+                                                onclick="formComentario('{{venta.id}}',this.offsetParent.parentElement,this.id)"
+                                                >Desaprobar</label
+                                            >
+                                            {% endif %}
+                                        </div>
 
-                                <div class="statusPostVenta">
-                                    {% if ultima_auditoria.realizada %} {% if
-                                    ultima_auditoria.grade%}
-                                    <div class="dotStatus aprobada"></div>
-                                    <h3>Auditoria aprobada</h3>
-                                    {% else %}
-                                    <div class="dotStatus desaprobada"></div>
-                                    <h3>Auditoria desaprobada</h3>
-                                    {% endif %} {% else %}
-                                    <div class="dotStatus pendiente"></div>
-                                    <h3>Auditoria pendiente</h3>
-                                    {% endif %}
+                                        <div class="statusPostVenta">
+                                            {% if ultima_auditoria.realizada %} 
+                                                {% if ultima_auditoria.grade%}
+                                                    <div class="dotStatus aprobada"></div>
+                                                    <h3>Auditoria aprobada</h3>
+                                                {% else %}
+                                                    <div class="dotStatus desaprobada"></div>
+                                                    <h3>Auditoria desaprobada</h3>
+                                                {% endif %} 
+                                            {% else %}
+                                                <div class="dotStatus pendiente"></div>
+                                                <h3>Auditoria pendiente</h3>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </li>
-                {% endwith %} {% endfor %}
+                        </li>
+                    {% endwith %} 
+                {% endfor %}
             </ul>
         </div>
     </div>
@@ -316,7 +318,7 @@
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 
 <script>
-    var CSRF_TOKEN = "{% csrf_token %}";
+    var CSRF_TOKEN = '{% csrf_token %}';
     var imgNext = "{% static 'images/icons/nextSinBackground.png' %}";
     var campania_actual = "{{campania_actual}}";
 </script>

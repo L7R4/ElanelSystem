@@ -106,17 +106,19 @@
 }
 
 .operations {
-    width: 70%;
+    width: 75%;
     height: 100%;
     overflow-y: auto;
 
 }
 
 .actionsWrapper {
-    width: 30%;
+    width: 25%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    min-width: 23rem;
+    max-width: 30rem;
 }
 
 .buttonsWrapper>#makeInforme {
@@ -143,11 +145,15 @@
 
 .countsAuditoriasWrapper>.countItem {
     flex: 1 0 50%;
+    
+    margin-top: 1rem;
+}
+
+.countsAuditoriasWrapper>.countItem > h3{
     text-align: center;
     font-family: raleway-semibold;
     font-size: clamp(1rem, 1.1vw, 1.3rem);
-    color: #fff;
-    margin-top: 1rem;
+    color: var(--third-color);
 }
 
 .countsAuditoriasWrapper>.countItem>.amountAuditorias {
@@ -228,8 +234,8 @@
 
 .wrapperInfoAtributte>h1 {
     color: var(--background-color);
-    font-size: clamp(1.3rem, 1.5vw, 2rem);
-    font-family: raleway-bold;
+    font-size: clamp(1.3rem, 1.2vw, 2rem);
+    font-family: raleway-semibold;
 }
 
 .wrapperInfoAtributte>h4 {
