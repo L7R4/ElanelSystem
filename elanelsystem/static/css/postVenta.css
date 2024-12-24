@@ -2,33 +2,76 @@
     padding: 4rem;
 }
 
+/* #region filtros */
 .filters {
     width: 100%;
     padding-bottom: 2rem;
+    height: 12%;
 }
 
-.filters>div {
+.filters>form#formFilterVentas>div {
     display: flex;
     width: 100%;
     justify-content: space-between;
+    align-items: center;
 }
 
 
-/* Input de buscador de venta */
-.searchFilter {
+.filters>form#formFilterVentas .wrapperSelectFilter {
+    width: 20%;
+    min-width: 20rem;
+    display: flex;
+    gap: .4rem;
+    flex-direction: column;
+}
+
+.filters>form#formFilterVentas .wrapperSelectFilter img{
+    z-index: 3;
+    filter: invert(1);
+
+}
+
+.filters>form#formFilterVentas .wrapperSelectFilter input {
+    background-color: var(--background-color);
+    color: var(--third-color);
+    z-index: 2;
+}
+
+.filters>form#formFilterVentas .wrapperSelectFilter .options{
+    z-index: 1;
+}
+
+
+.filters>form#formFilterVentas label.labelInput {
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
+}
+
+.filters>form#formFilterVentas .wrapperSearchFilter {
     width: 30%;
+    min-width: 20rem;
+    display: flex;
+    gap: .4rem;
+    flex-direction: column;
+}
+
+.filters>form#formFilterVentas .wrapperSearchFilter>div {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-.searchFilter>input {
+
+
+.filters>form#formFilterVentas .wrapperSearchFilter>div>input {
     padding: 1rem;
     color: var(--third-color);
     z-index: 2;
+    width: 100%;
 }
 
-.searchFilter>img {
+.filters>form#formFilterVentas .wrapperSearchFilter>div>img {
     position: absolute;
     filter: invert(1);
     width: 1.8rem;
@@ -36,21 +79,7 @@
     z-index: 6;
 }
 
-/* Input de selector de sucursal */
 
-.filters #selectWrapperSelectAgencia {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    width: 20%;
-}
-
-.filters #selectWrapperSelectAgencia>h3 {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    color: var(--third-color);
-
-}
 
 .filters #selectWrapperSelectAgencia>.containerInputAndOptions>img {
     filter: invert(1);
@@ -67,69 +96,13 @@
     z-index: 3;
 }
 
-
-.camapañaFilter {
-    display: flex;
-    align-items: center;
-    width: 20%;
-    gap: 1rem;
-}
-
-.camapañaFilter>.camapañaInputWrapper {
-    position: relative;
-    width: 40%;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    height: 100%;
-}
-
-.camapañaFilter>.camapañaInputWrapper>img {
-    position: absolute;
-    width: 1.8rem;
-    transform: rotate(90deg);
-    margin-right: 1rem;
-    z-index: 2;
-}
-
-.camapañaFilter>.camapañaInputWrapper>input {
-
-    /* padding: .6rem; */
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: 'raleway-semibold';
-    color: var(--third-color);
-}
-
-.camapañaFilter>.camapañaInputWrapper>input::-webkit-outer-spin-button,
-.camapañaFilter>.camapañaInputWrapper>input::-webkit-inner-spin-button {
-    display: none;
-}
-
-.camapañaFilter>label {
-
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    color: rgba(255, 255, 255, 0.81);
-
-}
-
-#filtrar_ventas_button {
-    font-size: clamp(1.1rem, 1.1vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0rem 3rem;
-    text-decoration: none;
-    cursor: pointer;
-    border-radius: .6rem;
-    border: 2px solid var(--primary-color);
-}
+/* #endregion */
 
 
 .accountWrapper {
     display: flex;
     column-gap: 2rem;
-    height: 87%;
+    height: 80%;
 }
 
 .operations {
@@ -194,6 +167,22 @@
     padding: 1.5rem;
     box-sizing: border-box;
 }
+.ventaWrapper > .statusWrapperShortInfo{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.ventaWrapper > .statusWrapperShortInfo > img{
+    width: 2vw;
+    min-width: 2.5rem;
+    max-width: 5rem;
+}
+
+.ventaWrapper > .statusWrapperShortInfo > p{
+    font-family: raleway-semibold;
+    font-size: clamp(1.1rem, 1.2vw, 1.5rem);
+}
 
 .atributtes {
     position: relative;
@@ -238,7 +227,7 @@
 }
 
 .wrapperInfoAtributte>h1 {
-    color: var(--third-color);
+    color: var(--background-color);
     font-size: clamp(1.3rem, 1.5vw, 2rem);
     font-family: raleway-bold;
 }
@@ -246,6 +235,7 @@
 .wrapperInfoAtributte>h4 {
     font-size: clamp(1rem, 1vw, 1.7rem);
     font-family: raleway-bold;
+    color: var(--primary-color);
 }
 
 .displayDetailInfoButton {

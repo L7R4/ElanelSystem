@@ -11,6 +11,7 @@ from openpyxl import Workbook
 from django.http import HttpResponse, JsonResponse
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from users.models import Cliente
+from django.templatetags.static import static
 
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
@@ -204,9 +205,24 @@ def getAllCampaniaOfYear():
     meses_formato = [f'{mes} {anio_actual}' for mes in list_mesesStr]
     return meses_formato
 
+# Para obtener todas las compañas desde el inicio de la empresa (2021)
+def getTodasCampaniasDesdeInicio():
+    list_mesesStr = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+    anio_actual = datetime.datetime.now().year
+    anio_inicio = 2021
+    campanias = []
+    
+    # Iterar desde el año actual hasta el año de inicio (descendente)
+    for anio in range(anio_actual, anio_inicio - 1, -1):
+        # Para cada año, agregar las campañas en orden
+        campanias.extend([f'{mes} {anio}' for mes in list_mesesStr])
+    
+    return campanias
+
 
 def obtener_ultima_campania():
-    # Lo importo aca para evitar el error de dependencias circulares
+    # Lo importo aqui para evitar el error de dependencias circulares
     from sales.models import Ventas
 
     # Obtener el número de campaña más alto
@@ -234,6 +250,22 @@ def get_ventasBySucursal(sucursal):
         return Ventas.objects.all()
     return Ventas.objects.filter(agencia__pseudonimo=sucursal)
 
+
+def obtenerStatusAuditoria(venta): # Devuelve el estado de la ultima auditoria
+
+    #Verifica si la lista de auditorías está vacía
+    if len(venta.auditoria) == 0:
+        return {"statusText": "Pendiente", "statusIcon": static(f"/images/icons/operationSuspendido.svg")}  # No auditada
+    
+    # Obtiene la última auditoría
+    ultima_auditoria = venta.auditoria[-1]
+    
+    # Verifica el estado de la última auditoría
+    if ultima_auditoria.get("grade") is True:
+        return {"statusText": "Aprobado", "statusIcon": static(f"images/icons/operationActivo.svg")}  # No auditada
+
+    elif ultima_auditoria.get("grade") is False:
+        return {"statusText": "Desaprobado", "statusIcon": static(f"images/icons/operationBaja.svg")}  # No auditada
 
 #region Data Structures ----------------------------------------------------------
 

@@ -125,7 +125,10 @@ class Products(models.Model):
 
         if self.tipo_de_producto not in  tipos:
             raise ValidationError({'tipo_de_producto': 'Tipo de producto incorrecto.'})
-   
+    
+
+
+
     # def validation_paquete(self):
     #     paquetes = [t[0] for t in self.PAQUETES]
 

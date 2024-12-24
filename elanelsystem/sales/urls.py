@@ -47,6 +47,7 @@ urlpatterns = [
         
     #region URLs PostVentas --------------------------------------------
     path('ventas/postventas/', PostVenta.as_view(), name='postVentaList'),
+    path('ventas/postventas/filtrar/', filtroVentasAuditoria, name='postVentaListFiltered'),
     path('ventas/postventas/informe/', viewsPDFInformePostVenta, name='postVentaPDF'),
     #endregion ---------------------------------------------------------
     

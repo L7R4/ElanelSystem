@@ -1,3 +1,4 @@
+
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
@@ -12,11 +13,11 @@ from .models import Ventas
 from products.models import Products,Plan
 import datetime
 import os,re
+from django.db.models.functions import Replace
+from django.db.models import Value, Q
 import json
 from django.shortcuts import reverse
 from dateutil.relativedelta import relativedelta
-from django.db.models.functions import Replace
-from django.db.models import Value
 import locale
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .utils import *
@@ -209,7 +210,6 @@ class CrearVenta(TestLogin,generic.DetailView):
         sale.tasa_interes = float(form['tasa_interes']) if form['tasa_interes'] else 0
         sale.intereses_generados = int(form['intereses_generados']) if form['intereses_generados'] else 0
         sale.importe_x_cuota = int(form['importe_x_cuota']) if form['importe_x_cuota'] else 0
-        sale.nro_cuotas = int(form['nro_cuotas'])
         sale.total_a_pagar = int(form['total_a_pagar']) if form['total_a_pagar'] else 0
         sale.fecha = form['fecha']
         sale.tipo_producto = form['tipo_producto']
@@ -236,9 +236,7 @@ class CrearVenta(TestLogin,generic.DetailView):
             return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
 
 
-
 def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextIndiceBusquedaCuotas):
-    print(f"Indices {index_start}-{index_end}")
     try:
             cantidadContratos = index_end - index_start
 
@@ -257,7 +255,6 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
             newVenta.agencia = Sucursal.objects.get(pseudonimo = agencia)
             newVenta.tasa_interes = round((float(rowVenta["tasa_de_inte"]) * cantidadContratos) * 100,2)
             a = Products.objects.annotate(nombre_normalizado=Replace("nombre",Value(" "), Value("")))
-            print(a.values("nombre_normalizado"))
 
             newVenta.producto = Products.objects.annotate(
                 nombre_normalizado=Replace("nombre",Value(" "), Value(""))
@@ -299,6 +296,8 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
             cuotas = []
             for i in range(nextIndiceBusquedaCuotas, len(sheetEstados)):
                 filaEstado = sheetEstados.iloc[i]
+                print(f"Procesando fila {i} del contrato {nro_orden}")
+
                 try:
                     if(int(filaEstado["id_venta"]) == int(rowVenta['id_venta'])):
 
@@ -389,34 +388,39 @@ def importVentas(request):
         filename = fs.save(archivo_excel.name, archivo_excel)
         file_path = fs.path(filename)
         cantidad_nuevas_ventas = 0
-        todosLosContratos = obtener_todos_los_contratos()
 
+        todosLosContratosDict = obtener_todos_los_contratos()
+        set_contratos = {contrato['nro_contrato'] for contrato in todosLosContratosDict}
         
         try:
             # Leer la hoja "Cuotas" del archivo Excel
             sheetResumen = formatear_columnas(file_path, sheet_name="RESUMEN")
 
             index_pivot,row_pivot = next(sheetResumen.iterrows())
-            i= -1
+            i= 0
+
             nextIndiceBusquedaCuotas = 0 # Almacena la fila de la hoja de ESTADOs para continuar buscando las cuotas y no comenzar de 0
             while i < len(sheetResumen):
-                i += 1
-                # if(cantidad_nuevas_ventas == 5):
-                #     break
-                if not (str(sheetResumen.iloc[i]["contrato"]) in todosLosContratos):
+                # print(f"Procesando fila {i}")
+                if str(sheetResumen.iloc[i]["contrato"]) not in set_contratos:
+                    print(f"Procesando fila {i}")
+                    
                     if(Cliente.objects.filter(nro_cliente = sheetResumen.iloc[i]["cod_cli"]).exists()):
                         if(row_pivot["cod_cli"] != sheetResumen.iloc[i]["cod_cli"] or row_pivot["fecha_incripcion"] != sheetResumen.iloc[i]["fecha_incripcion"] or row_pivot["producto"] != sheetResumen.iloc[i]["producto"]):
                             cantidad_nuevas_ventas +=1
-                            # print(f"Indice para continuar buscando las cuotas: --> {nextIndiceBusquedaCuotas}")
                             nextIndiceBusquedaCuotas = generarContratoParaImportar(index_pivot, i, file_path, agencia,nextIndiceBusquedaCuotas)
                             row_pivot = sheetResumen.iloc[i]
                             index_pivot = i
-                            i -= 1
                         else:
-                            print(f"El cliente no existe la fila {index_pivot} de la hoja de resumen\n\n ------------------------------- \n\n")
-                            continue
+                            pass
                     else:
-                        continue
+                        pass
+                
+                i += 1
+                if(i == len(sheetResumen)):
+                    if str(sheetResumen.iloc[i-1]["contrato"]) not in set_contratos:
+                        cantidad_nuevas_ventas +=1
+                        nextIndiceBusquedaCuotas = generarContratoParaImportar(index_pivot, i, file_path, agencia,nextIndiceBusquedaCuotas)
 
             # Eliminar el archivo después de procesarlo
             fs.delete(filename)
@@ -1059,27 +1063,25 @@ class ChangeTitularidad(TestLogin,generic.DetailView):
 class PostVenta(TestLogin,generic.View):
     template_name = 'postVenta.html'
 
-    def get(self,request,campania,*args,**kwargs):
-        ventas = Ventas.objects.filter(campania=campania)
-        sucursalDefault = searchSucursalFromStrings("Sucursal central")
+    def get(self,request,*args,**kwargs):
+        campania = getCampaniaActual()
+        sucursalDefault = Sucursal.objects.get(pseudonimo="Sucursal central")
+        ventas = Ventas.objects.filter(campania=campania, agencia=sucursalDefault)
 
-        auditorias_realidas = Ventas.objects.filter(agencia=sucursalDefault,campania=campania,auditoria__0__realizada=True)
-        auditorias_pendientes = Ventas.objects.filter(agencia=sucursalDefault,campania=campania,auditoria__0__realizada=False)
-
-        auditorias_realidas_list = list(auditorias_realidas.values())
-        auditorias_aprobadas = len(list(filter(lambda x: x["auditoria"][-1]["grade"] == True,auditorias_realidas_list)))
-        auditorias_desaprobadas = len(list(filter(lambda x: x["auditoria"][-1]["grade"] == False,auditorias_realidas_list)))
-        
+        auditoriasRealizadas = ventas.exclude(Q(auditoria=[]))
+        auditorias_realidas_list = list(auditoriasRealizadas.values())
 
         context = {
             "ventas": ventas,
             "amountVentas": ventas.count(),
             "sucursalDefault": Sucursal.objects.get(pseudonimo="Sucursal central"),
             "sucursales": Sucursal.objects.all(),
-            "auditorias_pendientes": len(auditorias_pendientes),
-            "auditorias_realizadas": len(auditorias_realidas),
-            "auditorias_aprobadas": auditorias_aprobadas,
-            "auditorias_desaprobadas": auditorias_desaprobadas,
+            "cant_auditorias_pendientes" : ventas.filter(Q(auditoria=[])).count(),
+            "cant_auditorias_realizadas" : auditoriasRealizadas.count(),
+            "cant_auditorias_aprobadas" : len(list(filter(lambda x: x["auditoria"][-1]["grade"] == True,auditorias_realidas_list))),
+            "cant_auditorias_desaprobadas" : len(list(filter(lambda x: x["auditoria"][-1]["grade"] == False,auditorias_realidas_list))),
+            "campania_actual": campania,
+            "campaniasDisponibles": getTodasCampaniasDesdeInicio(),
         }
         return render(request, self.template_name, context)
 
@@ -1125,6 +1127,80 @@ class PostVenta(TestLogin,generic.View):
         else:
             response_data = {"status": False,"message": "Hubo un error al generar la auditoria"}
             return JsonResponse(response_data, safe=False)
+
+def filtroVentasAuditoria(request):
+    if(request.method =="POST"):
+        # try:
+            form = json.loads(request.body)
+            campania = form.get("campania","")
+            sucursal = form.get("sucursal","Sucursal central")
+            sucursalObject = Sucursal.objects.get(pseudonimo=sucursal)
+            ventas = Ventas.objects.filter(campania=campania, agencia=sucursalObject)
+
+             # Filtrar según el estado
+            estado = form.get("estado","")
+            
+            if estado == "Pendientes":  # No auditadas
+                ventas = ventas.filter(Q(auditoria=[]))
+            elif estado == "Realizadas":  # Realizadas
+                ventas = ventas.exclude(Q(auditoria=[]))
+            elif estado == "Aprobadas":  # Auditadas y aprobadas
+                ventas = ventas.filter(auditoria__estado="aprobada")
+            elif estado == "Desaprobadas":  # Auditadas y desaprobadas
+                ventas = ventas.filter(auditoria__estado="desaprobada")
+            else:
+                pass
+
+            if "search" in form and form["search"]:
+                search = form["search"]
+                search_filter = Q(nro_cliente__nombre__icontains=search) | \
+                            Q(nro_cliente__dni__icontains=search) | \
+                            Q(nro_cliente__tel__icontains=search) | \
+                            Q(nro_cliente__prov__icontains=search) | \
+                            Q(nro_cliente__loc__icontains=search) | \
+                            Q(nro_cliente__cod_postal__icontains=search) | \
+                            Q(producto__nombre__icontains=search) | \
+                            Q(fecha__icontains=search) | \
+                            Q(nro_operacion__icontains=search)
+                ventas = ventas.filter(search_filter)
+            
+            ventasJSON = []
+            for venta in ventas:
+                ventasJSON.append({
+                    "id": venta.pk,
+                    "statusText": obtenerStatusAuditoria(venta)["statusText"],
+                    "statusIcon":obtenerStatusAuditoria(venta)["statusIcon"],
+                    "nombre": venta.nro_cliente.nombre,
+                    "dni": venta.nro_cliente.dni,
+                    "nro_operacion": venta.nro_operacion,
+                    "fecha": venta.fecha,
+                    "tel": venta.nro_cliente.tel,
+                    "loc": venta.nro_cliente.loc,
+                    "cod_postal": venta.nro_cliente.cod_postal,
+                    "prov": venta.nro_cliente.prov,
+                    "domic": venta.nro_cliente.domic,
+                    "vendedor": venta.vendedor.nombre,
+                    "supervisor": venta.supervisor.nombre,
+                    "producto": venta.producto.nombre,
+                    "auditoria": venta.auditoria,
+                    "campania": venta.campania,
+                })
+            
+            auditoriasRealizadas = ventas.exclude(Q(auditoria=[]))
+            auditorias_realidas_list = list(auditoriasRealizadas.values())
+            resumenAuditorias ={
+                "cant_auditorias_pendientes" : ventas.filter(Q(auditoria=[])).count(),
+                "cant_auditorias_realizadas" : auditoriasRealizadas.count(),
+                "cant_auditorias_aprobadas" : len(list(filter(lambda x: x["auditoria"][-1]["grade"] == True,auditorias_realidas_list))),
+                "cant_auditorias_desaprobadas" : len(list(filter(lambda x: x["auditoria"][-1]["grade"] == False,auditorias_realidas_list)))
+            }
+
+            
+            ventasJSON.sort(key=lambda x: datetime.strptime(x['fecha'], "%d/%m/%Y %H:%M"), reverse=True)
+
+            return JsonResponse({"status": True, "ventas": ventasJSON, "resumen": resumenAuditorias}, safe=False)
+        # except Exception as e:
+        #     return JsonResponse({"status": False, "message": str(e)}, safe=False)
 
 
 class PanelVentasSuspendidas(TestLogin,generic.View):
@@ -1754,5 +1830,4 @@ def requestVentas(request):
         return JsonResponse(responseData, safe=False)
    
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 

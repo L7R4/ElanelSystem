@@ -4,28 +4,28 @@ var url = window.location.pathname;
 function showDetailsVentas() {
     let buttonsDisplaysDetailsVentas = document.querySelectorAll(".displayDetailInfoButton")
     buttonsDisplaysDetailsVentas.forEach(button => {
-        button.addEventListener("click",()=>{
+        button.addEventListener("click", () => {
             let wrapperDetailInfo = button.parentElement.querySelector(".wrapperDetailInfo")
             let heightDetail = wrapperDetailInfo.scrollHeight
-                
-            if(wrapperDetailInfo.style.maxHeight === heightDetail+'px'){
-                wrapperDetailInfo.style.maxHeight ='0px'
-                wrapperDetailInfo.style.height ='0px'
+
+            if (wrapperDetailInfo.style.maxHeight === heightDetail + 'px') {
+                wrapperDetailInfo.style.maxHeight = '0px'
+                wrapperDetailInfo.style.height = '0px'
                 wrapperDetailInfo.classList.remove("active")
-                
-            }else{
-                wrapperDetailInfo.style.maxHeight = heightDetail+'px'
-                wrapperDetailInfo.style.height = heightDetail+'px'
+
+            } else {
+                wrapperDetailInfo.style.maxHeight = heightDetail + 'px'
+                wrapperDetailInfo.style.height = heightDetail + 'px'
                 wrapperDetailInfo.classList.add("active")
             }
-    
-    
-            if(button.children[0].classList.contains("active")){
+
+
+            if (button.children[0].classList.contains("active")) {
                 button.children[0].classList.remove("active")
-            }else{
+            } else {
                 button.children[0].classList.add("active")
             }
-            
+
         })
     });
 }
@@ -52,7 +52,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
-async function sendGradeVenta(form){
+async function sendGradeVenta(form) {
     try {
         const res = await fetch(url, {
             method: 'POST',
@@ -61,7 +61,7 @@ async function sendGradeVenta(form){
             },
             body: new FormData(form)
         })
-        if (!res.ok){
+        if (!res.ok) {
             throw new Error("Error")
         }
         const data = await res.json()
@@ -74,47 +74,47 @@ async function sendGradeVenta(form){
 
 // Crear form para comentar en auditoria pendiente --------------------------
 
-function formComentario(idVenta,contenedor,grade){
+function formComentario(idVenta, contenedor, grade) {
     let venta = contenedor
-    let stringForHTML = crearFormSegunEstadoAuditoria(idVenta,false,grade)
+    let stringForHTML = crearFormSegunEstadoAuditoria(idVenta, false, grade)
 
     // Limpia otros forms o preForms que estan activado para que solo quede uno form activado
     cleanOtherForms(venta)
 
     // Crea en el DOM el formulario segun si fue desde una auditoria realizada anteoriormente o no
-    if(venta.querySelector(".containerModularForm")){
+    if (venta.querySelector(".containerModularForm")) {
         let formParent = venta.querySelector(".containerModularForm")
         formParent.insertAdjacentHTML('beforeend', stringForHTML);
-    }else{
+    } else {
         venta.insertAdjacentHTML('beforeend', stringForHTML);
     }
     let containerWrapperComentario = document.querySelector(".containerModularForm");
 
-    
-    
+
+
     // Para cuando se edite una auditoria y se elija el "grado" pueda colocar un background para que de la sensacion de bloqueado
-    if(venta.querySelector(".wrapperButtonsGrade")){
+    if (venta.querySelector(".wrapperButtonsGrade")) {
         let wrapperEditGrade = venta.querySelector(".wrapperButtonsGrade")
         wrapperEditGrade.classList.add("selectedGrade")
         wrapperEditGrade.insertAdjacentHTML('afterbegin', `<div class="backgroundSelect active"></div>`);
-    }else{
+    } else {
         let optionsGrade_inputs = venta.querySelectorAll(".labelInputGrade")
         optionsGrade_inputs.forEach(element => element.classList.add("selected"))
     }
-    
+
     let form = venta.querySelector(".containerModularForm")
     let confirmAuditoria = form.querySelector("#confirmComentario")
 
     //Envia la auditoria
-    confirmAuditoria.addEventListener("click",async()=>{
-        
+    confirmAuditoria.addEventListener("click", async () => {
+
         let data = await sendGradeVenta(form)
         let messageWrapper = crearMensajePostAuditoria(data["status"], data["message"])
         let wrapper_content = document.querySelector(".wrapper_content")
         wrapper_content.insertAdjacentHTML('beforeend', messageWrapper);
 
         containerWrapperComentario.remove()
-        try {venta.querySelector(".wrapperButtonsGrade").remove()}catch(error){}
+        try { venta.querySelector(".wrapperButtonsGrade").remove() } catch (error) { }
 
         // Para cambiar el estado de la venta despues de la auditoria
         let oldStatus = venta.querySelector(".statusPostVenta")
@@ -126,7 +126,7 @@ function formComentario(idVenta,contenedor,grade){
         // SECCION PARA AGREGAR EL NUEVO COMENTARIO -----------------
 
         // Elimina el tag de 'ultimo' del comentario
-        if(venta.querySelector(".wrapperUltimo")){
+        if (venta.querySelector(".wrapperUltimo")) {
             venta.querySelector(".wrapperUltimo").remove()
         }
 
@@ -134,14 +134,14 @@ function formComentario(idVenta,contenedor,grade){
         // Agrega al DOM el nuevo comentario
         if (venta.querySelector(".containerHistorialAuditorias")) {
             wrapperComentarios = venta.querySelector(".containerHistorialAuditorias")
-        }else{
+        } else {
             wrapperComentarios = document.createElement('div')
             wrapperComentarios.classList.add("containerHistorialAuditorias")
             venta.querySelector(".wrapperDetailInfo").appendChild(wrapperComentarios)
         }
-        let newComentario = crearNuevoComentario(data["comentarioString"],data["fechaString"], data["gradeString"])
-        wrapperComentarios.insertAdjacentHTML('beforeend',newComentario)
-        
+        let newComentario = crearNuevoComentario(data["comentarioString"], data["fechaString"], data["gradeString"])
+        wrapperComentarios.insertAdjacentHTML('beforeend', newComentario)
+
         // Obtiene la altura del elemento a agregar
         let newComentarioNode = venta.querySelector(".wrapperUltimo").parentElement
         let heightNewComentario = newComentarioNode.offsetHeight
@@ -150,32 +150,32 @@ function formComentario(idVenta,contenedor,grade){
         let valueHeightWrapperComentarios = wrapperComentarios.parentElement.scrollHeight
 
         // Asiga la nueva altura al wrapper de la info detallada sumando su altura + la del nuevo elemento
-        wrapperComentarios.parentElement.style.height =  valueHeightWrapperComentarios + heightNewComentario + "px"
+        wrapperComentarios.parentElement.style.height = valueHeightWrapperComentarios + heightNewComentario + "px"
 
         // Si el wrapper de info detallada esta expandida aumenta su maxHeigth para que se pueda visualizar el nuevo elemento
-        if(wrapperComentarios.parentElement.classList.contains("active")){
-            wrapperComentarios.parentElement.style.maxHeight =  valueHeightWrapperComentarios + heightNewComentario  + "px" 
+        if (wrapperComentarios.parentElement.classList.contains("active")) {
+            wrapperComentarios.parentElement.style.maxHeight = valueHeightWrapperComentarios + heightNewComentario + "px"
         }
 
 
         // ------------------------------------------------------------------------------------------------
 
-        if(!venta.querySelector("#editar")){
+        if (!venta.querySelector("#editar")) {
             venta.querySelector(".buttonsWrapper").remove()
             let newButtonEditar = crearBotonEditar(idVenta)
             padreStatus.insertAdjacentHTML('afterbegin', newButtonEditar);
         }
         try {
-            setTimeout(()=>{
+            setTimeout(() => {
                 auditoriaMessageWrapper.classList.add("active")
-            },"200")
-            setTimeout(()=>{
+            }, "200")
+            setTimeout(() => {
                 auditoriaMessageWrapper.classList.remove("active")
-            },"3000")
-            setTimeout(()=>{
+            }, "3000")
+            setTimeout(() => {
                 auditoriaMessageWrapper.remove()
-            },"4500")
-            
+            }, "4500")
+
         } catch (error) {
         }
 
@@ -185,18 +185,18 @@ function formComentario(idVenta,contenedor,grade){
 
     // Cierra el formulario
     let closeForm = venta.querySelector("#cancelarComentario")
-    closeForm.addEventListener("click",()=>{
+    closeForm.addEventListener("click", () => {
         // Limpia los checks de los inputs 
         let optionsGrade_inputs = venta.querySelectorAll(".labelInputGrade")
-        optionsGrade_inputs.forEach(element =>{
+        optionsGrade_inputs.forEach(element => {
             element.previousElementSibling.checked = false
-            element.classList.remove("selected") 
+            element.classList.remove("selected")
         })
         try {
             venta.querySelector(".backgroundSelect").remove()
             venta.querySelector(".wrapperButtonsGrade").classList.remove("selectedGrade")
         } catch (error) { }
-        
+
         containerWrapperComentario.remove()
     })
 }
@@ -206,20 +206,20 @@ function formComentario(idVenta,contenedor,grade){
 
 // Crear div para elegir el grado de la auditoria --------------------------
 
-function formEditPostVenta(idVenta,contenedor){
+function formEditPostVenta(idVenta, contenedor) {
     let venta = contenedor
 
     // Limpia otros forms o preForms que estan activado para que solo quede uno form activado
     cleanOtherForms(venta)
-    let stringForHTML = crearFormSegunEstadoAuditoria(idVenta,true)
-    if(document.querySelector(".wrapperButtonsGrade")){
+    let stringForHTML = crearFormSegunEstadoAuditoria(idVenta, true)
+    if (document.querySelector(".wrapperButtonsGrade")) {
         document.querySelectorAll(".wrapperButtonsGrade").forEach(element => element.remove());
     }
     venta.insertAdjacentHTML('beforeend', stringForHTML);
     let containerWrapperGrade = document.querySelector(".wrapperButtonsGrade");
 
     let closeGrade = venta.parentElement.querySelector("#cancelarGrade")
-    closeGrade.addEventListener("click",()=>{
+    closeGrade.addEventListener("click", () => {
         containerWrapperGrade.remove()
     })
 
@@ -231,10 +231,10 @@ function formEditPostVenta(idVenta,contenedor){
 
 // Form segun si la auditoria ya fue o no hecha ----------------------
 
-function crearFormSegunEstadoAuditoria(idVenta,realizada,grade="") {
+function crearFormSegunEstadoAuditoria(idVenta, realizada, grade = "") {
     let stringForHTML = "";
-    if(realizada){
-        stringForHTML =`
+    if (realizada) {
+        stringForHTML = `
         <div class="wrapperButtonsGrade">
             <div class="wrapperMessage">
                 <h3>¿Que prefieres hacer?</h3>
@@ -248,8 +248,8 @@ function crearFormSegunEstadoAuditoria(idVenta,realizada,grade="") {
             </div>       
         </div>
         `;
-    }else{
-        stringForHTML =`
+    } else {
+        stringForHTML = `
         <form method="POST" class="containerModularForm" id="containerModularForm">
             <div class="wrapperFormComentario">
                 <input type="hidden" name="idVenta" id="idVenta" value="${idVenta}" readonly>
@@ -273,15 +273,15 @@ function crearFormSegunEstadoAuditoria(idVenta,realizada,grade="") {
 
 // ------------------------------------------------------------------
 
-function crearMensajePostAuditoria(status,message){
-    if(status){
-        stringForHTML =`
+function crearMensajePostAuditoria(status, message) {
+    if (status) {
+        stringForHTML = `
             <div id="auditoriaMessageWrapper">
                 <h2 id="messageSuccess">${message}</h2>
             </div>
             `;
-    }else{
-        stringForHTML =`
+    } else {
+        stringForHTML = `
             <div id="auditoriaMessageWrapper">
                 <h2 id="messageError">${message}</h2>
             </div>        
@@ -292,14 +292,14 @@ function crearMensajePostAuditoria(status,message){
 
 function crearNuevoStatusAuditoria(grade) {
     let stringForHTML;
-    if(grade){
-        stringForHTML =`
+    if (grade) {
+        stringForHTML = `
         <div class="statusPostVenta">                                                    
             <div class="dotStatus aprobada"></div>
             <h3>Auditoria aprobada</h3>             
         </div>`;
-    }else{
-        stringForHTML =`
+    } else {
+        stringForHTML = `
         <div class="statusPostVenta">                                                    
             <div class="dotStatus desaprobada"></div>
             <h3>Auditoria desaprobada</h3>             
@@ -309,15 +309,15 @@ function crearNuevoStatusAuditoria(grade) {
 }
 
 function crearBotonEditar(idVenta) {
-    stringForHTML =`
+    stringForHTML = `
     <div class="buttonsWrapper">
         <label for="editarI" id="editar" onclick="formEditPostVenta('${idVenta}',this.offsetParent)">Editar</label>
     </div>`
     return stringForHTML;
 }
 
-function crearNuevoComentario(comentario,fecha,grade) {
-    let stringForHTML =`
+function crearNuevoComentario(comentario, fecha, grade) {
+    let stringForHTML = `
     <div class="infoCheckWrapper">
         <div class="wrapperComentarios">
             <h4>Comentarios</h4>
@@ -339,20 +339,20 @@ function crearNuevoComentario(comentario,fecha,grade) {
 
 
 // Limpia otros forms o preForms que estan activado para que solo quede uno form activado
-function cleanOtherForms(ventaItem){
+function cleanOtherForms(ventaItem) {
     // Verifica si existe otros con esa clase para eliminarlos 
-    if(document.querySelector(".containerModularForm") && !ventaItem.querySelector(".containerModularForm")){
+    if (document.querySelector(".containerModularForm") && !ventaItem.querySelector(".containerModularForm")) {
         let formWrapper = document.querySelector(".containerModularForm")
         let options_grade = formWrapper.offsetParent.querySelectorAll(".labelInputGrade")
-        options_grade.forEach(element =>{
+        options_grade.forEach(element => {
             element.previousElementSibling.checked = false
-            element.classList.remove("selected") 
+            element.classList.remove("selected")
         })
         formWrapper.remove()
     }
 
     // Verifica si existe otros con esa clase para eliminarlos 
-    if(document.querySelector(".wrapperButtonsGrade") && !ventaItem.querySelector(".wrapperButtonsGrade")){
+    if (document.querySelector(".wrapperButtonsGrade") && !ventaItem.querySelector(".wrapperButtonsGrade")) {
         document.querySelectorAll(".wrapperButtonsGrade").forEach(element => element.remove());
     }
 }
