@@ -762,13 +762,13 @@ def importar_clientes(request):
                     Cliente.objects.create(
                         nro_cliente = row['nro'],
                         nombre=handle_nan(row['cliente']),
-                        dni=handle_nan(row['dni']) ,
+                        dni= str(int(float(row['dni']))) if handle_nan(row['dni']) != "" else "",
                         agencia_registrada = Sucursal.objects.get(pseudonimo = agencia),
                         domic=handle_nan(row['domic']) ,
                         loc = handle_nan(row["loc"]) ,
                         prov = handle_nan(row["prov"]) ,
-                        cod_postal = handle_nan(row["cod_pos"]),
-                        tel=handle_nan(row['tel_1']) ,
+                        cod_postal = str(int(float(row["cod_pos"]))) if handle_nan(row["cod_pos"]) != "" else "",
+                        tel= str(int(float(row['tel_1']))) if handle_nan(row['tel_1']) != "" else "" ,
                         fec_nacimiento = format_date(handle_nan(row["fecha_de_nac"])),
                         estado_civil = handle_nan(row["estado_civil"]) ,
                         ocupacion = handle_nan(row["ocupacion"]) 

@@ -1176,10 +1176,10 @@ def filtroVentasAuditoria(request):
                     "nombre": venta.nro_cliente.nombre,
                     "dni": formatear_moneda(venta.nro_cliente.dni),
                     "nro_operacion": venta.nro_operacion,
-                    "fecha": venta.fecha,
-                    "tel": str(int(float(venta.nro_cliente.tel))),
+                    "fecha": formatear_dd_mm_yyyy(venta.fecha),
+                    "tel": str(int(float(venta.nro_cliente.tel))) if venta.nro_cliente.tel else "",
                     "loc": venta.nro_cliente.loc,
-                    "cod_postal": venta.nro_cliente.cod_postal,
+                    "cod_postal": str(int(float(venta.nro_cliente.cod_postal))) if venta.nro_cliente.cod_postal else "",
                     "prov": venta.nro_cliente.prov,
                     "domic": venta.nro_cliente.domic,
                     "vendedor": venta.vendedor.nombre,
@@ -1199,7 +1199,7 @@ def filtroVentasAuditoria(request):
             }
 
             
-            ventasJSON.sort(key=lambda x: datetime.strptime(x['fecha'], "%d/%m/%Y %H:%M"), reverse=True)
+            ventasJSON.sort(key=lambda x: datetime.strptime(x['fecha'], "%d/%m/%Y"), reverse=True)
 
             return JsonResponse({"status": True, "ventas": ventasJSON, "resumen": resumenAuditorias}, safe=False)
         # except Exception as e:
