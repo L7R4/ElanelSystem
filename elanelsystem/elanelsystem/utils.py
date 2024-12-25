@@ -102,7 +102,10 @@ def printPDF(data,url,liquidacionName,htmlPath,cssPath):
     return pdf
 
 
-# Esto es para que cuando se importa en excel sino existen instancias en la BD
-# pueda crearse una provisoriamente para que no reviente todo a la mierda.
-# def crearModeloProvisorio():
-#     pass
+# Funcion para formatear las fechas
+def formatear_dd_mm_yyyy(valor):
+    # print(valor)
+    fechaRequest= datetime.strptime(valor, '%d/%m/%Y %H:%M')
+    fechaFormated = fechaRequest.strftime('%d/%m/%Y')
+    print(fechaFormated)
+    return fechaFormated

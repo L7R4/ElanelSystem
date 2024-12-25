@@ -5,7 +5,7 @@ from users.models import Usuario
 from django.db.models import Max
 from sales.models import Ventas
 from sales.utils import obtener_ultima_campania, formatear_moneda
-
+from elanelsystem.utils import formatear_dd_mm_yyyy
 
 register = template.Library()
 
@@ -56,14 +56,12 @@ def organizarPorFecha(valor):
 
 @register.filter(name='format_dd_mm_yyyy')
 def format_dd_mm_yyyy(valor):
-    fechaRequest= datetime.datetime.strptime(valor, '%d/%m/%Y %H:%M')
-    fechaFormated = fechaRequest.strftime('%d/%m/%Y')
+    return formatear_dd_mm_yyyy(valor)
 
-    return fechaFormated
+
 
 @register.filter(name='cuotas_pagadas_len')
 def cuotas_pagadas_len(venta):
-    print(venta.cuotas_pagadas())
     return len(venta.cuotas_pagadas())
 
 @register.simple_tag
