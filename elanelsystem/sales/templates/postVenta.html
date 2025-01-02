@@ -6,8 +6,14 @@
 {% obtener_ultima_campania as ultima_campania %} 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/postVenta.css' %}" />
+<link rel="stylesheet" href="{% static 'css/loader.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+
 {% endblock css %} 
 {% block content %}
+<div id="wrapperLoader">
+    <span id="loader"></span>
+</div>
 <div class="filters">
     <form method="POST" id="formFilterVentas">
         {% csrf_token %}
@@ -115,7 +121,7 @@
                 {% for venta in ventas %} 
                     {% with ultima_auditoria=venta.auditoria|postVenta_getLastAuditoria %}
                         <li class="operationItem">
-                            <div class="ventaWrapper">
+                            <div class="ventaWrapper" id="v{{venta.id}}">
                                 <div class="statusWrapperShortInfo">
                                     <img src="${statusIcon}" alt="" />
                                     <p>${statusText}</p>
@@ -214,56 +220,9 @@
                                     <div class="statusWrapper">
                                         <div class="buttonsWrapper">
                                             {% if ultima_auditoria.realizada %}
-                                            <label
-                                                for="editarI"
-                                                id="editar"
-                                                onclick="formEditPostVenta('{{venta.id}}',this.offsetParent)"
-                                                >Editar</label
-                                            >
+                                                <button id="editarButton" onclick="modalForm(v{{venta.id}})">Editar</button>
                                             {% else %}
-                                            <input
-                                                type="radio"
-                                                name="grade"
-                                                id="aprobarI"
-                                                value="a"
-                                                form="containerModularForm"
-                                            />
-                                            <label
-                                                for="aprobarI"
-                                                id="aprobar"
-                                                class="labelInputGrade"
-                                                onclick="formComentario('{{venta.id}}',this.offsetParent.parentElement,this.id)"
-                                                >Aprobar</label
-                                            >
-                                            <input
-                                                type="radio"
-                                                name="grade"
-                                                id="desaprobarI"
-                                                value="d"
-                                                form="containerModularForm"
-                                            />
-                                            <label
-                                                for="desaprobarI"
-                                                id="desaprobar"
-                                                class="labelInputGrade"
-                                                onclick="formComentario('{{venta.id}}',this.offsetParent.parentElement,this.id)"
-                                                >Desaprobar</label
-                                            >
-                                            {% endif %}
-                                        </div>
-
-                                        <div class="statusPostVenta">
-                                            {% if ultima_auditoria.realizada %} 
-                                                {% if ultima_auditoria.grade%}
-                                                    <div class="dotStatus aprobada"></div>
-                                                    <h3>Auditoria aprobada</h3>
-                                                {% else %}
-                                                    <div class="dotStatus desaprobada"></div>
-                                                    <h3>Auditoria desaprobada</h3>
-                                                {% endif %} 
-                                            {% else %}
-                                                <div class="dotStatus pendiente"></div>
-                                                <h3>Auditoria pendiente</h3>
+                                                <button id="auditarButton" onclick="modalForm(v{{venta.id}})">Auditar</button>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -325,6 +284,7 @@
 {% comment %}
 <script src="{% static 'js/filtersPostVenta.js' %}"></script>
 {% endcomment %}
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/postVenta.js' %}"></script>
 <script src="{% static 'js/input_search_postventa.js' %}"></script>
 <script src="{% static 'js/input_select_create_user.js' %}"></script>

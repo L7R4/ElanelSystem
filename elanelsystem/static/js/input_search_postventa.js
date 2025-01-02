@@ -30,10 +30,10 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
-function itemVentaHTML(id,statusText,statusIcon, nombre, dni, nro_operacion, fecha, tel, cod_postal, loc, prov, domic, vendedor, supervisor, auditoria, campania) {
+function itemVentaHTML(id, statusText, statusIcon, nombre, dni, nro_operacion, fecha, tel, cod_postal, loc, prov, domic, vendedor, supervisor, auditoria, campania) {
     let stringHTML = `
     <li class="operationItem">
-        <div class="ventaWrapper">
+        <div class="ventaWrapper" id="v${id}">
                 <div class="statusWrapperShortInfo">
                     <img src="${statusIcon}" alt="">
                     <p>${statusText}</p>
@@ -95,7 +95,7 @@ function itemVentaHTML(id,statusText,statusIcon, nombre, dni, nro_operacion, fec
                             <h1>${campania}</h1>
                         </div>`;
 
-    if (auditoria.length > 0 && auditoria[auditoria.length - 1]["realizada"]) {
+    if (auditoria.length > 0) {
         stringHTML += `<div class="containerHistorialAuditorias">`;
         auditoria.forEach((e, i, array) => {
             stringHTML += `
@@ -104,49 +104,30 @@ function itemVentaHTML(id,statusText,statusIcon, nombre, dni, nro_operacion, fec
                         <h4>Comentarios</h4>
                         <p>${e.comentarios}</p>
                     </div>
+                    <div class="wrapperGrade">
+                    ${e["grade"] ? '<p>Aprobada</p>' : '<p>Desaprobada</p>'}
+                    </div>
                     <div class="wrapperFechaHora">
                         <p>${e.fecha_hora}</p>
-                    </div>
-                    <div class="wrapperGrade">
-                        ${e["grade"] ? '<p>Aprobada</p>' : '<p>Desaprobada</p>'}
                     </div>
                     ${i === array.length - 1 ? '<div class="wrapperUltimo"><p>Último</p></div>' : ""}
                 </div>`;
         });
-        stringHTML += `</div></div>`;
+        stringHTML += `</div>`;
     }
 
     stringHTML += ` 
-    <div class="statusWrapper">
-        <div class="buttonsWrapper">`;
-
-    if (auditoria.length > 0 && auditoria[auditoria.length - 1]["realizada"]) {
-        stringHTML += `<label for="editarI" id="editar" onclick="formEditPostVenta(${id},this.offsetParent)">Editar</label>
         </div>
-        <div class="statusPostVenta">`;
-
-        if (auditoria[auditoria.length - 1]["grade"]) {
-            stringHTML += `<div class="dotStatus aprobada"></div>
-                           <h3>Auditoria aprobada</h3></div>`;
-        } else {
-            stringHTML += `<div class="dotStatus desaprobada"></div>
-                            <h3>Auditoria desaprobada</h3></div>`;
+        <div class="buttonsWrapper">
+        
+        ${auditoria.length > 0
+            ? `<button id="editarButton" onclick="modalForm('v${id}')">Editar</button>`
+            : `<button id="auditarButton" onclick="modalForm('v${id}')">Auditar</button>`
         }
-
-    } else {
-        stringHTML += `<input type="radio" name="grade" id="aprobarI" value="a">
-        <label for="aprobarI" id="aprobar" class ="labelInputGrade" onclick="formComentario(${id},this.offsetParent.parentElement,this.id)">Aprobar</label>
-        <input type="radio" name="grade" id="desaprobarI" value="d">
-        <label for="desaprobarI" id="desaprobar" class ="labelInputGrade" onclick="formComentario(${id},this.offsetParent.parentElement,this.id)">Desaprobar</label>
         </div>
-        <div class="statusPostVenta">
-            <div class="dotStatus pendiente"></div>
-            <h3>Auditoria pendiente</h3>
-        </div>`;
-    }
+        `;
 
-    stringHTML += `</div>               
-            </div>
+    stringHTML += ` </div>
         </div>
     </li>`;
 
