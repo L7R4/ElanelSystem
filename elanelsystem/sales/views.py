@@ -1090,44 +1090,45 @@ class PostVenta(TestLogin,generic.View):
     def post(self, request, *args, **kwargs):
         if(HttpResponse.status_code == 200):
             response_data = {}
-            grade = request.POST.get("grade")
-            id_venta = request.POST.get("idVenta")
+            form = request.POST
+
+            grade = form.get("grade")
+            id_venta = int(form.get("idVenta"))
+            comentarios = form.get("comentarioInput")
+
             venta = Ventas.objects.get(pk=id_venta)
-            comentarios = request.POST.get("comentarioInput")
 
             new_dict_auditoria = {}
-            ultimaAuditoria = venta.auditoria[-1]
             if grade == "a":
-                    new_dict_auditoria["grade"] = True
-                    response_data["message"] = "Auditoria aprobada exitosamente"
-                    response_data["status"] = True
-                    response_data["grade"] = True
-                    response_data["gradeString"] = "Aprobada"
+                new_dict_auditoria["grade"] = True
+                response_data["message"] = "Auditoria aprobada exitosamente"
+                
 
             elif grade == "d":
                 new_dict_auditoria["grade"]  = False
                 response_data["message"] = "Auditoria desaprobada exitosamente"
-                response_data["grade"] = False
-                response_data["status"] = True
-                response_data["gradeString"] = "Desaprobada"
+
 
             new_dict_auditoria["realizada"] = True
             new_dict_auditoria["comentarios"] = comentarios
-            new_dict_auditoria["fecha_hora"] = datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
-
-            if ultimaAuditoria["version"] == 0:
-                new_dict_auditoria["version"] = 1
-                venta.auditoria[0] = new_dict_auditoria
-            else:
-                new_dict_auditoria["version"] = ultimaAuditoria["version"] + 1
-                venta.auditoria.append(new_dict_auditoria)
+            new_dict_auditoria["fecha_hora"] = datetime.today().strftime("%d/%m/%Y %H:%M")
+            new_dict_auditoria["version"] = len(venta.auditoria) + 1 
+            venta.auditoria.append(new_dict_auditoria)
             venta.save()
             
-            response_data["comentarioString"] = comentarios
-            response_data["fechaString"] = datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
+            response_data["ventaUpdated_id"] = str(id_venta)
+            response_data["status"] = True
+            response_data["auditorias"] = venta.auditoria
+            response_data["statusIcon"] = obtenerStatusAuditoria(venta)["statusIcon"]
+            response_data["statusText"] = obtenerStatusAuditoria(venta)["statusText"]
+            response_data["iconMessage"] = "/static/images/icons/checkMark.svg"
             return JsonResponse(response_data, safe=False)
+        
         else:
-            response_data = {"status": False,"message": "Hubo un error al generar la auditoria"}
+            response_data["iconMessage"] = "/static/images/icons/error_icon.svg"
+            response_data["status"] = False
+            response_data["message"] = "Hubo un error al generar la auditoria"
+
             return JsonResponse(response_data, safe=False)
 
 

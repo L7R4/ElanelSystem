@@ -267,10 +267,10 @@ def obtenerStatusAuditoria(venta): # Devuelve el estado de la ultima auditoria
     
     # Verifica el estado de la última auditoría
     if ultima_auditoria.get("grade") is True:
-        return {"statusText": "Aprobado", "statusIcon": static(f"images/icons/operationActivo.svg")}  # No auditada
+        return {"statusText": "Aprobada", "statusIcon": static(f"images/icons/operationActivo.svg")}  # No auditada
 
     elif ultima_auditoria.get("grade") is False:
-        return {"statusText": "Desaprobado", "statusIcon": static(f"images/icons/operationBaja.svg")}  # No auditada
+        return {"statusText": "Desaprobada", "statusIcon": static(f"images/icons/operationBaja.svg")}  # No auditada
 
 
 def formatear_moneda(valor):
