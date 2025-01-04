@@ -389,7 +389,8 @@
     font-family: raleway-semibold;
     color: white;
 }
-.wrapperFiltroTexto > a{
+
+.wrapperFiltroTexto>a {
     font-size: clamp(1.2rem, 1.2vw, 1.5rem);
     font-family: raleway-semibold;
     color: var(--third-color);
@@ -397,6 +398,7 @@
     margin-top: 1rem;
     display: block;
 }
+
 /* #endregion */
 
 

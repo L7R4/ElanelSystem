@@ -1085,6 +1085,45 @@ class PostVenta(TestLogin,generic.View):
             "campania_actual": campania,
             "campaniasDisponibles": getTodasCampaniasDesdeInicio(),
         }
+
+        #region para guardar en la sesion la info de las ventas por si se necesita generar un informe 
+        ventasJSON = []
+        for venta in ventas:
+                ventasJSON.append({
+                    "id": venta.pk,
+                    "statusText": obtenerStatusAuditoria(venta)["statusText"],
+                    "statusIcon":obtenerStatusAuditoria(venta)["statusIcon"],
+                    "nombre": venta.nro_cliente.nombre,
+                    "dni": formatear_moneda(venta.nro_cliente.dni),
+                    "nro_operacion": venta.nro_operacion,
+                    "fecha": formatear_dd_mm_yyyy(venta.fecha),
+                    "tel": str(int(float(venta.nro_cliente.tel))) if venta.nro_cliente.tel else "",
+                    "loc": venta.nro_cliente.loc,
+                    "cod_postal": str(int(float(venta.nro_cliente.cod_postal))) if venta.nro_cliente.cod_postal else "",
+                    "prov": venta.nro_cliente.prov,
+                    "domic": venta.nro_cliente.domic,
+                    "vendedor": venta.vendedor.nombre,
+                    "supervisor": venta.supervisor.nombre,
+                    "producto": venta.producto.nombre,
+                    "auditoria": venta.auditoria,
+                    "campania": venta.campania,
+                })
+            
+        auditoriasRealizadas = [
+                venta for venta in ventas if len(venta.auditoria) > 0
+            ]
+
+        resumenAuditorias = {
+                "cant_auditorias_pendientes": len([venta for venta in ventas if len(venta.auditoria) == 0]),
+                "cant_auditorias_realizadas": len(auditoriasRealizadas),
+                "cant_auditorias_aprobadas": len([venta for venta in auditoriasRealizadas if venta.auditoria[-1].get("grade") == True]),
+                "cant_auditorias_desaprobadas": len([venta for venta in auditoriasRealizadas if venta.auditoria[-1].get("grade") == False]),
+            }
+
+        ventasJSON.sort(key=lambda x: datetime.strptime(x['fecha'], "%d/%m/%Y"), reverse=True)
+
+        request.session["postVenta_info"] = {"ventas": ventasJSON, "resumen":resumenAuditorias}
+        #endregion
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
@@ -1143,15 +1182,15 @@ def filtroVentasAuditoria(request):
 
              # Filtrar según el estado
             estado = form.get("estado","")
-            
+            print(form)
             if estado == "Pendientes":  # No auditadas
                 ventas = ventas.filter(Q(auditoria=[]))
             elif estado == "Realizadas":  # Realizadas
                 ventas = ventas.exclude(Q(auditoria=[]))
             elif estado == "Aprobadas":  # Auditadas y aprobadas
-                ventas = ventas.filter(auditoria__estado="aprobada")
+                ventas = [venta for venta in ventas if len(venta.auditoria) > 0 and venta.auditoria[-1]["grade"] == True]
             elif estado == "Desaprobadas":  # Auditadas y desaprobadas
-                ventas = ventas.filter(auditoria__estado="desaprobada")
+                ventas = [venta for venta in ventas if len(venta.auditoria) > 0 and venta.auditoria[-1]["grade"] == False]
             else:
                 pass
 
@@ -1190,18 +1229,20 @@ def filtroVentasAuditoria(request):
                     "campania": venta.campania,
                 })
             
-            auditoriasRealizadas = ventas.exclude(Q(auditoria=[]))
-            auditorias_realidas_list = list(auditoriasRealizadas.values())
-            resumenAuditorias ={
-                "cant_auditorias_pendientes" : ventas.filter(Q(auditoria=[])).count(),
-                "cant_auditorias_realizadas" : auditoriasRealizadas.count(),
-                "cant_auditorias_aprobadas" : len(list(filter(lambda x: x["auditoria"][-1]["grade"] == True,auditorias_realidas_list))),
-                "cant_auditorias_desaprobadas" : len(list(filter(lambda x: x["auditoria"][-1]["grade"] == False,auditorias_realidas_list)))
+            auditoriasRealizadas = [
+                venta for venta in ventas if len(venta.auditoria) > 0
+            ]
+
+            resumenAuditorias = {
+                "cant_auditorias_pendientes": len([venta for venta in ventas if len(venta.auditoria) == 0]),
+                "cant_auditorias_realizadas": len(auditoriasRealizadas),
+                "cant_auditorias_aprobadas": len([venta for venta in auditoriasRealizadas if venta.auditoria[-1].get("grade") == True]),
+                "cant_auditorias_desaprobadas": len([venta for venta in auditoriasRealizadas if venta.auditoria[-1].get("grade") == False]),
             }
 
             
             ventasJSON.sort(key=lambda x: datetime.strptime(x['fecha'], "%d/%m/%Y"), reverse=True)
-
+            request.session["postVenta_info"] = {"ventas": ventasJSON, "resumen":resumenAuditorias}
             return JsonResponse({"status": True, "ventas": ventasJSON, "resumen": resumenAuditorias}, safe=False)
         # except Exception as e:
         #     return JsonResponse({"status": False, "message": str(e)}, safe=False)
@@ -1494,19 +1535,21 @@ def viewsPDFInformePostVenta(request):
     # Para pasar el detalles de los movs
     datos_modificado = [
         {
-            "Nro Orden": d.get("nroOrden", "---"),
-            "Camp": d.get("campania","---"),
-            "Cliente": d.get("cliente","---"),
-            "DNI": d.get("dni","---"),
-            "Fec insc": d.get("fec_insc","---"),
-            "Tel": d.get("tel","---"),
-            "CP": d.get("cp", "---"),
-            "Prov": d.get("prov","---"),
-            "Loc": d.get("loc", "---"),
-            "Direc": d.get("direc", "---"),
-            "Vendedor": d.get("vendedor", "---"),
-            "Supervisor": d.get("supervisor", "---"),
-            "Auditoria": d.get("auditoria", "---"),
+            "operacion" : d.get("nro_operacion", "---"),
+            "info" : {
+                "Camp": d.get("campania","---"),
+                "Cliente": d.get("nombre","---"),
+                "DNI": d.get("dni","---"),
+                "Fec insc": d.get("fecha","---"),
+                "Tel": d.get("tel","---"),
+                "CP": d.get("cod_postal", "---"),
+                "Prov": d.get("prov","---"),
+                "Loc": d.get("loc", "---"),
+                "Direc": d.get("domic", "---"),
+                "Vendedor": d.get("vendedor", "---"),
+                "Supervisor": d.get("supervisor", "---"),
+            },
+            "auditorias":d.get("auditoria", "---"),
         }
         for d in datos["ventas"]
     ]
