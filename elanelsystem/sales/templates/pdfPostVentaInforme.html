@@ -1,58 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informe de auditorias</title>
+    <title>Informe de Auditorías</title>
 </head>
 <body>
-    <h1 class="tittleOfSections">Informe de auditorias</h1>
-    <div class="headAuditorias">
-        {% for clave in data.0.keys %}
-            {% if  clave != "Auditoria"%}
-                <div>
-                    <h6>{{ clave }}</h6>
-                </div>
-            {% else %}
-            {% endif %}
-        {% endfor %}
-    </div>
-
+    <h1 class="tittleOfSections">Informe de Auditorías</h1>
     {% for dicc in data %}
-    <div class="wrapperAuditorias">
-            <div class="bodyAuditoria">
-            {% for k, v in dicc.items %}
-                {% if k != "Auditoria" %}
-                    <div><p>{{ v }}</p></div>
-                {% else %}
-                </div>
-                <div class="auditoriasWrapper">
-                    <div>
-                        <h6 class="tittleAuditoria">Auditorias</h6>
-                        <div class="headAuditoriasWrapper">
-                            <h6>Estado</h6>
-                            <h6>Fecha/Hora</h6>
-                            <h6>Comentarios</h6>
-                        </div>
-                    </div>
-                    <div class="listAuditoriasWrapper">
-                        {% for audit in v %}
-                            <div class="auditoriaItem">
-                                {% if audit.grade %}
-                                    <p>Aprobado</p>
-                                {% else %}
-                                    <p>Desaprobado</p>
-                                {% endif %}
-                                <p>{{ audit.fecha_hora|default:'' }}</p>
-                                <p>{{ audit.comentarios|default:'' }}</p>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="dividerByItem"></div>
-                {% endif %}
+    <h2>Venta N° {{ dicc.operacion }}</h2>
+    <table class="auditoriasTable" border="1">
+        <thead>
+            <tr>
+                <th>Camp</th>
+                <th>Cliente</th>
+                <th>DNI</th>
+                <th>Fec insc</th>
+                <th>Tel</th>
+                <th>CP</th>
+                <th>Prov</th>
+                <th>Loc</th>
+                <th>Direc</th>
+                <th>Vendedor</th>
+                <th>Supervisor</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+                <tr>
+                    {% for k, v in dicc.info.items %}
+                        <td>{{ v }}</td>
+                    {% endfor %}
+                </tr>
+                               
+                    
+            </tbody>
+    </table>
+    <h4>Auditorias</h4>
+    <table border="1" class="nestedAuditoriasTable">
+        <thead>
+            <tr>
+                <th>Estado</th>
+                <th>Fecha/Hora</th>
+                <th>Comentarios</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for audit in dicc.auditorias %}
+                <tr>
+                    <td>{% if audit.grade %}Aprobado{% else %}Desaprobado{% endif %}</td>
+                    <td>{{ audit.fecha_hora|default:'' }}</td>
+                    <td>{{ audit.comentarios|default:'' }}</td>
+                </tr>
             {% endfor %}
-    </div>
+        </tbody>
+    </table>
     {% endfor %}
 
 </body>

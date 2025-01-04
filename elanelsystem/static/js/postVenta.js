@@ -1,32 +1,36 @@
 var url = window.location.pathname;
 
 // #region Displays items de ventas ---------------------------
+
+// Función reutilizable para alternar la altura y clase de un elemento de detalle
+function toggleWrapperDetail(button) {
+    let wrapperDetailInfo = button.parentElement.querySelector(".wrapperDetailInfo");
+    let heightDetail = wrapperDetailInfo.scrollHeight;
+
+    if (wrapperDetailInfo.style.maxHeight === heightDetail + 'px') {
+        wrapperDetailInfo.style.maxHeight = '0px';
+        wrapperDetailInfo.style.height = '0px';
+        wrapperDetailInfo.classList.remove("active");
+    } else {
+        wrapperDetailInfo.style.maxHeight = heightDetail + 'px';
+        wrapperDetailInfo.style.height = heightDetail + 'px';
+        wrapperDetailInfo.classList.add("active");
+    }
+
+    if (button.children[0].classList.contains("active")) {
+        button.children[0].classList.remove("active");
+    } else {
+        button.children[0].classList.add("active");
+    }
+}
+
+
 function showDetailsVentas() {
-    let buttonsDisplaysDetailsVentas = document.querySelectorAll(".displayDetailInfoButton")
+    let buttonsDisplaysDetailsVentas = document.querySelectorAll(".displayDetailInfoButton");
     buttonsDisplaysDetailsVentas.forEach(button => {
         button.addEventListener("click", () => {
-            let wrapperDetailInfo = button.parentElement.querySelector(".wrapperDetailInfo")
-            let heightDetail = wrapperDetailInfo.scrollHeight
-
-            if (wrapperDetailInfo.style.maxHeight === heightDetail + 'px') {
-                wrapperDetailInfo.style.maxHeight = '0px'
-                wrapperDetailInfo.style.height = '0px'
-                wrapperDetailInfo.classList.remove("active")
-
-            } else {
-                wrapperDetailInfo.style.maxHeight = heightDetail + 'px'
-                wrapperDetailInfo.style.height = heightDetail + 'px'
-                wrapperDetailInfo.classList.add("active")
-            }
-
-
-            if (button.children[0].classList.contains("active")) {
-                button.children[0].classList.remove("active")
-            } else {
-                button.children[0].classList.add("active")
-            }
-
-        })
+            toggleWrapperDetail(button);
+        });
     });
 }
 showDetailsVentas();
@@ -143,7 +147,7 @@ function refreshVenta(ventaUpdated) {
 
     // #region Actualiza los botones
     ventaElement.querySelector(".buttonsWrapper").innerHTML = `
-    '<button class="editarButton" onclick="modalForm(v${ventaUpdated.id})">Editar</button>'
+    <button class="editarButton" onclick="modalForm(v${ventaUpdated.id})">Editar</button>
     `;
     // #endregion
 
@@ -164,9 +168,9 @@ function modalForm(venta_id) {
         },
     });
 
-    venta_id = venta_id.slice(1); // Limpia el primer caracter de venta_id
+    venta_id_formated = venta_id.slice(1); // Limpia el primer caracter de venta_id
     // set content
-    modal.setContent(renderFormAuditoria(venta_id));
+    modal.setContent(renderFormAuditoria(venta_id_formated));
 
 
     // add a button
@@ -181,6 +185,11 @@ function modalForm(venta_id) {
             console.log("Salio todo bien");
             hiddenLoader();
             refreshVenta(response);
+
+            const ventaElement = document.getElementById(venta_id);
+            const button = ventaElement.querySelector('.displayDetailInfoButton'); // Ajusta el selector según tu caso
+            if (button) toggleWrapperDetail(button);
+
             modal.close();
             modal.destroy();
         } else {
