@@ -121,8 +121,8 @@ function itemVentaHTML(id, statusText, statusIcon, nombre, dni, nro_operacion, f
         <div class="buttonsWrapper">
         
         ${auditoria.length > 0
-            ? `<button id="editarButton" onclick="modalForm('v${id}')">Editar</button>`
-            : `<button id="auditarButton" onclick="modalForm('v${id}')">Auditar</button>`
+            ? `<button class="editarButton" onclick="modalForm('v${id}')">Editar</button>`
+            : `<button class="auditarButton" onclick="modalForm('v${id}')">Auditar</button>`
         }
         </div>
         `;
