@@ -1101,12 +1101,12 @@ class PostVenta(TestLogin,generic.View):
             new_dict_auditoria = {}
             if grade == "a":
                 new_dict_auditoria["grade"] = True
-                response_data["message"] = "Auditoria aprobada exitosamente"
+                response_data["message"] = f"Auditoria de la venta {id_venta} aprobada exitosamente"
                 
 
             elif grade == "d":
                 new_dict_auditoria["grade"]  = False
-                response_data["message"] = "Auditoria desaprobada exitosamente"
+                response_data["message"] = f"Auditoria de la venta {id_venta} desaprobada exitosamente"
 
 
             new_dict_auditoria["realizada"] = True

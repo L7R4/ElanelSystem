@@ -78,6 +78,7 @@ function renderFormAuditoria(venta_id) {
     <form method="POST" class="containerModularForm" id="containerModularForm">
         ${CSRF_TOKEN}
         <input type="hidden" name="idVenta" id="idVenta" value="${venta_id}" readonly>
+        <h2>Selecciona el estado de la auditoria</h2>
         <div class="wrapperButtonsGrade">
             <div class="buttonsWrapper">
                 <input type="radio" name="grade" id="aprobarI" value="a">
@@ -99,8 +100,7 @@ function renderFormAuditoria(venta_id) {
 
 
 function refreshVenta(ventaUpdated) {
-    const ventaElement = document.getElementById(`v${ventaUpdated.id}`);
-
+    const ventaElement = document.getElementById(`v${ventaUpdated["ventaUpdated_id"]}`);
 
     const statusText_updated = ventaUpdated.statusText;
     const statusIcon_updated = ventaUpdated.statusIcon;
@@ -113,7 +113,7 @@ function refreshVenta(ventaUpdated) {
 
     let stringHTMLAuditorias = ``;
     auditorias_updated.forEach((e, i, array) => {
-        stringHTML += `
+        stringHTMLAuditorias += `
             <div class="infoCheckWrapper">
                 <div class="wrapperComentarios">
                     <h4>Comentarios</h4>
@@ -143,7 +143,7 @@ function refreshVenta(ventaUpdated) {
 
     // #region Actualiza los botones
     ventaElement.querySelector(".buttonsWrapper").innerHTML = `
-    '<button id="editarButton" onclick="modalForm(v${ventaUpdated.id})">Editar</button>'
+    '<button class="editarButton" onclick="modalForm(v${ventaUpdated.id})">Editar</button>'
     `;
     // #endregion
 
@@ -170,7 +170,7 @@ function modalForm(venta_id) {
 
 
     // add a button
-    modal.addFooterBtn('Auditar', 'tingle-btn tingle-btn--primary', async function () {
+    modal.addFooterBtn('Auditar', 'tingle-btn tingle-btn--primary buttonAuditControl', async function () {
 
         let form = document.querySelector("#containerModularForm")
         showLoader()
@@ -180,7 +180,7 @@ function modalForm(venta_id) {
         if (response.status) {
             console.log("Salio todo bien");
             hiddenLoader();
-            refreshVenta(response["ventaUpdated_id"]);
+            refreshVenta(response);
             modal.close();
             modal.destroy();
         } else {
@@ -190,12 +190,12 @@ function modalForm(venta_id) {
             modal.close();
             modal.destroy();
         }
-        // newModalMessage(response.message, response.iconMessage);
+        newModalMessage(response["message"], response["iconMessage"]);
 
     });
 
     // add another button
-    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default', function () {
+    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default buttonAuditControl', function () {
         modal.close();
         modal.destroy();
     });
@@ -244,24 +244,35 @@ function enableAuditarButton() {
     })
 }
 
-// function newModalMessage(message, iconMessage) {
-//     let modalMessage = new tingle.modal({
-//         footer: true,
-//         closeMethods: ['overlay', 'button', 'escape'],
-//         cssClass: ['modalContainerMessage'],
 
-//     });
+function renderMessage(message, iconMessage) {
+    return `
+        <div id="messageStatusContainer">
+            <img src="${iconMessage}" alt="">
+            <h2>${message}</h2>
+        </div>
+    `
+}
 
-//     // set content
-//     modalMessage.setContent(renderMessage(message, iconMessage));
+
+function newModalMessage(message, iconMessage) {
+    let modalMessage = new tingle.modal({
+        footer: true,
+        closeMethods: ['overlay', 'button', 'escape'],
+        cssClass: ['modalContainerMessage'],
+
+    });
+
+    // set content
+    modalMessage.setContent(renderMessage(message, iconMessage));
 
 
-//     modalMessage.addFooterBtn('Cerrar', 'tingle-btn tingle-btn--default', function () {
-//         // here goes some logic
-//         modalMessage.close();
-//         modalMessage.destroy();
-//     });
+    modalMessage.addFooterBtn('Cerrar', 'tingle-btn tingle-btn--default buttonAuditControl', function () {
+        // here goes some logic
+        modalMessage.close();
+        modalMessage.destroy();
+    });
 
-//     // open modal
-//     modalMessage.open();
-// }
+    // open modal
+    modalMessage.open();
+}
