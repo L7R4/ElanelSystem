@@ -73,6 +73,7 @@ def getDetalleComisionPorCantVentasPropias(usuario,campania,agencia):
     cantVentasTotal = 0
     comisionTotal = 0
     ventas = ""
+    
     for typePlan in typePlanes:
         if(typePlan =="com_48_60"):
             ventas = Ventas.objects.filter(vendedor=usuario, campania=campania, agencia=agencia ,nro_cuotas__in=[48, 60], adjudicado__status=False, deBaja__status=False)
@@ -80,8 +81,14 @@ def getDetalleComisionPorCantVentasPropias(usuario,campania,agencia):
             ventas = Ventas.objects.filter(vendedor=usuario, campania=campania, agencia=agencia ,nro_cuotas__in=[24, 30] , producto__tipo_de_producto="Moto", adjudicado__status=False, deBaja__status=False)
         elif (typePlan =="com_24_30_elec_soluc"):
             ventas = Ventas.objects.filter(vendedor=usuario, campania=campania, agencia=agencia ,nro_cuotas__in=[24, 30] , producto__tipo_de_producto__in=["Prestamo","Electrodomestico"], adjudicado__status=False, deBaja__status=False)
+        
+        ventas = [
+            venta for venta in ventas
+            if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+        ]
+        cantVentas = len(ventas)
+        # cantVentas = ventas.count()
 
-        cantVentas = ventas.count()
         comision = 0
 
         # Verfica que coeficiente usar segun la cantidad de ventas
@@ -109,6 +116,10 @@ def getDetalleComisionPorCantVentasPropias(usuario,campania,agencia):
 def getPremioProductividadVentasPropias(usuario,campania,agencia):
     # Consulta para obtener las ventas del vendedor en la campaña
     ventas = Ventas.objects.filter(vendedor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
+    ventas = [
+        venta for venta in ventas
+        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+    ]
 
     # Sumar los importes de los productos asociados a cada ventacom_CantVentas_total
     productividad = sum(venta.importe for venta in ventas)
@@ -148,7 +159,6 @@ def getAusenciasTardanzas(usuario, campania):
                     }
 
 def getAdelantos(usuario,campania):
-    print(f"\n\n\n{usuario.descuentos}\n\n\n")
     descuentosDeCampaña = [descuento for descuento in usuario.descuentos if descuento["campania"] == campania]
 
     dineroTotal = sum([int(item["dinero"]) for item in descuentosDeCampaña])
@@ -159,7 +169,10 @@ def getCuotas1(usuario,campania,agencia):
         totalDineroCuotas1 = 0
         cuotas1Adelantadas = []
         ventas = Ventas.objects.filter(vendedor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
-       
+        ventas = [
+            venta for venta in ventas
+            if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+        ]
         for v in ventas:
             if(v.cuotas[1]["status"] == "Pagado"):
                fechaCuota = datetime.strptime(v.cuotas[1]["fecha_pago"],"%d/%m/%Y")
@@ -196,13 +209,27 @@ def coeficienteProductividadOrdenadoSupervisor():
 
 def calcular_ventas_supervisor(usuario,campania,agencia):
     # Consulta para obtener la cantidad total de ventas del vendedor en la campaña
-    ventas_totales = Ventas.objects.filter(supervisor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False).count()
-        
-    return ventas_totales
+    ventas_totales = Ventas.objects.filter(supervisor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
+    ventas_totales = [
+        venta for venta in ventas_totales
+        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+    ]
+    return len(ventas_totales)
 
 def calcular_productividad_supervisor(usuario,campania,agencia):
     # Consulta para obtener las ventas del vendedor en la campaña
-    ventas = Ventas.objects.filter(supervisor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
+    ventas = Ventas.objects.filter(
+        supervisor=usuario, 
+        campania=campania,
+        agencia=agencia, 
+        adjudicado__status=False, 
+        deBaja__status=False
+        )
+    
+    ventas = [
+        venta for venta in ventas
+        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+    ]
 
     # Sumar los importes de los productos asociados a cada venta
     suma_importes = sum(venta.importe for venta in ventas)
@@ -222,6 +249,10 @@ def getPremioxProductividad(usuario,campania,agencia):
 
 def getComisionCantVentas(usuario,campania,agencia):
     ventas = Ventas.objects.filter(supervisor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
+    ventas = [
+        venta for venta in ventas
+        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+    ]
     cantVentas = ventas.count()
 
     total_comisionado = 0
@@ -240,7 +271,10 @@ def getComisionCantVentas(usuario,campania,agencia):
 def desempenioEquipo(usuario,campania,agencia):
     listaVendedores = []
     ventas = Ventas.objects.filter(supervisor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
-    
+    ventas = [
+        venta for venta in ventas
+        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+    ]
     for venta in ventas:
         vendedor = venta.vendedor
         desempenioVendedor = {"cantidad_ventas": calcular_ventas_vendedor(vendedor,campania,agencia), "productividad":calcular_productividad_vendedor(vendedor,campania,agencia)}
@@ -271,14 +305,26 @@ def coeficienteProductividadOrdenadoVendedor():
 
 def calcular_ventas_vendedor(usuario,campania,agencia):
     # Consulta para obtener la cantidad total de ventas del vendedor en la campaña
-    ventas_totales = Ventas.objects.filter(vendedor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False).count()
-        
-    return ventas_totales
+    ventas = Ventas.objects.filter(vendedor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
+    # print(ventas)
+    # for venta in ventas:
+    #     print(venta.auditoria[-1].get("grade"))
+    ventas = [
+        venta for venta in ventas
+        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+    ]
+    # cantVentasTotales = ventas.count()
+    cantVentasTotales = len(ventas)
+
+    return cantVentasTotales
 
 def calcular_productividad_vendedor(usuario,campania,agencia):
     # Consulta para obtener las ventas del vendedor en la campaña
     ventas = Ventas.objects.filter(vendedor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
-
+    ventas = [
+            venta for venta in ventas
+            if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+    ]
     # Sumar los importes de los productos asociados a cada venta
     suma_importes = sum(venta.total_a_pagar for venta in ventas)
     return suma_importes
@@ -295,6 +341,10 @@ def getCuotasX(campania,agencia):
     dineroTotalCuotas = 0
     comisionTotalCuotas = 0
     ventas = Ventas.objects.filter(agencia=agencia,campania=campania, adjudicado__status=False, deBaja__status=False)
+    ventas = [
+        venta for venta in ventas
+        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+    ]
 
     # Cuota de inscripcion
     cantCuotas0 = 0
@@ -380,6 +430,19 @@ def getComisionTotal(usuario,campania,agencia):
 
     desempenioDeColaborador["detalle"] = detailDesempenioDict
     
-    print("Desempeño de colaborador")
-    print(desempenioDeColaborador)
+    # print("Desempeño de colaborador")
+    # print(desempenioDeColaborador)
+
+    # ventas = Ventas.objects.filter(vendedor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
+    # for venta in ventas:
+    #     if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True:
+    #         # print(ventas)
+    #         print(desempenioDeColaborador)
+
+
+        # print(venta.auditoria[-1].get("grade"))
+    # ventas = [
+    #     venta for venta in ventas
+    #     if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+    # ]
     return desempenioDeColaborador

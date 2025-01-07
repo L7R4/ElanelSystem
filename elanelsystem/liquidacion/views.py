@@ -55,26 +55,75 @@ class LiquidacionesComisiones(TestLogin,generic.View):
         #     return render(request, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
-        tipo_colaborador= json.loads(request.body)["tipo_colaborador"]
-        datos = request.session.get('liquidacion_data', {})
-        
-        # CONTINUAR
-        if(tipo_colaborador == "Vendedor"):
-            newLiquidacion = LiquidacionVendedor()
-            pass
-        elif(tipo_colaborador == "Supervisor"):
-            newLiquidacion = LiquidacionSupervisor()
-            pass
-        elif(tipo_colaborador == "Gerente sucursal"):
-            newLiquidacion = LiquidacionGerenteSucursal()
-            pass
-        elif(tipo_colaborador == "Admin"):
-            newLiquidacion = LiquidacionAdmin()
-            pass
+        try:
+            form = json.loads(request.body)
 
+            campania=form["campania"]
+            sucursal=form["agencia"]
+            sucursalObject = Sucursal.objects.get(pseudonimo=sucursal)
+            ventas = Ventas.objects.filter(campania=campania, agencia=sucursalObject)
+            ventas = [
+                venta for venta in ventas
+                if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+            ]
+            datos = request.session.get('liquidacion_data', {})
+            print(ventas)
+            #region Liquidacion por tipo de colaborador 
+            for item in datos:
+
+                if(item["tipo_colaborador"] == "Vendedor"):
+                    newLiquidacion = LiquidacionVendedor()
+                    newLiquidacion.vendedor = Usuario.objects.get(pk=item["id"])
+                    newLiquidacion.campania = campania
+                    newLiquidacion.cant_ventas = item["info_total_de_comision"]["cant_ventas_propia"]
+                    newLiquidacion.productividad = item["info_total_de_comision"]["productividad_propia"]
+                    newLiquidacion.total_comisionado = item["comisionTotal"]
+                    newLiquidacion.detalle = item["detalle"]
+                    newLiquidacion.save()
+
+                elif(item["tipo_colaborador"] == "Supervisor"):
+                    newLiquidacion = LiquidacionSupervisor()
+                    newLiquidacion.supervisor = Usuario.objects.get(pk=item["id"])
+                    newLiquidacion.campania = campania
+                    newLiquidacion.cant_ventas = item["info_total_de_comision"]["cant_ventas_fromRol"]
+                    newLiquidacion.productividad = item["info_total_de_comision"]["productividad_fromRol"]
+                    newLiquidacion.total_comisionado = item["comisionTotal"]
+                    newLiquidacion.detalle = item["detalle"]
+                    newLiquidacion.save()
+
+                elif(item["tipo_colaborador"] == "Gerente sucursal"):
+                    newLiquidacion = LiquidacionGerenteSucursal()
+                    newLiquidacion.gerente = Usuario.objects.get(pk=item["id"])
+                    newLiquidacion.sucursal = sucursalObject
+                    newLiquidacion.campania = campania
+                    newLiquidacion.total_comisionado = item["comisionTotal"]
+                    newLiquidacion.detalle = item["detalle"]
+                    newLiquidacion.save()
+
+            #endregion  
+
+            # #region Liquidacion completa
+            new_liquidacionCompleta = LiquidacionCompleta()
+            new_liquidacionCompleta.fecha = datetime.date.today().strftime("%d/%m/%Y")
+            new_liquidacionCompleta.campania = campania
+            new_liquidacionCompleta.sucursal = sucursalObject
+            new_liquidacionCompleta.total_liquidado = sum([item["comisionTotal"] for item in datos])
+            new_liquidacionCompleta.total_recaudado = 0
+            new_liquidacionCompleta.total_proyectado = sum([venta.importe for venta in ventas])
+            new_liquidacionCompleta.cant_ventas = len(ventas)
             
-        response_data = {"urlPDF":reverse_lazy('liquidacion:viewPDFLiquidacion'),"urlRedirect": reverse_lazy('liquidacion:liquidacionesPanel'),"success": True}
-        return JsonResponse(response_data, safe=False)         
+            #endregion
+            
+
+                
+            # response_data = {"urlPDF":reverse_lazy('liquidacion:viewPDFLiquidacion'),"urlRedirect": reverse_lazy('liquidacion:liquidacionesPanel'),"success": True}
+            response_data = {"success": True}
+            
+            return JsonResponse(response_data, safe=False)  
+             
+        except Exception as e:
+            print(e)
+            return JsonResponse({"success": False}, safe=False)  
 
 
 def requestColaboradoresWithComisiones(request):
@@ -107,9 +156,10 @@ def requestColaboradoresWithComisiones(request):
     # request.session["liquidacion_data"] = {"colaboradores_list":colaboradores_list, "sucursal": sucursalString, "fecha":datetime.date.today().strftime("%d-%m-%Y")}
     # return JsonResponse({"colaboradores_data": colaboradores_list,"totalDeComisiones": totalDeComisiones} , safe=False)
     request.session["liquidacion_data"] = colaboradores_list
-
+    print(len(request.session["liquidacion_data"]))
 
     return JsonResponse({"colaboradores_data": colaboradores_list, "totalDeComisiones": totalDeComisiones} , safe=False)
+
 
 def viewPDFLiquidacion(request):
     datos = request.session.get('liquidacion_data', {})
@@ -139,6 +189,7 @@ def viewPDFLiquidacion(request):
         response = HttpResponse(pdf_file,content_type="application/pdf")
         response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
         return response
+
 
 class LiquidacionesRanking(TestLogin,generic.View):
     template_name = 'liquidaciones_ranking.html'
