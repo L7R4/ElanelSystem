@@ -1,6 +1,6 @@
-let confirmNewUser = document.getElementById("saveButton");
-let urlCreateUser = window.location.pathname
-const form_create_user = document.getElementById("form_create_user")
+let confirmNewAuditoria = document.getElementById("liquidarButton");
+let urlCreateAuditoria = window.location.pathname
+// const form_create_user = document.getElementById("form_create_user")
 
 function getCookie(name) {
     let cookieValue = null;
@@ -37,19 +37,20 @@ async function fetchCRUD(body, url) {
 }
 
 
-confirmNewUser.addEventListener("click", async () => {
+confirmNewAuditoria.addEventListener("click", async () => {
     body = {
-        "tipo_colaborador": document.querySelector("")
+        "campania":document.querySelector("#campaniaInput").value,
+        "agencia":document.querySelector("#sucursalInput").value,
     }
 
-    let response = await fetchCRUD(body, urlCreateUser)
-    if (!response["success"]) {
-        mostrarErrores(response["errors"], form_create_user)
-    } else {
-        // Redireccionar a la página de PDF en una nueva pestaña y en la actual cambiar de url a la de la lista de usuarios
-        window.open(response["urlPDF"], "_blank")
-        window.location.href = response["urlRedirect"];
-
-    }
+    let response = await fetchCRUD(body, urlCreateAuditoria)
+    console.log(response)
+    // if (!response["success"]) {
+    //     mostrarErrores(response["errors"], form_create_user)
+    // } else {
+    //     // Redireccionar a la página de PDF en una nueva pestaña y en la actual cambiar de url a la de la lista de usuarios
+    //     window.open(response["urlPDF"], "_blank");
+    //     window.location.href = response["urlRedirect"];
+    // }
 
 })
