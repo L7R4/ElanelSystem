@@ -13,7 +13,9 @@ urlpatterns = [
     path("ventas/importar/",importVentas,name="importVentas"),
     path("ventas/cliente/<int:pk>/crear_venta/",CrearVenta.as_view(),name="create_sale"),
     path("ventas/get_vendedores_supervisores/",requestVendedores_Supervisores,name="requestVendedores_Supervisores"),
+    path("ventas/detalles", VentasDetalles.as_view(),name="detallesVentas"),
     path("ventas/detalle_venta/<int:pk>/",DetailSale.as_view(),name="detail_sale"),
+
     path("ventas/detalle_venta/<int:pk>/eliminar_venta/",eliminarVenta,name="delete_sale"),
     path("ventas/detalle_venta/descuento_cuota/",aplicarDescuentoCuota,name="descCuota"),
     path("ventas/detalle_venta/get_specific_cuota/",getUnaCuotaDeUnaVenta,name="getCuota"),

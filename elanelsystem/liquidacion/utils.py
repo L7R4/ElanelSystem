@@ -103,8 +103,22 @@ def getDetalleComisionPorCantVentasPropias(usuario,campania,agencia):
             # Calcular la comisión por venta y sumarla al total
             comision_por_venta = (venta.importe * coeficienteCheck[typePlan]) / 100
             comision += comision_por_venta
-            
-        detalleDict["planes"][typePlan] = {"cantidad_ventas": cantVentas, "comision": comision}
+        
+        detalleDict["planes"][typePlan] = {
+            "cantidad_ventas": cantVentas, 
+            "comision": comision, 
+            "ventas": [
+                {"pk":venta.pk, 
+                 "importe":venta.importe,
+                 "nro_cuotas":venta.nro_cuotas,
+                 "producto":venta.producto.nombre,
+                 "fecha":venta.fecha,
+                 "cantidadContratos":venta.cantidadContratos,
+                 "nro_operacion":venta.nro_operacion,
+                 "nro_cliente":venta.nro_cliente.nro_cliente,
+                 "nombre_cliente":venta.nro_cliente.nombre} 
+                for venta in ventas
+                ]}
 
         cantVentasTotal += cantVentas 
         comisionTotal += comision 
