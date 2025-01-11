@@ -111,7 +111,7 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             new_liquidacionCompleta.total_recaudado = 0
             new_liquidacionCompleta.total_proyectado = sum([venta.importe for venta in ventas])
             new_liquidacionCompleta.cant_ventas = len(ventas)
-            
+            new_liquidacionCompleta.save()
             #endregion
             
 
@@ -146,7 +146,7 @@ def requestColaboradoresWithComisiones(request):
         "dni":item.dni,
         "sucursal": form["sucursal"],
         "campania": campania,
-        "detalle": getComisionTotal(item,campania,sucursalObject)["detalle"],
+        # "detalle": getComisionTotal(item,campania,sucursalObject)["detalle"],
         "comisionTotal": getComisionTotal(item,campania,sucursalObject)["total_comisionado"],
         "info_total_de_comision": getComisionTotal(item,campania,sucursalObject)
         } 
@@ -156,7 +156,8 @@ def requestColaboradoresWithComisiones(request):
     # request.session["liquidacion_data"] = {"colaboradores_list":colaboradores_list, "sucursal": sucursalString, "fecha":datetime.date.today().strftime("%d-%m-%Y")}
     # return JsonResponse({"colaboradores_data": colaboradores_list,"totalDeComisiones": totalDeComisiones} , safe=False)
     request.session["liquidacion_data"] = colaboradores_list
-    print(len(request.session["liquidacion_data"]))
+    print([item for item in colaboradores_list if item["comisionTotal"] != 0])
+    # print(request.session["liquidacion_data"])
 
     return JsonResponse({"colaboradores_data": colaboradores_list, "totalDeComisiones": totalDeComisiones} , safe=False)
 

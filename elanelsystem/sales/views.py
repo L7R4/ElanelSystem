@@ -238,6 +238,51 @@ class CrearVenta(TestLogin,generic.DetailView):
             return JsonResponse({'success': True,'urlRedirect': reverse('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
 
 
+class VentasDetalles(generic.View):
+    template_name = "detallesVentas.html"
+
+    def get(self,request,*args, **kwargs):
+        customers = Cliente.objects.all()
+        products = Products.objects.all()
+        campanias = getTodasCampaniasDesdeInicio()
+        sucursales = Sucursal.objects.all()
+        
+        ventas = Ventas.objects.all()
+        ventas = [{
+            'nro_cliente': venta.nro_cliente.nro_cliente,
+            'nombre_cliente': venta.nro_cliente.nombre,
+            'dni_cliente': venta.nro_cliente.dni,
+            'tel_cliente': venta.nro_cliente.tel,
+            'provincia_cliente': venta.nro_cliente.provincia,
+            'localidad_cliente': venta.nro_cliente.localidad,
+            'nro_operacion': venta.nro_operacion,
+            'contratos': [contrato["nro_orden"] for contrato in venta.cantidadContratos],
+            'modalidad': venta.modalidad,
+            'nro_cuotas': venta.nro_cuotas,
+            'agencia': venta.agencia.pseudonimo,
+            'campania': venta.campania,
+            'importe': venta.importe,
+            'tasa_interes': venta.tasa_interes,
+            'intereses_generados': venta.intereses_generados,
+            'total_a_pagar': venta.total_a_pagar,
+            'fecha': venta.fecha,
+            'producto': venta.producto.nombre,
+            'paquete': venta.paquete,
+            'vendedor': venta.vendedor.nombre,
+            'supervisor': venta.supervisor.nombre,
+
+        }for venta in ventas]
+        context ={
+            'customers': customers, 
+            'products': products, 
+            'agencias': sucursales, 
+            'campanias': campanias,
+            'ventas': ventas
+        }
+
+        return render(request,self.template_name,context)
+    
+
 def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextIndiceBusquedaCuotas):
     try:
             cantidadContratos = index_end - index_start

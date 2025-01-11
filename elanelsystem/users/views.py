@@ -315,6 +315,7 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
         # Retornar los datos filtrados como JSON
         return JsonResponse({"users": user_data, "status": True})
 
+
 class DetailUser(TestLogin, generic.DetailView):
     model = Usuario
     template_name = "detail_user.html"
@@ -475,6 +476,7 @@ class DetailUser(TestLogin, generic.DetailView):
 
             response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
             return JsonResponse(response_data, safe=False)         
+
 
 def viewsPDFNewUser(request,pk):
     import locale

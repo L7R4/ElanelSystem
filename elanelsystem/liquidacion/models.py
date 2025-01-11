@@ -75,32 +75,33 @@ class CoeficientePorProductividadVendedor(models.Model):
 
 class LiquidacionVendedor(models.Model):
     vendedor = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
-    campania = models.IntegerField("Campaña")
+    campania = models.CharField("Campaña",max_length=50)
     cant_ventas = models.IntegerField("Cantidad de ventas")
     productividad = models.FloatField("Productividad")
     total_comisionado = models.FloatField("Total comisionado")
     detalle = models.JSONField(default=dict)
 
     def __str__(self):
-        return self.vendedor.nombre + "en camapaña" + self.campania + ": Productividad: " + self.productividad + " Ventas: " + self.cant_ventas + " Comision: " + self.total_comisionado  
+        return self.vendedor.nombre + "en camapaña" + self.campania + ": Productividad: " + str(self.productividad) + " Ventas: " + str(self.cant_ventas) + " Comision: " + str(self.total_comisionado)  
 
 
 class LiquidacionSupervisor(models.Model):
     supervisor = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
-    campania = models.IntegerField("Campaña")
+    campania = models.CharField("Campaña",max_length=50)
+
     cant_ventas = models.IntegerField("Cantidad de ventas")
     productividad = models.FloatField("Productividad",default=0)
     total_comisionado = models.FloatField("Total comisionado")
     detalle = models.JSONField(default=dict)
 
     def __str__(self):
-        return self.vendedor.nombre + "en camapaña" + self.campania + ": Productividad: " + self.productividad + " Ventas: " + self.cant_ventas + " Comision: " + self.total_comisionado  
+        return self.supervisor.nombre + "en camapaña" + self.campania + ": Productividad: " + str(self.productividad) + " Ventas: " + str(self.cant_ventas) + " Comision: " + str(self.total_comisionado)  
     
 
 class LiquidacionGerenteSucursal(models.Model):
     gerente = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING)
-    campania = models.IntegerField("Campaña")
+    campania = models.CharField("Campaña",max_length=50)
     total_comisionado = models.FloatField("Total comisionado")
     detalle = models.JSONField(default=dict)
 
@@ -110,14 +111,14 @@ class LiquidacionGerenteSucursal(models.Model):
 class LiquidacionAdmin(models.Model):
     admin = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING)
-    campania = models.IntegerField("Campaña")
+    campania = models.CharField("Campaña",max_length=50)
     total_comisionado_blanco = models.FloatField("Total comisionado blanco")
     total_comisionado_negro = models.FloatField("Total comisionado negro")
 
 
 class LiquidacionCompleta(models.Model): 
     fecha = models.CharField("Fecha", max_length=10)
-    campania = models.IntegerField("Camapaña")
+    campania = models.CharField("Campaña",max_length=50)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING, related_name="liquidacion_sucursal")
     total_recaudado = models.FloatField("Total recaudado",default=0)
     total_proyectado = models.FloatField("Total proyectado",default=0)

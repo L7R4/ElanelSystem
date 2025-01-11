@@ -1,0 +1,110 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/list_customers.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+
+{% endblock css %}
+
+{% block content %}
+<div id="wrapperLoader">
+  <span id="loader"></span>
+</div>
+
+<div class="filters">
+  <div class="buttonsActionsWrapper">
+    <a href="{% url 'users:create_customer' %}" class="add-button-default" id="create_customer">Agregar</a>
+    <button type="button" id="showModalImport" class="button-default-style" onclick="newModalImport()">Importar</button>
+  </div>
+
+  <form method="POST" id="formFilter">
+    {% csrf_token %}
+    <div class="filtersActionWrapper">
+
+      {% comment %} Validar por permiso ------ {% endcomment %}
+      <div id="wrapperSucursal" class="inputWrapper">
+        <div class="containerInputAndOptions">
+            <img id="sucursalIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+            <input type="text" placeholder="Sucursal" readonly name="sucursal" id="sucursalInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
+            <ul class="list-select-custom options">
+              {% for s in sucursales %}
+                <li>{{s}}</li>
+              {% endfor %}
+            </ul>
+        </div>
+      </div>
+      {% comment %} ------------ {% endcomment %}
+      <div class="searchActionWrapper">
+        <input 
+        type="text"
+        class = "customer input-read-write-default"
+        id="customer_search">
+        <img src="{% static 'images/icons/search.svg' %}" alt="">
+      </div>
+
+    </div>
+    {% comment %} <button type="button" id="submitFilter" class="add-button-default">Filtrar</button> {% endcomment %}
+    
+  </form>   
+
+</div>
+
+
+
+<div class="informationWrapper">
+  <a href="{% url 'users:list_customers'%}" id="buttonCleanFilter">Limpiar filtros</a>
+  <table class="information">
+    <thead>
+        <tr>
+          <th>Nro cliente</th>
+          <th>Nombre cliente</th>
+          <th>Telefono</th>
+          <th>Localidad</th>
+          <th>Provincia</th>
+        </tr>
+    </thead>
+    
+    <tbody class="values">
+      {% for customer in customers %}
+          <tr class="customer_item" data-url="{% url 'users:cuentaUser' customer.id %}">
+            <td><p>{{customer.nombre}}</p></td>
+            <td><p>{{customer.dni}}</p></td>
+            <td><p>{{customer.tel}}</p></td>
+            <td><p>{{customer.loc}}</p></td>
+            <td><p>{{customer.prov}}</p></td>
+          </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div> 
+
+{% endblock content %}
+{% block js %}
+<script>
+  var csrf_token = '{%csrf_token%}'
+  var urlImportData = "{% url 'users:importClientes' %}"
+  var sucursalesDisponibles = {{ sucursalesDisponiblesJSON|safe }};
+  var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
+
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Selecciona todos los <tr> con la clase 'user_item'
+    document.querySelectorAll('.customer_item').forEach(row => {
+      row.addEventListener('click', function() {
+        // Redirecciona a la URL almacenada en el atributo 'data-url' del <tr>
+        window.location.href = row.getAttribute('data-url');
+      });
+    });
+  });
+</script>
+
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/importDataCliente.js' %}"></script>
+<script src="{% static 'js/x_filter_customers.js' %}"></script>
+{% endblock js %}
