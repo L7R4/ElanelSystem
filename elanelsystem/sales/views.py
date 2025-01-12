@@ -271,7 +271,8 @@ class VentasDetalles(generic.View):
             'vendedor': venta.vendedor.nombre,
             'supervisor': venta.supervisor.nombre,
 
-        }for venta in ventas]
+        } for venta in ventas]
+        
         context ={
             'customers': customers, 
             'products': products, 
@@ -1879,7 +1880,7 @@ def createNewMov(request):
     return JsonResponse({'status': False, 'message': ' Ha sucedido un error y no se pudo completar la operacion'})
 
 # Funcion para devolver las ventas (Utilizada en el sector de auditorias)
-def requestVentas(request):
+def requestVentasAuditoria(request):
     if(request.method == "GET"):
         sucursal = request.GET.get('sucursal')
         campaign = request.GET.get('campania')

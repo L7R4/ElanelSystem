@@ -542,6 +542,48 @@ def requestUsuarios(request):
     return JsonResponse({"data":usuarios_filtrados_listDict})
 
 
+def requestUsuarios2(request):
+    query_params = request.GET
+
+    # Mapeo de parámetros a condiciones Q
+    filter_map = {
+        'nombre': 'nombre__icontains',
+        'email': 'email__icontains',
+        'rango': 'rango__icontains',
+        'dni': 'dni__icontains',
+        'tel': 'tel__icontains',
+        'prov': 'prov__icontains',
+        'loc': 'loc__icontains',
+        'sucursal': 'sucursales__id',
+    }
+
+    # Construcción dinámica de filtros
+    filters = Q()
+    for param, query in filter_map.items():
+        if param in query_params:
+            filters &= Q(**{query: query_params[param]})
+
+    # Aplicar los filtros al modelo Usuario
+    usuarios = Usuario.objects.filter(filters).distinct()
+
+    # Serializar la respuesta
+    data = [
+        {
+            'id': usuario.id,
+            'nombre': usuario.nombre,
+            'email': usuario.email,
+            'rango': usuario.rango,
+            'dni': usuario.dni,
+            'tel': usuario.tel,
+            'prov': usuario.prov,
+            'loc': usuario.loc,
+        }
+        for usuario in usuarios
+    ]
+
+    return JsonResponse(data, safe=False)
+
+
 def realizarDescuento(request):
     form = json.loads(request.body)
     try:

@@ -54,7 +54,9 @@ urlpatterns = [
     #endregion ---------------------------------------------------------
     
     #region URLs Specifics Functions ------------------------------------------------------------
-    path('ventas/request_ventas/', requestVentas, name='requestVentas'),
+    path('ventas/detalles/', requestDetallesVentas, name='requestDetallesVentas'),
+    path('ventas/request_ventas/', requestVentasAuditoria, name='requestVentasAuditorias'),
+
     path('requestmovs/', requestMovimientos, name='rmovs'),
     path('create_new_mov/', createNewMov, name='create_new_mov'),
     #endregion --------------------------------------------------------------------------------
