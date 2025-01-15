@@ -26,7 +26,13 @@
       {% comment %} Validar por permiso ------ {% endcomment %}
       <div id="wrapperSucursal" class="inputWrapper">
         <div class="containerInputAndOptions">
-            <img id="sucursalIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+            {% comment %} <img id="sucursalIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""> {% endcomment %}
+            <input type="text" placeholder="Usuarios" readonly name="usuarios" id="usuariosInput" required autocomplete="off" maxlength="50" class="input-select-custom inputSearchSelect">
+            <ul id="usuarios-options" class="list-select-custom"></ul>
+        </div>
+      </div>
+      {% comment %} <div id="wrapperSucursal" class="inputWrapper">
+        <div class="containerInputAndOptions">
             <input type="text" placeholder="Sucursal" readonly name="sucursal" id="sucursalInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
             <ul class="list-select-custom options">
               {% for s in sucursales %}
@@ -35,14 +41,16 @@
             </ul>
         </div>
       </div>
-      {% comment %} ------------ {% endcomment %}
-      <div class="searchActionWrapper">
-        <input 
-        type="text"
-        class = "customer input-read-write-default"
-        id="customer_search">
-        <img src="{% static 'images/icons/search.svg' %}" alt="">
-      </div>
+      <div id="wrapperSucursal" class="inputWrapper">
+        <div class="containerInputAndOptions">
+            <input type="text" placeholder="Sucursal" readonly name="sucursal" id="sucursalInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
+            <ul class="list-select-custom options">
+              {% for s in sucursales %}
+                <li>{{s}}</li>
+              {% endfor %}
+            </ul>
+        </div>
+      </div> {% endcomment %}
 
     </div>
     {% comment %} <button type="button" id="submitFilter" class="add-button-default">Filtrar</button> {% endcomment %}
@@ -60,7 +68,7 @@
         <tr>
           <th>Nro cliente</th>
           <th>Nombre cliente</th>
-          <th>Telefono</th>
+          <th>Tel cliente</th>
           <th>Localidad</th>
           <th>Provincia</th>
         </tr>
