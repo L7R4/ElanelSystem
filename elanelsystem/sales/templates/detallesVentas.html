@@ -14,10 +14,10 @@
 </div>
 
 <div class="filters">
-  <div class="buttonsActionsWrapper">
+  {% comment %} <div class="buttonsActionsWrapper">
     <a href="{% url 'users:create_customer' %}" class="add-button-default" id="create_customer">Agregar</a>
     <button type="button" id="showModalImport" class="button-default-style" onclick="newModalImport()">Importar</button>
-  </div>
+  </div> {% endcomment %}
 
   <form method="POST" id="formFilter">
     {% csrf_token %}
@@ -27,10 +27,30 @@
       <div id="wrapperSucursal" class="inputWrapper">
         <div class="containerInputAndOptions">
             {% comment %} <img id="sucursalIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""> {% endcomment %}
-            <input type="text" placeholder="Usuarios" readonly name="usuarios" id="usuariosInput" required autocomplete="off" maxlength="50" class="input-select-custom inputSearchSelect">
-            <ul id="usuarios-options" class="list-select-custom"></ul>
+            <input type="text" placeholder="Usuarios" oninput="searchElement('/usuario/search/',this)" name="nombre_usuarios" id="usuariosInput" required autocomplete="off" maxlength="50" class="input-select-custom inputSearchSelect">
+            <ul id="usuarios-options" class="list-selectSearch-custom">
+              {% for u in usuarios %}
+                <li>{{u}}</li>
+              {% endfor %}
+
+            </ul>
         </div>
       </div>
+
+      <div id="wrapperSucursal" class="inputWrapper">
+        <div class="containerInputAndOptions">
+            {% comment %} <img id="sucursalIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""> {% endcomment %}
+            <input type="text" placeholder="Products" oninput="searchElement('/products/search/',this)" name="nombre_productos" id="usuariosInput" required autocomplete="off" maxlength="50" class="input-select-custom inputSearchSelect">
+            <ul id="products-options" class="list-selectSearch-custom">
+              {% for p in products %}
+                <li>{{p.nombre}}</li>
+              {% endfor %}
+
+            </ul>
+        </div>
+      </div>
+
+
       {% comment %} <div id="wrapperSucursal" class="inputWrapper">
         <div class="containerInputAndOptions">
             <input type="text" placeholder="Sucursal" readonly name="sucursal" id="sucursalInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
@@ -94,7 +114,7 @@
 <script>
   var csrf_token = '{%csrf_token%}'
   var urlImportData = "{% url 'users:importClientes' %}"
-  var sucursalesDisponibles = {{ sucursalesDisponiblesJSON|safe }};
+  {% comment %} var sucursalesDisponibles = {{ sucursalesDisponiblesJSON|safe }}; {% endcomment %}
   var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
 
 </script>
@@ -112,7 +132,7 @@
 </script>
 
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
-<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/inputsSearchSelect.js' %}"></script>
 <script src="{% static 'js/importDataCliente.js' %}"></script>
 <script src="{% static 'js/x_filter_customers.js' %}"></script>
 {% endblock js %}

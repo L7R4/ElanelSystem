@@ -544,7 +544,8 @@ def requestUsuarios(request):
 
 def requestUsuarios2(request):
     query_params = request.GET
-
+    usuarios = Usuario.objects.all()
+    print(query_params)
     # Mapeo de parámetros a condiciones Q
     filter_map = {
         'nombre': 'nombre__icontains',
@@ -565,7 +566,8 @@ def requestUsuarios2(request):
 
     # Aplicar los filtros al modelo Usuario
     usuarios = Usuario.objects.filter(filters).distinct()
-
+    print("Usuarios filtrados")
+    print(usuarios)
     # Serializar la respuesta
     data = [
         {

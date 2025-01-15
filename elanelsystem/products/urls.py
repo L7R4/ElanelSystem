@@ -11,6 +11,7 @@ urlpatterns = [
 
     path("products/request/",requestProducts,name="get_products"),
     path("products/delete/",deleteProduct,name="delete_product"),
+    path("products/search/",requestProducts2,name="searchProducts"),
 
     path("list_products/",ViewProducts.as_view(),name="listProducts")
 ]

@@ -246,6 +246,7 @@ class VentasDetalles(generic.View):
         products = Products.objects.all()
         campanias = getTodasCampaniasDesdeInicio()
         sucursales = Sucursal.objects.all()
+        usuarios = Usuario.objects.all()
         
         ventas = Ventas.objects.all()
         ventas = [{
@@ -253,8 +254,8 @@ class VentasDetalles(generic.View):
             'nombre_cliente': venta.nro_cliente.nombre,
             'dni_cliente': venta.nro_cliente.dni,
             'tel_cliente': venta.nro_cliente.tel,
-            'provincia_cliente': venta.nro_cliente.provincia,
-            'localidad_cliente': venta.nro_cliente.localidad,
+            'provincia_cliente': venta.nro_cliente.prov,
+            'localidad_cliente': venta.nro_cliente.loc,
             'nro_operacion': venta.nro_operacion,
             'contratos': [contrato["nro_orden"] for contrato in venta.cantidadContratos],
             'modalidad': venta.modalidad,
@@ -268,14 +269,15 @@ class VentasDetalles(generic.View):
             'fecha': venta.fecha,
             'producto': venta.producto.nombre,
             'paquete': venta.paquete,
-            'vendedor': venta.vendedor.nombre,
-            'supervisor': venta.supervisor.nombre,
+            'vendedor': venta.vendedor.nombre if venta.vendedor else "",
+            'supervisor': venta.supervisor.nombre if venta.supervisor else "",
 
         } for venta in ventas]
         
         context ={
             'customers': customers, 
             'products': products, 
+            'usuarios': usuarios,
             'agencias': sucursales, 
             'campanias': campanias,
             'ventas': ventas
