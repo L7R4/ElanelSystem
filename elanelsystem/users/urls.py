@@ -7,6 +7,8 @@ app_name="users"
 
 urlpatterns = [
     path("usuario/crear_usuario/",CrearUsuario.as_view(),name="create_user"),
+    path("usuario/search/",requestUsuarios2,name="searchUsers"),
+
     path("usuario/lista_usuarios/",ListaUsers.as_view(),name="list_users"),
     path("cliente/importUsuarios/",importar_usuarios,name="importUsuarios"),
     path("usuario/aplicar_descuento/",realizarDescuento,name="realizarDescuento"),

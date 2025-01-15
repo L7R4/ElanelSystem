@@ -7,6 +7,8 @@ import datetime
 import os
 from django.http import JsonResponse
 from dateutil.relativedelta import relativedelta
+from django.db.models import Q
+
 
 class Planes(generic.View):
     template_name = "planes.html"
@@ -170,6 +172,41 @@ def requestProducts(request):
 
       
         return JsonResponse({"message": "OK", "productos": productos_list},safe=False)  
+
+def requestProducts2(request):
+    query_params = request.GET
+    usuarios = Products.objects.all()
+    print(query_params)
+    # Mapeo de parámetros a condiciones Q
+    filter_map = {
+        'nombre': 'nombre__icontains',
+        'tipo_de_producto': 'tipo_de_producto__icontains',
+        # 'plan': 'plan__icontains',
+    }
+
+    # Construcción dinámica de filtros
+    filters = Q()
+    for param, query in filter_map.items():
+        if param in query_params:
+            filters &= Q(**{query: query_params[param]})
+
+    # Aplicar los filtros al modelo Usuario
+    usuarios = Products.objects.filter(filters).distinct()
+    print("Usuarios filtrados")
+    print(usuarios)
+    # Serializar la respuesta
+    data = [
+        {
+            'id': usuario.id,
+            'nombre': usuario.nombre,
+            'tipo_de_producto': usuario.tipo_de_producto,
+            # 'plan': usuario.plan,
+        }
+        for usuario in usuarios
+    ]
+
+    return JsonResponse(data, safe=False)
+
 
 
 def deleteProduct(request):
