@@ -250,12 +250,8 @@ class VentasDetalles(generic.View):
         
         ventas = Ventas.objects.all()
         ventas = [{
-            'nro_cliente': venta.nro_cliente.nro_cliente,
-            'nombre_cliente': venta.nro_cliente.nombre,
-            'dni_cliente': venta.nro_cliente.dni,
-            'tel_cliente': venta.nro_cliente.tel,
-            'provincia_cliente': venta.nro_cliente.prov,
-            'localidad_cliente': venta.nro_cliente.loc,
+            'id': venta.pk,
+            'cliente': venta.nro_cliente,
             'nro_operacion': venta.nro_operacion,
             'contratos': [contrato["nro_orden"] for contrato in venta.cantidadContratos],
             'modalidad': venta.modalidad,
@@ -266,6 +262,7 @@ class VentasDetalles(generic.View):
             'tasa_interes': venta.tasa_interes,
             'intereses_generados': venta.intereses_generados,
             'total_a_pagar': venta.total_a_pagar,
+            'importe_x_cuota': venta.importe_x_cuota,
             'fecha': venta.fecha,
             'producto': venta.producto.nombre,
             'paquete': venta.paquete,
@@ -542,7 +539,13 @@ class DetailSale(TestLogin,generic.DetailView):
         
         
         return render(request,self.template_name,context)
-    
+
+
+# Obtener las ventas
+def requestVentas(request):
+    pass
+
+
 # Eliminar una venta
 def eliminarVenta(request,pk):
     form = json.loads(request.body)
