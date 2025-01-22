@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/list_customers.css' %}">
+<link rel="stylesheet" href="{% static 'css/detallesVentas.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 
@@ -14,19 +14,17 @@
 </div>
 
 <div class="filters">
-  {% comment %} <div class="buttonsActionsWrapper">
-    <a href="{% url 'users:create_customer' %}" class="add-button-default" id="create_customer">Agregar</a>
-    <button type="button" id="showModalImport" class="button-default-style" onclick="newModalImport()">Importar</button>
-  </div> {% endcomment %}
-
+  <div class="buttonsActionsWrapper">
+    <button type="button" id="showModalFiltro" class="button-default-style" onclick="newModalIFiltro()">Filtrar</button>
+  </div>
+{% comment %} 
   <form method="POST" id="formFilter">
     {% csrf_token %}
     <div class="filtersActionWrapper">
 
-      {% comment %} Validar por permiso ------ {% endcomment %}
+      Validar por permiso ------ 
       <div id="wrapperSucursal" class="inputWrapper">
         <div class="containerInputAndOptions">
-            {% comment %} <img id="sucursalIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""> {% endcomment %}
             <input type="text" placeholder="Usuarios" oninput="searchElement('/usuario/search/',this)" name="nombre_usuarios" id="usuariosInput" required autocomplete="off" maxlength="50" class="input-select-custom inputSearchSelect">
             <ul id="usuarios-options" class="list-selectSearch-custom">
               {% for u in usuarios %}
@@ -39,7 +37,6 @@
 
       <div id="wrapperSucursal" class="inputWrapper">
         <div class="containerInputAndOptions">
-            {% comment %} <img id="sucursalIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""> {% endcomment %}
             <input type="text" placeholder="Products" oninput="searchElement('/products/search/',this)" name="nombre_productos" id="usuariosInput" required autocomplete="off" maxlength="50" class="input-select-custom inputSearchSelect">
             <ul id="products-options" class="list-selectSearch-custom">
               {% for p in products %}
@@ -51,32 +48,11 @@
       </div>
 
 
-      {% comment %} <div id="wrapperSucursal" class="inputWrapper">
-        <div class="containerInputAndOptions">
-            <input type="text" placeholder="Sucursal" readonly name="sucursal" id="sucursalInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
-            <ul class="list-select-custom options">
-              {% for s in sucursales %}
-                <li>{{s}}</li>
-              {% endfor %}
-            </ul>
-        </div>
-      </div>
-      <div id="wrapperSucursal" class="inputWrapper">
-        <div class="containerInputAndOptions">
-            <input type="text" placeholder="Sucursal" readonly name="sucursal" id="sucursalInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
-            <ul class="list-select-custom options">
-              {% for s in sucursales %}
-                <li>{{s}}</li>
-              {% endfor %}
-            </ul>
-        </div>
-      </div> {% endcomment %}
-
     </div>
-    {% comment %} <button type="button" id="submitFilter" class="add-button-default">Filtrar</button> {% endcomment %}
+    <button type="button" id="submitFilter" class="add-button-default">Filtrar</button>
     
   </form>   
-
+{% endcomment %}
 </div>
 
 
@@ -86,22 +62,43 @@
   <table class="information">
     <thead>
         <tr>
+          <th>Nro op.</th>
+          <th>Fecha</th>
           <th>Nro cliente</th>
           <th>Nombre cliente</th>
-          <th>Tel cliente</th>
-          <th>Localidad</th>
-          <th>Provincia</th>
+          <th>Agencia</th>
+          <th>Nro cuotas</th>
+          <th>Importe</th>
+          <th>Interes</th>
+          <th>Total a pagar</th>
+          <th>Importe x cuota</th>
+          {% comment %} <th>Total restante</th> {% endcomment %}
+          <th>Producto</th>
+          <th>Paquete</th>
+          <th>Vendedor</th>
+          <th>Supervisor</th>
         </tr>
     </thead>
     
     <tbody class="values">
-      {% for customer in customers %}
-          <tr class="customer_item" data-url="{% url 'users:cuentaUser' customer.id %}">
-            <td><p>{{customer.nombre}}</p></td>
-            <td><p>{{customer.dni}}</p></td>
-            <td><p>{{customer.tel}}</p></td>
-            <td><p>{{customer.loc}}</p></td>
-            <td><p>{{customer.prov}}</p></td>
+      {% for v in ventas %}
+          <tr class="customer_item" data-url="{% url 'sales:detail_sale' v.id %}">
+            <td><p>{{v.nro_operacion}}</p></td>
+            <td><p>{{v.fecha}}</p></td>
+            <td><p>{{v.cliente.nro_cliente}}</p></td>
+            <td><p>{{v.cliente.nombre}}</p></td>
+            <td><p>{{v.agencia}}</p></td>
+            <td><p>{{v.nro_cuotas}}</p></td>
+            <td><p>${{v.importe}}</p></td>
+            <td><p>${{v.intereses_generados}}</p></td>
+            <td><p>${{v.total_a_pagar}}</p></td>
+            <td><p>${{v.importe_x_cuota}}</p></td>
+            <td><p>{{v.producto}}</p></td>
+            <td><p>{{v.paquete}}</p></td>
+            <td><p>{{v.vendedor}}</p></td>
+            <td><p>{{v.supervisor}}</p></td>
+
+
           </tr>
       {% endfor %}
     </tbody>
