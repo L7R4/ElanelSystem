@@ -8,20 +8,78 @@
 {% block content %}
     <div class="wrapperTittle">
         <h2>Ranking</h2>
-        <div id="wrapperSelectSucursal">
-            <label for="id_sucursal">Sucursal</label>
-            <input type="text" name="sucursal" id="id_sucursal" value="Resistencia, Chaco">
-            {% comment %} <ul class="select">
-                <li>Moto</li>
-                <li>Electrodomestico</li>
-                <li>Prestamo</li>
-            </ul> {% endcomment %}
+        <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
+            <label class="labelInput">Sucursal</label>
+            <div class="containerInputAndOptions">
+                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input
+                    type="text"
+                    name="agencia"
+                    class="onlySelect input-select-custom inputFilter"
+                    id="inputSucursal"
+                    autocomplete="off"
+                    readonly=""
+                    value="{{defaultSucursal.pseudonimo}}"
+                />
+                <ul class="list-select-custom options">
+                    {% for sucursal in sucursales %}
+                    <li data-value="{{sucursal.pseudonimo}}">{{sucursal.pseudonimo}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div id="selectWrapperSelectCampania"class="inputWrapper wrapperSelectFilter">
+            <label class="labelInput">Campaña</label>
+            <div class="containerInputAndOptions">
+                <img
+                    id="tipoComprobanteIconDisplay"
+                    class="iconDesplegar"
+                    src="{% static 'images/icons/arrowDown.png' %}"
+                    alt=""
+                />
+                <input
+                    type="text"
+                    name="campania"
+                    value="{{defaultCampania}}"
+                    readonly
+                    class="input-select-custom onlySelect inputFilter"
+                    id="inputCampania"
+                />
+                <ul class="list-select-custom options">
+                    {% for campania in campaniasDisponibles %}
+                    <li data-value="{{campania}}">{{campania}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
     </div>
     <div class="containerBoth">
         <div class="containerSupervisores">
             <div class="information">
-                <h2>Supervisores</h2>
+                <div class="tittleAndOrder">
+                    <h2>Supervisores</h2>
+                    <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
+                        <label class="labelInput">Ordenar por</label>
+                        <div class="containerInputAndOptions">
+                            <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                            <input
+                                type="text"
+                                name="tipoOrdenamientoSupervisores"
+                                class="onlySelect input-select-custom inputFilter"
+                                id="inputOrderSuper"
+                                autocomplete="off"
+                                readonly=""
+                                value="{{defaultOrder}}"
+                            />
+                            <ul class="list-select-custom options">
+                                <li data-value="cantidadVentas">Cantidad de ventas</li>
+                                <li data-value="productividad">Productividad</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
                 <div class="tittlesWrapper">
                     <ul class="tittles">
                         <li>Supervisor</li>
@@ -33,64 +91,38 @@
                 <div class="valuesWrapper">
                     <ul class="values">
                         <li class ="item">
-                            <div class="backgroundItem">
-                                <img class="imageMore" src="{% static 'images/icons/moreWhite.png' %}" alt="">
-                                <div><p>Nicolas Vallejos</p></div>
-                                <div><p>$45.908.090</p></div>
-                                <div><p>87</p></div>
-                            </div>
+                            {% for super in supervisores %}
+                                <div class="backgroundItem">
+                                    <img class="imageMore" src="{% static 'images/icons/moreWhite.png' %}" alt="">
+                                    <div><p>{{super.nombre_usuario}}</p></div>
+                                    <div><p>${{super.productividad}}</p></div>
+                                    <div><p>{{super.cantidadVentas}}</p></div>
+                                </div>
+                                <ul class="detallesItem">
+                                    <h2>Vendedores a cargo</h2>
+                                    <div class="tittlesWrapperItem">
+                                        <ul class="tittles">
+                                            <li>Vendedor</li>
+                                            <li>Dinero total</li>
+                                            <li>Cantidad total</li>
+                                        </ul>   
+                                    </div>
+                                    <div class="valuesWrapperItem">
+                                        <ul>
+                                            {% for v in super.vendedoresACargo %}
+                                                <li class="itemValores">
+                                                    <div class="backgroundItemVendedores">
+                                                        <div><p>{{v.nombre_usuario}}</p></div>
+                                                        <div><p>${{v.productividad}}</p></div>
+                                                        <div><p>{{v.cantidadVentas}}</p></div>
+                                                    </div>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </ul>
+                            {% endfor %}
                             
-                            <ul class="detallesItem">
-                                <h2>Vendedores a cargo</h2>
-                                <div class="tittlesWrapperItem">
-                                    <ul class="tittles">
-                                        <li>Vendedor</li>
-                                        <li>Dinero total</li>
-                                        <li>Cantidad total</li>
-                                    </ul>   
-                                </div>
-                                <div class="valuesWrapperItem">
-                                    <ul>
-                                        <li class="itemValores">
-                                            <div class="backgroundItemVendedores">
-                                                <div><p>Nicolas Vallejos</p></div>
-                                                <div><p>$45.908.090</p></div>
-                                                <div><p>87</p></div>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </ul>
-                        </li>
-                         <li class ="item">
-                            <div class="backgroundItem">
-                                <img class="imageMore" src="{% static 'images/icons/moreWhite.png' %}" alt="">
-                                <div><p>Nicolas Vallejos</p></div>
-                                <div><p>$45.908.090</p></div>
-                                <div><p>87</p></div>
-                            </div>
-                            
-                            <ul class="detallesItem">
-                                <h2>Vendedores a cargo</h2>
-                                <div class="tittlesWrapperItem">
-                                    <ul class="tittles">
-                                        <li>Vendedor</li>
-                                        <li>Dinero total</li>
-                                        <li>Cantidad total</li>
-                                    </ul>   
-                                </div>
-                                <div class="valuesWrapperItem">
-                                    <ul>
-                                        <li class="itemValores">
-                                            <div class="backgroundItemVendedores">
-                                                <div><p>Nicolas Vallejos</p></div>
-                                                <div><p>$45.908.090</p></div>
-                                                <div><p>87</p></div>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </ul>
                         </li>
                     </ul>       
                 </div>
@@ -99,7 +131,31 @@
 
         <div class="containerVendedores">
             <div class="information">
-                <h2>Vendedores</h2>
+                <div class="tittleAndOrder">
+                    <h2>Vendedores</h2>
+                    <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
+                        <label class="labelInput">Ordenar por</label>
+                        <div class="containerInputAndOptions">
+                            <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                            <input
+                                type="text"
+                                name="tipoOrdenamientoVendedores"
+                                class="onlySelect input-select-custom inputFilter"
+                                id="inputOrderSuper"
+                                autocomplete="off"
+                                readonly=""
+                                value="{{defaultOrder}}"
+                            />
+                            <ul class="list-select-custom options">
+                                <li data-value="cantidadVentas">Cantidad de ventas</li>
+                                <li data-value="productividad">Productividad</li>
+                                <li data-value="productividad">Cuotas 1 adelantadas</li>
+
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
 
                 <div class="tittlesWrapper">
                     <ul class="tittles">
@@ -112,25 +168,16 @@
 
                 <div class="valuesWrapper">
                     <ul class="values">
-                        <li class ="item">
-                            <div><p>Alejandro Torres</p></div>
-                            <div><p>$12.200.355</p></div>
-                            <div><p>34</p></div>
-                            <div><p>8</p></div>
-                        </li>
-                        <li class ="item">
-                            <div><p>Alejandro Torres</p></div>
-                            <div><p>$12.200.355</p></div>
-                            <div><p>34</p></div>
-                            <div><p>8</p></div>
-                        </li>
-                    {% comment %} {% for customer in customers %}
-                        <a class ="item" href="{% url 'users:cuentaUser' customer.id %}">
-                        <div><p>{{customer.nombre|truncatechars:24}}</p></div>
-                        <div><p>{{customer.dni}}</p></div>
-                        <div><p>{{customer.tel}}</p></div>
-                        </a>
-                    {% endfor %}  {% endcomment %}
+                        {% for vendedor in vendedores %}
+                            <li class="itemValores">
+                                <div class="backgroundItemVendedores">
+                                    <div><p>{{vendedor.nombre_usuario}}</p></div>
+                                    <div><p>${{vendedor.productividad}}</p></div>
+                                    <div><p>{{vendedor.cantidadVentas}}</p></div>
+                                    <div><p>{{vendedor.cuotas1Adelantadas}}</p></div>
+                                </div>
+                            </li>
+                        {% endfor %}
                     </ul>       
                 </div>
             </div> 
@@ -140,5 +187,9 @@
 {% endblock content %}
 {% block js %}
 <script src="{% static 'js/displayItemsRanking.js' %}"></script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/filterRanking.js' %}"></script>
+
+
     
 {% endblock js %}

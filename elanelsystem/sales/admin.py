@@ -13,16 +13,16 @@ class CoeficientesAdmin(admin.ModelAdmin):
 @admin.register(Ventas)
 class VentasAdmin(admin.ModelAdmin):
     # Mostrar columnas específicas en el listado
-    list_display = ('nro_operacion', 'get_cliente', 'get_producto','campania','fecha')
+    list_display = ('nro_operacion', 'get_cliente', 'get_producto','campania','fecha',"vendedor")
     
     # Hacer algunas columnas editables directamente desde el listado
     # list_editable = ('modalidad', 'importe', 'total_a_pagar')
     
     # Agregar opciones de búsqueda
-    search_fields = ('nro_cliente__nombre', 'producto__nombre', 'fecha',"campania")
+    search_fields = ('nro_cliente__nombre', 'producto__nombre', 'fecha',"campania","nro_cuotas",)
     
     # Agregar filtros
-    # list_filter = ('modalidad', 'fecha', 'suspendida', 'campania')
+    list_filter = ('supervisor',)
     
     # Mostrar más información en la vista de detalle
     # readonly_fields = ('nro_operacion', 'cuotas', 'adjudicado', 'deBaja', 'auditoria')

@@ -23,6 +23,18 @@
                             <label for="">Hora de entrada</label>
                             <input type="text" class="" id="inputHora" name="inputHora" value="{{sucursal.hora_apertura}}">
                         </div>
+                        <div id="selectWrapperSelectGerente" class="wrapperSelectFilter">
+                            <label class="labelInput">Gerente</label>
+                            <div class="containerInputAndOptions">
+                            <img id="sucursalIconDisplay" class="iconDesplegar" src="${imgArrowDown}" alt="">
+                                <input type="text" readonly="" name="gerente" id="gerenteInput" required="" autocomplete="off" maxlength="100" class="input-select-custom onlySelect">
+                                <ul class="list-select-custom options">
+                                {% for gerente in gerentesDisponibles  %}
+                                    <li>{{gerente.nombre}}</li>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="buttonsActions">
@@ -43,6 +55,8 @@
 {% block js %}
 <script>
     var CSRF_TOKEN = '{% csrf_token %}'
+    var genrentesDisponibles = "{{ gerentesDisponibles|safe }}"
+    var imgArrowDown = "{% static 'images/icons/arrowDown.png' %}"
     // URLs - - - - - - - -
     var urlUpdateS = "{% url 'users:updateSucursal' %}"
     var urlAddS = "{% url 'users:addSucursal' %}"
@@ -50,6 +64,7 @@
     // - - - - - - - -
 
 </script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 <script src="{% static 'js/fetch_upload_sucursal.js' %}"></script>
 
 {% endblock js %}

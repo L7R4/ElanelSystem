@@ -82,7 +82,7 @@ def seccionesPorPermisos(context):
         # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
         "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
         "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
-        "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
+        "Exportar datos": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
         "Auditorias": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList")},
         "Usuarios": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
         "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},

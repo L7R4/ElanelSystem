@@ -1,22 +1,116 @@
+@page {
+    margin: 5mm;
+    /* Aplica márgenes de 20mm en todos los lados */
+}
+
 .logo {
     width: 400px;
     display: block;
     margin: 0 auto;
 }
 
+.reciboWrapper {
+    display: inline;
+    height: 100%;
+}
+
+
+body {
+    /* border: 1px solid #000; */
+    padding: 20px;
+    font-size: 14px;
+
+}
+
+* {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+}
+
+.infoUserWrapper {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.infoUserWrapper p {
+    font-size: 16px;
+    font-weight: bold;
+
+}
+
+.tittleConceptoWrapper,
+.titleDescuento {
+    background-color: #00000034;
+    padding: 5px;
+    margin-top: 18px;
+    margin-bottom: 10px;
+
+    font-weight: bold;
+}
+
+.infoUserWrapper.colaboradorWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border: 1px solid #00000079;
+}
+
+.colaboradorWrapper>p:nth-child(2) {
+    margin-left: 20px;
+}
+
+
+.tittleRecibo {
+    text-align: center;
+    font-size: 25px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
 .divider {
     height: 20px;
 }
 
-.titleDescuento,
+
 .subTotalWrapper {
-    background-color: #0000005d;
+    background-color: #0000002d;
+}
+
+.subTotalWrapper td {
+    padding: 5px;
+}
+
+.totalComisionadoWrapper {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    padding: 5px;
+    border: 1px solid #00000079;
+}
+
+#firmas {
+    display: flex;
+    justify-content: space-around;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+}
+
+#firmas>div {
+    padding: 5px;
+    border-top: 1px solid #00000079;
+    width: 35%;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
 }
 
 table {
     border-spacing: 0 8px;
     width: 100%;
-    border: 1px solid #000;
+    /* border: 1px solid #000; */
 }
 
 /* CSS para salto de página */
