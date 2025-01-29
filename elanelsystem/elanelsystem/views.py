@@ -1,19 +1,20 @@
 import datetime
-from django.http import HttpResponseRedirect, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.views import LoginView
 from django.views import generic
 from django.urls import reverse, reverse_lazy
+from sales.models import MovimientoExterno, Ventas
 from users.forms import CustomLoginForm
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.cache import never_cache
-from sales.utils import dataStructureCannons, dataStructureVentas, dataStructureMovimientosExternos,deleteFieldsInDataStructures
-from users.models import Sucursal, Usuario
+from sales.utils import dataStructureCannons, dataStructureClientes, dataStructureVentas, dataStructureMovimientosExternos,deleteFieldsInDataStructures
+from users.models import Cliente, Sucursal, Usuario
 from sales.utils import exportar_excel, obtener_ultima_campania
 from django.contrib.auth.models import Permission
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # class IndexLoginView(generic.FormView):
 #     form_class = CustomLoginForm
@@ -83,7 +84,7 @@ class ReportesView(generic.View):
     template_name = 'reportes.html'
 
     def get(self, request,*args, **kwargs):
-        TIPOS_DE_REPORTES = ["Cannons", "Ventas", "Movimientos", "Clientes"]
+        TIPOS_DE_REPORTES = ["cannons", "ventas", "movimientos", "clientes"]
         context = {"tiposDeReportes": TIPOS_DE_REPORTES}
         return render(request,self.template_name,context)
     
@@ -175,6 +176,96 @@ def filterMainManage(request,dataStructure):
 
     return filtered_data
 
+
+class DetallesNegocioView(generic.View):
+    template_name = 'detalle_por_datos.html'
+
+    
+
+    def get(self, request, tipo_slug):
+        # Obtén los datos del modelo basado en el slug
+        sucursal = request.GET.get("agencia") if request.GET.get("agencia") else "Sucursal central"
+
+        MODELOS = {
+            'cannons': dataStructureCannons(sucursal),
+            'ventas': dataStructureVentas(sucursal),
+            'movimientos': dataStructureMovimientosExternos(sucursal),
+            'clientes': dataStructureClientes(sucursal),
+        }
+
+        datos = MODELOS.get(tipo_slug)
+        print(sucursal)
+        # Definir atributos a mostrar según el modelo
+        if tipo_slug == "ventas":
+            attrs = ["nro_operacion", "fecha", "nro_cliente", "nombre_de_cliente", "agencia", "nro_cuotas","campania","importe", "interes_generado","total_a_pagar","dinero_entregado","dinero_restante","cuota_comercial",'producto', 'paquete', 'vendedor', 'supervisor']
+
+        elif tipo_slug == "movimientos":
+            attrs = ["nroComprobante", "fecha", "nroIdentificacion", "tipoComprobante", "metodoPago","monto","tipoMoneda", "agencia", "tipo_mov",  "denominacion", "estado", "dias_de_mora", "ente", "campania","concepto"]
+            
+        elif tipo_slug == "clientes":
+            attrs = ["nro_cliente", "nombre", "dnio", "domic", "loc","prov","cod_postal", "tel", "fec_nacimiento",  "agencia", "estado_civil", "ocupacion"]
+
+        elif tipo_slug == "cannons":
+            attrs = ["cuota", "fecha", "nro_operacion", "monto", "metodoPago","nro_del_cliente","nombre_del_cliente", "agencia", "tipo_mov",  "fecha_de_vencimiento", "estado", "dias_de_mora", "interes_por_mora", "total_final","cobrador"]
+
+        else:
+            attrs = []  # Por defecto no mostrar atributos si no se definen
+
+        # Filtrar los datos según los atributos definidos
+        datos_filtrados = [
+            {attr: obj[attr] for attr in attrs if attr in obj}
+            for obj in datos
+        ]
+
+        request.session['datos'] = {'data': datos_filtrados, 'tipo': tipo_slug}
+
+
+        # Paginación
+        page = request.GET.get('page', 1)
+        paginator = Paginator(datos_filtrados, 20)  # 20 elementos por página
+
+        try:
+            data_paginated = paginator.page(page)
+        except PageNotAnInteger:
+            data_paginated = paginator.page(1)
+        except EmptyPage:
+            data_paginated = paginator.page(paginator.num_pages)
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'data': list(data_paginated),  # Serializa la página actual
+                'has_next': data_paginated.has_next(),
+                'has_previous': data_paginated.has_previous(),
+                'next_page': data_paginated.next_page_number() if data_paginated.has_next() else None,
+                'previous_page': data_paginated.previous_page_number() if data_paginated.has_previous() else None,
+                'page': data_paginated.number,
+                'total_pages': paginator.num_pages,
+            })
+
+        # Renderizar la plantilla con los datos y atributos
+        return render(
+            request, 
+            self.template_name, 
+            {
+                'tipo': tipo_slug,
+                'data': data_paginated,
+                'sucursales': Sucursal.objects.all(),
+                'sucursalDefault': Sucursal.objects.get(pseudonimo="Sucursal central"),
+            }
+        )
+    
+
+
+class ExportarExcelView(generic.View):
+    def get(self, request, *args, **kwargs):
+        # Obtener los datos filtrados de la sesión
+        datos = request.session.get('datos', [])
+        print(datos)
+        if not datos:
+            return HttpResponse("No hay datos para exportar.", status=400)
+
+        # Llamar a la función `exportar_excel` con los datos filtrados
+        return exportar_excel(datos)
 
 
 #region MANEJO DE FILTROS ------------------------------------------------------------------

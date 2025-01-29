@@ -49,7 +49,7 @@ function editarSucursal(buttons) {
                     let enableForm = form.querySelector(".enableForm")
                     buttonDelete = form.querySelector(".deleteSucursal")
 
-                    if (!form) { return; } 
+                    if (!form) { return; }
 
                     buttonU.classList.remove("active")
                     buttonU.nextElementSibling.classList.remove("active")
@@ -61,6 +61,7 @@ function editarSucursal(buttons) {
                         "sucursalPk": inputID.value,
                         "direccion": inputDireccion.value,
                         "horaApertura": inputHora.value,
+                        "gerente": gerenteInput.value
                     }
 
                     fetchCRUD(body, urlUpdateS).then(data => {
@@ -120,6 +121,17 @@ function newSucursal_HTML(csrf) {
                 <label for="">Hora de apertura</label>
                 <input type="text" class="open" id="newHora" name="horaApertura">
             </div>
+            
+            <div id="selectWrapperSelectGerente" class="wrapperSelectFilter">
+                <label class="labelInput">Gerente</label>
+                <div class="containerInputAndOptions">
+                   <img id="sucursalIconDisplay" class="iconDesplegar" src="${imgArrowDown}" alt="">
+                    <input type="text" readonly="" name="gerente" id="gerenteInput" required="" autocomplete="off" maxlength="100" class="input-select-custom onlySelect">
+                    <ul class="list-select-custom options">
+                    ${gerentesDisponibles.map(gerente => `<li>${gerente.nombre}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
         </div>
         <div class="buttonsActions">
             <button type="button" class="add-button-default" id="buttonConfirmAddSucursal">Confirmar</button>
@@ -157,6 +169,16 @@ function createNewItemSucursal_HTML(csrf, pk, name, direccion, hora) {
                         <label for="">Hora de entrada</label>
                         <input type="text" id="inputHora" name="inputHora" value="${hora}">
                     </div>
+                     <div id="selectWrapperSelectGerente" class="wrapperSelectFilter">
+                        <label class="labelInput">Gerente</label>
+                        <div class="containerInputAndOptions">
+                        <img id="sucursalIconDisplay" class="iconDesplegar" src="${imgArrowDown}" alt="">
+                            <input type="text" readonly="" name="gerente" id="gerenteInput" required="" autocomplete="off" maxlength="100" class="input-select-custom onlySelect">
+                            <ul class="list-select-custom options">
+                            ${gerentesDisponibles.map(gerente => `<li>${gerente.nombre}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="buttonsActions">
@@ -174,17 +196,19 @@ function createNewItemSucursal_HTML(csrf, pk, name, direccion, hora) {
 
 buttonAddSucursal.addEventListener("click", () => {
     newSucursal_HTML(CSRF_TOKEN)
+    cargarListenersEnInputs()
     buttonAddSucursal.classList.add("blocked")
     buttonConfirmAddSucursal.addEventListener("click", () => {
         let body = {
             "provincia": provincia.value,
             "localidad": localidad.value,
             "direccion": newDireccion.value,
+            "gerente": gerenteInput.value,
             "horaApertura": newHora.value,
         }
 
         fetchCRUD(body, urlAddS).then(data => {
-            createNewItemSucursal_HTML(CSRF_TOKEN, data["pk"], data["name"], data["direccion"], data["hora"]);
+            createNewItemSucursal_HTML(CSRF_TOKEN, data["pk"], data["name"], data["direccion"], data["hora"], data["gerente"]);
             cleanAddSucursal()
             buttonAddSucursal.classList.remove("blocked")
 

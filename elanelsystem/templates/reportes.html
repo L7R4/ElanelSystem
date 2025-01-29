@@ -14,13 +14,13 @@
     {% for reporte in tiposDeReportes %}
         <div class="wrapperSections">
             <div class ="tittleWrapper">
-                <h4>{{reporte}}</h4>
+                <h4>{{ reporte|capfirst }}</h4>
             </div>
             <div class="buttonWrapper">
-                <a id="expCannons" class="buttonMore buttonActiveModalFilter">
-                {% comment %} <a href="{% url 'users:panelPermisos' %}" id="expCannons" class="buttonMore"> {% endcomment %}
+                {% comment %} <a id="expCannons" class="buttonMore"> {% endcomment %}
+                <a href="{% url 'detalle_por_tipoDeDatos' reporte %}" class="buttonMore">
                     <div>
-                        <h3>Exportar Excel</h3>
+                        <h3>Ver</h3>
                         <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
                     </div>
                 </a>
@@ -31,7 +31,7 @@
     
     <!-- MODAL DE FILTROS DEFAULT  -->
     <!-- Respetar estructura del modal-->
-    <div class="modalFilterContainer">
+    {% comment %} <div class="modalFilterContainer">
         <div class="background"></div>
         <div class="windowModal">
             
@@ -114,14 +114,14 @@
 
             <button id="submitFilter" class="add-button-default" form="filterForm" type="submit">Filtrar</button>
         </div>
-    </div>
+    </div> {% endcomment %}
 
 
 {% endblock content %}
 {% block js %}
-<script src="{% static 'js/inputsSelectsMultipleCustoms.js' %}"></script>
-<script src="{% static 'js/inputsRadiosManage.js' %}"></script>
-<script src="{% static 'js/manageModalFilter.js' %}"></script>
-<script src="{% static 'js/vanilla-calendar/multipleCalendarManage.js' %}" defer></script>
+{% comment %} <script src="{% static 'js/inputsSelectsMultipleCustoms.js' %}"></script> {% endcomment %}
+{% comment %} <script src="{% static 'js/inputsRadiosManage.js' %}"></script> {% endcomment %}
+{% comment %} <script src="{% static 'js/manageModalFilter.js' %}"></script> {% endcomment %}
+{% comment %} <script src="{% static 'js/vanilla-calendar/multipleCalendarManage.js' %}" defer></script> {% endcomment %}
 
 {% endblock js %}

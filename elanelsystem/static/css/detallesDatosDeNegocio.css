@@ -3,104 +3,68 @@
     height: 15%;
     display: flex;
     align-items: center;
-    padding: 3rem;
+    padding: 1rem 5rem;
+    gap: 2rem;
     justify-content: space-between;
 
 }
 
-.filters form#formFilter {
+/* .filters form#formFilter {
     width: 70%;
     display: flex;
     gap: 1.5rem;
-}
+} */
 
-.filters div.filtersActionWrapper {
+/* .filters div.filtersActionWrapper {
     display: flex;
     gap: 2rem;
     align-items: center;
     width: 100%;
     justify-content: flex-end;
+} */
+
+.filters div.filtersActionWrapper>div #inputSucursal {
+    width: 20vw;
+    min-width: 25rem;
+    margin-top: .3rem;
 }
 
-.filters div.filtersActionWrapper>div#wrapperSucursal {
-    width: 30%;
+.filters div.filtersActionWrapper>div .labelInput {
+    font-size: clamp(1.1rem, 1.1vw, 1.4rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
+    padding-left: .5rem;
 }
 
 
-.filters div.filtersActionWrapper>div#wrapperSucursal .iconDesplegar {
+.filters div.filtersActionWrapper>div#selectWrapperSelectAgencia .iconDesplegar {
     z-index: 5;
     filter: invert(1);
 }
 
-.filters div.filtersActionWrapper>div#wrapperSucursal #sucursalInput {
+.filters div.filtersActionWrapper>div#selectWrapperSelectAgencia #inputSucursal {
     z-index: 4;
     background-color: var(--background-color);
     color: var(--third-color);
 }
 
-.filters div.filtersActionWrapper>div#wrapperSucursal .options {
+.filters div.filtersActionWrapper>div#selectWrapperSelectAgencia .options {
     z-index: 3;
 }
 
 
-.filters div.filtersActionWrapper>div.searchActionWrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: 60%;
-    height: 100%;
-}
-
-
-.filters div.filtersActionWrapper>div.searchActionWrapper>img {
-    position: absolute;
-    /* rotate: -90deg; */
-    filter: invert(1);
-    width: 1.8rem;
-    right: 2%;
-    z-index: 6;
-}
-
-
-.filters div.filtersActionWrapper>div.searchActionWrapper>input {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway;
-    color: var(--third-color);
-    position: relative;
-    padding: 1rem 0;
-    z-index: 2;
-}
-
-.filters>div.buttonsActionsWrapper {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    gap: 1.5rem;
-    width: 30%;
-}
-
-.filters>div.buttonsActionsWrapper>* {
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    color: var(--third-color);
-    padding: 1rem 3rem;
-}
-
 
 .informationWrapper {
-    height: 85%;
+    height: 75%;
     width: 100%;
-    padding: 3rem;
+    padding: 5rem;
     padding-top: 0;
-    overflow: auto;
+    display: flex;
+    justify-content: center;
 }
 
-table.information {
-    width: 100%;
-    table-layout: auto;
-}
 
-table.information tr>* {
+table.informationTable tr>* {
     padding: 1rem;
     text-align: center;
     font-size: clamp(1.3rem, 1.2vw, 1.6rem);
@@ -111,18 +75,18 @@ table.information tr>* {
 
 
 
-table.information>tbody>tr>td>p {
+table.informationTable>tbody>tr>td>p {
     font-size: clamp(1.3rem, 1vw, 1.5rem);
     font-family: raleway;
     white-space: nowrap;
 }
 
-table.information>tbody>tr:hover {
+table.informationTable>tbody>tr:hover {
     background-color: #304361;
-    cursor: pointer;
+    /* cursor: pointer; */
 }
 
-table.information>thead {
+table.informationTable>thead {
     position: sticky;
     top: 0;
     z-index: 1;
@@ -136,36 +100,42 @@ table.information>thead {
 
 
 
-table.information tr>*:first-child {
+table.informationTable tr>*:first-child {
     border-top-left-radius: .8rem;
     border-bottom-left-radius: .8rem;
 
 }
 
 
-table.information tr>*:last-child {
+table.informationTable tr>*:last-child {
     border-top-right-radius: .8rem;
     border-bottom-right-radius: .8rem;
 }
 
-
-.information {
-    /* height: 88%; */
+.tableWrapper {
     width: 100%;
-    /* display: flex; */
-    overflow-x: auto;
-    overflow-y: none;
+    height: 100%;
+    overflow: auto;
+    /* padding: 1rem; */
+    padding-top: 0;
 }
 
-.information::-webkit-scrollbar {
-    width: 2px;
+.informationTable {
+    width: 100%;
+    table-layout: auto;
+
+}
+
+.tableWrapper::-webkit-scrollbar {
+    width: 5px;
     height: 5px;
     border-radius: 5px;
 }
 
-.information::-webkit-scrollbar-thumb {
+.tableWrapper::-webkit-scrollbar-thumb {
     background: var(--third-color);
     border-radius: 1rem;
+    width: .3rem;
 }
 
 .tittles {
@@ -176,7 +146,7 @@ table.information tr>*:last-child {
     justify-content: space-around;
 }
 
-.information>.tittlesWrapper {
+.informationTable>.tittlesWrapper {
     width: 100%;
     background-color: var(--fourth-color);
 }
@@ -278,7 +248,7 @@ table.information tr>*:last-child {
     gap: 2rem;
 }
 
-#messageStatusContainer > img{
+#messageStatusContainer>img {
     min-width: 5rem;
     width: 35%;
     max-width: 13rem;
@@ -286,7 +256,7 @@ table.information tr>*:last-child {
     min-height: 35%; */
 }
 
-#messageStatusContainer > h2{
+#messageStatusContainer>h2 {
     font-size: clamp(1.4rem, 1.3vw, 2rem);
     font-family: 'raleway-semibold';
     color: var(--background-color);
@@ -306,7 +276,7 @@ table.information tr>*:last-child {
 
 /*#endregion  */
 
-#buttonCleanFilter{
+#buttonCleanFilter {
     font-size: clamp(1.3rem, 1.2vw, 1.6rem);
     font-family: 'raleway-semibold';
     color: var(--third-color);
@@ -316,6 +286,42 @@ table.information tr>*:last-child {
     display: none;
 }
 
-#buttonCleanFilter.active{
+#buttonCleanFilter.active {
     display: block;
+}
+
+#wrapperLoader {
+    background-color: rgb(0 0 0 / 65%);
+}
+
+.paginationWrapper {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.paginationWrapper>button.buttonsPagesManage {
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: 'raleway-semibold';
+    color: var(--third-color);
+    padding: .5rem 1.4rem;
+    background-color: transparent;
+    outline: none;
+    border-radius: .6rem;
+    border: 2px solid var(--primary-color);
+    cursor: pointer;
+}
+
+.paginationWrapper>#textPaginator {
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: 'raleway-semibold';
+    color: var(--third-color);
+}
+
+#buttonExport {
+    text-decoration: none;
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+
 }

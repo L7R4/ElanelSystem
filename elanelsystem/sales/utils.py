@@ -8,6 +8,7 @@ from django.template.loader import get_template
 from django.db.models import Max
 import openpyxl
 from openpyxl import Workbook
+from openpyxl.drawing.image import Image
 from django.http import HttpResponse, JsonResponse
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from users.models import Cliente
@@ -97,18 +98,22 @@ def sendEmailPDF(email,pdf_path,sujeto):
 
 
 #region Funciones para exportar .XLSs
-def exportar_excel(information):
+def exportar_excel(data):
+    information = data["data"]
+    tipo_information = data["tipo"]
+    fecha = datetime.datetime.now().strftime("%d-%m-%Y %H-%M")
+
     # Crear un nuevo libro de trabajo
     wb = Workbook()
 
     # Seleccionar la primera hoja (automáticamente creada)
     ws = wb.active
-    ws.title = "Datos"  # Cambiar el nombre de la hoja
+    ws.title = "Datos"
 
-    # Estilo para toda la fila 1
-    bold_font = Font(bold=True)  # Negrita
-    yellow_fill = PatternFill(start_color="546FFF", end_color="546FFF", fill_type="solid")  # Relleno amarillo
-    center_alignment = Alignment(horizontal='center')  # Alineación centrada
+    # Estilo para los encabezados
+    bold_font = Font(color="FFFFFF", size=13, name="Berlin Sans FB")  # Letra blanca, más grande, y fuente específica
+    yellow_fill = PatternFill(start_color="1753ED", end_color="1753ED", fill_type="solid")
+    center_alignment = Alignment(horizontal='center')
     thin_border = Border(
         left=Side(border_style="thin"),
         right=Side(border_style="thin"),
@@ -116,43 +121,52 @@ def exportar_excel(information):
         bottom=Side(border_style="thin")
     )
 
+    # Insertar imagen antes de la fila 1
+    image_path = os.path.join(settings.BASE_DIR, "static/images/logoElanelPDF.png")
+    img = Image(image_path)  # Cargar la imagen desde la ruta proporcionada
+    img.width, img.height = 830, 90  # Ajustar tamaño de la imagen
+    ws.add_image(img, "A1")  # Insertar imagen en la celda A1
 
-    # Obtener los encabezados a partir de las claves del primer diccionario en la lista
+    # Espaciar la primera fila para la imagen
+    ws.row_dimensions[1].height = 130
+
+    # Iniciar los encabezados en la fila 3
     if information:
-        information = formatKeys(information)
-        encabezados = list(information[0].keys())
-        
-        ws.append(encabezados)  # Agregar encabezados a la hoja
+        encabezados = [v['verbose_name'] for v in information[0].values()]
+        ws.append([])  # Fila vacía para mantener la separación
+        ws.append(encabezados)  # Agregar encabezados en la fila 3
 
-        # Agregar datos de cada diccionario a la hoja
+        # Aplicar estilos a los encabezados (fila 3)
+        for cell in ws[2]:
+            cell.font = bold_font
+            cell.fill = yellow_fill
+            cell.alignment = center_alignment
+            cell.border = thin_border
+
+        # Agregar datos de cada diccionario a partir de la fila 4
         for item in information:
-            fila = []
-            for key in encabezados:
-                valor = item.get(key, "")
-                fila.append(valor)
+            fila = [v['data'] for v in item.values()]
             ws.append(fila)
-    
-    for cell in ws[1]:  # Obtener todas las celdas de la fila 1
-        cell.font = bold_font
-        cell.fill = yellow_fill
-        cell.alignment = center_alignment
-        cell.border = thin_border
-    
-    # Ajustar el ancho de las columnas basado en la fila 1
-    column_widths = [len(cell.value) for cell in ws[1]]  # Ancho basado en el contenido
 
-    for idx, width in enumerate(column_widths, start=1):
-        ws.column_dimensions[openpyxl.utils.get_column_letter(idx)].width = width + 5  # Añadir espacio adicional
+        # Establecer la fuente general para todo el Excel
+        berlin_font = Font(name="Berlin Sans FB")
+        for row in ws.iter_rows(min_row=3):  # Desde la fila 4
+            for cell in row:
+                cell.font = berlin_font
+
+    # Ajustar el ancho de las columnas basado en los encabezados (fila 3)
+    for idx, cell in enumerate(ws[3], start=1):
+        ws.column_dimensions[openpyxl.utils.get_column_letter(idx)].width = len(str(cell.value) if cell.value is not None else "") + 15
+
 
     # Configurar la respuesta como archivo Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="datos.xlsx"'
+    response['Content-Disposition'] = f'attachment; filename="datos_{tipo_information}_{fecha}.xlsx"'
 
     # Guardar el libro de trabajo en la respuesta
     wb.save(response)
-    
-    return response
 
+    return response
 
 #endregion 
 
@@ -303,131 +317,166 @@ def formatear_moneda(valor):
 #region Data Structures ----------------------------------------------------------
 
 def getInfoBaseCannon(venta, cuota):
-    cliente = Cliente.objects.get(nro_cliente = venta.nro_cliente.nro_cliente)
+    cliente = Cliente.objects.get(nro_cliente=venta.nro_cliente.nro_cliente)
     return {
-        'cuota' : cuota["cuota"],
-        'nro_operacion': cuota["nro_operacion"],
-        'contratos': venta.cantidadContratos,
-        'nombre_del_cliente' : cliente.nombre,
-        'nro_del_cliente' : cliente.nro_cliente,
-        'sucursal' : venta.agencia.pseudonimo,
-        'tipo_mov' : "Ingreso",
-        'fecha_de_vencimiento' : cuota['fechaDeVencimiento'],
-        'descuento' : cuota['descuento'],
-        'estado' : cuota['status'],
-        'dias_de_mora' : cuota['diasRetraso'],
-        'total_final' : cuota.get('totalFinal',None),
-        'interes_por_mora' : cuota.get('interesPorMora',None),
+        'cuota': {'data': cuota["cuota"], 'verbose_name': 'Cuota'},
+        'nro_operacion': {'data': cuota["nro_operacion"], 'verbose_name': 'N° Operación'},
+        'contratos': {'data': venta.cantidadContratos, 'verbose_name': 'Cantidad de Contratos'},
+        'nombre_del_cliente': {'data': cliente.nombre, 'verbose_name': 'Nombre del Cliente'},
+        'nro_del_cliente': {'data': cliente.nro_cliente, 'verbose_name': 'N° del Cliente'},
+        'agencia': {'data': venta.agencia.pseudonimo, 'verbose_name': 'Agencia'},
+        'tipo_mov': {'data': "Ingreso", 'verbose_name': 'Tipo de Movimiento'},
+        'fecha_de_vencimiento': {'data': cuota['fechaDeVencimiento'], 'verbose_name': 'Fecha de Vencimiento'},
+        'descuento': {'data': cuota['descuento'], 'verbose_name': 'Descuento'},
+        'estado': {'data': cuota['status'], 'verbose_name': 'Estado'},
+        'dias_de_mora': {'data': cuota['diasRetraso'], 'verbose_name': 'Días de Mora'},
+        'total_final': {'data': cuota.get('totalFinal', 0), 'verbose_name': 'Total Final'},
+        'interes_por_mora': {'data': cuota.get('interesPorMora', 0), 'verbose_name': 'Interés por Mora'},
     }
 
 
-def dataStructureCannons(sucursal):
+def dataStructureCannons(sucursal=None):
     from sales.models import Ventas
     from elanelsystem.views import convertirValoresALista
     
-    listaAgencias = convertirValoresALista({"agencia":sucursal})["agencia"]
+    ventas = ""
     
-    ventas = Ventas.objects.filter(agencia__pseudonimo__in=listaAgencias)
+    if sucursal:
+        listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
+        ventas = Ventas.objects.filter(agencia__pseudonimo__in=listaAgencias)
+    else:
+        ventas = Ventas.objects.all()
 
     cuotas_data = []
 
     for i in range(int(ventas.count())):
         venta = ventas[i]
 
-        for k in range(len(ventas[i].cuotas)):
-            cuota = ventas[i].cuotas[k]
+        for k in range(len(venta.cuotas)):
+            cuota = venta.cuotas[k]
 
-            if ventas[i].cuotas[k]["status"] in ["Pagado", "Parcial", "Atrasado"]:
+            if cuota["status"] in ["Pagado", "Parcial", "Atrasado"]:
                 for pago in cuota["pagos"]:
-                    mov = {**getInfoBaseCannon(venta,cuota),**pago}
+                    mov = {**getInfoBaseCannon(venta, cuota), **{
+                        'metodoPago': {'data': pago['metodoPago'], 'verbose_name': 'Método de Pago'},
+                        'monto': {'data': pago['monto'], 'verbose_name': 'Monto Pagado'},
+                        'fecha': {'data': pago['fecha'], 'verbose_name': 'Fecha de Pago'},
+                        'cobrador': {'data': pago['cobrador'], 'verbose_name': 'Cobrador'},
+                    }}
                     cuotas_data.append(mov)
+            else:
+                mov = {**getInfoBaseCannon(venta, cuota), **{
+                    'metodoPago': {'data': "", 'verbose_name': 'Método de Pago'},
+                    'monto': {'data': "", 'verbose_name': 'Monto Pagado'},
+                    'fecha': {'data': "", 'verbose_name': 'Fecha de Pago'},
+                    'cobrador': {'data': "", 'verbose_name': 'Cobrador'},
+                }}
+                cuotas_data.append(mov)
 
-
-    
-    cuotas_data.reverse()
+    # cuotas_data.reverse()
     return cuotas_data
 
 
-def dataStructureVentas(sucursal):
+def dataStructureVentas(sucursal=None):
+    from sales.models import Ventas
 
-    ventas = get_ventasBySucursal(sucursal)
-    
+    if sucursal:
+        ventas = get_ventasBySucursal(sucursal)
+    else:
+        ventas = Ventas.objects.all()
+        
     ventasList = []
     for i in range(int(ventas.count())):
         venta = ventas[i]
         
         ventaDict = {
-            'nro_cliente' : venta.nro_cliente.nro_cliente,
-            'nombre_de_cliente' : venta.nro_cliente.nombre,
-            'nro_orden' : venta.nro_orden,
-            'nro_cuotas' : venta.nro_cuotas,
-            'agencia' : venta.agencia.pseudonimo,
-            'campania' : venta.campania,
-            'importe' : venta.importe,
-            'paquete' : venta.paquete,
-            'primer_cuota' : venta.primer_cuota,
-            'suscripcion' : venta.anticipo,
-            'cuota_comercial' : venta.importe_x_cuota,
-            'vendedor' : venta.vendedor.nombre,
-            'supervisor' : venta.supervisor.nombre,
+            'nro_operacion': {'data': venta.nro_operacion, 'verbose_name': 'N° ope'},
+            'fecha': {'data': venta.fecha, 'verbose_name': 'Fecha'},
+            'nro_cliente': {'data': venta.nro_cliente.nro_cliente, 'verbose_name': 'N° cliente'},
+            'nombre_de_cliente': {'data': venta.nro_cliente.nombre, 'verbose_name': 'Nombre del cliente'},
+            'agencia': {'data': venta.agencia.pseudonimo, 'verbose_name': 'Agencia'},
+            'nro_cuotas': {'data': venta.nro_cuotas, 'verbose_name': 'N° cuotas'},
+            'id': {'data': venta.id, 'verbose_name': 'ID'},
+            'campania': {'data': venta.campania, 'verbose_name': 'Campaña'},
+            'importe': {'data': venta.importe, 'verbose_name': 'Importe'},
+            'paquete': {'data': venta.paquete, 'verbose_name': 'Paquete'},
+            'primer_cuota': {'data': venta.primer_cuota, 'verbose_name': 'Primer cuota'},
+            'suscripcion': {'data': venta.anticipo, 'verbose_name': 'Suscripción'},
+            'cuota_comercial': {'data': venta.importe_x_cuota, 'verbose_name': 'Cuota comercial'},
+            'interes_generado': {'data': venta.intereses_generados, 'verbose_name': 'Interés generado'},
+            'total_a_pagar': {'data': venta.total_a_pagar, 'verbose_name': 'Total a pagar'},
+            'dinero_entregado': {'data': getDineroEntregado(venta.cuotas), 'verbose_name': 'Dinero entregado'},
+            'dinero_restante': {'data': venta.total_a_pagar - getDineroEntregado(venta.cuotas), 'verbose_name': 'Dinero restante'},
+            'vendedor': {'data': venta.vendedor.nombre, 'verbose_name': 'Vendedor'},
+            'producto': {'data': venta.producto.nombre, 'verbose_name': 'Producto'},
+            'supervisor': {'data': venta.supervisor.nombre, 'verbose_name': 'Supervisor'},
         }
 
-        # Agregar el campo si la venta esta AUDITADA       
-        if(venta.auditoria[-1]["realizada"]):
-            ventaDict["auditada"] = "Si"
-            ventaDict["ultima_auditoria"] = venta.auditoria[-1]["grade"]
+        # Agregar el campo si la venta esta AUDITADA  
+        if len(venta.auditoria) > 0:   
+            last_auditoria = venta.auditoria[-1]
+            ventaDict["auditada"] = {'data': "Si", 'verbose_name': 'Auditada'}
+            ventaDict["ultima_auditoria"] = {'data': last_auditoria["grade"], 'verbose_name': 'Última auditoría'}
 
         # Agregar el campo si la venta esta ADJUDICADA
         if(venta.adjudicado["status"]):
-            ventaDict["adjudicado"] = "Si"
-            ventaDict["tipo_de_adjudicacion"] = venta.adjudicado["tipo"]
+            ventaDict["adjudicado"] = {'data': "Si", 'verbose_name': 'Adjudicado'}
+            ventaDict["tipo_de_adjudicacion"] = {'data': venta.adjudicado["tipo"], 'verbose_name': 'Tipo de adjudicación'}
 
         # Agregar el campo si la venta esta DE BAJA
         if(venta.deBaja["status"]):
-            ventaDict["de_baja"] = "Si"
-            ventaDict["motivo_de_baja"] = venta.deBaja["motivo"]
-            ventaDict["responsable"] = venta.deBaja["responsable"]
+            ventaDict["de_baja"] = {'data': "Si", 'verbose_name': 'De baja'}
+            ventaDict["motivo_de_baja"] = {'data': venta.deBaja["motivo"] , 'verbose_name': 'Motivo de baja'}
+            ventaDict["responsable"] = {'data': venta.deBaja["responsable"], 'verbose_name': 'Responsable'}
         
         # Agregar el campo si la venta esta SUSPENDIDA
         if(venta.suspendida):
-            ventaDict["suspendida"] = "Si"
+            ventaDict["suspendida"] = {'data': "Si", 'verbose_name': 'Suspendida'}
 
-        
-        ventaDict['observaciones'] = venta.observaciones
+        ventaDict['observaciones'] = {'data': venta.observaciones, 'verbose_name': 'Observaciones'}
 
         ventasList.append(ventaDict)
 
     return ventasList
 
 
-def dataStructureMovimientosExternos(sucursal):
+def dataStructureMovimientosExternos(sucursal=None):
     from sales.models import MovimientoExterno
     from elanelsystem.views import convertirValoresALista
 
     movs_externos = ""
-    listaAgencias = convertirValoresALista({"agencia":sucursal})["agencia"]
-    movs_externos = MovimientoExterno.objects.filter(agencia__pseudonimo__in=listaAgencias)
-    return [
-        {
-            "tipoIdentificacion": movs_externo.tipoIdentificacion,
-            "nroIdentificacion": movs_externo.nroIdentificacion,
-            "tipoComprobante": movs_externo.tipoComprobante,
-            "nroComprobante": movs_externo.nroComprobante,
-            "denominacion": movs_externo.denominacion,
-            "tipoMoneda": movs_externo.tipoMoneda,
-            "tipo_mov": movs_externo.movimiento,
-            "monto": movs_externo.dinero,
-            "metodoPago": movs_externo.metodoPago,
-            "sucursal": movs_externo.agencia.pseudonimo,
-            "ente": movs_externo.ente,
-            "fecha": movs_externo.fecha,
-            "campania": movs_externo.campania,
-            "concepto": movs_externo.concepto,
-            "premio": movs_externo.premio,
-            "adelanto": movs_externo.adelanto,
-            } 
+    
+    if sucursal:
+        listaAgencias = convertirValoresALista({"agencia":sucursal})["agencia"]
+        movs_externos = MovimientoExterno.objects.filter(agencia__pseudonimo__in=listaAgencias)
+    
+    else:
+        movs_externos = MovimientoExterno.objects.all()
         
-        for movs_externo in movs_externos]
+    movsExternosList = []
+    for movs_externo in movs_externos:
+        movsExternoDict = {
+            "tipoIdentificacion": {'data': movs_externo.tipoIdentificacion, 'verbose_name': 'Tipo Identificación'},
+            "nroIdentificacion": {'data': movs_externo.nroIdentificacion, 'verbose_name': 'N° Identificación'},
+            "tipoComprobante": {'data': movs_externo.tipoComprobante, 'verbose_name': 'Tipo Comprobante'},
+            "nroComprobante": {'data': movs_externo.nroComprobante, 'verbose_name': 'N° Comprobante'},
+            "denominacion": {'data': movs_externo.denominacion, 'verbose_name': 'Denominación'},
+            "tipoMoneda": {'data': movs_externo.tipoMoneda, 'verbose_name': 'Tipo Moneda'},
+            "tipo_mov": {'data': movs_externo.movimiento, 'verbose_name': 'Tipo Movimiento'},
+            "monto": {'data': movs_externo.dinero, 'verbose_name': 'Monto'},
+            "metodoPago": {'data': movs_externo.metodoPago, 'verbose_name': 'Método de Pago'},
+            "agencia": {'data': movs_externo.agencia.pseudonimo, 'verbose_name': 'Sucursal'},
+            "ente": {'data': movs_externo.ente, 'verbose_name': 'Ente'},
+            "fecha": {'data': movs_externo.fecha, 'verbose_name': 'Fecha'},
+            "campania": {'data': movs_externo.campania, 'verbose_name': 'Campaña'},
+            "concepto": {'data': movs_externo.concepto, 'verbose_name': 'Concepto'},
+            "premio": {'data': movs_externo.premio, 'verbose_name': 'Premio'},
+            "adelanto": {'data': movs_externo.adelanto, 'verbose_name': 'Adelanto'},
+        }
+        
+        movsExternosList.append(movsExternoDict)
+    
+    return movsExternosList
 
 
 def dataStructureMoviemientosYCannons(sucursal):
@@ -443,6 +492,40 @@ def dataStructureMoviemientosYCannons(sucursal):
 
     return structureMovimientos_Generales
 
+
+def dataStructureClientes(sucursal=None):
+    from users.models import Cliente
+    from elanelsystem.views import convertirValoresALista
+
+    clientes = ""
+    
+    if sucursal:
+        listaAgencias = convertirValoresALista({"agencia":sucursal})["agencia"]
+        clientes = Cliente.objects.filter(agencia_registrada__pseudonimo__in=listaAgencias)
+    
+    else:
+        clientes = Cliente.objects.all()
+        
+    clienteList = []
+    for cliente in clientes:
+        clienteDict = {
+            "nro_cliente": {'data': cliente.nro_cliente, 'verbose_name': 'N° Cli'},
+            "nombre": {'data': cliente.nombre, 'verbose_name': 'Nombre'},
+            "dni": {'data': cliente.dni, 'verbose_name': 'DNI'},
+            "domic": {'data': cliente.domic, 'verbose_name': 'Domicilio'},
+            "loc": {'data': cliente.loc, 'verbose_name': 'Localidd'},
+            "prov": {'data': cliente.prov, 'verbose_name': 'Provincia'},
+            "cod_postal": {'data': cliente.cod_postal, 'verbose_name': 'Codigo Postal'},
+            "tel": {'data': cliente.tel, 'verbose_name': 'Telefono'},
+            "fec_nacimiento": {'data': cliente.fec_nacimiento, 'verbose_name': 'Fecha de Nacimiento'},
+            "agencia": {'data': cliente.agencia_registrada.pseudonimo, 'verbose_name': 'Agencia registrada'},
+            "estado_civil": {'data': cliente.estado_civil, 'verbose_name': 'Estado civil'},
+            "ocupacion": {'data': cliente.ocupacion, 'verbose_name': 'Ocupacion'},
+        }
+        
+        clienteList.append(clienteDict)
+    
+    return clienteList
 #endregion
 
 
@@ -455,6 +538,7 @@ def deleteFieldsInDataStructures(lista_dicts, campos_a_eliminar):
             if campo in item:
                 del item[campo]
     return lista_dicts
+
 
 def formatKeys(lista_dicts):
     # Nueva lista de diccionarios con claves formateadas
@@ -478,6 +562,7 @@ def formatKeys(lista_dicts):
         lista_formateada.append(nuevo_dict)
 
     return lista_formateada
+
 
 def getEstadoVenta(venta):
     if(venta.deBaja["status"]):
@@ -521,6 +606,15 @@ def bloquer_desbloquear_cuotas(cuotas):
     return nuevas_cuotas
 
 
+def getDineroEntregado(cuotas):
+    dineroEntregado = 0
+    for cuota in cuotas:
+        pagos = cuota["pagos"]
+        if(len(pagos)>0):
+            for pago in pagos:
+                dineroEntregado += pago["monto"]
+    return dineroEntregado
+
 #endregion
 
 
@@ -543,3 +637,37 @@ def send_html_email(subject, template, context, from_email, to_email):
     email.content_subtype = 'html'  # Define que el contenido es HTML
     email.send()
 #endregion
+
+
+
+
+
+# def asignar_usuario_a_ventas():
+#     import random
+#     from sales.models import Ventas
+#     from users.models import Usuario  # Ajusta esto al nombre de tu app de usuarios
+
+#     # Obtiene todas las ventas que no tienen vendedor o supervisor
+#     ventas_sin_vendedor_o_supervisor = Ventas.objects.filter(
+#         vendedor__isnull=True
+#     ) | Ventas.objects.filter(
+#         supervisor__isnull=True
+#     )
+
+#     # Obtiene todos los usuarios del modelo Usuario
+#     usuarios = list(Usuario.objects.all())
+#     if not usuarios:
+#         print("No hay usuarios disponibles para asignar.")
+#         return
+
+#     # Asigna un usuario aleatorio a cada venta
+#     for venta in ventas_sin_vendedor_o_supervisor:
+#         if not venta.vendedor:
+#             venta.vendedor = random.choice(usuarios)  # Asigna un vendedor aleatorio
+#         if not venta.supervisor:
+#             venta.supervisor = random.choice(usuarios)  # Asigna un supervisor aleatorio
+
+#         # Guarda los cambios en la base de datos
+#         venta.save()
+
+#     print(f"Se han actualizado {ventas_sin_vendedor_o_supervisor.count()} ventas.")

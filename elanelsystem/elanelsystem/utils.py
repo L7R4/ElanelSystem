@@ -92,7 +92,7 @@ def printPDF(data,url,liquidacionName,htmlPath,cssPath):
     context = data
     html_template = template.render(context)
     css_url = os.path.join(settings.BASE_DIR, cssPath)
-    print(f"Base dir: {settings.BASE_DIR}")
+    # print(f"Base dir: {settings.BASE_DIR}")
     if not os.path.exists(settings.PDF_STORAGE_DIR):
         os.makedirs(settings.PDF_STORAGE_DIR)
 
@@ -109,3 +109,13 @@ def formatear_dd_mm_yyyy(valor):
     fechaFormated = fechaRequest.strftime('%d/%m/%Y')
     print(fechaFormated)
     return fechaFormated
+
+
+def parse_fecha(fecha_str):
+    formatos = ["%d/%m/%Y %H:%M", "%d/%m/%Y"]  # Formatos posibles
+    for formato in formatos:
+        try:
+            return datetime.strptime(fecha_str, formato)
+        except ValueError:
+            continue
+    raise ValueError(f"Formato de fecha no válido: {fecha_str}")

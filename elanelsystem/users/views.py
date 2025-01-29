@@ -1098,8 +1098,11 @@ class PanelSucursales(TestLogin, generic.View):
     # permission_required = "sales.my_ver_resumen"
     def get(self,request,*args,**kwargs):
         sucursales = Sucursal.objects.all()
+        gerentes = Usuario.objects.filter(rango="Gerente sucursal")
+
         context= {
             "sucursales": sucursales,
+            'gerentesDisponibles': [{"id":gerente.pk,"nombre":gerente.nombre} for gerente in gerentes],
             }
         return render(request, self.template_name, context)
 
@@ -1108,11 +1111,14 @@ class PanelSucursales(TestLogin, generic.View):
         pk = request.POST.get("inputID")
         direccion = request.POST.get("inputDireccion")
         hora = request.POST.get("inputHora")
+        gerente = request.POST.get("gerente")
+
 
         # Para editar la sucursal 
         sucursal = Sucursal.objects.get(pk=pk)
         sucursal.direccion = direccion
         sucursal.hora_apertura = hora
+        sucursal.gerente = Usuario.objects.filter(pk=gerente).first()
 
         sucursal.save()  
         response_data = {'message': 'Datos recibidos correctamente'}
@@ -1123,10 +1129,14 @@ def updateSucursal(request):
         pk = json.loads(request.body)["sucursalPk"]
         direccion = json.loads(request.body)["direccion"]
         hora = json.loads(request.body)["horaApertura"]
+        gerente = json.loads(request.body)["gerente"]
         
+
+
         sucursal = Sucursal.objects.get(pk=pk)
         sucursal.direccion = direccion
         sucursal.hora_apertura = hora
+        sucursal.gerente = Usuario.objects.filter(pk=gerente).first()
         sucursal.save()
         
         response_data = {"message":"Sucursal actualizada con exito!!"}
@@ -1138,11 +1148,13 @@ def addSucursal(request):
         localidad = json.loads(request.body)["localidad"]
         direccion = json.loads(request.body)["direccion"]
         hora = json.loads(request.body)["horaApertura"]
+        gerente = json.loads(request.body)["gerente"]
         
         newSucursal = Sucursal()
         newSucursal.provincia = provincia.title()
         newSucursal.localidad = localidad.title()
         newSucursal.direccion = direccion.capitalize()
+        newSucursal.gerente = Usuario.objects.filter(pk=gerente).first()
         newSucursal.hora_apertura = hora
         newSucursal.save()
         

@@ -8,11 +8,16 @@ from users.models import Usuario,Sucursal
 from .models import *
 from django.urls import reverse_lazy
 from django.contrib.auth.models import Group
-from sales.utils import getAllCampaniaOfYear
+from sales.utils import getAllCampaniaOfYear, getTodasCampaniasDesdeInicio
 import datetime
 import json
 from elanelsystem.utils import printPDF
 from .utils import (
+    calcular_productividad_supervisor,
+    calcular_productividad_vendedor,
+    calcular_ventas_supervisor,
+    calcular_ventas_vendedor,
+    getCuotas1,
     liquidaciones_countFaltas,
     liquidaciones_countTardanzas,
     obtener_ultima_campania,
@@ -41,7 +46,7 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             lastCampania = obtener_ultima_campania()
             context["defaultSucursal"] = Sucursal.objects.first()
             context["sucursales"] = Sucursal.objects.all()
-            context["campanias"] = getAllCampaniaOfYear()
+            context["campanias"] = getTodasCampaniasDesdeInicio()
             context["urlRequestColaboradores"] = reverse_lazy('liquidacion:requestColaboradoresWithComisiones')
             usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor","Gerente sucursal"])
             admins = Usuario.objects.filter(rango = "Admin")
@@ -156,15 +161,15 @@ def requestColaboradoresWithComisiones(request):
     # request.session["liquidacion_data"] = {"colaboradores_list":colaboradores_list, "sucursal": sucursalString, "fecha":datetime.date.today().strftime("%d-%m-%Y")}
     # return JsonResponse({"colaboradores_data": colaboradores_list,"totalDeComisiones": totalDeComisiones} , safe=False)
     request.session["liquidacion_data"] = colaboradores_list
-    print([item for item in colaboradores_list if item["comisionTotal"] != 0])
-    # print(request.session["liquidacion_data"])
+    # print([item for item in colaboradores_list if item["comisionTotal"] != 0])
+    print(request.session["liquidacion_data"])
 
     return JsonResponse({"colaboradores_data": colaboradores_list, "totalDeComisiones": totalDeComisiones} , safe=False)
 
 
 def viewPDFLiquidacion(request):
     datos = request.session.get('liquidacion_data', {})
-    print(datos)
+    print(request.build_absolute_uri())
     # Para pasar el detalles de los movs
     contexto = []
     for item in datos:
@@ -200,31 +205,100 @@ class LiquidacionesRanking(TestLogin,generic.View):
 
     def get(self,request,*args,**kwargs):
         context = {}
+        defaultSucursal = Sucursal.objects.first()
+        defaultCampania = getTodasCampaniasDesdeInicio()[0]
+
+        sucursal = request.GET.get("agencia",defaultSucursal.pseudonimo)
+        campania = request.GET.get("campania", defaultCampania)
+        print(request.GET)
+
+        # Obtener por request el tipo de ordenamiento que tendra los elementos
+        tipoOrdenamientoVendedores = request.GET.get("tipoOrdenamientoVendedores","Cantidad de ventas")
+        tipoOrdenamientoSupervisores = request.GET.get("tipoOrdenamientoSupervisores","Cantidad de ventas")
+
+        mapTipoOrdenamiento = {
+            "Cantidad de ventas":"cantidadVentas",
+            "Productividad":"productividad",
+            "Cuotas 1 adelantadas":"cuotas1Adelantadas"
+        }
+
+        sucursalObject = Sucursal.objects.filter(pseudonimo=sucursal).first()
+
+        
+        context["defaultSucursal"] = defaultSucursal
+        context["defaultCampania"] = defaultCampania
+        context["defaultOrder"] = "Cantidad de ventas"
+        context["sucursales"] = Sucursal.objects.all()
+        context["campaniasDisponibles"] = getTodasCampaniasDesdeInicio()
+
+        supervisores = []
+        vendedores = []
+        totalVentasSucursal_Campania = 0
+
+
+        # Calcular ventas y productividad de vendedores
+        for usuario in Usuario.objects.filter(sucursales__in=[sucursalObject]):
+            ventasPropias = calcular_ventas_vendedor(usuario,campania,sucursalObject)
+            productividadPropia = calcular_productividad_vendedor(usuario,campania,sucursalObject)
+            cuotas1Adelantadas = getCuotas1(usuario,campania,sucursalObject)
+
+            vendedores.append({
+                'email_usuario':usuario.email,
+                'nombre_usuario':usuario.nombre,
+                'rango_usuario': usuario.rango,
+                'cantidadVentas':ventasPropias,
+                'productividad':productividadPropia,
+                'cuotas1Adelantadas':cuotas1Adelantadas["cantidadCuotas1"]
+            })
+
+            totalVentasSucursal_Campania += ventasPropias
+
+
+        # Calcular ventas y productividad de supervisores
+        for usuario in Usuario.objects.filter(rango="Supervisor",sucursales__in=[sucursalObject]):
+                ventasPorEquipo = calcular_ventas_supervisor(usuario,campania,sucursalObject)
+                productividadEquipo = calcular_productividad_supervisor(usuario,campania,sucursalObject)
+                vendedoresACargo = usuario.vendedores_a_cargo
+                
+                # Filtrar y ordenar vendedores a cargo
+                # Extraer correos electrónicos de los vendedores a cargo
+                vendedoresACargo_emails = [vendedor['email'] for vendedor in usuario.vendedores_a_cargo]
+
+                # Filtrar la lista de vendedores por los correos electrónicos
+                vendedoresACargo = [vendedor for vendedor in vendedores if vendedor['email_usuario'] in vendedoresACargo_emails and vendedor["rango_usuario"] == "Vendedor"]
+
+                vendedoresACargo.sort(key=lambda x: x['cantidadVentas'], reverse=True)
+
+
+                supervisores.append({
+                    'email_usuario':usuario.email,
+                    'nombre_usuario':usuario.nombre,
+                    'cantidadVentas': ventasPorEquipo,
+                    'productividad': productividadEquipo,
+                    'vendedoresACargo': vendedoresACargo
+                })
+        
+
+        #Ordenar por cantidad de ventas
+        vendedores.sort(key=lambda x: x[mapTipoOrdenamiento[tipoOrdenamientoVendedores]],reverse=True)
+        supervisores.sort(key=lambda x: x[mapTipoOrdenamiento[tipoOrdenamientoSupervisores]],reverse=True)
+
+        context["vendedores"] = vendedores
+        context["supervisores"] = supervisores
+        context["totalVentasSucursal_Campania"] = totalVentasSucursal_Campania
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'supervisores': supervisores,
+                'vendedores': vendedores,
+                'totalVentasSucursal_Campania': totalVentasSucursal_Campania
+                },safe=False)
+        
         return render(request, self.template_name, context)
     
-    
-class LiquidacionesDetallesVentas(TestLogin,generic.View):
-    template_name = 'detalleVentasLiquidaciones.html'
 
-    # permission_required = "sales.my_ver_resumen"
-    # login_url = "/ventas/caja/"
 
-    def get(self,request,*args,**kwargs):
-        context = {}
-        return render(request, self.template_name, context)
-    
-    
-class LiquidacionesDetallesCuotasAdelantadas(TestLogin,generic.View):
-    template_name = 'detalleCuotasAdelantadas.html'
 
-    # permission_required = "sales.my_ver_resumen"
-    # login_url = "/ventas/caja/"
-
-    def get(self,request,*args,**kwargs):
-        context = {}
-        return render(request, self.template_name, context)
-    
-  
 class LiquidacionesAusenciaYTardanzas(TestLogin,generic.View):
     template_name = 'liquidaciones_ausencias_tardanzas.html'
 
