@@ -6,51 +6,53 @@
 {% endblock css %}
 
 {% block content %}
-    <div class="wrapperTittle">
+    <div class="filterContainer">
         <h2>Ranking</h2>
-        <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
-            <label class="labelInput">Sucursal</label>
-            <div class="containerInputAndOptions">
-                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input
-                    type="text"
-                    name="agencia"
-                    class="onlySelect input-select-custom inputFilter"
-                    id="inputSucursal"
-                    autocomplete="off"
-                    readonly=""
-                    value="{{defaultSucursal.pseudonimo}}"
-                />
-                <ul class="list-select-custom options">
-                    {% for sucursal in sucursales %}
-                    <li data-value="{{sucursal.pseudonimo}}">{{sucursal.pseudonimo}}</li>
-                    {% endfor %}
-                </ul>
+        <div class="filtersWrapper">
+            <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
+                <label class="labelInput">Sucursal</label>
+                <div class="containerInputAndOptions">
+                    <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                    <input
+                        type="text"
+                        name="agencia"
+                        class="onlySelect input-select-custom inputFilter"
+                        id="inputSucursal"
+                        autocomplete="off"
+                        readonly=""
+                        value="{{defaultSucursal.pseudonimo}}"
+                    />
+                    <ul class="list-select-custom options">
+                        {% for sucursal in sucursales %}
+                        <li data-value="{{sucursal.pseudonimo}}">{{sucursal.pseudonimo}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
-        </div>
-
-        <div id="selectWrapperSelectCampania"class="inputWrapper wrapperSelectFilter">
-            <label class="labelInput">Campaña</label>
-            <div class="containerInputAndOptions">
-                <img
-                    id="tipoComprobanteIconDisplay"
-                    class="iconDesplegar"
-                    src="{% static 'images/icons/arrowDown.png' %}"
-                    alt=""
-                />
-                <input
-                    type="text"
-                    name="campania"
-                    value="{{defaultCampania}}"
-                    readonly
-                    class="input-select-custom onlySelect inputFilter"
-                    id="inputCampania"
-                />
-                <ul class="list-select-custom options">
-                    {% for campania in campaniasDisponibles %}
-                    <li data-value="{{campania}}">{{campania}}</li>
-                    {% endfor %}
-                </ul>
+    
+            <div id="selectWrapperSelectCampania"class="inputWrapper wrapperSelectFilter">
+                <label class="labelInput">Campaña</label>
+                <div class="containerInputAndOptions">
+                    <img
+                        id="tipoComprobanteIconDisplay"
+                        class="iconDesplegar"
+                        src="{% static 'images/icons/arrowDown.png' %}"
+                        alt=""
+                    />
+                    <input
+                        type="text"
+                        name="campania"
+                        value="{{defaultCampania}}"
+                        readonly
+                        class="input-select-custom onlySelect inputFilter"
+                        id="inputCampania"
+                    />
+                    <ul class="list-select-custom options">
+                        {% for campania in campaniasDisponibles %}
+                        <li data-value="{{campania}}">{{campania}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -59,22 +61,14 @@
             <div class="information">
                 <div class="tittleAndOrder">
                     <h2>Supervisores</h2>
-                    <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
+                    <div id="selectWrapperSelectOrder1" class="wrapperSelectFilter">
                         <label class="labelInput">Ordenar por</label>
-                        <div class="containerInputAndOptions">
-                            <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                            <input
-                                type="text"
-                                name="tipoOrdenamientoSupervisores"
-                                class="onlySelect input-select-custom inputFilter"
-                                id="inputOrderSuper"
-                                autocomplete="off"
-                                readonly=""
-                                value="{{defaultOrder}}"
-                            />
-                            <ul class="list-select-custom options">
-                                <li data-value="cantidadVentas">Cantidad de ventas</li>
-                                <li data-value="productividad">Productividad</li>
+                        <div class="filter-container">
+                            <img src="{% static 'images/icons/icons_sort.svg' %}" alt="">
+                            <ul class="filter-select">
+                                <li class="filter-option" data-value="precio">Precio</li>
+                                <li class="filter-option" data-value="fecha">Fecha</li>
+                                <li class="filter-option" data-value="categoria">Categoría</li>
                             </ul>
                         </div>
                     </div>
@@ -133,7 +127,7 @@
             <div class="information">
                 <div class="tittleAndOrder">
                     <h2>Vendedores</h2>
-                    <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
+                    <div id="selectWrapperSelectOrder2" class="wrapperSelectFilter">
                         <label class="labelInput">Ordenar por</label>
                         <div class="containerInputAndOptions">
                             <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
