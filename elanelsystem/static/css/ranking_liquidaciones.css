@@ -23,13 +23,13 @@
     width: 20%;
 }
 
-.filterContainer > .filtersWrapper{
+.filterContainer>.filtersWrapper {
     display: flex;
     width: 80%;
     justify-content: flex-end;
 }
 
-.wrapperSelectFilter{
+.wrapperSelectFilter {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -37,16 +37,22 @@
     width: 30%;
     padding: 1rem;
 }
-.filtersWrapper > .wrapperSelectFilter > label{
+
+.filtersWrapper>.wrapperSelectFilter>label {
     color: var(--third-color);
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     font-family: raleway-semibold;
+}
+
+.filter-select {
+    z-index: 15;
 }
 
 #selectWrapperSelectAgencia img {
     z-index: 12;
     filter: invert(1);
 }
+
 #selectWrapperSelectAgencia #inputSucursal {
     z-index: 11;
     background-color: var(--background-color);
@@ -64,6 +70,7 @@
     z-index: 15;
     filter: invert(1);
 }
+
 #selectWrapperSelectCampania #inputCampania {
     z-index: 14;
     background-color: var(--background-color);
@@ -76,13 +83,17 @@
     background-color: var(--background-color);
 }
 
-.tittleAndOrder > h2 {
+.tittleAndOrder {
+    border-bottom: 1px solid #ffffff99;
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+}
+
+.tittleAndOrder>h2 {
     font-size: clamp(1.5rem, 1.4vw, 1.8rem);
     font-family: raleway-semibold;
     color: var(--third-color);
-    padding: .6rem;
-    width: 100%;
-    border-bottom: 1px solid #ffffff99;
 }
 
 .values {
@@ -304,4 +315,3 @@
     border-bottom: 1px solid #ffffff2c;
     border-top: 1px solid #ffffff2c;
 }
-

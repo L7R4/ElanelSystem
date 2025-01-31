@@ -308,3 +308,58 @@ ul.list-select-custom.open {
 }
 
 /* #endregion */
+
+
+/*#region inconInput */
+.filter-iconWrapper {
+   position: relative;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.filter-iconWrapper>img {
+   min-width: 1.6rem;
+   max-width: 3rem;
+   width: 1.5vw;
+   cursor: pointer;
+}
+
+.filter-select {
+   position: absolute;
+   right: 1rem;
+   top: 100%;
+   cursor: pointer;
+   display: none;
+   list-style: none;
+   padding: .7rem;
+   background-color: var(--background-color);
+   border: 2px solid var(--secundary-color);
+   flex-direction: column;
+   height: fit-content;
+   gap: 1rem;
+   border-radius: .6rem;
+}
+
+.filter-select.open {
+   display: flex;
+}
+
+.filter-select>li.filter-option {
+   padding: 1rem;
+   font: clamp(1rem, 1vw, 1.3rem) 'raleway-semibold';
+   color: var(--third-color);
+   cursor: pointer;
+   white-space: nowrap;
+   border-radius: .6rem;
+}
+
+.filter-select>li.filter-option:hover {
+   background-color: #1754ed8f;
+}
+
+.filter-select>li.filter-option.selected {
+   background-color: #1754ed8f;
+}
+
+/*#endregion */

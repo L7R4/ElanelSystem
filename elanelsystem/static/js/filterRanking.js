@@ -103,11 +103,13 @@ function createParams(inputs) {
     }
 
     inputs.forEach(input => {
-        url += url.includes("?") ? "&" : "?";
+        if (input.value.trim() !== "") {
+            url += url.includes("?") ? "&" : "?";
 
-        const inputName = input.name; // Obtener el atributo 'name' del input
-        const inputValue = input.value; // Obtener el valor seleccionado
-        let newParam = `${inputName}=${inputValue}`;
-        url += newParam;
+            const inputName = input.name; // Obtener el atributo 'name' del input
+            const inputValue = input.value; // Obtener el valor seleccionado
+            let newParam = `${inputName}=${inputValue}`;
+            url += newParam;
+        }
     })
 }
