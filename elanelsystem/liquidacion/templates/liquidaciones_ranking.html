@@ -61,14 +61,14 @@
             <div class="information">
                 <div class="tittleAndOrder">
                     <h2>Supervisores</h2>
-                    <div id="selectWrapperSelectOrder1" class="wrapperSelectFilter">
-                        <label class="labelInput">Ordenar por</label>
-                        <div class="filter-container">
+                    <div id="selectWrapperSelectOrder1">
+                        {% comment %} <label class="labelInput">Ordenar por</label> {% endcomment %}
+                        <div class="filter-iconWrapper">
+                            <input type="hidden" class="inputFilter" name="tipoOrdenamientoSupervisores" id="order1">
                             <img src="{% static 'images/icons/icons_sort.svg' %}" alt="">
                             <ul class="filter-select">
-                                <li class="filter-option" data-value="precio">Precio</li>
-                                <li class="filter-option" data-value="fecha">Fecha</li>
-                                <li class="filter-option" data-value="categoria">Categoría</li>
+                                <li class="filter-option selected" data-value="cantidadVentas">Cantidad de ventas</li>
+                                <li class="filter-option" data-value="productividad">Productividad</li>
                             </ul>
                         </div>
                     </div>
@@ -127,24 +127,17 @@
             <div class="information">
                 <div class="tittleAndOrder">
                     <h2>Vendedores</h2>
-                    <div id="selectWrapperSelectOrder2" class="wrapperSelectFilter">
-                        <label class="labelInput">Ordenar por</label>
-                        <div class="containerInputAndOptions">
-                            <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                            <input
-                                type="text"
-                                name="tipoOrdenamientoVendedores"
-                                class="onlySelect input-select-custom inputFilter"
-                                id="inputOrderSuper"
-                                autocomplete="off"
-                                readonly=""
-                                value="{{defaultOrder}}"
-                            />
-                            <ul class="list-select-custom options">
-                                <li data-value="cantidadVentas">Cantidad de ventas</li>
-                                <li data-value="productividad">Productividad</li>
-                                <li data-value="productividad">Cuotas 1 adelantadas</li>
-
+                    <div id="selectWrapperSelectOrder2">
+                        {% comment %} <label class="labelInput">Ordenar por</label> {% endcomment %}
+                        <div class="filter-iconWrapper">
+                            <input type="hidden" class="inputFilter" name="tipoOrdenamientoVendedores" id="order2">
+                            
+                            <img src="{% static 'images/icons/icons_sort.svg' %}" alt="">
+                            <ul class="filter-select">
+                                <li class="filter-option selected" data-value="cantidadVentas">Cantidad de ventas</li>
+                                <li class="filter-option" data-value="productividad">Productividad</li>
+                                <li class="filter-option" data-value="cuotas1Adelantadas">Cuotas 1</li>
+                                
                             </ul>
                         </div>
                     </div>
@@ -183,6 +176,8 @@
 <script src="{% static 'js/displayItemsRanking.js' %}"></script>
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 <script src="{% static 'js/filterRanking.js' %}"></script>
+<script src="{% static 'js/iconFilterEvent.js' %}"></script>
+
 
 
     

@@ -213,14 +213,9 @@ class LiquidacionesRanking(TestLogin,generic.View):
         print(request.GET)
 
         # Obtener por request el tipo de ordenamiento que tendra los elementos
-        tipoOrdenamientoVendedores = request.GET.get("tipoOrdenamientoVendedores","Cantidad de ventas")
-        tipoOrdenamientoSupervisores = request.GET.get("tipoOrdenamientoSupervisores","Cantidad de ventas")
+        tipoOrdenamientoVendedores = request.GET.get("tipoOrdenamientoVendedores","cantidadVentas")
+        tipoOrdenamientoSupervisores = request.GET.get("tipoOrdenamientoSupervisores","cantidadVentas")
 
-        mapTipoOrdenamiento = {
-            "Cantidad de ventas":"cantidadVentas",
-            "Productividad":"productividad",
-            "Cuotas 1 adelantadas":"cuotas1Adelantadas"
-        }
 
         sucursalObject = Sucursal.objects.filter(pseudonimo=sucursal).first()
 
@@ -280,8 +275,8 @@ class LiquidacionesRanking(TestLogin,generic.View):
         
 
         #Ordenar por cantidad de ventas
-        vendedores.sort(key=lambda x: x[mapTipoOrdenamiento[tipoOrdenamientoVendedores]],reverse=True)
-        supervisores.sort(key=lambda x: x[mapTipoOrdenamiento[tipoOrdenamientoSupervisores]],reverse=True)
+        vendedores.sort(key=lambda x: x[tipoOrdenamientoVendedores],reverse=True)
+        supervisores.sort(key=lambda x: x[tipoOrdenamientoSupervisores],reverse=True)
 
         context["vendedores"] = vendedores
         context["supervisores"] = supervisores
