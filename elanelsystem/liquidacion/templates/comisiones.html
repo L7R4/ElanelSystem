@@ -3,9 +3,16 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/comisiones.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+
 {% endblock css %}
 
 {% block content %}
+    <div id="wrapperLoader">
+        <span id="loader"></span>
+    </div>
+
     <div class="wrapperHeader">
         
         <div class="wrapperInputsSearchs">
@@ -34,10 +41,11 @@
             </div>
         </div>
         <div class="wrapperButtonsActions blocked" id="wrapperButtonsActions">
-            <a href="{% url 'liquidacion:viewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
-            <button type="button" id="liquidarButton">Liquidar</button>
+            <a href="{% url 'liquidacion:preViewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
+            <button type="button" id="liquidarButton" onclick="newModalLiquidacion()">Liquidar</button>
         </div>
     </div>
+
     <div class="wrapperManageLiquidacion">
         <div class="colaboradoresWrapper">
             <h3>Elige los colaboradores</h3>
@@ -96,8 +104,6 @@
                         </div>
                     </div>
                 </div>
-
-                
             </div>
         </div>
 {% comment %} 
@@ -140,6 +146,8 @@
     <script> 
         const urlRequestColaboradores = "{{urlRequestColaboradores}}"
     </script>
+    <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+
     <script src="{% static 'js/input_select_create_user.js' %}"></script>
     <script src="{% static 'js/filters_liquidacion.js' %}"></script>
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>

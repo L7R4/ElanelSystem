@@ -1,0 +1,128 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/historialLiquidaciones.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+
+{% endblock css %}
+
+{% block content %}
+<div id="wrapperLoader">
+  <span id="loader"></span>
+</div>
+
+<div class="filters">
+  
+  <form method="POST" id="formFilter">
+    {% csrf_token %}
+    <div class="filtersActionWrapper">
+
+      {% comment %} Validar por permiso {% endcomment %}
+      <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
+          <label class="labelInput">Sucursal</label>
+          <div class="containerInputAndOptions">
+              <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+              <input
+                  type="text"
+                  name="agencia"
+                  class="onlySelect input-select-custom"
+                  id="inputSucursal"
+                  autocomplete="off"
+                  readonly=""
+              />
+              <ul class="list-select-custom options">
+                  {% for sucursal in sucursales %}
+                  <li data-value="{{sucursal.pseudonimo}}">{{sucursal.pseudonimo}}</li>
+                  {% endfor %}
+              </ul>
+          </div>
+      </div>
+
+      <div id="selectWrapperSelectCampania" class="wrapperSelectFilter">
+        <label class="labelInput">Campaña</label>
+        <div class="containerInputAndOptions">
+            <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+            <input
+                type="text"
+                name="campania"
+                class="onlySelect input-select-custom"
+                id="inputCampania"
+                autocomplete="off"
+                readonly=""
+            />
+            <ul class="list-select-custom options">
+                {% for campania in campaniasDisponibles %}
+                <li data-value="{{campania}}">{{campania}}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    </div>
+    
+  </form>
+</div>
+
+
+
+<div class="informationWrapper">
+  <a href="{% url 'users:list_customers'%}" id="buttonCleanFilter">Limpiar filtros</a>
+  <div class="tableWrapper">
+    <table class="informationTable">
+      <thead>
+          <tr>
+            <th>Sucursal</th>
+            <th>Campaña</th>
+            <th>Fecha</th>
+            <th>Cantidad de ventas</th>
+            <th>Total proyectado</th>
+            <th>Total recaudado</th>
+            <th>Total liquidado</th>
+          </tr>
+      </thead>
+      <tbody>
+        {% for l in liquidaciones %}
+            <tr id="{{ l.id }}">
+                {% for key, value in l.items %}
+                    {% if key != "id" %}
+                        <td>{{ value }}</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+  </div>
+</div> 
+
+{% comment %} <div class="paginationWrapper">
+  {% if data.has_previous %}
+      <button class="buttonsPagesManage" id="previouPageButton" value="{{ data.previous_page_number }}">Anterior</button>
+  {%else%}
+      <button class="buttonsPagesManage" id="previouPageButton" value="1" disabled>Anterior</button>
+  {% endif %}
+
+  <span id="textPaginator">Página {{ data.number }} de {{ data.paginator.num_pages }}</span>
+
+   {% if data.has_next %} 
+      <button class="buttonsPagesManage" id="nextPageButton" value="{{ data.next_page_number }}">Siguiente</button>
+   {%else%}
+      <button class="buttonsPagesManage" id="nextPageButton" value="{{ data.paginator.num_pages }}" disabled>Siguiente</button>
+    {% endif %} 
+</div> {% endcomment %}
+
+{% endblock content %}
+{% block js %}
+<script>
+  var csrf_token = '{%csrf_token%}'
+</script>
+
+
+
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/inputsFilterHistorialLiquidaciones.js' %}"></script>
+
+{% endblock js %}

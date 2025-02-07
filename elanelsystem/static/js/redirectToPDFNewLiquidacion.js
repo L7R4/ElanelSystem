@@ -1,5 +1,5 @@
 let confirmNewAuditoria = document.getElementById("liquidarButton");
-let urlCreateAuditoria = window.location.pathname
+let urlLiquidacion = window.location.pathname
 // const form_create_user = document.getElementById("form_create_user")
 
 function getCookie(name) {
@@ -36,21 +36,112 @@ async function fetchCRUD(body, url) {
     }
 }
 
+function newModalLiquidacion() {
+    let modal = new tingle.modal({
+        footer: true,
+        closeMethods: [''],
+        cssClass: ['modalContainerMsj'],
 
-confirmNewAuditoria.addEventListener("click", async () => {
-    body = {
-        "campania":document.querySelector("#campaniaInput").value,
-        "agencia":document.querySelector("#sucursalInput").value,
-    }
+        // onOpen: function () {
+        // },
+        onClose: function () {
+            modal.destroy();
+        },
+    });
 
-    let response = await fetchCRUD(body, urlCreateAuditoria)
-    console.log(response)
-    // if (!response["success"]) {
-    //     mostrarErrores(response["errors"], form_create_user)
-    // } else {
-    //     // Redireccionar a la página de PDF en una nueva pestaña y en la actual cambiar de url a la de la lista de usuarios
-    //     window.open(response["urlPDF"], "_blank");
-    //     window.location.href = response["urlRedirect"];
-    // }
+    // set content
+    modal.setContent(renderTextSure());
 
-})
+
+    // add a button
+    modal.addFooterBtn('Liquidar', 'tingle-btn tingle-btn--primary', async function () {
+
+        body = {
+            "campania": document.querySelector("#campaniaInput").value,
+            "agencia": document.querySelector("#sucursalInput").value,
+        }
+
+        showLoader()
+        console.log("asdadadadada")
+        let response = await fetchCRUD(body, urlLiquidacion)
+
+        if (response.status) {
+            console.log("Salio todo bien");
+            hiddenLoader();
+            modal.close();
+            modal.destroy();
+            window.open(response["urlPDF"], "_blank");
+            window.location.href = response["urlRedirect"];
+        } else {
+            console.log("Salio todo mal");
+            hiddenLoader();
+
+            modal.close();
+            modal.destroy();
+            newModalMessage(response.message, response.iconMessage);
+        }
+
+    });
+
+    // add another button
+    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default', function () {
+        modal.close();
+        modal.destroy();
+    });
+
+    // open modal
+    modal.open();
+
+
+}
+
+//#region Manejar el display del loader
+function showLoader() {
+    document.querySelector('.modalContainerMsj').children[0].style.display = "none";
+    document.getElementById('wrapperLoader').style.display = 'flex';
+}
+
+function hiddenLoader() {
+    document.getElementById('wrapperLoader').style.display = 'none';
+}
+//#endregion
+
+function newModalMessage(message, iconMessage) {
+    let modalMessage = new tingle.modal({
+        footer: true,
+        closeMethods: ['overlay', 'button', 'escape'],
+        cssClass: ['modalContainerMessage'],
+
+    });
+
+    // set content
+    modalMessage.setContent(renderMessage(message, iconMessage));
+
+
+    modalMessage.addFooterBtn('Cerrar', 'tingle-btn tingle-btn--default', function () {
+        // here goes some logic
+        modalMessage.close();
+        modalMessage.destroy();
+    });
+
+    // open modal
+    modalMessage.open();
+}
+
+
+function renderTextSure() {
+    return `
+    <div id="containerMessageSure">
+        <h2>¿Estas seguro que quieres liquidar?</h2>
+    </div>
+    `
+}
+
+function renderMessage(message, iconMessage) {
+    return `
+        <div id="messageStatusContainer">
+            <img src="${iconMessage}" alt="">
+            <h2>${message}</h2>
+        </div>
+    `
+}

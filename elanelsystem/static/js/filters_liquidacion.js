@@ -13,8 +13,6 @@ function habilitarPanelComision() {
 }
 
 
-
-
 //#region Filtro sucursal - - - - - - - - - - - - 
 let inputSucursal = document.getElementById("sucursalInput")
 inputSucursal.addEventListener("input", async ()=>{

@@ -13,5 +13,9 @@ urlpatterns = [
     path("ventas/liquidaciones/requestColaboradores_tardanzasAusencias/", requestColaboradores_TardanzasAusencias,name="requestColaboradores_TardanzasAusencias"),
     path("ventas/liquidaciones/ranking/", LiquidacionesRanking.as_view(),name="liquidacionesRanking"),
     path("ventas/liquidaciones/ausencias_tardanzas/", LiquidacionesAusenciaYTardanzas.as_view(),name="liquidacionesAusenciaYTardanzas"),    
-    path("ventas/liquidaciones/pdf/liquidacion/", viewPDFLiquidacion, name="viewPDFLiquidacion"),    
+    path("ventas/liquidaciones/pdf/pre_liquidacion/", preViewPDFLiquidacion, name="preViewPDFLiquidacion"),
+    path('ventas/liquidaciones/pdf/liquidacion/<int:id>/', viewPDFLiquidacion, name='viewPDFLiquidacion'),
+
+    path("ventas/liquidaciones/historial/", HistorialLiquidaciones.as_view(), name="historialLiquidaciones"),
+    
 ]

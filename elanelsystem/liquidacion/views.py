@@ -72,38 +72,45 @@ class LiquidacionesComisiones(TestLogin,generic.View):
                 if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
             ]
             datos = request.session.get('liquidacion_data', {})
-            print(ventas)
+
+            
             #region Liquidacion por tipo de colaborador 
+            vendedores = []
+            supervisores = []
+            gerentes = []
             for item in datos:
 
                 if(item["tipo_colaborador"] == "Vendedor"):
                     newLiquidacion = LiquidacionVendedor()
-                    newLiquidacion.vendedor = Usuario.objects.get(pk=item["id"])
+                    newLiquidacion.usuario = Usuario.objects.get(pk=item["id"])
                     newLiquidacion.campania = campania
                     newLiquidacion.cant_ventas = item["info_total_de_comision"]["cant_ventas_propia"]
                     newLiquidacion.productividad = item["info_total_de_comision"]["productividad_propia"]
                     newLiquidacion.total_comisionado = item["comisionTotal"]
-                    newLiquidacion.detalle = item["detalle"]
+                    newLiquidacion.detalle = item["info_total_de_comision"]["detalle"]
                     newLiquidacion.save()
+                    vendedores.append(newLiquidacion)
 
                 elif(item["tipo_colaborador"] == "Supervisor"):
                     newLiquidacion = LiquidacionSupervisor()
-                    newLiquidacion.supervisor = Usuario.objects.get(pk=item["id"])
+                    newLiquidacion.usuario = Usuario.objects.get(pk=item["id"])
                     newLiquidacion.campania = campania
                     newLiquidacion.cant_ventas = item["info_total_de_comision"]["cant_ventas_fromRol"]
                     newLiquidacion.productividad = item["info_total_de_comision"]["productividad_fromRol"]
                     newLiquidacion.total_comisionado = item["comisionTotal"]
-                    newLiquidacion.detalle = item["detalle"]
+                    newLiquidacion.detalle = item["info_total_de_comision"]["detalle"]
                     newLiquidacion.save()
+                    supervisores.append(newLiquidacion)
 
                 elif(item["tipo_colaborador"] == "Gerente sucursal"):
                     newLiquidacion = LiquidacionGerenteSucursal()
-                    newLiquidacion.gerente = Usuario.objects.get(pk=item["id"])
+                    newLiquidacion.usuario = Usuario.objects.get(pk=item["id"])
                     newLiquidacion.sucursal = sucursalObject
                     newLiquidacion.campania = campania
                     newLiquidacion.total_comisionado = item["comisionTotal"]
-                    newLiquidacion.detalle = item["detalle"]
+                    newLiquidacion.detalle = item["info_total_de_comision"]["detalle"]
                     newLiquidacion.save()
+                    gerentes.append(newLiquidacion)
 
             #endregion  
 
@@ -113,22 +120,29 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             new_liquidacionCompleta.campania = campania
             new_liquidacionCompleta.sucursal = sucursalObject
             new_liquidacionCompleta.total_liquidado = sum([item["comisionTotal"] for item in datos])
-            new_liquidacionCompleta.total_recaudado = 0
             new_liquidacionCompleta.total_proyectado = sum([venta.importe for venta in ventas])
+            new_liquidacionCompleta.total_recaudado = new_liquidacionCompleta.total_proyectado - new_liquidacionCompleta.total_liquidado
             new_liquidacionCompleta.cant_ventas = len(ventas)
+            new_liquidacionCompleta.save()
+            new_liquidacionCompleta.detalle_vendedores.add(*vendedores)
+            new_liquidacionCompleta.detalle_supervisores.add(*supervisores)
+            new_liquidacionCompleta.detalle_gerentes.add(*gerentes)
             new_liquidacionCompleta.save()
             #endregion
             
 
                 
-            # response_data = {"urlPDF":reverse_lazy('liquidacion:viewPDFLiquidacion'),"urlRedirect": reverse_lazy('liquidacion:liquidacionesPanel'),"success": True}
-            response_data = {"success": True}
+            response_data = {
+                "urlPDF": reverse_lazy('liquidacion:viewPDFLiquidacion', kwargs={"id": new_liquidacionCompleta.id}),
+                "urlRedirect": reverse_lazy('liquidacion:liquidacionesPanel'),
+                "status": True
+            }
             
             return JsonResponse(response_data, safe=False)  
              
         except Exception as e:
             print(e)
-            return JsonResponse({"success": False}, safe=False)  
+            return JsonResponse({"status": False, "message": f"Hubo un error al liquidar"}, safe=False)  
 
 
 def requestColaboradoresWithComisiones(request):
@@ -151,25 +165,19 @@ def requestColaboradoresWithComisiones(request):
         "dni":item.dni,
         "sucursal": form["sucursal"],
         "campania": campania,
-        # "detalle": getComisionTotal(item,campania,sucursalObject)["detalle"],
         "comisionTotal": getComisionTotal(item,campania,sucursalObject)["total_comisionado"],
         "info_total_de_comision": getComisionTotal(item,campania,sucursalObject)
         } 
         for item in colaboradores if item.rango != "Admin"]
     
     totalDeComisiones = sum([user["comisionTotal"] for user in colaboradores_list])
-    # request.session["liquidacion_data"] = {"colaboradores_list":colaboradores_list, "sucursal": sucursalString, "fecha":datetime.date.today().strftime("%d-%m-%Y")}
-    # return JsonResponse({"colaboradores_data": colaboradores_list,"totalDeComisiones": totalDeComisiones} , safe=False)
     request.session["liquidacion_data"] = colaboradores_list
-    # print([item for item in colaboradores_list if item["comisionTotal"] != 0])
-    print(request.session["liquidacion_data"])
 
     return JsonResponse({"colaboradores_data": colaboradores_list, "totalDeComisiones": totalDeComisiones} , safe=False)
 
 
-def viewPDFLiquidacion(request):
+def preViewPDFLiquidacion(request):
     datos = request.session.get('liquidacion_data', {})
-    print(request.build_absolute_uri())
     # Para pasar el detalles de los movs
     contexto = []
     for item in datos:
@@ -182,13 +190,59 @@ def viewPDFLiquidacion(request):
                 "info_total_de_comision": item.get("info_total_de_comision")
             
             })
-        # if(item.tipo_colaborador == "Supervisor"):
-        #     pass
-   
 
     informeName = "Informe"
     urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "liquidacion.pdf")
     printPDF({"data":contexto},request.build_absolute_uri(),urlPDF,"pdfForLiquidacion.html","static/css/pdfLiquidacion.css")
+
+    
+    with open(urlPDF, 'rb') as pdf_file:
+        response = HttpResponse(pdf_file,content_type="application/pdf")
+        response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
+        return response
+
+
+def viewPDFLiquidacion(request, id):
+    # Obtener la liquidación desde la base de datos
+    try:
+        liquidacion = LiquidacionCompleta.objects.get(id=id)
+    except LiquidacionCompleta.DoesNotExist:
+        return HttpResponse("Liquidación no encontrada", status=404)
+    
+    vendedores = liquidacion.detalle_vendedores.all()
+    supervisores = liquidacion.detalle_supervisores.all()
+    gerentes = liquidacion.detalle_gerentes.all()
+
+    colaboradores = list(vendedores) + list(supervisores) + list(gerentes)
+
+    colaboradores_list = [{
+        "tipo_colaborador": item.usuario.rango,
+        "nombre": item.usuario.nombre,
+        "id": item.usuario.pk, 
+        "dni":item.usuario.dni,
+        "sucursal": liquidacion.sucursal.pseudonimo,
+        "campania": liquidacion.campania,
+        "comisionTotal": getComisionTotal(item.usuario,liquidacion.campania,liquidacion.sucursal)["total_comisionado"],
+        "info_total_de_comision": getComisionTotal(item.usuario,liquidacion.campania,liquidacion.sucursal)
+        } 
+        for item in colaboradores]
+
+
+    contexto = []
+    for item in colaboradores_list:
+        contexto.append({
+                "tipo_colaborador": item.get("tipo_colaborador"),
+                "sucursal": item.get("sucursal"),
+                "fecha":liquidacion.fecha,
+                "campania": item.get("campania"),
+                "nombre": item.get("nombre"),
+                "info_total_de_comision": item.get("info_total_de_comision")
+            })
+
+    informeName = f"Informe_Liquidacion_{liquidacion.id}"
+    urlPDF = os.path.join(settings.PDF_STORAGE_DIR, f"liquidacion.pdf")
+    print(contexto)
+    printPDF({"data": contexto}, request.build_absolute_uri(), urlPDF, "pdfForLiquidacion.html", "static/css/pdfLiquidacion.css")
 
     
     with open(urlPDF, 'rb') as pdf_file:
@@ -292,8 +346,6 @@ class LiquidacionesRanking(TestLogin,generic.View):
         return render(request, self.template_name, context)
     
 
-
-
 class LiquidacionesAusenciaYTardanzas(TestLogin,generic.View):
     template_name = 'liquidaciones_ausencias_tardanzas.html'
 
@@ -312,7 +364,8 @@ class LiquidacionesAusenciaYTardanzas(TestLogin,generic.View):
         }
 
         return render(request, self.template_name, context)
-        
+
+
 def requestColaboradores_TardanzasAusencias(request):
     form =json.loads(request.body)
     sucursalObject = Sucursal.objects.get(pseudonimo = form["sucursal"])
@@ -334,6 +387,7 @@ def requestColaboradores_TardanzasAusencias(request):
         } 
         for colaborador in colaboradores]
     return JsonResponse({"colaboradores_data": colaboradoresDict} , safe=False)
+
 
 def newAusenciaTardanza(request):
     form =json.loads(request.body)
@@ -367,3 +421,47 @@ def newAusenciaTardanza(request):
     except Exception as e:
         print(e)
         return JsonResponse({"status": False, "errorMessage": "Ocurrio un error al guardar"},safe=False)
+    
+
+class HistorialLiquidaciones(generic.ListView):
+    template_name = 'historialLiquidaciones.html'
+
+    def get(self,request,*args,**kwargs):
+        context = {}
+        sucursal = request.GET.get("agencia",False)
+        campania = request.GET.get("campania", False)
+
+        filtros = {}
+        if campania:
+            filtros["campania"] = campania
+
+        if sucursal:
+            sucursalObject = Sucursal.objects.filter(pseudonimo=sucursal).first()
+            filtros["sucursal"] = sucursalObject
+
+        liquidacion_qs = LiquidacionCompleta.objects.all() if not filtros else LiquidacionCompleta.objects.filter(**filtros)
+            
+        context["sucursales"] = Sucursal.objects.all()
+        context["campaniasDisponibles"] = getTodasCampaniasDesdeInicio()
+
+        liquidaciones = [{
+            "id": l.id,
+            "sucursal": l.sucursal.pseudonimo,
+            "campania": l.campania,
+            "fecha": l.fecha,
+            "cantVentas": l.cant_ventas,
+            "totalProyectado": f"${l.total_proyectado}",
+            "totalRecaudado": f"${l.total_recaudado}",
+            "totalLiquidado": f"${l.total_liquidado}"
+
+        } for l in liquidacion_qs]
+
+        context["liquidaciones"] = liquidaciones
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'liquidaciones': liquidaciones
+                },safe=False)
+        
+        return render(request, self.template_name, context)
+    
