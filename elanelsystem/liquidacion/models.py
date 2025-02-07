@@ -74,7 +74,7 @@ class CoeficientePorProductividadVendedor(models.Model):
 
 
 class LiquidacionVendedor(models.Model):
-    vendedor = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
+    usuario = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
     campania = models.CharField("Campaña",max_length=50)
     cant_ventas = models.IntegerField("Cantidad de ventas")
     productividad = models.FloatField("Productividad")
@@ -82,11 +82,11 @@ class LiquidacionVendedor(models.Model):
     detalle = models.JSONField(default=dict)
 
     def __str__(self):
-        return self.vendedor.nombre + "en camapaña" + self.campania + ": Productividad: " + str(self.productividad) + " Ventas: " + str(self.cant_ventas) + " Comision: " + str(self.total_comisionado)  
+        return self.usuario.nombre + "en camapaña" + self.campania + ": Productividad: " + str(self.productividad) + " Ventas: " + str(self.cant_ventas) + " Comision: " + str(self.total_comisionado)  
 
 
 class LiquidacionSupervisor(models.Model):
-    supervisor = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
+    usuario = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
     campania = models.CharField("Campaña",max_length=50)
 
     cant_ventas = models.IntegerField("Cantidad de ventas")
@@ -95,21 +95,22 @@ class LiquidacionSupervisor(models.Model):
     detalle = models.JSONField(default=dict)
 
     def __str__(self):
-        return self.supervisor.nombre + "en camapaña" + self.campania + ": Productividad: " + str(self.productividad) + " Ventas: " + str(self.cant_ventas) + " Comision: " + str(self.total_comisionado)  
+        return self.usuario.nombre + "en camapaña" + self.campania + ": Productividad: " + str(self.productividad) + " Ventas: " + str(self.cant_ventas) + " Comision: " + str(self.total_comisionado)  
     
 
 class LiquidacionGerenteSucursal(models.Model):
-    gerente = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
+    usuario = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING)
     campania = models.CharField("Campaña",max_length=50)
     total_comisionado = models.FloatField("Total comisionado")
     detalle = models.JSONField(default=dict)
 
     def __str__(self):
-        return self.gerente.nombre + "en camapaña" + self.campania + ": Total comisionado: " + self.total_comisionado 
+        return self.usuario.nombre + "en camapaña" + self.campania + ": Total comisionado: " + str(self.total_comisionado) 
+
         
 class LiquidacionAdmin(models.Model):
-    admin = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
+    usuario = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING)
     campania = models.CharField("Campaña",max_length=50)
     total_comisionado_blanco = models.FloatField("Total comisionado blanco")
@@ -131,4 +132,4 @@ class LiquidacionCompleta(models.Model):
 
 
     def __str__(self):
-        return self.dinero + "--" + self.premio
+        return self.campania + "--" + self.sucursal.pseudonimo + "--" + str(self.total_liquidado)
