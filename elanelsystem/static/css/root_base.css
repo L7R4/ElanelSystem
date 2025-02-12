@@ -196,6 +196,32 @@ textarea.input-read-write-default {
 
 }
 
+.pseudo-input-select-wrapper {
+   max-height: 3.5rem;
+   min-height: 3rem;
+   border: 2px solid var(--secundary-color);
+   font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
+   position: relative;
+   border-radius: 1rem;
+   outline: none;
+   text-indent: 1.2rem;
+   width: 100%;
+   height: 100%;
+   font-feature-settings: "pnum" on, "lnum" on;
+   border-radius: .6rem;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+}
+
+.pseudo-input-select-wrapper>h3 {
+   font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+}
+
+.pseudo-input-select-wrapper>h3.placeholder {
+   opacity: .5;
+}
+
 ul.list-select-custom {
    list-style: none;
    background-color: var(--background-color);
@@ -295,6 +321,7 @@ ul.list-select-custom.open {
 
 /* #endregion */
 
+
 /* #region Scroller */
 
 *::-webkit-scrollbar {
@@ -363,3 +390,45 @@ ul.list-select-custom.open {
 }
 
 /*#endregion */
+
+
+/* #region Modificaciones de la libreria para seleccionar hora */
+
+.vc_onlyHora {
+   background-color: var(--background-color);
+   min-width: fit-content !important;
+
+}
+
+.vc_onlyHora>.vc-time>.vc-time__content {
+   display: flex;
+   align-items: center;
+}
+
+.vc_onlyHora>.vc-time>.vc-time__content label {
+   width: 1.3vw;
+   max-width: 3.2rem;
+   display: flex;
+   align-items: center;
+}
+
+.vc_onlyHora>.vc-time input {
+   font-size: clamp(1.3rem, 1.3vw, 1.7rem) !important;
+}
+
+.vc_onlyHora>.vc-time>.vc-time__content label::after {
+   top: 0 !important;
+   margin-top: 0;
+   font-size: clamp(1.3rem, 1.3vw, 1.7rem) !important;
+
+}
+
+.vc_onlyHora>.vc-time {
+   display: flex !important;
+   justify-content: center !important;
+   padding: .6rem !important;
+   border: none !important;
+   margin: 0 !important;
+}
+
+/* #endregion */
