@@ -1118,7 +1118,7 @@ class PanelSucursales(TestLogin, generic.View):
         sucursal = Sucursal.objects.get(pk=pk)
         sucursal.direccion = direccion
         sucursal.hora_apertura = hora
-        sucursal.gerente = Usuario.objects.filter(pk=gerente).first()
+        sucursal.gerente = Usuario.objects.filter(nombre=gerente).first()
 
         sucursal.save()  
         response_data = {'message': 'Datos recibidos correctamente'}
@@ -1126,55 +1126,82 @@ class PanelSucursales(TestLogin, generic.View):
     
 def updateSucursal(request):
     if request.method == "POST":
-        pk = json.loads(request.body)["sucursalPk"]
-        direccion = json.loads(request.body)["direccion"]
-        hora = json.loads(request.body)["horaApertura"]
-        gerente = json.loads(request.body)["gerente"]
-        
+        try: 
+            pk = json.loads(request.body)["sucursalPk"]
+            direccion = json.loads(request.body)["direccion"]
+            hora = json.loads(request.body)["horaApertura"]
+            gerente = json.loads(request.body)["gerente"]
+            
 
 
-        sucursal = Sucursal.objects.get(pk=pk)
-        sucursal.direccion = direccion
-        sucursal.hora_apertura = hora
-        sucursal.gerente = Usuario.objects.filter(pk=gerente).first()
-        sucursal.save()
-        
-        response_data = {"message":"Sucursal actualizada con exito!!"}
-        return JsonResponse(response_data)
+            sucursal = Sucursal.objects.get(pk=pk)
+            sucursal.direccion = direccion
+            sucursal.hora_apertura = hora
+            sucursal.gerente = Usuario.objects.filter(pk=gerente).first()
+            sucursal.save()
+
+
+            iconMessage = "/static/images/icons/checkMark.svg"
+            response_data = {"message":"Sucursal actualizada con exito","iconMessage":iconMessage, "status": True}
+            return JsonResponse(response_data)
+        except Exception as e:
+            print(e)
+            iconMessage = "/static/images/icons/error_icon.svg"
+            response_data = {"message":"Hubo un error al crear la sucursal", "iconMessage":iconMessage, "status": False}
+            return JsonResponse(response_data)
 
 def addSucursal(request):
     if request.method == "POST":
-        provincia = json.loads(request.body)["provincia"]
-        localidad = json.loads(request.body)["localidad"]
-        direccion = json.loads(request.body)["direccion"]
-        hora = json.loads(request.body)["horaApertura"]
-        gerente = json.loads(request.body)["gerente"]
+        try:
+            provincia = json.loads(request.body)["provincia"]
+            localidad = json.loads(request.body)["localidad"]
+            direccion = json.loads(request.body)["direccion"]
+            hora = json.loads(request.body)["horaApertura"]
+            gerente = json.loads(request.body)["gerente"]
+            
+            newSucursal = Sucursal()
+            newSucursal.provincia = provincia.title()
+            newSucursal.localidad = localidad.title()
+            newSucursal.direccion = direccion.capitalize()
+            newSucursal.gerente = Usuario.objects.filter(pk=gerente).first()
+            newSucursal.hora_apertura = hora
+            newSucursal.save()
+
+            iconMessage = "/static/images/icons/checkMark.svg"
+            response_data = {"message":"Sucursal creada exitosamente","iconMessage":iconMessage, "status": True, "pk":str(newSucursal.pk),'name': str(newSucursal.pseudonimo), "direccion": str(newSucursal.direccion), "hora": str(newSucursal.hora_apertura),"gerente": {"id":newSucursal.gerente.pk,"nombre":newSucursal.gerente.nombre}}
+            return JsonResponse(response_data)
         
-        newSucursal = Sucursal()
-        newSucursal.provincia = provincia.title()
-        newSucursal.localidad = localidad.title()
-        newSucursal.direccion = direccion.capitalize()
-        newSucursal.gerente = Usuario.objects.filter(pk=gerente).first()
-        newSucursal.hora_apertura = hora
-        newSucursal.save()
+        except Exception as e:
+            print(e)
+            iconMessage = "/static/images/icons/error_icon.svg"
+            response_data = {"message":"Hubo un error al crear la sucursal", "iconMessage":iconMessage, "status": False}
+            return JsonResponse(response_data)
         
-        response_data = {"message":"Sucursal creada exitosamente!!","pk":str(newSucursal.pk),'name': str(newSucursal.pseudonimo), "direccion": str(newSucursal.direccion), "hora": str(newSucursal.hora_apertura)}
-        return JsonResponse(response_data)
     
 def removeSucursal(request):
     if request.method == "POST":
-        pk = int(json.loads(request.body)["pk"]) 
+        try:
+            pk = int(json.loads(request.body)["pk"]) 
 
-        deleteSucursal = Sucursal.objects.get(pk=pk)
+            deleteSucursal = Sucursal.objects.get(pk=pk)
 
-        Usuario.objects.filter(sucursal=deleteSucursal).update(sucursal=None) # Setear en None los usuarios asociados para que no se borren
-        Ventas.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None las ventas asociadas para que no se borren
-        MovimientoExterno.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los movimientos asociados para que no se borren
-        ArqueoCaja.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los arqueos asociados para que no se borren
+            # Eliminar la relación ManyToMany correctamente
+            usuarios_asociados = Usuario.objects.filter(sucursales=deleteSucursal)
+            for usuario in usuarios_asociados:
+                usuario.sucursales.remove(deleteSucursal)
+                
+            Ventas.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None las ventas asociadas para que no se borren
+            MovimientoExterno.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los movimientos asociados para que no se borren
+            ArqueoCaja.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los arqueos asociados para que no se borren
 
-        deleteSucursal.delete()
+            deleteSucursal.delete()
+            iconMessage = "/static/images/icons/checkMark.svg"
+            response_data = {"message":"Agencia eliminada correctamente","iconMessage":iconMessage, "status": True}
+            return JsonResponse(response_data)
         
-        response_data = {"message":"Eliminado correctamente"}
-        return JsonResponse(response_data)
+        except Exception as e:
+            iconMessage = "/static/images/icons/error_icon.svg"
+            response_data = {"message":"Hubo un error al eliminar la agencia", "iconMessage":iconMessage, "status": False}
+            return JsonResponse(response_data)
 
 #endregion  - - - - - - - - - - - - - - - - - - - - - - - -

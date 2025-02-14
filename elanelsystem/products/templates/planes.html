@@ -4,6 +4,7 @@
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/panel_planes.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 
 {% endblock css %}
 
@@ -49,23 +50,25 @@
                     {% endfor %}
                 </tbody>            
             </table>
-            <div class="buttonsActions">
-                <button class="add-button-default" id="agregarNuevoPlanButton" type="button" onclick="agregarFormularioNuevoPlan()">Agregar plan</button>
-            </div>
+            
         </div>
     </form>
+    <div class="buttonsActions">
+        <button class="add-button-default" id="agregarNuevoPlanButton" type="button" onclick="modalNewPlan()">Agregar plan</button>
+    </div>
 
 </div>
     
 {% endblock content %}
 {% block js %}
 <script>
+    var CSRF_TOKEN = '{% csrf_token %}'
     var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
     var urlDeleteP = "{% url 'products:delete_plan' %}"
     var iconDelete = "{% static 'images/icons/eliminar.svg' %}";
 </script>
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
-<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
 <script src="{% static 'js/fetch_upload_planes.js' %}"></script>
 
 {% endblock js %} 

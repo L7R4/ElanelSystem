@@ -1,5 +1,63 @@
 const urlNewPlan = window.location.pathname
 
+function DOM_form_new_plan() {
+    return `
+    <div class="tittleWrapper"><h2>Nuevo plan</h2></div>
+    <form method="POST" id="addPlanForm">
+        ${CSRF_TOKEN}
+        <div class="containerInputs">
+            <div class="wrapperInput">
+                <label for="">Valor nominal</label>
+                <input name="precio" class="input-read-write-default" type="number" id="precio_input" />
+            </div>
+            <div id="selectWrapperSelectPaquete" class="wrapperSelectFilter wrapperInput">
+                <label class="labelInput">Paquete</label>
+                <div class="containerInputAndOptions">
+                    <img id="sucursalIconDisplay" class="iconDesplegar" src="${logoDisplayMore}" alt=""/>
+                    <input type="hidden" value="" id="id_paquete" name="paquete" required="" autocomplete="off" maxlength="100" class="input-paquete">
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    <ul class="list-select-custom options">
+                            <li data-value="Basico">Basico</li>
+                            <li data-value="Estandar">Estandar</li>  
+                            <li data-value="Premium">Premium</li> 
+                    </ul>
+                </div>
+            </div>
+            <div class="wrapperInput">
+                <label for="">Suscripcion</label>
+                <input name="suscripcion" class="input-read-write-default" type="number" id="suscripcion_input" />
+            </div>
+            
+            <div class="wrapperInput">
+                <label for="">Primer cuota</label>
+                <input name="primer_cuota" class="input-read-write-default" type="number" id="primer_cuota_input" />
+            </div>
+
+            <div class="wrapperInput">
+                <label for="">% 24 Cuotas</label>
+                <input name="p_24" class="input-read-write-default" type="number" id="p_24_input" />
+            </div>
+
+            <div class="wrapperInput">
+                <label for="">% 30 Cuotas</label>
+                <input name="p_30" class="input-read-write-default" type="number" id="p_30_input" />
+
+            </div>
+
+            <div class="wrapperInput">
+                <label for="">% 48 Cuotas</label>
+                <input name="p_48" class="input-read-write-default" type="number" id="p_48_input" />
+            </div>
+
+            <div class="wrapperInput">
+                <label for="">% 60 Cuotas</label>
+                <input name="p_60" class="input-read-write-default" type="number" id="p_60_input" />
+            </div>
+        </form>`
+}
+
 function actualizarPanel(plan) {
     const panel = document.getElementById(`panel`);
     const table = panel.querySelector("table > tbody ");
@@ -77,81 +135,72 @@ function agregarFormularioNuevoPlan() {
 }
 
 
-async function guardarPlan() {
-    const precio = document.getElementById(`precio_input`).value;
-    const paquete = document.getElementById(`id_paquete`).value;
-    const suscripcion = document.getElementById(`suscripcion_input`).value;
-    const primer_cuota = document.getElementById(`primer_cuota_input`).value;
-    const p_24 = document.getElementById(`p_24_input`).value;
-    const p_30 = document.getElementById(`p_30_input`).value;
-    const p_48 = document.getElementById(`p_48_input`).value;
-    const p_60 = document.getElementById(`p_60_input`).value;
+function modalNewPlan() {
+    const modal = new tingle.modal({
+        footer: true,
+        closeMethods: ['button', 'overlay'],
+        cssClass: ['modalConfirmacion'],
 
-    let form = {
-        "paquete": paquete,
-        "suscripcion": suscripcion,
-        "precio": precio,
-        "primer_cuota": primer_cuota,
-        "p_24": p_24,
-        "p_30": p_30,
-        "p_48": p_48,
-        "p_60": p_60,
-    }
+        onClose: function () {
+            modal.destroy();
+        },
+    })
+    // Contenido del modal
+    modal.setContent(DOM_form_new_plan());
 
-    let response = await fetchCRUD(form, urlNewPlan)
+    initSelect(document.querySelector(`#addPlanForm .pseudo-input-select-wrapper`))
 
-    if (response["success"]) {
-        actualizarPanel(response["plan"])
-        rowNewFormPlan.remove() // limpiamos el formulario activo
-        cancelarNuevoPlanButton.remove() //Eliminamos el boton de cancelar
-        submitButtonPlan.remove() // Eliminamos el boton de submit del form
-        agregarButtonAgregarPlan()
 
-    } else {
-        console.log(response["message"])
-        // Realizar modal para notificar que algo fallo
-    }
+    // Botón de confirmación
+    modal.addFooterBtn("Confirmar", "tingle-btn tingle-btn--primary add-button-default", async function () {
+        const precio = document.getElementById(`precio_input`).value;
+        const paquete = document.getElementById(`id_paquete`).value;
+        const suscripcion = document.getElementById(`suscripcion_input`).value;
+        const primer_cuota = document.getElementById(`primer_cuota_input`).value;
+        const p_24 = document.getElementById(`p_24_input`).value;
+        const p_30 = document.getElementById(`p_30_input`).value;
+        const p_48 = document.getElementById(`p_48_input`).value;
+        const p_60 = document.getElementById(`p_60_input`).value;
+
+        let form = {
+            "paquete": paquete,
+            "suscripcion": suscripcion,
+            "precio": precio,
+            "primer_cuota": primer_cuota,
+            "p_24": p_24,
+            "p_30": p_30,
+            "p_48": p_48,
+            "p_60": p_60,
+        }
+
+        console.log(form)
+
+        showLoader()
+        let response = await fetchCRUD(form, urlNewPlan)
+        hiddenLoader()
+
+
+        if (response["success"]) {
+            actualizarPanel(response["plan"])
+
+        } else {
+            console.log(response["message"])
+        }
+        showReponseModal(response["message"], response["icon"])
+        modal.close();
+
+
+    });
+
+    // Botón de cancelación
+    modal.addFooterBtn("Cancelar", "tingle-btn tingle-btn--default button-default-style", function () {
+        modal.close();
+    });
+
+    // Abre el modal
+    modal.open();
 }
 
-
-function cancelarNuevoProducto() {
-    const buttonCancelar = `<button class="button-default-style" type="button" id="cancelarNuevoPlanButton">Cancelar</button>`
-
-    const panel = document.getElementById(`panel`);
-    const wrapperButtonOfTable = panel.querySelector(".buttonsActions");
-
-    wrapperButtonOfTable.insertAdjacentHTML("beforeend", buttonCancelar);
-    wrapperButtonOfTable.querySelector("#agregarNuevoPlanButton").remove() //Eliminamos el boton de agregar plan
-
-    if (document.querySelector("#cancelarNuevoPlanButton")) {
-        cancelarNuevoPlanButton.addEventListener("click", () => {
-            rowNewFormPlan.remove() // limpiamos el formulario activo
-            cancelarNuevoPlanButton.remove() //Eliminamos el boton de cancelar
-            submitButtonPlan.remove() //Eliminamos el boton del submit del form
-            agregarButtonAgregarPlan()
-        })
-    }
-}
-
-
-function agregarButtonAgregarPlan() {
-    const panel = document.getElementById(`panel`);
-    const wrapperButtonOfTable = panel.querySelector(".buttonsActions");
-    if (!wrapperButtonOfTable.querySelector("#agregarNuevoPlanButton")) {
-        const buttonAgregar = `<button class="add-button-default" id="agregarNuevoPlanButton" type="button" onclick="agregarFormularioNuevoPlan()">Agregar plan</button>`
-        wrapperButtonOfTable.insertAdjacentHTML("beforeend", buttonAgregar); //Agregamos nuevamente el boton de agregar plan
-    }
-}
-
-
-function submitButton() {
-    const panel = document.getElementById(`panel`);
-    const wrapperButtonOfTable = panel.querySelector(".buttonsActions");
-    if (!wrapperButtonOfTable.querySelector("#submitButtonPlan")) {
-        const buttonSubmit = `<button id="submitButtonPlan" class="add-button-default" type="button" onclick="guardarPlan()">Guardar plan</button>`
-        wrapperButtonOfTable.insertAdjacentHTML("beforeend", buttonSubmit); //Agregamos nuevamente el boton de agregar plan
-    }
-}
 
 // #region Codigo para la eliminacion de un producto
 
@@ -177,14 +226,30 @@ function mostrarModalConfirmacionParaEliminar(fila) {
     modal.setContent("<h2>¿Estás seguro de que deseas eliminar este plan?</h2>");
 
     // Botón de confirmación
-    modal.addFooterBtn("Eliminar", "tingle-btn tingle-btn--danger", async function () {
+    modal.addFooterBtn("Eliminar", "tingle-btn tingle-btn--danger delete-button-default", async function () {
         // Aquí llamamos a la función de eliminación, pasando la fila correspondiente
-        eliminarPlan(fila);
+        const valorPlan = fila.querySelector("td.valorPlan").textContent.slice(1);
+
+        let form = {
+            "valor": valorPlan,
+        };
+
+        // Realizar la solicitud al backend para eliminar el producto
+        showLoader()
+        let response = await fetchCRUD(form, urlDeleteP);
+        hiddenLoader()
+        if (response["status"]) {
+            fila.remove(); // Eliminar la fila de la tabla en caso de éxito
+        } else {
+            console.log("Error al eliminar el plan.");
+        }
+        showReponseModal(response["message"], response["icon"])
+
         modal.close();
     });
 
     // Botón de cancelación
-    modal.addFooterBtn("Cancelar", "tingle-btn tingle-btn--default", function () {
+    modal.addFooterBtn("Cancelar", "tingle-btn tingle-btn--default button-default-style", function () {
         modal.close();
     });
 
@@ -213,32 +278,14 @@ function loadListenerDelete(fila) {
     });
 }
 
-// Función para eliminar el plan
-async function eliminarPlan(fila) {
-    const valorPlan = fila.querySelector("td.valorPlan").textContent.slice(1);
-
-    let form = {
-        "valor": valorPlan,
-    };
-
-    // Realizar la solicitud al backend para eliminar el producto
-    showLoader()
-    let response = await fetchCRUD(form, urlDeleteP);
-    if (response["status"]) {
-        hiddenLoader()
-        fila.remove(); // Eliminar la fila de la tabla en caso de éxito
-    } else {
-        hiddenLoader()
-        console.log("Error al eliminar el plan.");
-    }
-}
-
 //#endregion
 
 
 //#region Manejar el display del loader
 function showLoader() {
+    document.querySelector('.modalConfirmacion').children[0].style.display = "none";
     document.getElementById('wrapperLoader').style.display = 'flex';
+
 }
 
 function hiddenLoader() {
@@ -246,6 +293,30 @@ function hiddenLoader() {
 }
 //#endregion
 
+
+function showReponseModal(contenido, icon) {
+    const modal = new tingle.modal({
+        footer: true,
+        closeMethods: ['button', 'overlay'],
+        cssClass: ['modalResponse'],
+        onClose: () => modal.destroy()
+    });
+
+    modal.setContent(`<div class="messageReponseModal">
+            <img src="${icon}"/>
+            <h2>${contenido}</h2>
+        </div>`);
+
+    // modal.addFooterBtn(btnConfirmText, "tingle-btn tingle-btn--danger", async function () {
+    //     modal.close();
+    // });
+
+    modal.addFooterBtn("Cerrar", "tingle-btn tingle-btn--default button-default-style", function () {
+        modal.close();
+    });
+
+    modal.open();
+}
 
 // #region FUNCTION FETCH - - - - - - - - - 
 function getCookie(name) {
