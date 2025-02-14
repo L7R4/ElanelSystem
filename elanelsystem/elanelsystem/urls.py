@@ -36,7 +36,7 @@ urlpatterns = [
 
 
     #region Reports ---------------------------------
-    path('ventas/reportes/', ReportesView.as_view(), name='reporteView'),
+    path('detalles/', ReportesView.as_view(), name='detallesNegocio'),
     path('detalles/<slug:tipo_slug>/', DetallesNegocioView.as_view(), name='detalle_por_tipoDeDatos'),
     path('ventas/excel/exportar/', ExportarExcelView.as_view(), name='exportExcel'),
     
