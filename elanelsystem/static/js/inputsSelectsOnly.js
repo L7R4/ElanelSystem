@@ -32,13 +32,13 @@ inputSelectOnlyCustom.forEach(input => {
 });
 
 // Esta funcion sirve para que cuando cargamos un selects input desde JS y no se han aplicado los listeners desde un principio
-function cargarListenersEnInputs(){
+function cargarListenersEnInputs() {
     let inputSelectOnlyCustom = document.querySelectorAll(".containerInputAndOptions > input.onlySelect");
     inputSelectOnlyCustom.forEach(input => {
         let optionsList = input.nextElementSibling;
         let options = optionsList.querySelectorAll("li");
         toggleOptionsList(input, optionsList);
-    
+
         options.forEach(option => {
             option.addEventListener("click", () => {
                 toggleOption(input, option)

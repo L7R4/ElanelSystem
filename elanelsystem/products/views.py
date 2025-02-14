@@ -41,6 +41,7 @@ class Planes(generic.View):
                 c48_porcentage=p_48,
                 c60_porcentage=p_60,
             )
+            iconMessage = "/static/images/icons/checkMark.svg"
 
             # Retornar el nuevo producto en JSON para actualizar la vista
             return JsonResponse({
@@ -54,13 +55,16 @@ class Planes(generic.View):
                     "p_30": plan.c30_porcentage,
                     "p_48": plan.c48_porcentage,
                     "p_60": plan.c60_porcentage,
-                }
+                },
+                "message": "Plan creado exitosamente",
+                "icon": iconMessage
             })
         except Exception as e:
-            print(e)  # Para depuración
+            iconMessage = "/static/images/icons/error_icon.svg"
             return JsonResponse({
                 'success': False,
-                'message': str(e)  # Convertimos el error a string
+                "message": "Hubo un error al crear el plan",
+                "icon": iconMessage
             })
 
 def deletePlan(request):
@@ -69,12 +73,14 @@ def deletePlan(request):
             form = json.loads(request.body)
             
             valorRequest = form.get('valor')
-            print(valorRequest)
             if(Plan.objects.filter(valor_nominal=valorRequest).exists()):
                 Plan.objects.filter(valor_nominal=valorRequest).delete()
-                return JsonResponse({"status":True},safe=False) 
+
+                iconMessage = "/static/images/icons/checkMark.svg"
+                return JsonResponse({"status":True, "message": "Plan eliminado exitosamente", "icon": iconMessage},safe=False) 
             else:
-                return JsonResponse({"status":False},safe=False) 
+                iconMessage = "/static/images/icons/error_icon.svg"
+                return JsonResponse({"status":False, "message": "Hubo un error al eliminar el plan","icon": iconMessage}, safe=False) 
                 
 
         except Exception as e:
