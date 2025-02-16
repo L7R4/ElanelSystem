@@ -455,7 +455,7 @@
     grid-column: 2 span;
 }
 
-#wrapperContratos{
+#wrapperContratos {
     grid-column: 1/ -1;
     display: grid;
     grid-template-columns: repeat(3, minmax(12rem, 1fr));
@@ -465,26 +465,27 @@
     border-radius: .6rem;
 }
 
-#wrapperContratos > .contratosItem{
+#wrapperContratos>.contratosItem {
     border: 2px solid #ffffff69;
     padding: 1.5rem;
     border-radius: .6rem;
 }
-#wrapperContratos > .contratosItem.contratoAdjudicado{
-    box-shadow: 0px 0px 9px 2px rgba(0,0,0,0.34);
+
+#wrapperContratos>.contratosItem.contratoAdjudicado {
+    box-shadow: 0px 0px 9px 2px rgba(0, 0, 0, 0.34);
 }
 
-#wrapperContratos > .contratosItem.contratoDisable{
+#wrapperContratos>.contratosItem.contratoDisable {
     opacity: .5;
 }
 
-#wrapperContratos > .contratosItem > h2{
+#wrapperContratos>.contratosItem>h2 {
     color: var(--third-color);
     font-size: clamp(1.3rem, 1.2vw, 1.6rem);
     font-family: raleway-semibold;
 }
 
-#wrapperContratos > .contratosItem > h2.adjText{
+#wrapperContratos>.contratosItem>h2.adjText {
     color: var(--secundary-color);
     background-color: var(--third-color);
     padding: .4rem;
@@ -494,7 +495,7 @@
 }
 
 
-#wrapperContratos > .contratosItem > .inputs{
+#wrapperContratos>.contratosItem>.inputs {
     margin-top: 1rem;
 }
 
@@ -606,7 +607,7 @@
 
 
 
-.wrapperCuotasList>.cuotas_list>.cuota.Bloqueado {
+.wrapperCuotasList>.cuotas_list>.cuota.bloqueado {
     background-color: rgb(54 53 51 / 18%);
 
 }
@@ -631,6 +632,7 @@
     /* Esto hace que sea un cuadrado  */
     aspect-ratio: 1 / 1;
     border-radius: .5rem;
+    background-size: contain;
     margin-left: 1rem;
     display: flex;
     justify-content: center;
@@ -639,7 +641,7 @@
 
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>.marca.Pendiente {
+.wrapperCuotasList>.cuotas_list>.cuota>.marca.pendiente {
     background-color: rgb(248, 244, 10);
 
 }
@@ -649,15 +651,15 @@
     pointer-events: none;
 } */
 
-.wrapperCuotasList>.cuotas_list>.cuota>.marca.Pagado {
+.wrapperCuotasList>.cuotas_list>.cuota>.marca.pagado {
     background-color: rgb(7, 240, 7);
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>.marca.Atrasado {
+.wrapperCuotasList>.cuotas_list>.cuota>.marca.vencido {
     background-color: rgb(240, 7, 7);
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota.Atrasado>h5 {
+.wrapperCuotasList>.cuotas_list>.cuota.vencido>h5 {
     display: unset;
     color: rgb(240, 7, 7);
     font-size: clamp(1.2rem, 1.1vw, 1.6rem);
@@ -665,11 +667,11 @@
     cursor: pointer;
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>.marca.Parcial {
+.wrapperCuotasList>.cuotas_list>.cuota>.marca.parcial {
     background-color: rgb(240, 139, 7);
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>.marca.Bloqueado {
+.wrapperCuotasList>.cuotas_list>.cuota>.marca.bloqueado {
     background-color: transparent;
     background-size: contain;
 }
@@ -679,7 +681,7 @@
     cursor: pointer;
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota.Bloqueado {
+.wrapperCuotasList>.cuotas_list>.cuota.bloqueado {
     cursor: default;
     pointer-events: none;
 }
@@ -778,7 +780,7 @@
     margin-top: 1rem;
 }
 
-.descuentoWrapperBackground>div>#descuentoCuotaForm > input{
+.descuentoWrapperBackground>div>#descuentoCuotaForm>input {
     font-size: clamp(1.2rem, 1.1vw, 1.4rem);
     font-family: raleway;
     color: var(--background-color);
@@ -788,14 +790,14 @@
     margin-bottom: 1.2rem;
 }
 
-.descuentoWrapperBackground>div> h2{
+.descuentoWrapperBackground>div>h2 {
     font-size: clamp(1.4rem, 1.4vw, 1.8rem);
     font-family: raleway-semibold;
     color: var(--secundary-color);
     margin-bottom: .4rem;
 }
 
-.descuentoWrapperBackground>div>#descuentoCuotaForm>h3{
+.descuentoWrapperBackground>div>#descuentoCuotaForm>h3 {
     font-size: clamp(1rem, 1.1vw, 1.3rem);
     font-family: raleway-semibold;
     color: var(--background-color);
@@ -821,7 +823,7 @@
     padding: .8rem 1.5rem;
 }
 
-#descuentoCuotaForm>.buttonsActionsDescuentoWrapper>#submitDescuento:disabled{
+#descuentoCuotaForm>.buttonsActionsDescuentoWrapper>#submitDescuento:disabled {
     opacity: .5;
     pointer-events: none;
 }
@@ -1041,76 +1043,87 @@
 
 /* #region WRAPPER VIEW DETALLE DE CUOTA */
 
-#wrapperVerDetallesPago.active{
+#wrapperVerDetallesPago.active {
     right: 0%;
     display: flex;
     flex-direction: column;
 }
-#wrapperVerDetallesPago > .wrapperInfo_cuota{
+
+#wrapperVerDetallesPago>.wrapperInfo_cuota {
     max-height: 70%;
     overflow-y: auto;
 }
 
-#wrapperVerDetallesPago > .cuotaPicked{
+#wrapperVerDetallesPago>.cuotaPicked {
     font-size: clamp(1.5rem, 2vw, 3rem);
     font-family: raleway-semibold;
     color: var(--background-color);
     padding: .6rem 0;
     text-align: center;
 }
-#wrapperVerDetallesPago .info_cuota{
+
+#wrapperVerDetallesPago .info_cuota {
     display: flex;
     justify-content: space-between;
     border: 1px solid #00000021;
-    
+
     padding: .7rem;
     flex-wrap: wrap;
     margin-bottom: 1rem;
     border-radius: .6rem;
     row-gap: .7rem;
 }
-#wrapperVerDetallesPago .info_cuota > h3:first-child{
+
+#wrapperVerDetallesPago .info_cuota>h3:first-child {
     color: var(--secundary-color);
 }
-#wrapperVerDetallesPago .info_cuota.detail_view_more >h3{
+
+#wrapperVerDetallesPago .info_cuota.detail_view_more>h3 {
     font-size: clamp(1.1rem, 1vw, 1.5rem);
     font-family: raleway-semibold;
-    
+
 }
-#wrapperVerDetallesPago .info_cuota.detail_view_more >h3:first-child{
+
+#wrapperVerDetallesPago .info_cuota.detail_view_more>h3:first-child {
     color: var(--secundary-color);
 }
-#wrapperVerDetallesPago .info_cuota.view_more >img{
+
+#wrapperVerDetallesPago .info_cuota.view_more>img {
     width: 1.5rem;
 }
-#wrapperVerDetallesPago .info_cuota.view_more >img.active{
+
+#wrapperVerDetallesPago .info_cuota.view_more>img.active {
     rotate: 180deg;
 }
-#wrapperVerDetallesPago .info_cuota >h3{
+
+#wrapperVerDetallesPago .info_cuota>h3 {
     font-size: clamp(1.2rem, 1.1vw, 1.6rem);
     font-family: raleway-semibold;
     color: var(--background-color);
 }
-.view_more > .wrapperDetail_view_more.active{
+
+.view_more>.wrapperDetail_view_more.active {
     display: block;
 }
-.view_more > .wrapperDetail_view_more{
+
+.view_more>.wrapperDetail_view_more {
     display: none;
     flex-basis: 100%;
     padding-left: .5rem;
 }
-.view_more > .wrapperDetail_view_more >h3{
+
+.view_more>.wrapperDetail_view_more>h3 {
     font-size: clamp(1rem, 1vw, 1.4rem);
     font-family: raleway-semibold;
     color: var(--background-color);
 }
 
-#wrapperVerDetallesPago> #anularButton{
+#wrapperVerDetallesPago>#anularButton {
     margin-top: auto;
     cursor: pointer;
 }
 
-#formAnularCuota{
+#formAnularCuota {
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -1121,22 +1134,26 @@
     z-index: 10;
     border-radius: .8rem;
     display: flex;
-    flex-direction: column ;
+    flex-direction: column;
     row-gap: 1rem;
     box-shadow: 0px 1px 8px 4px rgba(0, 0, 0, .2);
 }
-#formAnularCuota > h3{
+
+#formAnularCuota>h3 {
     font-size: clamp(1rem, 1vw, 1.4rem);
     font-family: raleway-semibold;
     color: var(--background-color);
 }
-#formAnularCuota #cancelarAnularButton{
+
+#formAnularCuota #cancelarAnularButton {
     color: var(--background-color);
 }
-.buttonsWrapperAnularCuota{
+
+.buttonsWrapperAnularCuota {
     display: flex;
     gap: 1rem;
 }
+
 /* #endregion */
 .selectMotivoWrapper {
     width: 100%;
@@ -1436,11 +1453,11 @@
 
 }
 
-.wrapperUrlRecupero{
+.wrapperUrlRecupero {
     margin-top: 1rem;
 }
 
-.wrapperUrlRecupero > a{
+.wrapperUrlRecupero>a {
     text-decoration: none;
     color: var(--third-color);
     font-size: clamp(1rem, 1vw, 1.5rem);
