@@ -89,13 +89,13 @@ function descuentoCuotaManagement() {
 function checkButtonSubmitDescuento() {
     let inputsFormDescuento = descuentoCuotaForm.querySelectorAll("input")
     // Si todos los inputs son diferentes a "" entonces habilitar el button de submit
-    
+
     inputsFormDescuento.forEach(element => {
-        if(element.value == ""){
+        if (element.value == "") {
             submitDescuento.disabled = true;
             return;
         }
-        else{
+        else {
             submitDescuento.disabled = false;
         }
     });
@@ -139,15 +139,14 @@ cuotasWrapper.forEach(cuota => {
     cuota.addEventListener('click', async () => {
 
         // Primero mostramos el form
-        
+
         // Luego solictamos la cuota a gestionar 
         let form = { "ventaID": ventaID.value, "cuota": cuota.id }
         let data = await formFETCH(form, "/ventas/detalle_venta/get_specific_cuota/")
-        console.log(data)
-        if(data["status"] == "Pagado"){
+        if (data["status"] == "pagado") {
             wrapperVerDetallesPago.classList.add("active")
             verDetalleCuota(data)
-        }else{
+        } else {
             payCuotaForm.classList.add("active")
             activeFormCuotas(data)
         }
@@ -157,11 +156,11 @@ cuotasWrapper.forEach(cuota => {
 //Funcion confirmar la anulacion de una cuota
 async function anularCuota() {
     let url = "/ventas/detalle_venta/anular_cuota/"
-    let form = {"cuota": cuotaID.value, "password": passwordAnularCuota.value}
+    let form = { "cuota": cuotaID.value, "password": passwordAnularCuota.value }
     let response = await formFETCH(form, url)
 
-    if(response["status"]){
-        if(response["password"]){
+    if (response["status"]) {
+        if (response["password"]) {
             actualizarEstadoCuota(cuotaID.value) //Primero actualizamos la cuota operada
             actualizarEstadoProximaCuota(cuotaID.value) // Desbloqueamos la siguiente cuota
             displayMensajePostCuotaPagada(response.status, response.message)
@@ -171,10 +170,10 @@ async function anularCuota() {
             document.querySelector(".wrapperInfo_cuota").remove()
 
         }
-        else{
+        else {
             showMessageFormAnularCuota()
         }
-    }else{
+    } else {
         displayMensajePostCuotaPagada(response.status, response.message)
         cerrarAnularCuotaForm()
         wrapperVerDetallesPago.classList.remove("active")
@@ -182,8 +181,8 @@ async function anularCuota() {
     }
 }
 
-function htmlPassAnularCuota(){
-    if(!document.querySelector("#formAnularCuota")){
+function htmlPassAnularCuota() {
+    if (!document.querySelector("#formAnularCuota")) {
         let wrapperVerDetallesPago = document.querySelector("#wrapperVerDetallesPago")
         let stringHTML = `
             <form id="formAnularCuota" method="POST">
@@ -197,7 +196,7 @@ function htmlPassAnularCuota(){
             </form>`
         wrapperVerDetallesPago.insertAdjacentHTML('beforeend', stringHTML)
     }
-    
+
 }
 
 function showMessageFormAnularCuota() {
@@ -214,9 +213,9 @@ function cerrarAnularCuotaForm() {
 // Funcion para ver el detalle de la cuota
 function verDetalleCuota(cuotaSelected) {
     let wrapperVerDetallesPago = document.querySelector("#wrapperVerDetallesPago")
-    
+
     wrapperVerDetallesPago.insertAdjacentHTML('beforeend', htmlDetalleCuota(cuotaSelected))
-    
+
     // Seteamos el valor del titulo de la cuota que se abrio el form
     let tittleCuotaSelected = wrapperVerDetallesPago.querySelector(".cuotaPicked")
     tittleCuotaSelected.innerHTML = cuotaSelected["cuota"]
@@ -224,22 +223,22 @@ function verDetalleCuota(cuotaSelected) {
     // Seteamos el valor del input hidden de la cuota que se abrio el form
     let cuotaInput = payCuotaForm.querySelector("#cuotaID")
     cuotaInput.value = cuotaSelected["cuota"]
-    
+
     // Verifico si es la ultima cuota pagada para agregar el boton de "Anular cuota"
-    if(cuotaSelected["buttonAnularCuota"]){
+    if (cuotaSelected["buttonAnularCuota"]) {
         let anularButton = cuotaSelected["buttonAnularCuota"]
-        if(!document.querySelector("#anularButton")){
+        if (!document.querySelector("#anularButton")) {
             wrapperVerDetallesPago.insertAdjacentHTML('beforeend', anularButton)
         }
-    }else{
+    } else {
         let anularButton = wrapperVerDetallesPago.querySelector("#anularButton")
-        if(anularButton){
+        if (anularButton) {
             anularButton.remove()
         }
     }
 
-    
- 
+
+
 }
 
 // Funcion para desplegar mas detalles del detalle de la cuota
@@ -250,7 +249,7 @@ function viewMoreFunction(elemento) {
     viewMoreContent.classList.toggle("active")
 }
 
-function htmlDetalleCuota(cuota){
+function htmlDetalleCuota(cuota) {
     let stringHTML = `
         <div class="wrapperInfo_cuota">
             <div onclick="viewMoreFunction(this)" class="info_cuota view_more">
@@ -264,8 +263,8 @@ function htmlDetalleCuota(cuota){
                 <h3>Descuento</h3>
                 <h3>${cuota["descuento"]["monto"]}</h3>
             </div>`
-        if(cuota["cuota"] != "Cuota 0"){
-            stringHTML += `
+    if (cuota["cuota"] != "Cuota 0") {
+        stringHTML += `
                 <div class="info_cuota">
                     <h3>Dias de atraso</h3>
                     <h3>${cuota["diasRetraso"]}</h3>
@@ -283,18 +282,18 @@ function htmlDetalleCuota(cuota){
                     <h3>Fecha de venc.</h3>
                     <h3>${cuota["fechaDeVencimiento"].substring(0, 10)}</h3>
                 </div>`
-        }
-        stringHTML += `</div>`
+    }
+    stringHTML += `</div>`
     return stringHTML;
 
 }
-    
 
-function htmlPagos(pagos){
+
+function htmlPagos(pagos) {
     let stringHTML = ""
-    pagos.forEach((element,index) => {
+    pagos.forEach((element, index) => {
         stringHTML += `
-                    <h3>${index+1}:</h3>
+                    <h3>${index + 1}:</h3>
                     <div class="info_cuota detail_view_more">
                         <h3>Fecha de pago</h3>
                         <h3>${element["fecha"]}</h3>
@@ -324,10 +323,10 @@ btnPayCuota.addEventListener("click", () => {
 
     formFETCH(form, "/ventas/detalle_venta/pay_cuota/").then(data => {
         // Verificamos si la operacion esta en estado suspendida para eliminar el boton "Crear plan recupero"
-        if(document.querySelector(".wrapperUrlRecupero")){
+        if (document.querySelector(".wrapperUrlRecupero")) {
             document.querySelector(".wrapperUrlRecupero").remove()
         }
-        
+
         actualizarEstadoCuota(cuotaID.value) //Primero actualizamos la cuota operada
         actualizarEstadoProximaCuota(cuotaID.value) // Desbloqueamos la siguiente cuota
 
@@ -373,7 +372,6 @@ function validarMontoParcial(resto) {
     let monto = payCuotaForm.querySelector("#amountParcial").value
 
     if (monto > resto) {
-        console.log("If del monto parcial")
 
         btnPayCuota.disabled = true;
         btnPayCuota.classList.toggle('blocked', true);
@@ -391,10 +389,8 @@ function validarMontoParcial(resto) {
 // Funcion para calcular el dinero restante al pagar parcialmente
 function calcularDineroRestante(cuota) {
     let dineroRestanteHTML = payCuotaForm.querySelector("#dineroRestante")
-    console.log(cuota)
-    console.log(cuota["pagos"])
-    
-    let listPagos = cuota["pagos"].map(({monto}) => monto)
+
+    let listPagos = cuota["pagos"].map(({ monto }) => monto)
     let sumaPagos = listPagos.reduce((acc, num) => acc + num, 0);
     resto = cuota["total"] - (sumaPagos + cuota["descuento"]["monto"])
     dineroRestanteHTML.innerHTML = "Dinero restante: $" + resto
@@ -465,7 +461,6 @@ function actualizarEstadoProximaCuota(cuota) {
 
     // Volver a unir la cadena con el nuevo número de cuota
     const cuotaADesbloquear = "Cuota " + nuevoNumeroCuota;
-    console.log("Cuota siguiente: ", cuotaADesbloquear);
     actualizarEstadoCuota(cuotaADesbloquear) // Actualizamos la proxima cuota
 }
 
@@ -552,19 +547,24 @@ async function actualizarEstadoCuota(cuota) {
     // Luego solictamos la nueva cuota a desbloquear para colocarle su estado actual
     let form = { "ventaID": ventaID.value, "cuota": cuota }
     let data = await formFETCH(form, "/ventas/detalle_venta/get_specific_cuota/")
+    console.log(data)
     cuotasWrapper.forEach((c, i) => {
         if (c.id === data["cuota"]) {
             // Elimnamos el estado anterior
-            removeSpecificClasses(c)
-            removeSpecificClasses(c.children[0])
+            removeSpecificClasses(c) // Elimina la clase del wrapper de la Cuota
+            removeSpecificClasses(c.children[0]) // Elimina la clase de la marca de la cuota
+            if (c.classList.contains("vencido")) {
+                c.children[2].remove() // Elimino el mensaje de dias atrasados
+            }
+
             if (!data["bloqueada"]) {
                 // Colocamos el estado actual
                 c.classList.add(data["status"])
                 c.children[0].classList.add(data["status"]);
                 c.children[0].removeAttribute("style");
-            }else{
-                c.classList.add("Bloqueado")
-                c.children[0].classList.add("Bloqueado");
+            } else {
+                c.classList.add("bloqueado")
+                c.children[0].classList.add("bloqueado");
                 c.children[0].setAttribute("style", data["styleBloqueado"]);
 
             }
@@ -577,7 +577,7 @@ async function actualizarEstadoCuota(cuota) {
 // Funcion helper para remover las clases de bloqueado, pendiente, atrasado, etc para visualizar en el HTML
 function removeSpecificClasses(elementHTML) {
     // Clases específicas que deseas eliminar
-    const classesToRemove = ["Pendiente", "Pagado", "Bloqueado", "Atrasado", "Parcial"];
+    const classesToRemove = ["pendiente", "pagado", "bloqueado", "vencido", "parcial"];
 
     // Iterar sobre las clases específicas y eliminarlas del elemento
     classesToRemove.forEach(className => {

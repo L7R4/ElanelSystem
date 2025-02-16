@@ -358,7 +358,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                             info = {
                                 "cuota" :f'Cuota {cuota}',
                                 "nro_operacion": str(int(rowVenta['id_venta'])),
-                                "status": str(filaEstado["estado"]).title() if filaEstado["estado"] not in ["Vencido", "BAJA"] else "Atrasado" ,
+                                "status": str(filaEstado["estado"]).title() if filaEstado["estado"] not in ["Vencido", "BAJA","vencido","baja"] else "vencido",
                                 "total": int(filaEstado["importe_cuotas"]) * cantidadContratos,
                                 "descuento": {'autorizado': "", 'monto': 0},
                                 "bloqueada": False,
@@ -376,7 +376,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                             info = {
                                 "cuota" :f'Cuota {cuota}',
                                 "nro_operacion": str(int(rowVenta['id_venta'])),
-                                "status": str(filaEstado["estado"]).title() if filaEstado["estado"] not in ["Vencido", "BAJA"] else "Atrasado",
+                                "status": str(filaEstado["estado"]).title() if filaEstado["estado"] not in ["Vencido", "BAJA","vencido","baja"] else "vencido",
                                 "total": int(filaEstado["importe_cuotas"]) * cantidadContratos,
                                 "descuento": {'autorizado': "", 'monto': 0},
                                 "bloqueada": False,
@@ -646,6 +646,7 @@ def pagarCuota(request):
             monto = 0
             if(formaPago =="total"):
                 cuota = list(filter(lambda x:x["cuota"] == cuotaRequest,venta.cuotas))[0]
+                print(cuota)
                 monto = cuota["total"]
             elif(formaPago =="parcial"):
                 monto = data.get('valorParcial')

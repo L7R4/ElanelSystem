@@ -46,7 +46,7 @@ class Ventas(models.Model):
         # Cuota 0
         cuotas.append({"cuota" :f'Cuota 0',
                        "nro_operacion": self.nro_operacion,
-                       "status": "Pendiente",
+                       "status": "pendiente",
                        "total": int(self.anticipo),
                        "descuento": {'autorizado': "", 'monto': 0},
                        "bloqueada": True,
@@ -56,7 +56,7 @@ class Ventas(models.Model):
                        })
         
         # Otras cuotas
-        for i in range(2,self.nro_cuotas+1):
+        for i in range(1,self.nro_cuotas+1):
             contMeses += 1
             
             #region Bloque para asignar la fecha de vencimiento a la primera cuota (Si es antes o desp del dia 25 del mes) a las ventas con modalidad MENSUAL
@@ -90,20 +90,20 @@ class Ventas(models.Model):
             cuotas.append({
                     "cuota" :f'Cuota {i}',
                     "nro_operacion": self.nro_operacion,
-                    "status": "Pendiente",
+                    "status": "pendiente",
                     "bloqueada": True,
                     "fechaDeVencimiento" : fechaDeVencimiento.strftime('%d/%m/%Y %H:%M'),
                     "descuento": {'autorizado': "", 'monto': 0},
                     "diasRetraso": 0,
                     "interesPorMora": 0,
                     "totalFinal": 0,
-                    "pagos":[],
+                    "pagos":[]
                 })
             
             if(cuotas[-1]["cuota"] == "Cuota 1"):
-               cuotas[-1]["total"]= int(self.primer_cuota),
+               cuotas[-1]["total"]= int(self.primer_cuota)
             else:
-               cuotas[-1]["total"]= int(self.importe_x_cuota + (self.importe_x_cuota * (self.PORCENTAJE_ANUALIZADO *contYear))/100),
+               cuotas[-1]["total"]= int(self.importe_x_cuota + (self.importe_x_cuota * (self.PORCENTAJE_ANUALIZADO *contYear))/100)
                 
 
 
@@ -374,7 +374,7 @@ class Ventas(models.Model):
 
     def cuotas_pagadas(self):
         try:
-            cuotas = [cuota for cuota in self.cuotas if cuota["status"] == "Pagado"]
+            cuotas = [cuota for cuota in self.cuotas if cuota["status"].lower() == "pagado"]
             if(cuotas[0]["cuota"] == "Cuota 0"):
                 cuotas.pop(0)
             return cuotas
@@ -383,7 +383,7 @@ class Ventas(models.Model):
 
     def cuotas_parciales(self):
         try:
-            cuotas = [cuota for cuota in self.cuotas if cuota["status"] == "Parcial"]
+            cuotas = [cuota for cuota in self.cuotas if cuota["status"].lower() == "parcial"]
             if(cuotas[0]["cuota"] == "Cuota 0"):
                 cuotas.pop(0)
             return cuotas
@@ -440,7 +440,7 @@ class Ventas(models.Model):
         contAtrasados = 0
         
         for i in range(0,len(cuotas)):
-            if(cuotas[i]["status"] == "Atrasado"):
+            if(cuotas[i]["status"].lower() == "vencido"):
                 contAtrasados +=1
         if contAtrasados >=4:
             self.darBaja("falta de pago",0,"Operacion de baja por extenderse 120 dias o mas sin abonar","","")
@@ -475,7 +475,7 @@ class Ventas(models.Model):
         
     def crearAdjudicacion(self,contratoAdjudicado,nroDeVenta,tipo):
         self.cuotas.pop(0) # Elimina la cuota 0
-        self.cuotas[0]["status"] = "Pendiente" # Cambia el status de la cuota 1 a Pendiente
+        self.cuotas[0]["status"] = "pendiente" # Cambia el status de la cuota 1 a Pendiente
         self.cuotas[0]["bloqueada"] = False
 
         self.nro_operacion = nroDeVenta
@@ -501,7 +501,7 @@ class Ventas(models.Model):
 
         cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))[0]
 
-        if(cuotaSeleccionada["status"] != "Pagado" and not cuotaSeleccionada["bloqueada"]):
+        if(cuotaSeleccionada["status"].lower() != "pagado" and not cuotaSeleccionada["bloqueada"]):
             pago = {
                 "monto": monto,
                 "metodoPago": metodoPago,
@@ -515,11 +515,11 @@ class Ventas(models.Model):
             sumaPagos = sum(lista_montoDePagos)
 
             if sumaPagos == (cuotaSeleccionada["total"] - cuotaSeleccionada["descuento"]["monto"]):
-                cuotaSeleccionada["status"] = "Pagado"
+                cuotaSeleccionada["status"] = "pagado"
                 self.desbloquearCuota(cuota)
                 self.suspenderOperacion()
             else:
-                cuotaSeleccionada["status"] = "Parcial"
+                cuotaSeleccionada["status"] = "parcial"
 
             self.save()
 
@@ -536,7 +536,7 @@ class Ventas(models.Model):
                 # entonces significara se podra colocar el estado de Pendiente, porque no se ha pagado ni parcial ni completamente,
                 # sino tendria que mantener su estado actual
                 if(len(cuota["pagos"]) == 0): 
-                    cuota["status"] = "Pendiente"
+                    cuota["status"] = "pendiente"
 
                 # Obtenemos la siguiente cuota y la bloqueamos
                 cuotaSiguiente = self.cuotas[self.cuotas.index(cuota)+1]
@@ -548,7 +548,7 @@ class Ventas(models.Model):
 
     def aplicarDescuento(self,cuota,dinero,autorizado):
         cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))[0]
-        if(cuotaSeleccionada["status"] != "Pagado" and (cuotaSeleccionada["cuota"] == "Cuota 0" or cuotaSeleccionada["cuota"] == "Cuota 1")):
+        if(cuotaSeleccionada["status"].lower() != "pagado" and (cuotaSeleccionada["cuota"] == "Cuota 0" or cuotaSeleccionada["cuota"] == "Cuota 1")):
             cuotaSeleccionada["descuento"]['monto'] += dinero
             cuotaSeleccionada["descuento"]['autorizado'] = autorizado
         else:
@@ -564,10 +564,10 @@ class Ventas(models.Model):
                 fechaVencimiento = datetime.datetime.strptime(cuota, "%d/%m/%Y %H:%M")
                 fechaActual = datetime.datetime.now()
 
-                if fechaActual > fechaVencimiento and not self.cuotas[i]['status'] == "Pagado":
-                    self.cuotas[i]["status"] = "Atrasado"
+                if fechaActual > fechaVencimiento and not self.cuotas[i]['status'].lower() == "pagado":
+                    self.cuotas[i]["status"] = "vencido"
                     diasDeRetraso = self.contarDias(fechaVencimiento)
-                    print(f'La cuota {self.cuotas[i]["cuota"]} esta atrasada por {diasDeRetraso} dias')
+                    print(f'La cuota {self.cuotas[i]["cuota"]} esta vencida por {diasDeRetraso} dias')
                     self.cuotas[i]["diasRetraso"] = diasDeRetraso
 
         self.save()
