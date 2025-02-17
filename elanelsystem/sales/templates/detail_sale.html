@@ -354,27 +354,27 @@
                                     <div class="marca Bloqueado" style="background-image: url('{% static 'images/icons/iconBloqueado.png' %}')">
                                     </div>
                                 {% else %}
-                                <div id="{{cuota.cuota}}" class ="cuota {{cuota.status}}">
+                                <div id="{{cuota.cuota}}" class ="cuota {{cuota.status|lower}}">
 
-                                    {% if cuota.status == "Atrasado" %}
-                                        <div class="marca {{cuota.status}}"></div>
+                                    {% if cuota.status|lower == "vencido" %}
+                                        <div class="marca {{cuota.status|lower}}"></div>
                                     {% endif %}
 
-                                    {% if cuota.status == "Parcial" %}
-                                        <div class="marca {{cuota.status}}"></div>
+                                    {% if cuota.status|lower == "parcial" %}
+                                        <div class="marca {{cuota.status|lower}}"></div>
                                     {% endif %}
 
-                                    {% if cuota.status == "Pagado" %}
-                                        <div class="marca {{cuota.status}}"></div>
+                                    {% if cuota.status|lower == "pagado" %}
+                                        <div class="marca {{cuota.status|lower}}"></div>
                                     {% endif %}
 
-                                    {% if cuota.status == "Pendiente" %}
-                                        <div class="marca {{cuota.status}}"></div>
+                                    {% if cuota.status|lower == "pendiente" %}
+                                        <div class="marca {{cuota.status|lower}}"></div>
                                     {% endif %}
 
                                 {% endif %}
                                 <h4>{{cuota.cuota}}</h4>
-                                {% if cuota.status == "Atrasado" %}
+                                {% if cuota.status == "vencido" %}
                                 <h5>{{cuota.diasRetraso}} dias atrasada</h5>
                                 {% endif %}
                                 </div>
