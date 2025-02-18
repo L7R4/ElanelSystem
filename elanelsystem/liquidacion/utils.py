@@ -56,17 +56,27 @@ def calcularAseguradoSegunDiasTrabajados(dinero,fecha_ingreso):
 
     return dinero_a_pagar
 
-def getAsegurado(usuario,cantVentas):
+def getAsegurado(usuario,comisiones=0,cantVentas=0):
     dineroAsegurado = 0
-
     if(usuario.rango.lower() in "vendedor"):
-        aseguradoObject = Asegurado.objects.get(dirigido="Vendedor")
-        if(cantVentas < aseguradoObject.objetivo):
-            dineroAsegurado = aseguradoObject.dinero
+        asegurado = Asegurado.objects.get(dirigido="Vendedor").dinero
+        # Si las comisiones son menores que el dinero asegurado, se cobra el asegurado
+        if comisiones < asegurado.dinero:
+            return asegurado.dinero
+        return comisiones
+    
     if(usuario.rango.lower() in "supervisor"):
-        aseguradoObject = Asegurado.objects.get(dirigido="Supervisor")
-        if(cantVentas < aseguradoObject.objetivo):
-            dineroAsegurado = aseguradoObject.dinero
+        asegurado = Asegurado.objects.get(dirigido="Supervisor").dinero
+        monto = comisiones
+        # Caso similar al vendedor
+        if comisiones < asegurado.dinero:
+            monto = asegurado.dinero
+        # Si la suma de ventas del equipo supera 80, se le suma el asegurado como premio
+        if cantVentas > 80:
+            monto += asegurado.dinero
+        return monto
+
+
     return calcularAseguradoSegunDiasTrabajados(dineroAsegurado,usuario.fec_ingreso)
 
 def getDetalleComisionPorCantVentasPropias(usuario,campania,agencia):
@@ -304,6 +314,7 @@ def desempenioEquipo(usuario,campania,agencia):
         listaVendedores.append(desempenioVendedor)
 
     return listaVendedores
+
 #endregion - - - - - - - - - - - - - - - - - - -
 
 #region Funciones especificas del vendedor - - - - - - - - - -
@@ -449,7 +460,6 @@ def getComisionTotal(usuario,campania,agencia):
            
         elif(usuario.rango.lower() in "gerente sucursal"):
             detailDesempenioDict["cuotasX"] = getCuotasX(campania,agencia)
-            # print("weossss")
             desempenioDeColaborador["subtotal_comisionado_fromRol"] = detailDesempenioDict["cuotasX"]["comisionTotal_Cuotas"]
     
     desempenioDeColaborador["descuentoTotal"] = (detailDesempenioDict["adelantos"]["dineroTotal"] + detailDesempenioDict["ausencias_tardanzas"]["total_descuentos"])

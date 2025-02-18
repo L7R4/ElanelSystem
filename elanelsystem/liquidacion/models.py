@@ -30,10 +30,10 @@ class MontoTardanzaAusencia(models.Model):
 class Asegurado(models.Model):
     dinero = models.IntegerField("Dinero")
     dirigido = models.CharField("Dirigido", max_length=80)
-    objetivo = models.IntegerField("Objetivo", default=0)
+    # objetivo = models.IntegerField("Objetivo", default=0)
 
     def __str__(self):
-        return str(self.dinero) + "--" + str(self.dirigido) + "--" + str(self.objetivo)
+        return str(self.dinero) + "--" + str(self.dirigido)
 
 
 class CoeficientePorCantidadSupervisor(models.Model):
