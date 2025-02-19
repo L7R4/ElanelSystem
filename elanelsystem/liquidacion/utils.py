@@ -56,7 +56,7 @@ def calcularAseguradoSegunDiasTrabajados(dinero,fecha_ingreso):
 
     return dinero_a_pagar
 
-def getAsegurado(usuario,comisiones=0,cantVentas=0):
+def getAsegurado(usuario,comisiones):
     dineroAsegurado = 0
     if(usuario.rango.lower() in "vendedor"):
         asegurado = Asegurado.objects.get(dirigido="Vendedor")
@@ -462,6 +462,8 @@ def getCuotasX(campania,agencia):
 #endregion - - - - - - - - - - - - - - - - - - -
 
 
+
+
 def getComisionTotal(usuario,campania,agencia): 
     desempenioDeColaborador = {}
     detailDesempenioDict = {}
@@ -480,7 +482,6 @@ def getComisionTotal(usuario,campania,agencia):
 
     # Seteamos el subtotal por rol y el asegurado, ya que depende del rol de estos usuarios pueden cambiar los valores y dejamos como "Comision base" la manera en como comisiona un vendedor.
     desempenioDeColaborador["subtotal_comisionado_fromRol"] = 0
-    desempenioDeColaborador["asegurado"] = getAsegurado(usuario,desempenioDeColaborador["cant_ventas_propia"])
 
     # Esto se tiene que descontar de la comision ---> (detailDesempenioDict["adelantos"]["dineroTotal"] + detailDesempenioDict["ausencias_tardanzas"]["total_descuentos"])
     desempenioDeColaborador["subtotal_comisionado_ventasPropias"] = (detailDesempenioDict["cantidad_ventasPropias_comision"]["comisionTotal"] + detailDesempenioDict["productividad_ventasPropias_comision"] + detailDesempenioDict["cuotas1"]["totalDinero"])
@@ -488,25 +489,34 @@ def getComisionTotal(usuario,campania,agencia):
     # print(usuario.rango.lower())
 
     if(usuario.rango.lower() not in "admin"):
-        if(usuario.rango.lower() in "supervisor"):
+        if(usuario.rango.lower() == "supervisor"):
             desempenioDeColaborador["cant_ventas_fromRol"] = calcular_ventas_supervisor(usuario,campania,agencia)
             desempenioDeColaborador["productividad_fromRol"] = calcular_productividad_supervisor(usuario,campania,agencia)
             desempenioDeColaborador["desempenioEquipo"] = desempenioEquipo(usuario,campania,agencia)
-            desempenioDeColaborador["asegurado"] = getAsegurado(usuario,desempenioDeColaborador["cant_ventas_fromRol"])
             detailDesempenioDict["cantidad_ventasFromRol_comision"] = getComisionCantVentas(usuario,campania,agencia) if desempenioDeColaborador["asegurado"] == 0 else 0
             detailDesempenioDict["productividad_ventasFromRol_comision"] = getPremioxProductividad(usuario,campania,agencia)
 
-
             desempenioDeColaborador["subtotal_comisionado_fromRol"] = detailDesempenioDict["cantidad_ventasFromRol_comision"] + detailDesempenioDict["productividad_ventasFromRol_comision"]
+
+            # total_comisionado_sin_asegurado = (desempenioDeColaborador["subtotal_comisionado_fromRol"] + desempenioDeColaborador["subtotal_comisionado_ventasPropias"]) - (detailDesempenioDict["adelantos"]["dineroTotal"] + detailDesempenioDict["ausencias_tardanzas"]["total_descuentos"])
+            # setPremiosPorObjetivo(usuario,campania,agencia,total_comisionado_sin_asegurado, desempenioDeColaborador["cant_ventas_fromRol"])
            
-        elif(usuario.rango.lower() in "gerente sucursal"):
+        elif(usuario.rango.lower() == "gerente sucursal"):
             detailDesempenioDict["cuotasX"] = getCuotasX(campania,agencia)
             desempenioDeColaborador["subtotal_comisionado_fromRol"] = detailDesempenioDict["cuotasX"]["comisionTotal_Cuotas"]
     
     desempenioDeColaborador["descuentoTotal"] = (detailDesempenioDict["adelantos"]["dineroTotal"] + detailDesempenioDict["ausencias_tardanzas"]["total_descuentos"])
-    desempenioDeColaborador["comisionado_sin_descuento"] = (desempenioDeColaborador["subtotal_comisionado_fromRol"] + desempenioDeColaborador["subtotal_comisionado_ventasPropias"] + desempenioDeColaborador["asegurado"])
-    desempenioDeColaborador["total_comisionado_sin_asegurado"] = (desempenioDeColaborador["subtotal_comisionado_fromRol"] + desempenioDeColaborador["subtotal_comisionado_ventasPropias"])  - desempenioDeColaborador["descuentoTotal"]
-    desempenioDeColaborador["total_comisionado"] =  desempenioDeColaborador["total_comisionado_sin_asegurado"] + desempenioDeColaborador["asegurado"]
+    desempenioDeColaborador["comisionado_sin_descuento"] = (desempenioDeColaborador["subtotal_comisionado_fromRol"] + desempenioDeColaborador["subtotal_comisionado_ventasPropias"])
+    desempenioDeColaborador["comisionado_con_descuento"] = (desempenioDeColaborador["subtotal_comisionado_fromRol"] + desempenioDeColaborador["subtotal_comisionado_ventasPropias"])  - desempenioDeColaborador["descuentoTotal"]
+    desempenioDeColaborador["asegurado"] = getAsegurado(usuario,desempenioDeColaborador["comisionado_con_descuento"])
+
+    
+    setPremiosPorObjetivo(usuario,campania,agencia,desempenioDeColaborador["total_comisionado_sin_asegurado"], desempenioDeColaborador["cant_ventas_fromRol"])
+    premios = getPremiosPorObjetivo(usuario,campania)   
+    desempenioDeColaborador["premios"] = premios["totalPremios"]
+    detailDesempenioDict["premios"] = premios["premiosList"]
+    
+    desempenioDeColaborador["total_comisionado"] =  desempenioDeColaborador["comisionado_con_descuento"] + desempenioDeColaborador["asegurado"] + desempenioDeColaborador["premios"]
 
     desempenioDeColaborador["detalle"] = detailDesempenioDict
     
