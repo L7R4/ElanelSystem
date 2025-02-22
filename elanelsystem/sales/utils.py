@@ -355,7 +355,7 @@ def dataStructureCannons(sucursal=None):
         for k in range(len(venta.cuotas)):
             cuota = venta.cuotas[k]
 
-            if cuota["status"] in ["Pagado", "Parcial", "Atrasado"]:
+            if cuota["status"] in ["pagado", "parcial", "atrasado"]:
                 for pago in cuota["pagos"]:
                     mov = {**getInfoBaseCannon(venta, cuota), **{
                         'metodoPago': {'data': pago['metodoPago'], 'verbose_name': 'Método de Pago'},

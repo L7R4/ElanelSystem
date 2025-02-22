@@ -1773,22 +1773,29 @@ def requestMovimientos(request):
     #region Logica para obtener los movimientos segun los filtros aplicados 
     agencia = request.user.sucursales.first().pseudonimo if not request.GET.get("agencia") else request.GET.get("agencia") # Si no hay agencia seleccionada, se coloca la primera sucursal del usuario
     
-    all_movimientos = dataStructureMoviemientosYCannons(agencia)
-
-    all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha'], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
+    cannons = dataStructureCannons(agencia)
+    cannons = list(filter(lambda x: x["estado"]["data"] in ["pagado", "parcial"], cannons))
+    allMovimientos = dataStructureMovimientosExternos(agencia) + cannons
+    allMovimientosTidy = sorted(allMovimientos, key=lambda x: datetime.strptime(x['fecha']["data"], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
+    # Agregar a cada diccionario del movimiento el campo id_cont para poder identificarlo en el template 
+    for i, mov in enumerate(allMovimientosTidy):
+        mov["id_cont"] = i
+        
+    #endregion
+    
     
     #region Limpiar los cannos que tienen pagos en forma de credito
-    movsDePagosEnFormaCredito = [mov for mov in all_movimientosTidy if mov["metodoPago"] == "Credito"]
+    movsDePagosEnFormaCredito = [mov for mov in allMovimientosTidy if mov["metodoPago"] == "Credito"]
 
     #Elimina los pagos en forma de credito segun los indices
     for movs in movsDePagosEnFormaCredito:
-        if (movs in all_movimientosTidy):
-            all_movimientosTidy.remove(movs)
+        if (movs in allMovimientosTidy):
+            allMovimientosTidy.remove(movs)
     #endregion
 
     response_data ={
         "request": request.GET,
-        "movs": all_movimientosTidy
+        "movs": allMovimientosTidy
     }
     movs = filterMainManage(response_data["request"], response_data["movs"])
     
