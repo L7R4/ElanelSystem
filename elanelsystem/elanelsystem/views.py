@@ -146,7 +146,7 @@ def filterMainManage(request,dataStructure):
     }
     
     params_dict_clear = convertirValoresALista(params_dict_clear) # Convertimos los valores  de cada clave a una lista
-    print(params_dict_clear)
+    # print(params_dict_clear)
     # Mapeo de filtros a funciones
     possible_filters = {
         "fecha": filterDataBy_date,

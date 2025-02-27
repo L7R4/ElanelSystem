@@ -1,9 +1,11 @@
 from django.contrib import admin
-from .models import Ventas,CoeficientesListadePrecios, ArqueoCaja, MovimientoExterno, CuentaCobranza
+from .models import Ventas, MetodoPago,CoeficientesListadePrecios, ArqueoCaja, MovimientoExterno, CuentaCobranza
 # admin.site.register(Ventas)
 admin.site.register(ArqueoCaja)
 admin.site.register(MovimientoExterno)
 admin.site.register(CuentaCobranza)
+admin.site.register(MetodoPago)
+
 
 @admin.register(CoeficientesListadePrecios)
 class CoeficientesAdmin(admin.ModelAdmin):

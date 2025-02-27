@@ -92,10 +92,9 @@ buttonBack.addEventListener('click', () => {
 // #endregion
 
 
-
 function createItemSegunMovimiento(mov) {
     let fechaRecortada = mov.fecha.data.slice(0, 10)
-
+    console.log(mov.monto.data)
     let stringForHTML = `<div><p class="fecha">${fechaRecortada}</p></div>`
     if ("concepto" in mov) {
         let conceptoStringRecortado = mov.concepto.slice(0, 18);
@@ -105,13 +104,13 @@ function createItemSegunMovimiento(mov) {
         `;
         if ("Ingreso" == mov["tipo_mov"]) {
             stringForHTML += `
-            <div><p class="monto">$${mov.monto}</p></div>
+            <div><p class="monto">$${mov.monto.data}</p></div>
             <div><p class="monto"> - </p></div>
             `;
         } else if ("Egreso" == mov["tipo_mov"]) {
             stringForHTML += `
             <div><p class="monto"> - </p></div>
-            <div><p class="monto">$${mov.monto}</p></div>
+            <div><p class="monto">$${mov.monto.data}</p></div>
             `;
         }
     } else {
@@ -120,7 +119,7 @@ function createItemSegunMovimiento(mov) {
         stringForHTML += `
         <div><p class="concept">${conceptoStringRecortado}</p></div>
         <div><p class="nCuotas">${cuotaStringRecortada} </p></div>
-        <div><p class="monto">$${mov.monto}</p></div>
+        <div><p class="monto">$${mov.monto.data}</p></div>
         <div><p class="monto"> - </p></div>
         `;
     }
@@ -139,7 +138,6 @@ function textFilters(dicc) {
                 stringForHTML += `<li class="fitroItem">${clave}: <strong>${dicc[i][clave]}</strong></li>`;
             }
         }
-
         wrapperFiltroTexto.innerHTML = stringForHTML
     }
 }
@@ -179,7 +177,6 @@ function refillFilterValues() {
         }
     });
 }
-
 
 function modalViewMovimiento(mov, type_mov) {
     let modal = new tingle.modal({
@@ -400,3 +397,130 @@ function renderViewMovimiento(mov) {
 //     `;
 //     return stringForHTML;
 // }
+
+function renderTemplateFormFilter(){
+    return `
+        <form method="GET" id="filterForm" class="filterForm">
+                ${CSRF_TOKEN}
+                <div class="wrapperCalendario wrapperTypeFilter">
+                    <h3 class="labelInput">Fecha</h3>
+                    <div class="containerCalendario">
+                        <input id="calendar-input" name="fecha" class="filterInput input-read-write-default" type="text" placeholder="Choose date" readonly />
+                        <div class="calendar" id="calendar"></div>
+                    </div>
+                </div>
+
+                <div id="selectWrapperSelectTypePayments" class="wrapperTypeFilter">
+                    <h3 class="labelInput">Metodo de pago</h3>
+                    <div class="containerInputAndOptions">
+                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+
+                      <input type="text" name="metodoPago" class = "input-select-custom multipleSelect" id ="tipoDePago" placeholder ="Seleccionar" autocomplete="off" readonly>
+                      <ul class="list-select-custom options>
+                            ${metodos_de_pago.map(mp => `
+                                <li data-value="${mp}">${mp}</li>
+                            `).join('')}
+                      </ul>
+                    </div>
+                </div>
+                
+                <div id="selectWrapperSelectAgency" class="wrapperTypeFilter">
+                    <h3 class="labelInput">Agencia</h3>
+                    <div class="containerInputAndOptions">
+                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                      <input type="text" name="agencia" class = "multipleSelect input-select-custom" id ="sucursalInput" value=""placeholder ="Seleccionar" autocomplete="off" readonly>
+                      <ul class="list-select-custom options">
+                        ${agencias.map(ag => `
+                            <li data-value="${ag}">${ag}</li>
+                        `).join('')}
+                      </ul>
+                    </div>
+                </div>
+
+                <div id="selectWrapperSelectCobrador"class="wrapperTypeFilter">
+                    <h3 class="labelInput">Cuenta de cobro</h3>
+                    <div class="containerInputAndOptions">
+                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                      <input type="text" name="ente" class = "multipleSelect input-select-custom" id ="cobradorInput" value="" placeholder ="Seleccionar" autocomplete="off" readonly>
+                      <ul class="list-select-custom options">
+                        ${cuentas_de_cobro.map(cc => `
+                            <li data-value="${cc}">${cc}</li>
+                        `).join('')}
+                      </ul>
+                    </div>
+                </div> 
+                
+                <div id="selectWrapperSelectCampania"class="wrapperTypeFilter">
+                    <h3 class="labelInput">Campaña</h3>
+                    <div class="containerInputAndOptions">
+                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                      <input type="text" name="ente" class = "multipleSelect input-select-custom" id ="cobradorInput" value="" placeholder ="Seleccionar" autocomplete="off" readonly>
+                      <ul class="list-select-custom options">
+                        ${cuentas_de_cobro.map(ec => `
+                            <li data-value="${ec}">${ec}</li>
+                        `).join('')}
+                      </ul>
+                    </div>
+                </div>
+
+                <div id="wrapperRadioEgresoIngreso" class="wrapperTypeFilter">
+                    <h3 class="labelInput">Filtrar por:</h3>
+                    <div class="selectEgreso_Ingreso inputsRadiosContainer">
+                        <input type="radio" name="tipo_mov" id="ingreso" value="Ingreso">
+                        <label for="ingreso">Ingreso</label>
+        
+                        <input type="radio" name="tipo_mov" id="egreso" value="Egreso">
+                        <label for="egreso">Egreso</label>
+                    </div>
+                </div>                  
+            </form>
+    `
+}
+
+function modalFilter(){
+    let modal = new tingle.modal({
+        footer: true,
+        closeMethods: ['overlay', 'button', 'escape'],
+        cssClass: ['modalContainerFilter'],
+        onOpen: function () {
+            // enableAuditarButton()
+        },
+        onClose: function () {
+            modal.destroy();
+        },
+    });
+
+    // set content
+    template = renderTemplateFormFilter()
+    modal.setContent(template);
+
+    initSelectFecha(document.getElementById("calendar-input"))
+    // add a button
+    modal.addFooterBtn('Filtrar', 'tingle-btn tingle-btn--primary add-button-default', async function () {
+        let form = document.querySelector("#filterForm")
+        let response = await sendFormFilter(form)
+        console.log(response);
+
+        if (response.status) {
+            console.log("Salio todo bien");
+            // hiddenLoader();
+            // updateMovs(1);
+            modal.close();
+            modal.destroy();
+        } else {
+            console.log("Salio todo mal");
+            // hiddenLoader();
+            modal.close();
+            modal.destroy();
+        }
+    });
+
+    // add another button
+    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default button-default-style', function () {
+        modal.close();
+        modal.destroy();
+    });
+
+    // open modal
+    modal.open();
+}

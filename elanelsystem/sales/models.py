@@ -632,6 +632,38 @@ class CuentaCobranza(models.Model):
             raise ValidationError({'alias': "Ya existe una cuenta con ese alias."})
     #endregion       
 
+class MetodoPago(models.Model):
+    alias = models.CharField("Alias:",max_length=50)
+
+    def __str__(self):
+        return self.alias
+    
+    def save(self, *args, **kwargs):
+        self.alias = self.alias.capitalize()
+
+        super(MetodoPago, self).save(*args, **kwargs)
+    
+    #region Validacioness
+    def clean(self):
+        errors = {}
+        validation_methods = [
+            self.validation_alias    
+        ]
+
+        for method in validation_methods:
+            try:
+                method()
+            except ValidationError as e:
+                errors.update(e.message_dict)
+
+        if errors:
+            raise ValidationError(errors)
+    
+
+    def validation_alias(self):
+        if MetodoPago.objects.filter(alias=self.alias).exists():
+            raise ValidationError({'alias': "Ya existe un metodo de pago con ese alias."})
+    #endregion       
 
 #endregion
 
