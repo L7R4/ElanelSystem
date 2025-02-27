@@ -7,7 +7,7 @@ from django.views import generic
 from django.contrib.auth.mixins import PermissionRequiredMixin
 
 from .mixins import TestLogin
-from .models import ArqueoCaja, Ventas,CoeficientesListadePrecios,MovimientoExterno,CuentaCobranza
+from .models import ArqueoCaja, MetodoPago, Ventas,CoeficientesListadePrecios,MovimientoExterno,CuentaCobranza
 from users.models import Cliente, Sucursal,Usuario
 from .models import Ventas
 from products.models import Products,Plan
@@ -1630,13 +1630,16 @@ class Caja(TestLogin,generic.View):
         ("fecha", "Fecha"),
         ("cobrador","Cobrador"),
         ("agencia","Agencia"),
+        ("campania","Campaña"),
     )
 
     def get(self,request,*args, **kwargs):
         context ={}
-        context["cobradores"] = CuentaCobranza.objects.all()
-        context["agencias"] = Sucursal.objects.all()
-        context["agenciasDisponibles"] = request.user.sucursales.all()
+        context["agencias_permitidas"] = [{"id":agencia.id,"pseudonimo":agencia.pseudonimo} for agencia in request.user.sucursales.all()]
+        context["cuentas_de_cobro"] = [{"id":cuenta.id,"nombre":cuenta.alias} for cuenta in CuentaCobranza.objects.all()]
+        context["metodos_de_pago"] = [{"id":metodo.id,"nombre":metodo.alias} for metodo in MetodoPago.objects.all()]
+        context["campanias"] = getTodasCampaniasDesdeInicio()
+
         
         # print(os.path.join(settings.BASE_DIR, "templates/mailPlantilla.html"))
         paramsDict = (request.GET).dict()
@@ -1775,12 +1778,12 @@ def requestMovimientos(request):
     
     cannons = dataStructureCannons(agencia)
     cannons = list(filter(lambda x: x["estado"]["data"] in ["pagado", "parcial"], cannons))
+    print(cannons)
     allMovimientos = dataStructureMovimientosExternos(agencia) + cannons
     allMovimientosTidy = sorted(allMovimientos, key=lambda x: datetime.strptime(x['fecha']["data"], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
     # Agregar a cada diccionario del movimiento el campo id_cont para poder identificarlo en el template 
     for i, mov in enumerate(allMovimientosTidy):
         mov["id_cont"] = i
-        
     #endregion
     
     
@@ -1797,6 +1800,7 @@ def requestMovimientos(request):
         "request": request.GET,
         "movs": allMovimientosTidy
     }
+
     movs = filterMainManage(response_data["request"], response_data["movs"])
     
     #endregion
