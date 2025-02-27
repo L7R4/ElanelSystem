@@ -5,31 +5,14 @@ const containerMovimientos = document.querySelector(".values")
 let cuotasButtons = document.querySelectorAll(".mov")
 let movsPages = document.querySelector(".cuotasPages")
 
-const mainModal = document.querySelector(".main_modalCuota")
-const closeModalMovsButtons = document.querySelectorAll(".closeModalCuotaInformation")
-const queryString = window.location.search;
 let currentPage = 1;
-const inputsOnlyEgreso = document.querySelectorAll(".onlyEgreso")
-const inputsOnlyIngreso = document.querySelectorAll(".onlyIngreso")
 
-
-// Funcion para obtener todos los movimientos por pagina 
-async function movsGet(page) {
-    const response = await fetch(`/requestmovs/?page=${page}&` + queryString.slice(1), {
-        method: 'get',
-        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
-        cache: 'no-store',
-    });
-    if (!response.ok) {
-        throw new Error('Network response was not ok ' + response.statusText);
-    }
-    const data = await response.json();
-    return data;
-}
+let inputsFilters = ""
+let urlForFilter = ""
 
 // Funcion para actualizar la informacion de los movimientos
 async function updateMovs(page) {
-    let dataMovs = await movsGet(page); // Solicita los movimientos
+    let dataMovs = await movsGetChangePage(page); // Solicita los movimientos
     console.log(dataMovs)
     movsPages.textContent = page + " / " + dataMovs["numbers_pages"] // Actualiza en la pagina en la que estamos
 
@@ -397,16 +380,14 @@ function renderViewMovimiento(mov) {
 //     `;
 //     return stringForHTML;
 // }
-
-function renderTemplateFormFilter(){
+{/* <div class="calendar" id="calendar"></div> */ }
+function renderTemplateFormFilter(uniqueFechaId) {
     return `
         <form method="GET" id="filterForm" class="filterForm">
-                ${CSRF_TOKEN}
                 <div class="wrapperCalendario wrapperTypeFilter">
                     <h3 class="labelInput">Fecha</h3>
                     <div class="containerCalendario">
-                        <input id="calendar-input" name="fecha" class="filterInput input-read-write-default" type="text" placeholder="Choose date" readonly />
-                        <div class="calendar" id="calendar"></div>
+                        <input id="${uniqueFechaId}" name="fecha" class="filterInput input-read-write-default" type="text" placeholder="Choose date" readonly />
                     </div>
                 </div>
 
@@ -414,9 +395,8 @@ function renderTemplateFormFilter(){
                     <h3 class="labelInput">Metodo de pago</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-
-                      <input type="text" name="metodoPago" class = "input-select-custom multipleSelect" id ="tipoDePago" placeholder ="Seleccionar" autocomplete="off" readonly>
-                      <ul class="list-select-custom options>
+                      <input type="text" name="metodoPago" class="filterInput input-select-custom multipleSelect" id="tipoDePago" placeholder="Seleccionar" autocomplete="off" readonly>
+                      <ul class="list-select-custom options">
                             ${metodos_de_pago.map(mp => `
                                 <li data-value="${mp}">${mp}</li>
                             `).join('')}
@@ -428,83 +408,92 @@ function renderTemplateFormFilter(){
                     <h3 class="labelInput">Agencia</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="agencia" class = "multipleSelect input-select-custom" id ="sucursalInput" value=""placeholder ="Seleccionar" autocomplete="off" readonly>
+                      <input type="text" name="agencia" class="filterInput multipleSelect input-select-custom" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                         ${agencias.map(ag => `
-                            <li data-value="${ag}">${ag}</li>
+                            <li data-value="${ag.id}">${ag.pseudonimo}</li>
                         `).join('')}
                       </ul>
                     </div>
                 </div>
 
-                <div id="selectWrapperSelectCobrador"class="wrapperTypeFilter">
+                <div id="selectWrapperSelectCobrador" class="wrapperTypeFilter">
                     <h3 class="labelInput">Cuenta de cobro</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="ente" class = "multipleSelect input-select-custom" id ="cobradorInput" value="" placeholder ="Seleccionar" autocomplete="off" readonly>
+                      <input type="text" name="ente" class="filterInput multipleSelect input-select-custom" id="cobradorInput" placeholder="Seleccionar" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                         ${cuentas_de_cobro.map(cc => `
-                            <li data-value="${cc}">${cc}</li>
+                            <li data-value="${cc.id}">${cc.nombre}</li>
                         `).join('')}
                       </ul>
                     </div>
                 </div> 
                 
-                <div id="selectWrapperSelectCampania"class="wrapperTypeFilter">
+                <div id="selectWrapperSelectCampania" class="wrapperTypeFilter">
                     <h3 class="labelInput">Campaña</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="ente" class = "multipleSelect input-select-custom" id ="cobradorInput" value="" placeholder ="Seleccionar" autocomplete="off" readonly>
+                      <input type="text" name="ente" class="filterInput multipleSelect input-select-custom" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
-                        ${cuentas_de_cobro.map(ec => `
-                            <li data-value="${ec}">${ec}</li>
+                        ${campanias.map(ca => `
+                            <li data-value="${ca}">${ca}</li>
                         `).join('')}
                       </ul>
                     </div>
                 </div>
 
-                <div id="wrapperRadioEgresoIngreso" class="wrapperTypeFilter">
-                    <h3 class="labelInput">Filtrar por:</h3>
-                    <div class="selectEgreso_Ingreso inputsRadiosContainer">
-                        <input type="radio" name="tipo_mov" id="ingreso" value="Ingreso">
-                        <label for="ingreso">Ingreso</label>
-        
-                        <input type="radio" name="tipo_mov" id="egreso" value="Egreso">
-                        <label for="egreso">Egreso</label>
+                <div id="selectWrapperSelectCampania" class="wrapperTypeFilter">
+                    <h3 class="labelInput">Tipo de Movimiento</h3>
+                    <div class="containerInputAndOptions">
+                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                      <input type="text" name="ente" class="filterInput multipleSelect input-select-custom" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                      <ul class="list-select-custom options">
+                          <li data-value="Ingreso">Ingreso</li>
+                          <li data-value="Egreso">Egreso</li>
+
+                      </ul>
                     </div>
-                </div>                  
+                </div>          
             </form>
     `
+
 }
 
-function modalFilter(){
+function modalFilter() {
     let modal = new tingle.modal({
         footer: true,
         closeMethods: ['overlay', 'button', 'escape'],
         cssClass: ['modalContainerFilter'],
         onOpen: function () {
             // enableAuditarButton()
+            cargarListenersEnInputsMultipleSelect()
         },
         onClose: function () {
+            deleteCalendarDOM()
             modal.destroy();
         },
     });
 
     // set content
-    template = renderTemplateFormFilter()
-    modal.setContent(template);
 
-    initSelectFecha(document.getElementById("calendar-input"))
+    let uniqueFechaId = 'newFecha_' + Date.now();
+    template = renderTemplateFormFilter(uniqueFechaId)
+    modal.setContent(template);
+    initSelectFecha(document.getElementById(`${uniqueFechaId}`))
+
+
+    inputsFilters = document.querySelectorAll('.filterInput')
     // add a button
     modal.addFooterBtn('Filtrar', 'tingle-btn tingle-btn--primary add-button-default', async function () {
-        let form = document.querySelector("#filterForm")
-        let response = await sendFormFilter(form)
+        let response = await movsGetFilter(inputsFilters)
+
         console.log(response);
 
         if (response.status) {
             console.log("Salio todo bien");
             // hiddenLoader();
-            // updateMovs(1);
+            updateMovs(currentPage);
             modal.close();
             modal.destroy();
         } else {
@@ -523,4 +512,53 @@ function modalFilter(){
 
     // open modal
     modal.open();
+}
+
+
+// Funcion para obtener todos los movimientos por pagina 
+async function movsGetFilter(inputs) {
+    let url = createParamsUrl(inputs)
+    urlForFilter = url
+
+    const response = await fetch(`/requestmovs/?page=1${urlForFilter}`, {
+        method: 'get',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+        // cache: 'no-store',
+    });
+    if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+    }
+    const data = await response.json();
+    return data;
+}
+
+
+async function movsGetChangePage(page) {
+    let url = `/requestmovs/?page=${page}${urlForFilter}`
+    const response = await fetch(url, {
+        method: 'get',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+        // cache: 'no-store',
+    });
+    if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+    }
+    const data = await response.json();
+    return data;
+}
+
+function createParamsUrl(inputs) {
+    let urlParams = ""
+
+    inputs.forEach(input => {
+        if (input.value.trim() !== "") {
+            urlParams += "&";
+
+            const inputName = input.name; // Obtener el atributo 'name' del input
+            const inputValue = input.value; // Obtener el valor seleccionado
+            let newParam = `${inputName}=${inputValue}`;
+            urlParams += newParam;
+        }
+    })
+    return urlParams
 }

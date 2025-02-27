@@ -17,6 +17,25 @@
 
 let inputSelectMultipleCustom = document.querySelectorAll(".containerInputAndOptions > input.multipleSelect");
 
+function cargarListenersEnInputsMultipleSelect() {
+    let inputSelectMultipleCustom = document.querySelectorAll(".containerInputAndOptions > input.multipleSelect");
+
+    inputSelectMultipleCustom.forEach(input => {
+        let optionsList = input.nextElementSibling;
+        let options = optionsList.querySelectorAll("li");
+
+        toggleOptionsLists(input, optionsList);
+
+        options.forEach(option => {
+            option.addEventListener("click", () => {
+                toggleOptions(input, option)
+
+                // Disparar el evento "input" en el input después de seleccionar una opción
+                input.dispatchEvent(new Event('input'));
+            });
+        });
+    });
+}
 
 inputSelectMultipleCustom.forEach(input => {
     let optionsList = input.nextElementSibling;
