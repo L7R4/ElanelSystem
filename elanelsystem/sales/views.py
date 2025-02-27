@@ -1773,93 +1773,185 @@ class OldArqueosView(TestLogin,generic.View):
 
 #region Specifics Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def requestMovimientos(request):
-    #region Logica para obtener los movimientos segun los filtros aplicados 
-    agencia = request.user.sucursales.first().pseudonimo if not request.GET.get("agencia") else request.GET.get("agencia") # Si no hay agencia seleccionada, se coloca la primera sucursal del usuario
-    
-    cannons = dataStructureCannons(agencia)
-    cannons = list(filter(lambda x: x["estado"]["data"] in ["pagado", "parcial"], cannons))
-    print(cannons)
-    allMovimientos = dataStructureMovimientosExternos(agencia) + cannons
-    allMovimientosTidy = sorted(allMovimientos, key=lambda x: datetime.strptime(x['fecha']["data"], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
-    # Agregar a cada diccionario del movimiento el campo id_cont para poder identificarlo en el template 
-    for i, mov in enumerate(allMovimientosTidy):
-        mov["id_cont"] = i
-    #endregion
-    
-    
-    #region Limpiar los cannos que tienen pagos en forma de credito
-    movsDePagosEnFormaCredito = [mov for mov in allMovimientosTidy if mov["metodoPago"] == "Credito"]
-
-    #Elimina los pagos en forma de credito segun los indices
-    for movs in movsDePagosEnFormaCredito:
-        if (movs in allMovimientosTidy):
-            allMovimientosTidy.remove(movs)
-    #endregion
-
-    response_data ={
-        "request": request.GET,
-        "movs": allMovimientosTidy
-    }
-
-    movs = filterMainManage(response_data["request"], response_data["movs"])
-    
-    #endregion
-    
-    #region Logica para pasar al template los filtros aplicados a los movimientos
-    paramsDict = (request.GET).dict()
-    FILTROS_EXISTENTES = (
-        ("tipo_mov","Tipo de movimiento"),
-        ("metodoPago", "Metodo de pago"),
-        ("fecha", "Fecha"),
-        ("cobrador","Cobrador"),
-        ("agencia","Agencia"),
-    )
-    clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
-
-    # Extrae las tuplas segun los querys filtrados en clearContext
-    filtros_activados = list(filter(lambda x: x[0] in clearContext, FILTROS_EXISTENTES))
-    
-    # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
-    # Es lo mismo que decir clearContext["metodoPago"], etc, etc
-    filtros = list(map(lambda x: {x[1]: clearContext[x[0]]}, filtros_activados))
-    #endregion
-    
-    request.session["informe_data"] = movs # Por si se quiere imprimir el informe
-
-    # region Logica para obtener el resumen de cuenta de los diferentes tipos de pagos
-    resumenEstadoCuenta={}
-    tiposDePago = {"efectivo":"Efectivo",
-                   "banco":"Banco", 
-                   "posnet":"Posnet", 
-                   "merPago":"Mercado Pago", 
-                   "transferencia":"Transferencia"}  
-
-    montoTotal = 0
-    for clave in tiposDePago.keys():
-        itemsTypePayment = list(filter(lambda x: x['metodoPago'] == tiposDePago[clave], movs))
-        montoTypePaymentEgreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Egreso'])
-        montoTypePaymentIngreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Ingreso'])
-        montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso  
-        montoTotal += montoTypePayment 
-        resumenEstadoCuenta[clave] = montoTypePayment
-    resumenEstadoCuenta["total"] = montoTotal
-
-    #endregion
-
-    #region Paginación
-    page = request.GET.get('page')
-    items_per_page = 10  # Número de elementos por página
-    paginator = Paginator(movs, items_per_page)
-
     try:
-        movs = paginator.page(page)
-    except PageNotAnInteger:
-        movs = paginator.page(1)
-    except EmptyPage:
-        movs = paginator.page(paginator.num_pages)
-    #endregion -----------------------------------------------------
+        #region Logica para obtener los movimientos segun los filtros aplicados 
+        agencia = request.user.sucursales.first().pseudonimo if not request.GET.get("agencia") else request.GET.get("agencia") # Si no hay agencia seleccionada, se coloca la primera sucursal del usuario
+        print(request)
+        cannons = dataStructureCannons(agencia)
+        cannons = list(filter(lambda x: x["estado"]["data"] in ["pagado", "parcial"], cannons))
+        
+        allMovimientos = dataStructureMovimientosExternos(agencia) + cannons
+        allMovimientosTidy = sorted(allMovimientos, key=lambda x: datetime.strptime(x['fecha']["data"], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
+        # Agregar a cada diccionario del movimiento el campo id_cont para poder identificarlo en el template 
+        for i, mov in enumerate(allMovimientosTidy):
+            mov["id_cont"] = i
+        #endregion
+        
 
-    return JsonResponse({"data": list(movs), "numbers_pages": paginator.num_pages,"filtros":filtros,"estadoCuenta":resumenEstadoCuenta}, safe=False)
+        response_data ={
+            "request": request.GET,
+            "movs": allMovimientosTidy
+        }
+        
+
+        movs = filterMainManage(response_data["request"], response_data["movs"])
+        
+        #endregion
+        
+        #region Logica para pasar al template los filtros aplicados a los movimientos
+        paramsDict = (request.GET).dict()
+        FILTROS_EXISTENTES = (
+            ("tipo_mov","Tipo de movimiento"),
+            ("metodoPago", "Metodo de pago"),
+            ("fecha", "Fecha"),
+            ("cobrador","Cobrador"),
+            ("agencia","Agencia"),
+        )
+        clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
+
+        # Extrae las tuplas segun los querys filtrados en clearContext
+        filtros_activados = list(filter(lambda x: x[0] in clearContext, FILTROS_EXISTENTES))
+        
+        # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
+        # Es lo mismo que decir clearContext["metodoPago"], etc, etc
+        filtros = list(map(lambda x: {x[1]: clearContext[x[0]]}, filtros_activados))
+        #endregion
+        
+        request.session["informe_data"] = movs # Por si se quiere imprimir el informe
+
+        # region Logica para obtener el resumen de cuenta de los diferentes tipos de pagos
+        resumenEstadoCuenta={}
+        tiposDePago = {"efectivo":"Efectivo",
+                    "banco":"Banco", 
+                    "posnet":"Posnet", 
+                    "merPago":"Mercado Pago", 
+                    "transferencia":"Transferencia"}  
+
+        montoTotal = 0
+        for clave in tiposDePago.keys():
+            itemsTypePayment = list(filter(lambda x: x['metodoPago'] == tiposDePago[clave], movs))
+            montoTypePaymentEgreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Egreso'])
+            montoTypePaymentIngreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Ingreso'])
+            montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso  
+            montoTotal += montoTypePayment 
+            resumenEstadoCuenta[clave] = montoTypePayment
+        resumenEstadoCuenta["total"] = montoTotal
+
+        #endregion
+
+        #region Paginación
+        page = request.GET.get('page')
+        items_per_page = 3  # Número de elementos por página
+        paginator = Paginator(movs, items_per_page)
+
+        try:
+            movs = paginator.page(page)
+        except PageNotAnInteger:
+            movs = paginator.page(1)
+        except EmptyPage:
+            movs = paginator.page(paginator.num_pages)
+        #endregion -----------------------------------------------------
+
+        return JsonResponse({"data": list(movs), "numbers_pages": paginator.num_pages,"filtros":filtros,"estadoCuenta":resumenEstadoCuenta,"status": True}, safe=False)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"data": [], "numbers_pages": 0,"filtros":[],"estadoCuenta":{},"status": False}, safe=False)
+
+
+# def requestMovimientos(request):
+#     try:
+#         #region Logica para obtener los movimientos segun los filtros aplicados 
+#         agencia = request.user.sucursales.first().pseudonimo if not request.GET.get("agencia") else request.GET.get("agencia") # Si no hay agencia seleccionada, se coloca la primera sucursal del usuario
+#         print(request)
+#         cannons = dataStructureCannons(agencia)
+#         cannons = list(filter(lambda x: x["estado"]["data"] in ["pagado", "parcial"], cannons))
+        
+#         allMovimientos = dataStructureMovimientosExternos(agencia) + cannons
+#         allMovimientosTidy = sorted(allMovimientos, key=lambda x: datetime.strptime(x['fecha']["data"], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
+#         # Agregar a cada diccionario del movimiento el campo id_cont para poder identificarlo en el template 
+#         for i, mov in enumerate(allMovimientosTidy):
+#             mov["id_cont"] = i
+#         #endregion
+        
+        
+#         #region Limpiar los cannos que tienen pagos en forma de credito
+#         movsDePagosEnFormaCredito = [mov for mov in allMovimientosTidy if mov["metodoPago"] == "Credito"]
+
+#         #Elimina los pagos en forma de credito segun los indices
+#         for movs in movsDePagosEnFormaCredito:
+#             if (movs in allMovimientosTidy):
+#                 allMovimientosTidy.remove(movs)
+#         #endregion
+
+#         response_data ={
+#             "request": request.GET,
+#             "movs": allMovimientosTidy
+#         }
+
+#         movs = filterMainManage(response_data["request"], response_data["movs"])
+        
+#         #endregion
+        
+#         #region Logica para pasar al template los filtros aplicados a los movimientos
+#         paramsDict = (request.GET).dict()
+#         FILTROS_EXISTENTES = (
+#             ("tipo_mov","Tipo de movimiento"),
+#             ("metodoPago", "Metodo de pago"),
+#             ("fecha", "Fecha"),
+#             ("cobrador","Cobrador"),
+#             ("agencia","Agencia"),
+#         )
+#         clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
+
+#         # Extrae las tuplas segun los querys filtrados en clearContext
+#         filtros_activados = list(filter(lambda x: x[0] in clearContext, FILTROS_EXISTENTES))
+        
+#         # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
+#         # Es lo mismo que decir clearContext["metodoPago"], etc, etc
+#         filtros = list(map(lambda x: {x[1]: clearContext[x[0]]}, filtros_activados))
+#         #endregion
+        
+#         request.session["informe_data"] = movs # Por si se quiere imprimir el informe
+
+#         # region Logica para obtener el resumen de cuenta de los diferentes tipos de pagos
+#         resumenEstadoCuenta={}
+#         tiposDePago = {"efectivo":"Efectivo",
+#                     "banco":"Banco", 
+#                     "posnet":"Posnet", 
+#                     "merPago":"Mercado Pago", 
+#                     "transferencia":"Transferencia"}  
+
+#         montoTotal = 0
+#         for clave in tiposDePago.keys():
+#             itemsTypePayment = list(filter(lambda x: x['metodoPago'] == tiposDePago[clave], movs))
+#             montoTypePaymentEgreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Egreso'])
+#             montoTypePaymentIngreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Ingreso'])
+#             montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso  
+#             montoTotal += montoTypePayment 
+#             resumenEstadoCuenta[clave] = montoTypePayment
+#         resumenEstadoCuenta["total"] = montoTotal
+
+#         #endregion
+
+#         #region Paginación
+#         page = request.GET.get('page')
+#         items_per_page = 10  # Número de elementos por página
+#         paginator = Paginator(movs, items_per_page)
+
+#         try:
+#             movs = paginator.page(page)
+#         except PageNotAnInteger:
+#             movs = paginator.page(1)
+#         except EmptyPage:
+#             movs = paginator.page(paginator.num_pages)
+#         #endregion -----------------------------------------------------
+
+#         return JsonResponse({"data": list(movs), "numbers_pages": paginator.num_pages,"filtros":filtros,"estadoCuenta":resumenEstadoCuenta,"status": True}, safe=False)
+#     except Exception as e:
+#         print(e)
+#         return JsonResponse({"data": [], "numbers_pages": 0,"filtros":[],"estadoCuenta":{},"status": False}, safe=False)
+
+
 
 # Funcion para crear un nuevo movimiento externo
 def createNewMov(request):
