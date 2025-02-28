@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autorización de Cancelación</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            padding: 20px;
+            margin: 0;
+            color: #555;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #007bff;
+            font-size: 24px;
+            margin: 0;
+        }
+        .header h2 {
+            color: #28a745;
+            font-size: 20px;
+            margin-top: 5px;
+        }
+        .header h3 {
+            color: #000;
+            font-size: 20px;
+            margin-top: 5px;
+        }
+        .content {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+        .content p {
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            font-size: 18px;
+            border-radius: 5px;
+            text-align: center;
+            width: 100%;
+            max-width: 250px;
+            margin: auto;
+            transition: background-color 0.3s ease;
+            color: #fff!important;
+        }
+        .button:hover {
+            background-color: #218838;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+        }
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Autorización de Cancelación</h1>
+            <h2>Venta N° {{ venta }}</h2>
+            <h3>{{ cuota }}</h3>
+        </div>
+
+        <div class="content">
+            <p>Estimado/a,</p>
+            <p>Se ha solicitado la cancelación de la cuota indicada en el sistema. Para continuar con el proceso, por favor autorice la cancelación haciendo clic en el siguiente botón:</p>
+            
+            <a href="{{ url_autorizar }}" class="button" target="_blank">Autorizar Cancelación</a>
+        </div>
+
+        {% comment %} <div class="footer">
+            <p>Si no solicitó esta cancelación, por favor ignore este mensaje.</p>
+        </div> {% endcomment %}
+    </div>
+</body>
+</html>
