@@ -143,13 +143,24 @@ cuotasWrapper.forEach(cuota => {
         // Luego solictamos la cuota a gestionar 
         let form = { "ventaID": ventaID.value, "cuota": cuota.id }
         let data = await formFETCH(form, "/ventas/detalle_venta/get_specific_cuota/")
+        console.log(data)
         if (data["status"] == "pagado") {
             wrapperVerDetallesPago.classList.add("active")
             verDetalleCuota(data)
+            if (data["buttonCancelacionDePago"]) {
+                habilitacionDeCancelacionPago(data["buttonCancelacionDePago"], true)
+            }
+
         } else {
             payCuotaForm.classList.add("active")
             activeFormCuotas(data)
+            if (data["buttonCancelacionDePago"]) {
+                habilitacionDeCancelacionPago(data["buttonCancelacionDePago"], false)
+            }
         }
+
+        // Solo si existe el boton de cancelar pago se habilita, pq ya esta validada en el backend
+
     })
 });
 
@@ -319,7 +330,17 @@ function htmlPagos(pagos) {
 // Pagar la cuota
 btnPayCuota.addEventListener("click", () => {
     let typePaymentSelected = payCuotaForm.querySelector('.wrapperChoices input[type="radio"]:checked');
-    let form = { "cobrador": cobrador.value, "typePayment": typePaymentSelected.value, "metodoPago": metodoPago.value, "ventaID": ventaID.value, "cuota": cuotaID.value, "valorParcial": amountParcial.value }
+    let cobrador = payCuotaForm.querySelector(".input-cobrador")
+    let metodoPago = payCuotaForm.querySelector(".input-metodoPago")
+
+    let form = {
+        "cobrador": cobrador.value,
+        "typePayment": typePaymentSelected.value,
+        "metodoPago": metodoPago.value,
+        "ventaID": ventaID.value,
+        "cuota": cuotaID.value,
+        "valorParcial": amountParcial.value
+    }
 
     formFETCH(form, "/ventas/detalle_venta/pay_cuota/").then(data => {
         // Verificamos si la operacion esta en estado suspendida para eliminar el boton "Crear plan recupero"
@@ -359,7 +380,7 @@ function hideFormCuotas() {
 
 // Funcion que verifica que forma de pago (Pago total o parcial) esta permitida para mostrar en el formulario  
 function verificarEstadoDeLaCuenta(cuota) {
-    if (cuota["status"] === "Parcial") {
+    if (cuota["status"] === "parcial") {
 
         return true // Retorna verdadero si el estado es parcial
     } else {
@@ -491,6 +512,10 @@ function displayMensajePostCuotaPagada(status, message) {
 
 // Funcion para que cuando este una forma de pago (parcial o total) elegida se aplique un estilo diferente y haga el checked del input
 function setearInputAFormaDePago(choice) {
+    console.log("weps")
+    sendPayment.disabled = true; // Se bloquea el boton de enviar
+    sendPayment.classList.toggle('blocked', true); // Se le agrega la clase de bloqueado
+
     let inputsFormaDePago = payCuotaForm.querySelectorAll(".wrapperChoices > .choice")
     let montoDeFormaParcial = payCuotaForm.querySelector(".pickedAmount")
 
@@ -499,13 +524,20 @@ function setearInputAFormaDePago(choice) {
     payCuotaForm.reset(); // Se resetean los campos
 
 
+    let requiredFields = payCuotaForm.querySelectorAll("input[type='hidden']:not(.notForm):not([name='csrfmiddlewaretoken']), input[type='text']:not(.notForm):not([name='csrfmiddlewaretoken'])");
+    clearInputs(requiredFields)
+
+
     choice.classList.add("active")
     choice.children[0].checked = true
 
     if (choice.id == "choiceParcial") {
         montoDeFormaParcial.style.display = "block"
+        montoDeFormaParcial.classList.remove("notForm")
+
     } else {
         // typesPayments.querySelector("#choiceTotal").style.display = "block"
+        montoDeFormaParcial.classList.add("notForm")
         montoDeFormaParcial.style.display = "none"
         montoDeFormaParcial.children[1].value = ""
     }
@@ -514,6 +546,7 @@ function setearInputAFormaDePago(choice) {
 
 // Funcion para habilitar el boton de submit del formulario
 function checkFormValid(inputsRellanados, inputMontoParcialValido) {
+    console.log(inputsRellanados, inputMontoParcialValido)
     if (inputsRellanados && inputMontoParcialValido) {
         btnPayCuota.disabled = false;
         btnPayCuota.classList.toggle('blocked', false);
@@ -525,8 +558,12 @@ function checkFormValid(inputsRellanados, inputMontoParcialValido) {
 
 
 function validarInputsRellenados() {
-    let requiredFields = payCuotaForm.querySelectorAll("input:not([type='hidden']):not([type='radio'])");
+    let requiredFields = payCuotaForm.querySelectorAll("input[type='hidden']:not(.notForm):not([name='csrfmiddlewaretoken']), input[type='text']:not(.notForm):not([name='csrfmiddlewaretoken'])");
+
+
+    console.log(requiredFields)
     let formaPagoSeleccionada = payCuotaForm.querySelector(".typesPayments > .wrapperChoices > .choice.active")
+    console.log(formaPagoSeleccionada)
     let contInputs = 0
     requiredFields.forEach(field => { if (field.value !== "") { contInputs++ } });
 
@@ -588,3 +625,155 @@ function removeSpecificClasses(elementHTML) {
 }
 
 
+function habilitacionDeCancelacionPago(button, isView) {
+
+    let wrapperButtons = isView ? wrapperVerDetallesPago.querySelector(".buttonsActions") : payCuotaForm.querySelector(".buttonsActions")
+    let lastButton = wrapperButtons.lastElementChild
+    console.log(lastButton)
+    // Convertir la cadena HTML en un elemento usando DOMParser
+    let parser = new DOMParser();
+    let doc = parser.parseFromString(button, "text/html");
+    let buttonElement = doc.body.firstChild;
+
+    payCuotaForm.querySelector(".buttonsActions > .buttonCancelarPago") ? payCuotaForm.querySelector(".buttonsActions > .buttonCancelarPago").remove() : null
+    wrapperVerDetallesPago.querySelector(".buttonsActions > .buttonCancelarPago") ? wrapperVerDetallesPago.querySelector(".buttonsActions > .buttonCancelarPago").remove() : null
+
+    lastButton.insertAdjacentElement('beforebegin', buttonElement);
+}
+
+function solicitudBajaCuota() {
+    let form = { "ventaID": ventaID.value, "cuota": cuotaID.value }
+    console.log(form)
+    let modal = new tingle.modal({
+        footer: true,
+        closeMethods: ['overlay', 'button', 'escape'],
+        cssClass: ['modalContainerFilter'],
+        onClose: function () {
+            modal.destroy();
+        },
+    });
+
+    // set content
+    modal.setContent("<h2>¿Deseas solicitar la baja para esta cuota?</h2>");
+
+    // add a button
+    modal.addFooterBtn('Solicitar', 'tingle-btn tingle-btn--primary add-button-default', async function () {
+        let url = solicitudAnulacionCuotaUrl
+
+        showLoader()
+        let response = await formFETCH(form, url)
+        hiddenLoader()
+
+
+        if (response.status) {
+            console.log("Salio todo bien");
+            modal.close();
+            modal.destroy();
+        } else {
+            console.log("Salio todo mal");
+            modal.close();
+            modal.destroy();
+        }
+        showReponseModal(response.message, response.iconMessage)
+    });
+
+    // add another button
+    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default button-default-style', function () {
+        modal.close();
+        modal.destroy();
+    });
+
+    // open modal
+    modal.open();
+}
+
+function anulacionCuota() {
+    let form = { "ventaID": ventaID.value, "cuota": cuotaID.value }
+    console.log(form)
+    let modal = new tingle.modal({
+        footer: true,
+        closeMethods: ['overlay', 'button', 'escape'],
+        cssClass: ['modalContainerFilter'],
+        onClose: function () {
+            modal.destroy();
+        },
+    });
+
+    // set content
+    modal.setContent("<h2>¿Estás seguro de anular la cuota?</h2>");
+
+    // add a button
+    modal.addFooterBtn('Anular', 'tingle-btn tingle-btn--primary add-button-default', async function () {
+        let url = confirmacionAnulacionCuotaUrl
+        console.log(url)
+        let response = await formFETCH(form, url)
+
+        console.log(response);
+
+        if (response.status) {
+            actualizarEstadoCuota(cuotaID.value) //Primero actualizamos la cuota operada
+            actualizarEstadoProximaCuota(cuotaID.value) // Bloquemos la siguiente cuota
+            console.log("Salio todo bien");
+            modal.close();
+            modal.destroy();
+        } else {
+            console.log("Salio todo mal");
+            // hiddenLoader();
+            modal.close();
+            modal.destroy();
+        }
+        cerrarContenedores_formPago_viewDetails()
+        showReponseModal(response.message, response.iconMessage)
+    });
+
+    // add another button
+    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default button-default-style', function () {
+        modal.close();
+        modal.destroy();
+    });
+
+    // open modal
+    modal.open();
+}
+
+function showReponseModal(contenido, icon) {
+    const modal = new tingle.modal({
+        footer: true,
+        closeMethods: ['button', 'overlay'],
+        cssClass: ['modalResponse'],
+        onClose: () => modal.destroy()
+    });
+
+    modal.setContent(`<div class="messageReponseModal">
+            <img src="${icon}"/>
+            <h2>${contenido}</h2>
+        </div>`);
+
+    // modal.addFooterBtn(btnConfirmText, "tingle-btn tingle-btn--danger", async function () {
+    //     modal.close();
+    // });
+
+    modal.addFooterBtn("Cerrar", "tingle-btn tingle-btn--default button-default-style", function () {
+        modal.close();
+    });
+
+    modal.open();
+}
+
+function cerrarContenedores_formPago_viewDetails() {
+    let containers = document.querySelectorAll(".containerDetalleCuota")
+    containers.forEach(element => element.classList.remove("active"));
+    payCuotaForm.reset();
+}
+
+//#region Manejar el display del loader
+function showLoader() {
+    document.querySelector('.modalContainerFilter').style.display = "none";
+    document.getElementById('wrapperLoader').style.display = 'flex';
+
+}
+
+function hiddenLoader() {
+    document.getElementById('wrapperLoader').style.display = 'none';
+}
+//#endregion

@@ -20,7 +20,7 @@ urlpatterns = [
     path("ventas/detalle_venta/descuento_cuota/",aplicarDescuentoCuota,name="descCuota"),
     path("ventas/detalle_venta/get_specific_cuota/",getUnaCuotaDeUnaVenta,name="getCuota"),
     path("ventas/detalle_venta/pay_cuota/",pagarCuota,name="payCuota"),
-    path("ventas/detalle_venta/anular_cuota/",anularCuota,name="anularCuota"),
+    # path("ventas/detalle_venta/anular_cuota/",anularCuota,name="anularCuota"),
 
     path("ventas/detalle_venta/<int:pk>/dar_baja/",darBaja,name="darBaja"),
     path("ventas/<int:pk>/adjudicacion/sorteo/",CreateAdjudicacion.as_view(),name="adjSorteo"),
@@ -30,7 +30,12 @@ urlpatterns = [
     path("ventas/ventas_suspendidas",PanelVentasSuspendidas.as_view(),name="ventasSuspendidas"),
     path("ventas/simulador_plan_recupero/<int:pk>/",SimuladorPlanRecupero.as_view(),name="simuladorPlanrecupero"),
     path("ventas/crear_plan_recupero/<int:pk>/",PlanRecupero.as_view(),name="planRecupero"),
-
+    
+    path("ventas/detalle_venta/solcitud_anulacion_cuota/",solicitudBajaCuota,name="solicitudAnulacionCuota"),
+    path('ventas/detalle_venta/autorizar-baja/<int:ventaID>/<str:cuota>/', darAutorizacionBajaCuota, name='autorizar_baja_cuota'),
+    path('ventas/detalle_venta/pagina_confirmacion_baja_cuota/', pagina_confirmacion, name='pagina_confirmacion_baja_cuota'),
+    path('ventas/detalle_venta/confirma-baja-cuota/', darBajaCuota, name='darBajaCuota'),
+    
     #endregion ----------------------------------------------------------
 
     #region URLs Caja -----------------------------------------------------

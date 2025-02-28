@@ -88,10 +88,6 @@ function confirmCreateAgencia() {
             document.querySelector(".sucursalItem.new").remove()
             createNewItemSucursal_HTML(CSRF_TOKEN, response["pk"], response["name"], response["direccion"], response["hora"], response["gerente"]);
 
-            // Modal de edicion extosa
-        }
-        else {
-            // Modal de edicion fracasada
         }
         showReponseModal(response.message, response.iconMessage)
         modal.close();

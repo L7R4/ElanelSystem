@@ -522,11 +522,17 @@ class DetailSale(TestLogin,generic.DetailView):
         context["changeTitularidad"] = list(reversed(self.object.cambioTitularidadField))
         context['cuotas'] = sale_target.cuotas
         context['cobradores'] = CuentaCobranza.objects.all()
+        context['metodosDePagos'] = MetodoPago.objects.all()
+
         context["object"] = self.object
         context["nro_cuotas"] = sale_target.nro_cuotas
         context["urlRedirectPDF"] = reverse("sales:bajaPDF",args=[self.object.pk])
         context['urlUser'] = reverse("users:cuentaUser", args=[self.object.pk])
         context['deleteSaleUrl'] = reverse("sales:delete_sale", args=[self.object.pk])
+        context['solicitudAnulacionCuotaUrl'] = reverse("sales:solicitudAnulacionCuota")
+        context['confirmacionAnulacionCuotaUrl'] = reverse("sales:darBajaCuota")
+
+
         request.session["venta"] = model_to_dict(self.object)
 
         try:
@@ -609,7 +615,7 @@ def aplicarDescuentoCuota(request):
 # Obtenemos una cuota
 def getUnaCuotaDeUnaVenta(request):
     if request.method == 'POST':
-        try:
+        # try:
             data = json.loads(request.body)
             venta = Ventas.objects.get(pk=int(data.get("ventaID")))
             cuotas = venta.cuotas
@@ -617,6 +623,9 @@ def getUnaCuotaDeUnaVenta(request):
             bloqueado_path = static('images/icons/iconBloqueado.png')
             permisosUser = request.user.get_all_permissions()
             buttonAnularCuota = '<button type="button" id="anularButton" onclick="htmlPassAnularCuota()" class="delete-button-default">Anular cuota</button>'
+
+            buttonSolicitudDeCancelacionPago = '<button type="button" onclick="solicitudBajaCuota()" class="buttonCancelarPago delete-button-default" id="btnBajaCuota">Cancelar pago</button>'
+            buttonConfirmacionDeCancelacionPago = '<button type="button" onclick="anulacionCuota()" class="buttonAnularCuota delete-button-default" id="btnAnularCuota">Anular pago</button>'
 
             cuotasPagadas_parciales = venta.cuotas_pagadas() + venta.cuotas_parciales()
             lista_cuotasPagadasSinCredito = getCuotasPagadasSinCredito(cuotasPagadas_parciales)
@@ -626,10 +635,16 @@ def getUnaCuotaDeUnaVenta(request):
                     cuota["styleBloqueado"] = f"background-image: url('{bloqueado_path}')"
                     if len(lista_cuotasPagadasSinCredito) != 0 and lista_cuotasPagadasSinCredito[-1]["cuota"] == cuota["cuota"] and "sales.my_anular_cuotas" in permisosUser:
                         cuota["buttonAnularCuota"] = buttonAnularCuota
+                    print("------------------------")
+                    print(cuota["status"])
+                    if (cuota["status"] == "pagado" or cuota["status"] =="parcial") and not cuota["autorizada_para_anular"]:
+                        cuota["buttonCancelacionDePago"] = buttonSolicitudDeCancelacionPago
+                    elif(cuota["status"] == "pagado" or cuota["status"] =="parcial") and cuota["autorizada_para_anular"]:
+                        cuota["buttonCancelacionDePago"] = buttonConfirmacionDeCancelacionPago
                     return JsonResponse(cuota, safe=False)
 
-        except Exception as error:
-            return JsonResponse({"status": False,"message":"Error al obtener la cuota","detalleError":str(error)}, safe=False)
+        # except Exception as error:
+        #     return JsonResponse({"status": False,"message":"Error al obtener la cuota","detalleError":str(error)}, safe=False)
 
 
 # Pagar una cuota
@@ -658,6 +673,87 @@ def pagarCuota(request):
             print(error)
             return JsonResponse({"status": False,"message":f"Error en el pago de {cuotaRequest.lower()}","detalleError":str(error)}, safe=False)
 
+def solicitudBajaCuota(request):
+    if request.method == "POST":
+        try: 
+            data = json.loads(request.body)
+            venta = Ventas.objects.get(pk=int(data.get("ventaID")))
+            cuota = data.get("cuota")
+
+            # Generar la URL de autorización
+            url_autorizar = request.build_absolute_uri(
+                reverse('sales:autorizar_baja_cuota', args=[venta.id, cuota])
+            )  
+
+            subject = "Solicitud de Cancelación de Pago"
+            template = "email_autorizacion_baja_cuota.html"
+            context = {
+                "venta": venta.nro_operacion, 
+                "cuota": cuota, 
+                "url_autorizar": url_autorizar
+            }
+            from_email = settings.EMAIL_HOST_USER
+            to_email = "lautaro.rodriguez553@gmail.com"
+
+            send_html_email(subject, template, context, from_email, to_email)
+
+            response_data = {
+                "message": "Solicitud enviada exitosamente",
+                "iconMessage": "/static/images/icons/checkMark.svg",
+                "status": True
+            }
+            return JsonResponse(response_data)
+        except Exception as error:
+            print(error)
+            response_data = {
+                "message": "Error al solicitar la cancelacion de la cuota",
+                "iconMessage": "/static/images/icons/error_icon.svg",
+                "status": False
+            }
+            return JsonResponse(response_data)
+        
+def darAutorizacionBajaCuota(request, ventaID, cuota):
+    venta = get_object_or_404(Ventas, id=ventaID)  # Obtiene la venta
+
+    # Aquí puedes actualizar un campo o lista en la BD para indicar que la cuota está autorizada
+    for c in venta.cuotas:  # Si `cuotas` es una lista
+        if c["cuota"] == cuota:
+            c["autorizada_para_anular"] = True  # Agregar un flag en la cuota
+            venta.save()
+            break  # Termina el loop una vez encontrada la cuota
+
+    return redirect("sales:pagina_confirmacion_baja_cuota")  # Redirige a una página de confirmación
+
+
+def darBajaCuota(request):
+    try: 
+        data = json.loads(request.body)
+        venta = Ventas.objects.get(pk=int(data.get("ventaID")))
+        cuota = data.get("cuota")# Obtiene la venta
+
+        venta.anularCuota(cuota)  # Anula la cuota
+
+        response_data = {
+                "message": "Cuota anulada exitosamente",
+                "iconMessage": "/static/images/icons/checkMark.svg",
+                "status": True
+        } 
+        return JsonResponse(response_data)
+
+    except Exception as error:
+        response_data = {
+                "message": "Error al anular la cuota",
+                "iconMessage": "/static/images/icons/error_icon.svg",
+                "status": False
+        }
+        return JsonResponse(response_data)
+
+    
+
+
+def pagina_confirmacion(request):
+    return render(request, "confirmacion_baja_cuota.html")
+    
 
 #Dar de baja una venta
 def darBaja(request,pk):
@@ -1802,6 +1898,7 @@ def requestMovimientos(request):
         paramsDict = (request.GET).dict()
         FILTROS_EXISTENTES = (
             ("tipo_mov","Tipo de movimiento"),
+            ("campania","Campaña"),
             ("metodoPago", "Metodo de pago"),
             ("fecha", "Fecha"),
             ("cobrador","Cobrador"),
