@@ -7,7 +7,7 @@ from django.core.validators import RegexValidator
 import json
 import datetime
 from dateutil.relativedelta import relativedelta
-from sales.utils import getAllCampaniaOfYear, getCampaniaActual, obtener_ultima_campania
+from sales.utils import getAllCampaniaOfYear, getCampaniaActual, getCampaniaByFecha, obtener_ultima_campania
 from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
 
@@ -53,6 +53,8 @@ class Ventas(models.Model):
                        "fechaDeVencimiento":"", 
                        "diasRetraso": 0,
                        "pagos":[],
+                       "autorizada_para_anular": False
+
                        })
         
         # Otras cuotas
@@ -96,8 +98,10 @@ class Ventas(models.Model):
                     "descuento": {'autorizado': "", 'monto': 0},
                     "diasRetraso": 0,
                     "interesPorMora": 0,
+                    "campaniaCuota":getCampaniaByFecha(fechaDeVencimiento),
                     "totalFinal": 0,
-                    "pagos":[]
+                    "pagos":[],
+                    "autorizada_para_anular": False
                 })
             
             if(cuotas[-1]["cuota"] == "Cuota 1"):
@@ -508,6 +512,7 @@ class Ventas(models.Model):
                 "fecha": datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),
                 "cobrador": cobrador,
                 "responsable_pago": responsable_pago,
+                "campaniaPago": getCampaniaActual()
             }
             cuotaSeleccionada["pagos"].append(pago)
             lista_montoDePagos = [item["monto"] for item in cuotaSeleccionada["pagos"]]
@@ -537,6 +542,10 @@ class Ventas(models.Model):
                 # sino tendria que mantener su estado actual
                 if(len(cuota["pagos"]) == 0): 
                     cuota["status"] = "pendiente"
+                    
+                cuota["pagos"] = []  # Agregar un flag en la cuota
+                cuota["status"] = "pendiente"
+                cuota["autorizada_para_anular"] = False
 
                 # Obtenemos la siguiente cuota y la bloqueamos
                 cuotaSiguiente = self.cuotas[self.cuotas.index(cuota)+1]

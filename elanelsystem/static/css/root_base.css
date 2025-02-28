@@ -298,6 +298,7 @@ ul.list-select-custom.open {
    justify-content: center;
    align-items: center;
    z-index: 1001;
+   background-color: #1b1a276b;
 }
 
 #loader {

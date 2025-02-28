@@ -221,6 +221,12 @@ def getAllCampaniaOfYear():
     meses_formato = [f'{mes} {anio_actual}' for mes in list_mesesStr]
     return meses_formato
 
+# Obtener la campania de acuerdo a la fecha que se pasa por parametro
+def getCampaniaByFecha(fecha):
+    list_mesesStr = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    mes = fecha.month
+    anio = fecha.year
+    return f'{list_mesesStr[mes-1]} {anio}'
 
 # Para obtener todas las compañas desde el inicio de la empresa (2021)
 def getTodasCampaniasDesdeInicio():
@@ -466,7 +472,7 @@ def dataStructureMovimientosExternos(sucursal=None):
             "monto": {'data': movs_externo.dinero, 'verbose_name': 'Monto'},
             "metodoPago": {'data': movs_externo.metodoPago, 'verbose_name': 'Método de Pago'},
             "agencia": {'data': movs_externo.agencia.pseudonimo, 'verbose_name': 'Sucursal'},
-            "ente": {'data': movs_externo.ente, 'verbose_name': 'Ente'},
+            "cobrador": {'data': movs_externo.cobrador, 'verbose_name': 'Cobrador'},
             "fecha": {'data': movs_externo.fecha, 'verbose_name': 'Fecha'},
             "campania": {'data': movs_externo.campania, 'verbose_name': 'Campaña'},
             "concepto": {'data': movs_externo.concepto, 'verbose_name': 'Concepto'},
@@ -619,22 +625,32 @@ def getDineroEntregado(cuotas):
 
 
 #region Para enviar correos electrónicos
+# def send_html_email(subject, template, context, from_email, to_email):
+#     """
+#     Envía un correo electrónico HTML.
+
+#     :param subject: Asunto del correo electrónico.
+#     :param template: Ruta al template HTML.
+#     :param context: Contexto para renderizar el template.
+#     :param from_email: Dirección de correo del remitente.
+#     :param to_email: Dirección de correo del destinatario.
+    
+#     """
+#     html_message = render_to_string(template, context)
+#     plain_message = strip_tags(html_message)
+    
+#     email = EmailMessage(subject, plain_message, from_email, [to_email])
+#     email.content_subtype = 'html'  # Define que el contenido es HTML
+#     email.send()
 def send_html_email(subject, template, context, from_email, to_email):
     """
-    Envía un correo electrónico HTML.
-
-    :param subject: Asunto del correo electrónico.
-    :param template: Ruta al template HTML.
-    :param context: Contexto para renderizar el template.
-    :param from_email: Dirección de correo del remitente.
-    :param to_email: Dirección de correo del destinatario.
-    
+    Envía un correo electrónico en formato HTML.
     """
-    html_message = render_to_string(template, context)
-    plain_message = strip_tags(html_message)
-    
-    email = EmailMessage(subject, plain_message, from_email, [to_email])
-    email.content_subtype = 'html'  # Define que el contenido es HTML
+    html_message = render_to_string(template, context)  # Renderizar el template con contexto
+    plain_message = strip_tags(html_message)  # Generar versión en texto plano
+
+    email = EmailMessage(subject, html_message, from_email, [to_email])
+    email.content_subtype = "html"  # Asegurar que se envía como HTML
     email.send()
 #endregion
 

@@ -421,7 +421,7 @@ function renderTemplateFormFilter(uniqueFechaId) {
                     <h3 class="labelInput">Cuenta de cobro</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="ente" class="filterInput multipleSelect input-select-custom" id="cobradorInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                      <input type="text" name="cobrador" class="filterInput multipleSelect input-select-custom" id="cobradorInput" placeholder="Seleccionar" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                         ${cuentas_de_cobro.map(cc => `
                             <li data-value="${cc.id}">${cc.nombre}</li>
@@ -447,7 +447,7 @@ function renderTemplateFormFilter(uniqueFechaId) {
                     <h3 class="labelInput">Tipo de Movimiento</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="ente" class="filterInput multipleSelect input-select-custom" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                      <input type="text" name="tipo_mov" class="filterInput multipleSelect input-select-custom" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                           <li data-value="Ingreso">Ingreso</li>
                           <li data-value="Egreso">Egreso</li>

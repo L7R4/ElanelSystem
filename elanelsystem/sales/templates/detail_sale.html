@@ -5,10 +5,15 @@
 {% load util %}
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/detail_sale.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+
 {% endblock css %}
 
 {% block content %}
-
+<div id="wrapperLoader">
+    <span id="loader"></span>
+</div>
 {% if not object.deBaja.status %}
 
 <div class="wrapperButtonManageVenta">
@@ -349,9 +354,9 @@
                         <ul class="cuotas_list">
                             {% for cuota in cuotas %}
                                 {% if cuota.bloqueada %}
-                                <div id="{{cuota.cuota}}" class ="cuota Bloqueado">
+                                <div id="{{cuota.cuota}}" class ="cuota bloqueado">
 
-                                    <div class="marca Bloqueado" style="background-image: url('{% static 'images/icons/iconBloqueado.png' %}')">
+                                    <div class="marca bloqueado" style="background-image: url('{% static 'images/icons/iconBloqueado.png' %}')">
                                     </div>
                                 {% else %}
                                 <div id="{{cuota.cuota}}" class ="cuota {{cuota.status|lower}}">
@@ -384,8 +389,8 @@
 
                     <form id="payCuotaForm" method ="POST" class="containerDetalleCuota">
                         {% csrf_token %}
-                        <input type="hidden" name="ventaID" id="ventaID"value="{{object.id}}">
-                        <input type="hidden" name="cuota" id="cuotaID">
+                        <input type="hidden" class="notForm" name="ventaID" id="ventaID"value="{{object.id}}">
+                        <input type="hidden" class="notForm" name="cuota" id="cuotaID">
 
                         <div class="buttonsActions">
                             <button type="button" class="" id="btnDescuentoCuota"><img src="{% static 'images/icons/descuentoIcon.png' %}" alt=""></button>
@@ -415,30 +420,54 @@
                             <p id="dineroRestante"></p>
                         </div>
 
-                        <div id="selectWrapperSelectCobrador" class="wrapperSelect">
-                            <h3 class="labelInput">Cobrador</h3>
+                        <div id="selectWrapperSelectCobrador" class="wrapperSelectFilter wrapperInput">
+                            <label class="labelInput">Cobrador</label>
                             <div class="containerInputAndOptions">
-                                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                                <input type="text" value="" name="cobrador" class = "input-select-custom onlySelect" id ="cobrador" placeholder ="Elija el cobrador" autocomplete="off" readonly>
+                                <img id="cobradorIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""/>
+                                
+                                <input type="hidden" name="cobrador" required="" autocomplete="off" maxlength="100" class="input-cobrador">
+                                
+                                <div class="onlySelect pseudo-input-select-wrapper">
+                                    <h3></h3>
+                                </div>
+
                                 <ul class="list-select-custom options">
-                                        {% for cobrador in cobradores %}
-                                            <li data-value="{{cobrador.alias}}">{{cobrador.alias}}</li>
-                                        {% endfor %}
+                                    {% for cobrador in cobradores %}
+                                    <li data-value="{{cobrador.alias}}">{{cobrador.alias}}</li>
+                                    {% endfor %}
                                 </ul>
                             </div>
                         </div>
 
-                        <div id="selectWrapperSelectTypePayments" class="wrapperSelect">
+
+                        {% comment %} <div id="selectWrapperSelectTypePayments" class="wrapperSelect">
                             <h3 class="labelInput">Metodo de pago</h3>
                             <div class="containerInputAndOptions">
                                 <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
                                 <input type="text" value="" name="metodoPago" class = "input-select-custom onlySelect" id="metodoPago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
                                 <ul class="list-select-custom options">
-                                        <li data-value="Efectivo">Efectivo</li>
-                                        <li data-value="Banco">Banco</li>
-                                        <li data-value="Mercado Pago">Mercado Pago</li>
-                                        <li data-value="Posnet">Posnet</li>
-                                        <li data-value="Transferencia">Transferencia</li>
+                                    {% for metodo in metodosDePagos %}
+                                        <li data-value="{{metodo.id}}">{{metodo.alias}}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div> {% endcomment %}
+
+                        <div id="selectWrapperSelectTypePayments" class="wrapperSelectFilter wrapperInput">
+                            <label class="labelInput">Metodo de pago</label>
+                            <div class="containerInputAndOptions">
+                                <img id="metodoPagoIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""/>
+                                
+                                <input type="hidden" name="metodoPago" required="" autocomplete="off" maxlength="100" class="input-metodoPago">
+                                
+                                <div class="onlySelect pseudo-input-select-wrapper">
+                                    <h3></h3>
+                                </div>
+
+                                <ul class="list-select-custom options">
+                                    {% for metodo in metodosDePagos %}
+                                        <li data-value="{{metodo.id}}">{{metodo.alias}}</li>
+                                    {% endfor %}
                                 </ul>
                             </div>
                         </div>
@@ -485,9 +514,14 @@
     
     var venta_id = {{object.id}}
     var deleteSaleUrl = "{{deleteSaleUrl}}"
+    var solicitudAnulacionCuotaUrl = "{{solicitudAnulacionCuotaUrl}}"
+    var confirmacionAnulacionCuotaUrl = "{{confirmacionAnulacionCuotaUrl}}"
+
     var crsf_token = '{%csrf_token%}'
 </script>
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
 
 <script src="{% static 'js/manejoCuotas.js' %}"></script>
 <script src="{% static 'js/selectAdjudicacion.js' %}"></script>

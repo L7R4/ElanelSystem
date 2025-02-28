@@ -43,6 +43,26 @@ function initSelect(selectWrapper) {
     }
 }
 
+
+// Función para limpiar los inputs
+function clearInputs(inputs) {
+    inputs.forEach(input => input.value = "");
+    let pseudo_input = document.querySelectorAll(".pseudo-input-select-wrapper > h3");
+    pseudo_input.forEach(input => {
+        input.textContent = ""
+        setPlaceholder(input, input.parentElement.previousElementSibling);
+    });
+
+    inputs.forEach(element => {
+        console.log(element)
+        let options = element.parentElement.parentElement.querySelector(".options");
+        console.log(options)
+        options.querySelectorAll("li.selected").forEach(el => el.classList.remove("selected"));
+    });
+
+}
+
+
 // Función para establecer placeholder
 function setPlaceholder(displayText, hiddenInput) {
     let placeholderText = hiddenInput.getAttribute("placeholder") || "Seleccionar";
