@@ -146,6 +146,7 @@ def filterMainManage(request,dataStructure):
     }
     
     params_dict_clear = convertirValoresALista(params_dict_clear) # Convertimos los valores  de cada clave a una lista
+    print(f"PArametros a filtrar: {params_dict_clear}")
     # print(params_dict_clear)
     # Mapeo de filtros a funciones
     possible_filters = {
@@ -167,6 +168,9 @@ def filterMainManage(request,dataStructure):
 
     for filter_name, filter_func in possible_filters.items():
         if filter_name in params_dict_clear:
+            print("WEpsss")
+            print(filter_name)
+
             filter_value = params_dict_clear[filter_name]
             try:
                 filtered_data = filter_func(filtered_data, filter_value)
@@ -307,14 +311,15 @@ def filterDataBy_date(data_structure, fecha):
 
 
 def filterDataBy_typePayments(dataStructure, typePayment):
-    return list(filter(lambda item:item["metodoPago"] in typePayment,dataStructure))
+    print(f"Data Structure: - - - - - \ {dataStructure}")
+    return list(filter(lambda item:item["metodoPago"]["data"] in typePayment,dataStructure))
 
 
 def filterDataBy_typeMovements(dataStructure, typeMovement):
-    return list(filter(lambda item:item["tipo_mov"] in typeMovement, dataStructure))
+    return list(filter(lambda item:item["tipo_mov"]["data"] in typeMovement, dataStructure))
 
 def filterDataBy_campania(dataStructure, campania):
-    return list(filter(lambda item:item["campaniaPago"] in campania, dataStructure))
+    return list(filter(lambda item:item["campaniaPago"]["data"] in campania, dataStructure))
 
 
 def filterDataBy_enteRecaudadores(dataStructure, typeEnteRecaudador):
@@ -326,7 +331,7 @@ def filterDataBy_enteRecaudadores(dataStructure, typeEnteRecaudador):
 
 
 def filterDataBy_cannonsMora(dataStructure, *args):
-    return list(filter(lambda item:item["status"] == "Atrasado",dataStructure))
+    return list(filter(lambda item:item["estado"] == "Atrasado",dataStructure))
 
 
 def filterDataBy_seller(dataStructure, seller):

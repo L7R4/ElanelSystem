@@ -658,3 +658,19 @@
 /* #endregion */
 
 /* #endregion */
+
+#filterForm{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+}
+#filterForm > div{
+    width: 20%;
+    min-width: 20rem;
+    max-width: 25rem;
+    height: 3rem;
+    
+}
+#filterForm > div .containerInputAndOptions{
+    height: unset;
+}

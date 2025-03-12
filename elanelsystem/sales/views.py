@@ -1891,7 +1891,7 @@ def requestMovimientos(request):
         
 
         movs = filterMainManage(response_data["request"], response_data["movs"])
-        
+        print(f"MOvimientos - - - - - \n {movs}")
         #endregion
         
         #region Logica para pasar al template los filtros aplicados a los movimientos

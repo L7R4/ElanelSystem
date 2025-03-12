@@ -398,9 +398,26 @@ function renderTemplateFormFilter(uniqueFechaId) {
                       <input type="text" name="metodoPago" class="filterInput input-select-custom multipleSelect" id="tipoDePago" placeholder="Seleccionar" autocomplete="off" readonly>
                       <ul class="list-select-custom options">
                             ${metodos_de_pago.map(mp => `
-                                <li data-value="${mp}">${mp}</li>
+                                <li data-value="${mp.id}">${mp.nombre}</li>
                             `).join('')}
                       </ul>
+                    </div>
+                </div>
+                <div id="selectWrapperSelectCobrador" class="wrapperSelectFilter wrapperInput">
+                    <label class="labelInput">Metodo de pago</label>
+                    <div class="containerInputAndOptions">
+                        <img id="cobradorIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""/>
+                        
+                        <input type="hidden" name="metodoPago" required="" autocomplete="off" maxlength="100" class="input-metodoPago">
+                        
+                        <div class="onlySelect pseudo-input-select-wrapper">
+                            <h3></h3>
+                        </div>
+                        <ul class="list-select-custom options">
+                            {% for cobrador in cobradores %}
+                            <li data-value="{{cobrador.alias}}">{{cobrador.alias}}</li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
                 
@@ -428,7 +445,7 @@ function renderTemplateFormFilter(uniqueFechaId) {
                         `).join('')}
                       </ul>
                     </div>
-                </div> 
+                </div>
                 
                 <div id="selectWrapperSelectCampania" class="wrapperTypeFilter">
                     <h3 class="labelInput">Campaña</h3>
