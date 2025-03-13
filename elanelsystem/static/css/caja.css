@@ -659,18 +659,33 @@
 
 /* #endregion */
 
-#filterForm{
+#filterForm {
     display: flex;
     flex-wrap: wrap;
     gap: 1.2rem;
 }
-#filterForm > div{
+
+#filterForm>div {
     width: 20%;
     min-width: 20rem;
     max-width: 25rem;
-    height: 3rem;
-    
+    /* height: 3rem; */
+
 }
-#filterForm > div .containerInputAndOptions{
+
+#filterForm>div .containerInputAndOptions {
     height: unset;
+}
+
+.pseudo-input-select-wrapper {
+    background-color: var(--third-color);
+}
+
+.containerCalendario>input {
+    font-weight: bold;
+}
+
+.modalContainerFilter .tingle-modal-box__footer>button {
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
 }

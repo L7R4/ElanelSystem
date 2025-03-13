@@ -238,11 +238,11 @@ function verDetalleCuota(cuotaSelected) {
     // Verifico si es la ultima cuota pagada para agregar el boton de "Anular cuota"
     if (cuotaSelected["buttonAnularCuota"]) {
         let anularButton = cuotaSelected["buttonAnularCuota"]
-        if (!document.querySelector("#anularButton")) {
+        if (!document.querySelector("#btnAnularCuota")) {
             wrapperVerDetallesPago.insertAdjacentHTML('beforeend', anularButton)
         }
     } else {
-        let anularButton = wrapperVerDetallesPago.querySelector("#anularButton")
+        let anularButton = wrapperVerDetallesPago.querySelector("#btnAnularCuota")
         if (anularButton) {
             anularButton.remove()
         }

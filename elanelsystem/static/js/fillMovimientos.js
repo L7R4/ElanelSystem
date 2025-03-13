@@ -9,6 +9,8 @@ let currentPage = 1;
 
 let inputsFilters = ""
 let urlForFilter = ""
+let appliedFilters = {};
+
 
 // Funcion para actualizar la informacion de los movimientos
 async function updateMovs(page) {
@@ -16,7 +18,7 @@ async function updateMovs(page) {
     console.log(dataMovs)
     movsPages.textContent = page + " / " + dataMovs["numbers_pages"] // Actualiza en la pagina en la que estamos
 
-    textFilters(dataMovs["filtros"]) // Actualiza los filtros que estamos usando para mostrar los movimientos
+    // textFilters(dataMovs["filtros"]) // Actualiza los filtros que estamos usando para mostrar los movimientos
     refillFilterValues()
     // Verifica si el numero de paginas solicitado es el maximo para blockear el boton de "siguiente"
     page == dataMovs["numbers_pages"] ? buttonNext.classList.add("blocked") : buttonNext.classList.remove("blocked");
@@ -77,7 +79,6 @@ buttonBack.addEventListener('click', () => {
 
 function createItemSegunMovimiento(mov) {
     let fechaRecortada = mov.fecha.data.slice(0, 10)
-    console.log(mov.monto.data)
     let stringForHTML = `<div><p class="fecha">${fechaRecortada}</p></div>`
     if ("concepto" in mov) {
         let conceptoStringRecortado = mov.concepto.slice(0, 18);
@@ -224,7 +225,6 @@ function modalViewMovimiento(mov, type_mov) {
 }
 
 function renderViewCannon(mov) {
-    console.log(mov)
     let stringForHTML = `
     <div class="cannon-info">
         <h2>Información del Cannon</h2>
@@ -384,18 +384,21 @@ function renderViewMovimiento(mov) {
 function renderTemplateFormFilter(uniqueFechaId) {
     return `
         <form method="GET" id="filterForm" class="filterForm">
-                <div class="wrapperCalendario wrapperTypeFilter">
+                <div class="wrapperCalendario wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Fecha</h3>
                     <div class="containerCalendario">
-                        <input id="${uniqueFechaId}" name="fecha" class="filterInput input-read-write-default" type="text" placeholder="Choose date" readonly />
+                        <input id="${uniqueFechaId}" name="fecha" class="pseudo-input-select-wrapper filterInput" type="text" placeholder="Choose date" readonly />
                     </div>
                 </div>
 
-                <div id="selectWrapperSelectTypePayments" class="wrapperTypeFilter">
+                <div id="selectWrapperSelectTypePayments" class="wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Metodo de pago</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="metodoPago" class="filterInput input-select-custom multipleSelect" id="tipoDePago" placeholder="Seleccionar" autocomplete="off" readonly>
+                      <input type="hidden" class="filterInput" name="metodoPago" id="tipoDePago" placeholder="Seleccionar" autocomplete="off" readonly>
+                      <div class="multipleSelect pseudo-input-select-wrapper">
+                            <h3></h3>
+                      </div>
                       <ul class="list-select-custom options">
                             ${metodos_de_pago.map(mp => `
                                 <li data-value="${mp.id}">${mp.nombre}</li>
@@ -403,29 +406,33 @@ function renderTemplateFormFilter(uniqueFechaId) {
                       </ul>
                     </div>
                 </div>
-                <div id="selectWrapperSelectCobrador" class="wrapperSelectFilter wrapperInput">
-                    <label class="labelInput">Metodo de pago</label>
+
+                <div id="selectWrapperSelectCobrador" class="wrapperSelectFilter wrapperInput wrapperSelectCustom">
+                    <label class="labelInput">Cuenta de cobro</label>
                     <div class="containerInputAndOptions">
                         <img id="cobradorIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""/>
                         
-                        <input type="hidden" name="metodoPago" required="" autocomplete="off" maxlength="100" class="input-metodoPago">
+                        <input type="hidden" class="filterInput" name="cobrador" required="" autocomplete="off" maxlength="100" class="input-metodoPago">
                         
-                        <div class="onlySelect pseudo-input-select-wrapper">
+                        <div class="multipleSelect pseudo-input-select-wrapper">
                             <h3></h3>
                         </div>
                         <ul class="list-select-custom options">
-                            {% for cobrador in cobradores %}
-                            <li data-value="{{cobrador.alias}}">{{cobrador.alias}}</li>
-                            {% endfor %}
+                        ${cuentas_de_cobro.map(ag => `
+                            <li data-value="${ag.id}">${ag.nombre}</li>
+                        `).join('')}
                         </ul>
                     </div>
                 </div>
                 
-                <div id="selectWrapperSelectAgency" class="wrapperTypeFilter">
+                <div id="selectWrapperSelectAgency" class="wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Agencia</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="agencia" class="filterInput multipleSelect input-select-custom" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                      <input type="hidden" class="filterInput" name="agencia" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                      <div class="multipleSelect pseudo-input-select-wrapper">
+                            <h3></h3>
+                        </div>
                       <ul class="list-select-custom options">
                         ${agencias.map(ag => `
                             <li data-value="${ag.id}">${ag.pseudonimo}</li>
@@ -434,11 +441,14 @@ function renderTemplateFormFilter(uniqueFechaId) {
                     </div>
                 </div>
 
-                <div id="selectWrapperSelectCobrador" class="wrapperTypeFilter">
+                <div id="selectWrapperSelectCobrador" class="wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Cuenta de cobro</h3>
                     <div class="containerInputAndOptions">
                       <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="cobrador" class="filterInput multipleSelect input-select-custom" id="cobradorInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                      <input type="hidden" class="filterInput" name="cobrador" id="cobradorInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                      <div class="multipleSelect pseudo-input-select-wrapper">
+                            <h3></h3>
+                        </div>
                       <ul class="list-select-custom options">
                         ${cuentas_de_cobro.map(cc => `
                             <li data-value="${cc.id}">${cc.nombre}</li>
@@ -447,29 +457,34 @@ function renderTemplateFormFilter(uniqueFechaId) {
                     </div>
                 </div>
                 
-                <div id="selectWrapperSelectCampania" class="wrapperTypeFilter">
+                <div id="selectWrapperSelectCampania" class="wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Campaña</h3>
                     <div class="containerInputAndOptions">
-                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="ente" class="filterInput multipleSelect input-select-custom" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
-                      <ul class="list-select-custom options">
-                        ${campanias.map(ca => `
-                            <li data-value="${ca}">${ca}</li>
-                        `).join('')}
-                      </ul>
+                        <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                        <input type="hidden" class="filterInput" name="ente" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                        <div class="multipleSelect pseudo-input-select-wrapper">
+                            <h3></h3>
+                        </div>
+                        <ul class="list-select-custom options">
+                            ${campanias.map(ca => `
+                                <li data-value="${ca}">${ca}</li>
+                            `).join('')}
+                        </ul>
                     </div>
                 </div>
 
-                <div id="selectWrapperSelectCampania" class="wrapperTypeFilter">
+                <div id="selectWrapperSelectCampania" class="wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Tipo de Movimiento</h3>
                     <div class="containerInputAndOptions">
-                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="tipo_mov" class="filterInput multipleSelect input-select-custom" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
-                      <ul class="list-select-custom options">
-                          <li data-value="Ingreso">Ingreso</li>
-                          <li data-value="Egreso">Egreso</li>
-
-                      </ul>
+                        <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                        <input type="hidden" class="filterInput" name="tipo_mov" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                        <div class="multipleSelect pseudo-input-select-wrapper">
+                              <h3></h3>
+                        </div>
+                        <ul class="list-select-custom options">
+                            <li data-value="Ingreso">Ingreso</li>
+                            <li data-value="Egreso">Egreso</li>
+                        </ul>
                     </div>
                 </div>          
             </form>
@@ -478,13 +493,16 @@ function renderTemplateFormFilter(uniqueFechaId) {
 }
 
 function modalFilter() {
+    console.log(appliedFilters)
+
     let modal = new tingle.modal({
         footer: true,
         closeMethods: ['overlay', 'button', 'escape'],
         cssClass: ['modalContainerFilter'],
+
         onOpen: function () {
             // enableAuditarButton()
-            cargarListenersEnInputsMultipleSelect()
+            initMultipleCustomSelects()
         },
         onClose: function () {
             deleteCalendarDOM()
@@ -498,15 +516,15 @@ function modalFilter() {
     template = renderTemplateFormFilter(uniqueFechaId)
     modal.setContent(template);
     initSelectFecha(document.getElementById(`${uniqueFechaId}`))
-
+    ordersZindexSelects()
+    fillFormWithAppliedFilters()
 
     inputsFilters = document.querySelectorAll('.filterInput')
+
     // add a button
     modal.addFooterBtn('Filtrar', 'tingle-btn tingle-btn--primary add-button-default', async function () {
         let response = await movsGetFilter(inputsFilters)
-
-        console.log(response);
-
+        storeAppliedFilters(inputsFilters)
         if (response.status) {
             console.log("Salio todo bien");
             // hiddenLoader();
@@ -535,6 +553,8 @@ function modalFilter() {
 // Funcion para obtener todos los movimientos por pagina 
 async function movsGetFilter(inputs) {
     let url = createParamsUrl(inputs)
+    console.log(`inputs: ${inputs}`)
+    console.log(`url: ${url}`)
     urlForFilter = url
 
     const response = await fetch(`/requestmovs/?page=1${urlForFilter}`, {
@@ -579,3 +599,25 @@ function createParamsUrl(inputs) {
     })
     return urlParams
 }
+
+
+function storeAppliedFilters(inputs) {
+    appliedFilters = {};
+    inputs.forEach(input => {
+        if (input.value.trim() !== "") {
+            let textElement = input.parentElement.querySelector('h3');
+            appliedFilters[input.name] = { "data": input.value, "text": textElement.textContent };
+        }
+    });
+}
+
+function fillFormWithAppliedFilters() {
+    document.querySelectorAll('.filterInput').forEach(input => {
+        if (appliedFilters[input.name]) {
+            let textElement = input.parentElement.querySelector('h3');
+            input.value = appliedFilters[input.name].data;
+            textElement.textContent = appliedFilters[input.name].text;
+        }
+    });
+}
+
