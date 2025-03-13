@@ -711,7 +711,7 @@ def solicitudBajaCuota(request):
                 "status": False
             }
             return JsonResponse(response_data)
-        
+   
 def darAutorizacionBajaCuota(request, ventaID, cuota):
     venta = get_object_or_404(Ventas, id=ventaID)  # Obtiene la venta
 
@@ -723,7 +723,6 @@ def darAutorizacionBajaCuota(request, ventaID, cuota):
             break  # Termina el loop una vez encontrada la cuota
 
     return redirect("sales:pagina_confirmacion_baja_cuota")  # Redirige a una página de confirmación
-
 
 def darBajaCuota(request):
     try: 
@@ -747,9 +746,6 @@ def darBajaCuota(request):
                 "status": False
         }
         return JsonResponse(response_data)
-
-    
-
 
 def pagina_confirmacion(request):
     return render(request, "confirmacion_baja_cuota.html")
@@ -1872,7 +1868,7 @@ def requestMovimientos(request):
     try:
         #region Logica para obtener los movimientos segun los filtros aplicados 
         agencia = request.user.sucursales.first().pseudonimo if not request.GET.get("agencia") else request.GET.get("agencia") # Si no hay agencia seleccionada, se coloca la primera sucursal del usuario
-        print(request)
+        # print(request)
         cannons = dataStructureCannons(agencia)
         cannons = list(filter(lambda x: x["estado"]["data"] in ["pagado", "parcial"], cannons))
         
@@ -1891,7 +1887,7 @@ def requestMovimientos(request):
         
 
         movs = filterMainManage(response_data["request"], response_data["movs"])
-        print(f"MOvimientos - - - - - \n {movs}")
+        # print(f"MOvimientos - - - - - \n {movs}")
         #endregion
         
         #region Logica para pasar al template los filtros aplicados a los movimientos
@@ -1908,7 +1904,7 @@ def requestMovimientos(request):
 
         # Extrae las tuplas segun los querys filtrados en clearContext
         filtros_activados = list(filter(lambda x: x[0] in clearContext, FILTROS_EXISTENTES))
-        
+        print(f'Filtros: {filtros_activados}')
         # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
         # Es lo mismo que decir clearContext["metodoPago"], etc, etc
         filtros = list(map(lambda x: {x[1]: clearContext[x[0]]}, filtros_activados))
@@ -1949,7 +1945,7 @@ def requestMovimientos(request):
             movs = paginator.page(paginator.num_pages)
         #endregion -----------------------------------------------------
 
-        return JsonResponse({"data": list(movs), "numbers_pages": paginator.num_pages,"filtros":filtros,"estadoCuenta":resumenEstadoCuenta,"status": True}, safe=False)
+        return JsonResponse({"data": list(movs), "numbers_pages": paginator.num_pages,"filtros":filtros_activados,"estadoCuenta":resumenEstadoCuenta,"status": True}, safe=False)
     except Exception as e:
         print(e)
         return JsonResponse({"data": [], "numbers_pages": 0,"filtros":[],"estadoCuenta":{},"status": False}, safe=False)

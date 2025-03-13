@@ -1,7 +1,7 @@
 const { Calendar } = window.VanillaCalendarPro; // Desestructurar el constructor
 
 function initSelectFecha(input) {
-    console.log(input);
+    input.placeholder = "Seleccionar"; // Volver a mostrar el placeholder
 
     // Eliminar calendarios previos si existen
     deleteCalendarDOM()
@@ -13,7 +13,6 @@ function initSelectFecha(input) {
         selectionDatesMode: 'multiple-ranged',
 
         onClickDate(self) {
-            console.log(self.context.selectedDates);
             if (self.context.selectedDates.length > 1) {
                 self.context.selectedDates.sort((a, b) => new Date(a) - new Date(b));
                 input.value = `${reverseDate(self.context.selectedDates[0])} — ${reverseDate(self.context.selectedDates[self.context.selectedDates.length - 1])}`;
