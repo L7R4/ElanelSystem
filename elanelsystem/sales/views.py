@@ -658,6 +658,7 @@ def pagarCuota(request):
             metodoPago = data.get("metodoPago")
             formaPago = data.get("typePayment") # Si es parcial o total
             cobrador = data.get('cobrador')
+            print(f"Cobrador: {cobrador}")
             monto = 0
             if(formaPago =="total"):
                 cuota = list(filter(lambda x:x["cuota"] == cuotaRequest,venta.cuotas))[0]
@@ -1870,6 +1871,7 @@ def requestMovimientos(request):
         agencia = request.user.sucursales.first().pseudonimo if not request.GET.get("agencia") else request.GET.get("agencia") # Si no hay agencia seleccionada, se coloca la primera sucursal del usuario
         # print(request)
         cannons = dataStructureCannons(agencia)
+        print(cannons)
         cannons = list(filter(lambda x: x["estado"]["data"] in ["pagado", "parcial"], cannons))
         
         allMovimientos = dataStructureMovimientosExternos(agencia) + cannons

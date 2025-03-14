@@ -19,7 +19,7 @@ async function updateMovs(page) {
     movsPages.textContent = page + " / " + dataMovs["numbers_pages"] // Actualiza en la pagina en la que estamos
 
     // textFilters(dataMovs["filtros"]) // Actualiza los filtros que estamos usando para mostrar los movimientos
-    refillFilterValues()
+    
     // Verifica si el numero de paginas solicitado es el maximo para blockear el boton de "siguiente"
     page == dataMovs["numbers_pages"] ? buttonNext.classList.add("blocked") : buttonNext.classList.remove("blocked");
 
@@ -124,42 +124,6 @@ function textFilters(dicc) {
         }
         wrapperFiltroTexto.innerHTML = stringForHTML
     }
-}
-
-
-function refillFilterValues() {
-    const queryString = window.location.search;
-    const params = new URLSearchParams(queryString);
-
-
-    document.querySelectorAll('#filterForm input[name]').forEach(input => {
-        const paramName = input.name; // Nombre del parámetro del input
-        const paramValue = params.get(paramName); // Obtiene el valor del parámetro de la URL
-
-        // Si existe un valor para ese parámetro, lo asigna al input
-        if (paramValue) {
-            input.value = paramValue;
-
-            // Si el input es de tipo radio, selecciona el radio button correspondiente
-            if (input.type === 'radio' && input.value === paramValue) {
-                input.checked = true;
-            }
-
-            // Si el input es de tipo texto (como los menús desplegables), actualiza el menú
-            if (input.type === 'text') {
-                const list = input.nextElementSibling; // La lista desplegable asociada
-                if (list) {
-                    list.querySelectorAll('li').forEach(li => {
-                        if (li.getAttribute('data-value') === paramValue) {
-                            li.classList.add('selected');
-                        } else {
-                            li.classList.remove('selected');
-                        }
-                    });
-                }
-            }
-        }
-    });
 }
 
 function modalViewMovimiento(mov, type_mov) {
@@ -440,22 +404,6 @@ function renderTemplateFormFilter(uniqueFechaId) {
                       </ul>
                     </div>
                 </div>
-
-                <div id="selectWrapperSelectCobrador" class="wrapperTypeFilter wrapperSelectCustom">
-                    <h3 class="labelInput">Cuenta de cobro</h3>
-                    <div class="containerInputAndOptions">
-                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="hidden" class="filterInput" name="cobrador" id="cobradorInput" placeholder="Seleccionar" autocomplete="off" readonly>
-                      <div class="multipleSelect pseudo-input-select-wrapper">
-                            <h3></h3>
-                        </div>
-                      <ul class="list-select-custom options">
-                        ${cuentas_de_cobro.map(cc => `
-                            <li data-value="${cc.id}">${cc.nombre}</li>
-                        `).join('')}
-                      </ul>
-                    </div>
-                </div>
                 
                 <div id="selectWrapperSelectCampania" class="wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Campaña</h3>
@@ -502,7 +450,7 @@ function modalFilter() {
 
         onOpen: function () {
             // enableAuditarButton()
-            initMultipleCustomSelects()
+            initMultipleCustomSelects(appliedFilters)
         },
         onClose: function () {
             deleteCalendarDOM()
@@ -517,10 +465,9 @@ function modalFilter() {
     modal.setContent(template);
     initSelectFecha(document.getElementById(`${uniqueFechaId}`))
     ordersZindexSelects()
-    fillFormWithAppliedFilters()
 
     inputsFilters = document.querySelectorAll('.filterInput')
-
+    
     // add a button
     modal.addFooterBtn('Filtrar', 'tingle-btn tingle-btn--primary add-button-default', async function () {
         let response = await movsGetFilter(inputsFilters)
@@ -607,16 +554,6 @@ function storeAppliedFilters(inputs) {
         if (input.value.trim() !== "") {
             let textElement = input.parentElement.querySelector('h3');
             appliedFilters[input.name] = { "data": input.value, "text": textElement.textContent };
-        }
-    });
-}
-
-function fillFormWithAppliedFilters() {
-    document.querySelectorAll('.filterInput').forEach(input => {
-        if (appliedFilters[input.name]) {
-            let textElement = input.parentElement.querySelector('h3');
-            input.value = appliedFilters[input.name].data;
-            textElement.textContent = appliedFilters[input.name].text;
         }
     });
 }

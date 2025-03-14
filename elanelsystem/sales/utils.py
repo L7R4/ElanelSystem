@@ -342,7 +342,7 @@ def getInfoBaseCannon(venta, cuota):
 
 
 def dataStructureCannons(sucursal=None):
-    from sales.models import Ventas
+    from sales.models import Ventas, MetodoPago, CuentaCobranza
     from elanelsystem.views import convertirValoresALista
     
     ventas = ""
@@ -364,10 +364,10 @@ def dataStructureCannons(sucursal=None):
             if cuota["status"] in ["pagado", "parcial", "atrasado"]:
                 for pago in cuota["pagos"]:
                     mov = {**getInfoBaseCannon(venta, cuota), **{
-                        'metodoPago': {'data': pago['metodoPago'], 'verbose_name': 'Método de Pago'},
+                        'metodoPago': {'data': MetodoPago.objects.filter(id=int(pago['metodoPago']))[0].alias, 'verbose_name': 'Método de Pago'},
                         'monto': {'data': pago['monto'], 'verbose_name': 'Monto Pagado'},
                         'fecha': {'data': pago['fecha'], 'verbose_name': 'Fecha de Pago'},
-                        'cobrador': {'data': pago['cobrador'], 'verbose_name': 'Cobrador'},
+                        'cobrador': {'data': CuentaCobranza.objects.filter(id=int(pago['cobrador']))[0].alias, 'verbose_name': 'Cobrador'},
                     }}
                     cuotas_data.append(mov)
             else:
