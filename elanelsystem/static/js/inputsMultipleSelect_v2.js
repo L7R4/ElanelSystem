@@ -12,21 +12,26 @@ function initMultipleCustomSelects(preValues) {
 
 // Configurar un select personalizado con valores previos opcionales
 function initSelect(selectWrapper, preValues) {
+    console.log("Valores previos:")
+    console.log(preValues)
     let iconDisplay = selectWrapper.parentElement.querySelector(".iconDesplegar");
     let hiddenInput = selectWrapper.previousElementSibling;
     let displayText = selectWrapper.querySelector("h3");
     let optionsList = selectWrapper.nextElementSibling;
 
-    // Si se pasan valores previos, se asignan al input y al h3
-    if (preValues && preValues.data) {
-        hiddenInput.value = preValues.data;
-        displayText.textContent = preValues.text || "";
+    // Si se pasan valores previos y existe para este input (usamos el atributo name para identificarlo)
+    if (preValues && Object.keys(preValues).length > 0 && preValues[hiddenInput.name]) {
+        let preValue = preValues[hiddenInput.name];
+        hiddenInput.value = preValue.data || "";
+        displayText.textContent = preValue.text || "";
         if (displayText.textContent.trim() !== "") {
             displayText.classList.remove("placeholder");
         }
+        console.log("Valores previos asignados para", hiddenInput.name);
     } else {
         // Establecer placeholder inicial
         setPlaceholder(displayText, hiddenInput);
+        console.log("No hay valores previos para", hiddenInput.name);
     }
 
     // Abrir/cerrar opciones al hacer clic en el select o el icono
@@ -50,7 +55,7 @@ function initSelect(selectWrapper, preValues) {
     // Lógica para preseleccionar valores al cargar la página
     let selectedValues = hiddenInput.value.trim().split(" - ").filter(Boolean);
     let selectedValuesText = displayText.textContent.trim().split(" - ").filter(Boolean);
-    console.log(selectedValuesText);
+    // console.log(selectedValuesText);
     if (selectedValues.length) {
         selectedValues.forEach(value => {
             let selectedOption = optionsList.querySelector(`li[data-value="${value}"]`);

@@ -165,11 +165,12 @@ def filterMainManage(request,dataStructure):
     # Aplicamos los filtros en el orden que se reciban en los parámetros
 
     filtered_data = dataStructure  # Usamos la estructura inicial
+    # print(f"Data Structure: - - - - - \ {filtered_data}")
 
     for filter_name, filter_func in possible_filters.items():
         if filter_name in params_dict_clear:
-            print("WEpsss")
-            print(filter_name)
+            # print("WEpsss")
+            # print(filter_name)
 
             filter_value = params_dict_clear[filter_name]
             try:
@@ -311,7 +312,6 @@ def filterDataBy_date(data_structure, fecha):
 
 
 def filterDataBy_typePayments(dataStructure, typePayment):
-    print(f"Data Structure: - - - - - \ {dataStructure}")
     return list(filter(lambda item:item["metodoPago"]["data"] in typePayment,dataStructure))
 
 
@@ -323,11 +323,11 @@ def filterDataBy_campania(dataStructure, campania):
 
 
 def filterDataBy_enteRecaudadores(dataStructure, typeEnteRecaudador):
-    return list(filter(lambda item: item.get("cobrador") in typeEnteRecaudador or item.get("ente") in typeEnteRecaudador, dataStructure))
-
-
-# def filterDataBy_agency(dataStructure, agency):
-#     pass
+    return list(filter(
+        lambda item: (item.get("cobrador", {}).get("data") in typeEnteRecaudador) or 
+                     (item.get("ente", {}).get("data") in typeEnteRecaudador),
+        dataStructure
+    ))
 
 
 def filterDataBy_cannonsMora(dataStructure, *args):
