@@ -1,0 +1,159 @@
+@page {
+    margin: 15mm;
+}
+
+html {
+    box-sizing: border-box;
+    font-size: 62.5%;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    font-feature-settings: "pnum" on, "lnum" on;
+}
+
+body {
+    border: 1px solid #000;
+    padding: 4rem 3rem;
+}
+
+/* #region Header */
+.recibo-header {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.recibo-header-image {
+    width: 30rem;
+}
+
+.recibo-header-image>img {
+    width: 100%;
+}
+
+.recibo-header-numero {
+    padding: 0 3rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.recibo-container>.recibo-header-numero>h1 {
+    font-family: Arial, sans-serif;
+    font-size: 50px;
+    white-space: nowrap;
+}
+
+/* #endregion */
+
+/* #region Sub Header */
+.recibo-sub_header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+
+
+}
+
+.recibo-sub_header>div {
+    width: 30%;
+}
+
+.recibo-sub_header-type_receipt {
+    text-align: center;
+}
+
+.recibo-sub_header-date_cuit {
+    display: flex;
+    align-items: center;
+}
+
+.recibo-sub_header-date_cuit>h4 {
+    margin-right: 1rem;
+}
+
+.recibo-sub_header-date_cuit-date_wrapper {
+    text-align: center;
+}
+
+/* #endregion */
+
+/* #region Info Cliente */
+.recibo-info_cliente {
+    width: 100%;
+}
+
+.recibo-info_cliente>div {
+    width: 100%;
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.recibo-info_cliente>div>h3 {
+    width: fit-content;
+}
+
+.recibo-info_cliente>div>p {
+    border-bottom: 1px solid #000;
+    width: 90%;
+    /* height: 0px; */
+    /* height: 1px; */
+}
+
+/* #endregion */
+
+/* #region Mas Info Cliente */
+.recibo-categoria_fiscal-cuit_wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+.recibo-categoria_fiscal {
+    border: 2px solid #000;
+    width: 40rem;
+    padding: 1rem;
+}
+
+.recibo-categoria_fiscal-type {
+    width: 40rem;
+    display: flex;
+    align-items: center;
+}
+
+.recibo-categoria_fiscal-type-item {
+    margin-left: 1rem;
+    display: flex;
+    justify-content: center;
+    width: 15%;
+    align-items: center;
+    /* width: 8rem; */
+}
+
+.recibo-categoria_fiscal-type-item:first-child() {
+    margin-left: 0;
+}
+
+
+.recibo-categoria_fiscal-type-item>div {
+    width: 1.2rem;
+    height: 1rem;
+    background-color: #0000002f;
+    border: 1px solid #000;
+    margin-left: .3rem;
+}
+
+.recibo-categoria_fiscal-type-item>h6 {
+    white-space: nowrap;
+    /* width: 80%; */
+}
+
+.recibo-cuit_wrapper {
+    border: 2px solid #000;
+    width: 15rem;
+    padding: 1rem;
+}
+
+/* #endregion */

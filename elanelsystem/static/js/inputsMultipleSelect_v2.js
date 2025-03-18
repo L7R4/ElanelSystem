@@ -1,19 +1,20 @@
 // Inicializar los selects personalizados
-function initMultipleCustomSelects(preValues) {
+function initMultipleCustomSelects(preValues = {}) {
     document
         .querySelectorAll(".containerInputAndOptions > .multipleSelect.pseudo-input-select-wrapper")
         .forEach(selectWrapper => {
             // Si se tiene algún valor previo, se lo puede pasar como segundo argumento.
             // Por ejemplo: { data: 'valor1 - valor2', text: 'Valor 1 - Valor 2' }
             // Si no, se pasa undefined.
-            initSelect(selectWrapper, preValues);
+            initMultipleSelect(selectWrapper, preValues);
         });
+    ordersZindexSelects()
+
 }
 
 // Configurar un select personalizado con valores previos opcionales
-function initSelect(selectWrapper, preValues) {
-    console.log("Valores previos:")
-    console.log(preValues)
+function initMultipleSelect(selectWrapper, preValues = {}) {
+
     let iconDisplay = selectWrapper.parentElement.querySelector(".iconDesplegar");
     let hiddenInput = selectWrapper.previousElementSibling;
     let displayText = selectWrapper.querySelector("h3");
@@ -27,11 +28,11 @@ function initSelect(selectWrapper, preValues) {
         if (displayText.textContent.trim() !== "") {
             displayText.classList.remove("placeholder");
         }
-        console.log("Valores previos asignados para", hiddenInput.name);
+        // console.log("Valores previos asignados para", hiddenInput.name);
     } else {
         // Establecer placeholder inicial
         setPlaceholder(displayText, hiddenInput);
-        console.log("No hay valores previos para", hiddenInput.name);
+        // console.log("No hay valores previos para", hiddenInput.name);
     }
 
     // Abrir/cerrar opciones al hacer clic en el select o el icono
@@ -41,7 +42,7 @@ function initSelect(selectWrapper, preValues) {
     // Delegación de eventos para seleccionar múltiples opciones
     optionsList.addEventListener("click", event => {
         if (event.target.tagName === "LI") {
-            toggleOption(hiddenInput, displayText, event.target, optionsList);
+            toggleOption_multipleSelect(hiddenInput, displayText, event.target, optionsList);
         }
     });
 
@@ -55,8 +56,10 @@ function initSelect(selectWrapper, preValues) {
     // Lógica para preseleccionar valores al cargar la página
     let selectedValues = hiddenInput.value.trim().split(" - ").filter(Boolean);
     let selectedValuesText = displayText.textContent.trim().split(" - ").filter(Boolean);
-    // console.log(selectedValuesText);
-    if (selectedValues.length) {
+    console.log("wepss");
+
+    console.log(selectedValues);
+    if (selectedValues.length > 0) {
         selectedValues.forEach(value => {
             let selectedOption = optionsList.querySelector(`li[data-value="${value}"]`);
             if (selectedOption) {
@@ -65,6 +68,7 @@ function initSelect(selectWrapper, preValues) {
         });
         updateDisplayText(displayText, selectedValuesText);
     }
+    ordersZindexSelects()
 }
 
 // Función para establecer placeholder
@@ -92,7 +96,7 @@ function closeOptionsList(optionsList, iconDisplay) {
 }
 
 // Función para seleccionar/deseleccionar múltiples opciones
-function toggleOption(hiddenInput, displayText, option, optionsList) {
+function toggleOption_multipleSelect(hiddenInput, displayText, option, optionsList) {
     let selectedValues = hiddenInput.value ? hiddenInput.value.split(" - ") : [];
 
     // Si el h3 muestra el placeholder, se borra para empezar a mostrar valores seleccionados

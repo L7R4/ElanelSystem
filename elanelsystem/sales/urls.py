@@ -35,6 +35,7 @@ urlpatterns = [
     path('ventas/detalle_venta/autorizar-baja/<int:ventaID>/<str:cuota>/', darAutorizacionBajaCuota, name='autorizar_baja_cuota'),
     path('ventas/detalle_venta/pagina_confirmacion_baja_cuota/', pagina_confirmacion, name='pagina_confirmacion_baja_cuota'),
     path('ventas/detalle_venta/confirma-baja-cuota/', darBajaCuota, name='darBajaCuota'),
+
     
     #endregion ----------------------------------------------------------
 
@@ -50,6 +51,7 @@ urlpatterns = [
     path("ventas/pdf/arqueo/<int:pk>/",viewPDFArqueo,name="arqueoPDF"),
     path('ventas/pdf/informe/', viewsPDFInforme, name='informePDF'),
     path('ventas/pdf/informesend/', viewPDFInformeAndSend, name='informeSend'),
+    path('ventas/detalle_venta/obtener-recibo-cuota/', viewPDFReciboCuota, name='getReciboCuota'),
     #endregion ---------------------------------------------------------
         
     #region URLs PostVentas --------------------------------------------

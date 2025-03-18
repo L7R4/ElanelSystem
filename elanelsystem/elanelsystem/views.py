@@ -171,8 +171,9 @@ def filterMainManage(request,dataStructure):
         if filter_name in params_dict_clear:
             # print("WEpsss")
             # print(filter_name)
-
+            print(f"Filtro : {filter_name}")
             filter_value = params_dict_clear[filter_name]
+            print(f"valor: {filter_value}")
             try:
                 filtered_data = filter_func(filtered_data, filter_value)
             except Exception as e:
@@ -283,7 +284,8 @@ class ExportarExcelView(generic.View):
 def filterDataBy_date(data_structure, fecha):
     # Verificamos el formato de la fecha y lo dividimos en fechaInicio y fechaFinal
     try:
-        fechas = fecha.split("—")
+        fechas = fecha[0].split("—")
+        # print(f"La fecha es {fechas}")
         fecha_inicio_str = fechas[0].strip() + " 00:00"
         fecha_final_str = fechas[1].strip() + " 00:00" if len(fechas) > 1 else None
         # print(f'- - - - - - -Fecha final: {fecha_final_str}')
@@ -295,7 +297,7 @@ def filterDataBy_date(data_structure, fecha):
     data_filtered = []
     
     for item in data_structure:
-        fecha_str = item.get("fecha", None)
+        fecha_str = item.get("fecha", None).get("data",None)
         if not fecha_str:
             continue
 

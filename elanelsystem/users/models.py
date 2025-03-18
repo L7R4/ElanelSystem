@@ -15,7 +15,8 @@ class Sucursal(models.Model):
     sucursal_central = models.BooleanField(default=False)
     pseudonimo = models.CharField("Pseudonimo", max_length=100, default="")
     gerente = models.ForeignKey('users.Usuario',on_delete=models.SET_NULL,related_name="gerente",blank=True,null=True)
-
+    tel_ref = models.CharField("Telefono de referencia",max_length =15, blank=True, null=True)
+    email_ref = models.CharField("Email de referencia",max_length =60, blank=True, null=True)
 
     def __str__(self):
         return self.pseudonimo

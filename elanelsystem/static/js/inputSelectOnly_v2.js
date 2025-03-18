@@ -1,17 +1,33 @@
 // Inicializar los selects personalizados
-function initCustomSelects() {
-    document.querySelectorAll(".containerInputAndOptions > .onlySelect.pseudo-input-select-wrapper").forEach(initSelect);
+function initCustomSingleSelects(preValues = {}) {
+    document.querySelectorAll(".containerInputAndOptions > .onlySelect.pseudo-input-select-wrapper").forEach(selectWrapper => {
+        initSingleSelect(selectWrapper, preValues);
+    });
+    console.log("wepsd")
+    ordersZindexSelects()
 }
 
 // Configurar un select personalizado
-function initSelect(selectWrapper) {
+function initSingleSelect(selectWrapper, preValues = {}) {
     let iconDisplay = selectWrapper.parentElement.querySelector(".iconDesplegar"); // Icono desplegable
     let hiddenInput = selectWrapper.previousElementSibling; // Input hidden
     let displayText = selectWrapper.querySelector("h3"); // H3 que muestra la opción seleccionada
     let optionsList = selectWrapper.nextElementSibling; // UL con opciones
 
-    // Establecer placeholder inicial
-    setPlaceholder(displayText, hiddenInput);
+    // Si se pasan valores previos y existe para este input (usamos el atributo name para identificarlo)
+    if (preValues && Object.keys(preValues).length > 0 && preValues[hiddenInput.name]) {
+        let preValue = preValues[hiddenInput.name];
+        hiddenInput.value = preValue.data || "";
+        displayText.textContent = preValue.text || "";
+        if (displayText.textContent.trim() !== "") {
+            displayText.classList.remove("placeholder");
+        }
+        // console.log("Valores previos asignados para", hiddenInput.name);
+    } else {
+        // Establecer placeholder inicial
+        setPlaceholder(displayText, hiddenInput);
+        // console.log("No hay valores previos para", hiddenInput.name);
+    }
 
     // Abrir/cerrar opciones al hacer clic en el select o el icono
     selectWrapper.addEventListener("click", () => toggleOptionsList(optionsList, iconDisplay, true));
@@ -20,7 +36,7 @@ function initSelect(selectWrapper) {
     // Delegación de eventos para seleccionar una opción
     optionsList.addEventListener("click", event => {
         if (event.target.tagName === "LI") {
-            toggleOption(hiddenInput, displayText, event.target, optionsList);
+            toggleOption_singleSelect(hiddenInput, displayText, event.target, optionsList);
         }
     });
 
@@ -33,7 +49,8 @@ function initSelect(selectWrapper) {
 
     // Lógica para preseleccionar el valor al cargar la página
     let selectedValue = hiddenInput.value.trim(); // Obtiene el valor actual del input hidden
-    if (selectedValue) {
+
+    if (selectedValue.length > 0) {
         let selectedOption = optionsList.querySelector(`li[data-value="${selectedValue}"]`);
         if (selectedOption) {
             selectedOption.classList.add("selected"); // Marca la opción como seleccionada
@@ -41,6 +58,8 @@ function initSelect(selectWrapper) {
             displayText.classList.remove("placeholder");
         }
     }
+    ordersZindexSelects()
+
 }
 
 
@@ -88,7 +107,7 @@ function closeOptionsList(optionsList, iconDisplay) {
 }
 
 // Función para seleccionar una opción
-function toggleOption(hiddenInput, displayText, option, optionsList) {
+function toggleOption_singleSelect(hiddenInput, displayText, option, optionsList) {
     let selectedText = option.textContent;
     let selectedValue = option.getAttribute("data-value") || selectedText;
 
@@ -110,4 +129,4 @@ function toggleOption(hiddenInput, displayText, option, optionsList) {
 }
 
 // Ejecutar la función en la carga del DOM
-document.addEventListener("DOMContentLoaded", initCustomSelects);
+document.addEventListener("DOMContentLoaded", initCustomSingleSelects);

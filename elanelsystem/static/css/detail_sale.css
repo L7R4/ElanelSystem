@@ -848,6 +848,12 @@
     margin-left: auto;
 } */
 
+.buttonsActions>button#btnReciboCuota {
+    background: var(--background-color);
+    padding: .3rem;
+    border-radius: .4rem;
+}
+
 .buttonsActions>button>img {
     width: 100%;
 }

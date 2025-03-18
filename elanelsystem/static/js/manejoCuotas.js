@@ -150,6 +150,9 @@ cuotasWrapper.forEach(cuota => {
             if (data["buttonCancelacionDePago"]) {
                 habilitacionDeCancelacionPago(data["buttonCancelacionDePago"], true)
             }
+            if (data["buttonObtenerRecibo"]) {
+                habilitarButtonRecibo(data["buttonObtenerRecibo"], data)
+            }
 
         } else {
             payCuotaForm.classList.add("active")
@@ -163,6 +166,28 @@ cuotasWrapper.forEach(cuota => {
 
     })
 });
+
+// Funcion para solicitar el recibo de mi cuota pagada
+function getRecibo(data) {
+    console.log(data)
+    window.open(obtenerReciboCuotaUrl, "_blank");
+}
+
+function habilitarButtonRecibo(button, data) {
+    if (document.querySelector("#btnReciboCuota")) {
+        document.querySelector("#btnReciboCuota").remove()
+    }
+
+    const wrapperButtonsActions = document.querySelector("#wrapperVerDetallesPago .buttonsActions")
+    const btnBajaCuota = wrapperButtonsActions.querySelector("#btnBajaCuota")
+
+    btnBajaCuota.insertAdjacentHTML("beforebegin", button)
+
+    document.querySelector("#btnReciboCuota").addEventListener("click", () => {
+        console.log("!wepsa")
+        getRecibo(data)
+    })
+}
 
 //Funcion confirmar la anulacion de una cuota
 async function anularCuota() {
