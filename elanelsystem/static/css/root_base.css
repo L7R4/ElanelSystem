@@ -444,25 +444,46 @@ ul.list-select-custom.open {
 
 /* #region Modificaciones de la libreria para seleccionar la fecha */
 
-.vc_multipleRango {
+.vc_multipleRango,
+.vc_singleCalendar {
    background-color: var(--background-color);
    z-index: 10000;
 }
 
 .vc_multipleRango .vc-content>.vc-week>.vc-week__day,
-.vc_multipleRango .vc-content>.vc-dates>.vc-date>button {
+.vc_multipleRango .vc-content>.vc-dates>.vc-date>button,
+.vc_singleCalendar .vc-content>.vc-week>.vc-week__day,
+.vc_singleCalendar .vc-content>.vc-dates>.vc-date>button {
    font-size: clamp(1rem, 1.1vw, 1.3rem) !important;
    font-family: raleway !important;
 }
 
-.vc_multipleRango .vc-content>.vc-dates>.vc-date>button {
+.vc_multipleRango .vc-content>.vc-dates>.vc-date>button,
+.vc_singleCalendar .vc-content>.vc-dates>.vc-date>button {
    padding: 1rem;
 }
 
-.vc_multipleRango .vc-header__content>button {
+.vc_multipleRango .vc-header__content>button,
+.vc_singleCalendar .vc-header__content>button {
    font-size: clamp(1.2rem, 1.2vw, 1.5rem) !important;
    font-family: raleway-semibold !important;
    padding: 1rem;
+}
+
+.vc_multipleRango #btn-clear,
+.vc_singleCalendar #btn-clear {
+   outline: none;
+   background-color: transparent;
+   font-size: clamp(1rem, 1.1vw, 1.3rem) !important;
+   font-family: raleway !important;
+   color: var(--third-color);
+   opacity: .8;
+   text-decoration: underline;
+   border: none;
+   width: fit-content;
+   align-self: center;
+   margin-top: .5rem;
+   cursor: pointer;
 }
 
 /* #endregion */

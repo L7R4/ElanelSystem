@@ -1,104 +1,367 @@
-const formEgresoIngreso = document.getElementById('formNewIngresoEgreso');
-const confirmForm = document.getElementById('confirmMovimiento')
+let formNewMov;
 
-//#region CONTROLA EL MODAL ---------------------------------------------------------------------------------------
-const main_modalNewEgresoIngreso = document.querySelector(".main_modalNewEgresoIngreso")
-const buttonsNewMov = document.querySelectorAll(".buttonNewMov");
-const closeModalEgresoIngreso = document.getElementById("closeModalEgresoIngreso")
+function templateFormIngreso(uniqueFechaId) {
+    return `
+        <form method="POST" class="modal_form" id="formNewMov">
+            ${CSRF_TOKEN}
+            <input name="movimiento" id="typeMov" type="hidden" value="ingreso">
 
-const inputsID_egresos = [
-    "denominacionMov",
-    "nroIdentificacionMov",
-    "tipoID",
-    "tipoComprobante",
-    "nroComprobanteMov",
-    "adelanto",
-    "premio",
-]
+            <div id="selectWrapperSelectTypeTicket" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Tipo de Comprobante</h3>
+                <div class="containerInputAndOptions">
+                    <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="tipoComprobante" id="tipoComprobante" placeholder ="Seleccionar" autocomplete="off">
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    <ul class="list-select-custom options">
+                        <li data-value="A">A</li>
+                        <li data-value="B">B</li>
+                        <li data-value="C">C</li>
+                        <li data-value="TK">TK</li>
+                        <li data-value="X">X</li>
+                        <li data-value="RC">RC</li>
+                    </ul>
+                </div>
+            </div>
 
-const inputsID_ingresos = [
-    "tipoMoneda",
-]
+            <div class="wrapperInput">
+                <h3 class="labelInput" >N° de comprobante</h3>
+                <input name="nroComprobante" id="nroComprobanteMov" class="input-read-write-default inputEgresoIngreso">
+            </div>
 
-function newEgreso() {
+            <div id="selectWrapperSelectTypeID" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Tipo de Identificacion</h3>
+                <div class="containerInputAndOptions">
+                    <img id="tipoIDIconDisplay" class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="tipoID" id="tipoID" placeholder ="Seleccionar" autocomplete="off">
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    
+                    <ul class="list-select-custom options">
+                          <li data-value="DNI">DNI</li>
+                          <li data-value="CUIT">CUIT</li>
+                          <li data-value="Legajo">Legajo</li>
+                          <li data-value="Otro">Otro</li>
+                    </ul>
+                </div>
+            </div>
 
-    tittleModalEgresoIngreso.textContent = "Nuevo egreso"
-    typeMov.value = "Egreso"
-    document.getElementById("fechaMov").value = dateToday()
+            <div class="wrapperInput">
+                <h3 class="labelInput">N° de Identificacion</h3>
+                <input name="nroIdentificacion" id="nroIdentificacionMov" class="input-read-write-default">
+            </div>
 
-    // Esconde todos los inputs que son solamente para crear un INGRESO
-    inputsID_ingresos.forEach(element => {
-        let inputObject = document.getElementById(element)
-        let wrapper = inputObject.closest('.wrapperInput')
-        wrapper.style.display = "None"
-    });
+            <div class="wrapperInput">
+                <h3 class="labelInput">Denominacion</h3>
+                <input name="denominacion" id="denominacionMov" class="input-read-write-default">
+            </div>
 
-    // Muestra todos los inputs que son solamente para crear un EGRESO
-    inputsID_egresos.forEach(element => {
-        let inputObject = document.getElementById(element)
-        let wrapper = inputObject.closest('.wrapperInput')
-        wrapper.style.display = "flex"
-    });
+            <div id="selectWrapperSelectTypeMoneda" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Tipo de moneda</h3>
+                <div class="containerInputAndOptions">
+                    <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="tipoMoneda" id="tipoMoneda" placeholder ="Seleccionar" autocomplete="off">
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    <ul class="list-select-custom options">
+                        <li data-value="ARS">ARS</li>
+                        <li data-value="USD">USD</li>
+                    </ul>
+                </div>
+            </div>
 
-    main_modalNewEgresoIngreso.classList.add("active")
-    main_modalNewEgresoIngreso.style.opacity = "1"
+            <div id="selectWrapperAgencia" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Agencia</h3>
+                <div class="containerInputAndOptions">
+                    <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="agencia" id="agencia" placeholder ="Seleccionar" autocomplete="off">
+                    
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    <ul class="list-select-custom options">
+                        ${agencias.map(ag => `
+                            <li data-value="${ag.id}">${ag.pseudonimo}</li>
+                        `).join('')}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="wrapperInput">
+                <h3 class="labelInput">Importe</h3>
+                <input name="dinero" id="dineroMov" class="input-read-write-default">
+            </div>
+
+            <div id="selectWrapperSelectTypePayments" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Tipo de pago</h3>
+                <div class="containerInputAndOptions">
+                    <img id="tipoPagoIconDisplay"class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="tipoPago" id="tipoDePago" placeholder="Seleccionar" autocomplete="off">
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                  <ul class="list-select-custom options">
+                        ${metodos_de_pago.map(mp => `
+                            <li data-value="${mp.id}">${mp.nombre}</li>
+                        `).join('')}
+                  </ul>
+                </div>
+            </div>
+
+            <div class="wrapperCalendario wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Fecha de emicion</h3>
+                <div class="containerCalendario">
+                    <input id="${uniqueFechaId}" name="fecha" class="pseudo-input-select-wrapper inputEgresoIngreso" type="text" placeholder="Seleccionar" readonly />
+                </div>
+            </div>
+
+            <div id="selectWrapperSelectEnte" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Ente recaudador</h3>
+                <div class="containerInputAndOptions">
+                    <img class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="ente" id="enteMov" placeholder="Seleccionar" autocomplete="off">
+                    
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    <ul class="list-select-custom options">
+                        ${cuentas_de_cobro.map(cc => `
+                            <li data-value="${cc.id}">${cc.nombre}</li>
+                        `).join('')}       
+                    </ul>
+                </div>
+            </div>
+
+            <div id="selectWrapperSelectCampania" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Campaña</h3>
+                <div class="containerInputAndOptions">
+                    <img class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="campania" id="campaniaMov" placeholder="Seleccionar" autocomplete="off">
+                    
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    <ul class="list-select-custom options">
+                        ${campaniasDisponibles.map(c => `
+                            <li data-value="${c}">${c}</li>
+                        `).join('')}       
+                    </ul>
+                </div>
+            </div>
+
+            <div class="wrapperInput">
+                <h3 class="labelInput">Concepto</h3>
+                <input name="concepto" id="conceptoMov" class="input-read-write-default inputEgresoIngreso">
+            </div>
+        </form>
+    `
 }
 
-function newIngreso() {
-    tittleModalEgresoIngreso.textContent = "Nuevo Ingreso"
-    typeMov.value = "Ingreso"
-    document.getElementById("fechaMov").value = dateToday()
+function templateFormEgreso(uniqueFechaId) {
+    return `
+        <form method="POST" class="modal_form" id="formNewMov">
+            ${CSRF_TOKEN}
+            <input name="movimiento" id="typeMov" type="hidden" value="egreso">
 
-    // Esconde todos los inputs que son solamente para crear un EGRESO
-    inputsID_egresos.forEach(element => {
-        let inputObject = document.getElementById(element)
-        let wrapper = inputObject.closest('.wrapperInput')
-        wrapper.style.display = "None"
-    });
-    // Muestra todos los inputs que son solamente para crear un INGRESO
-    inputsID_ingresos.forEach(element => {
-        let inputObject = document.getElementById(element)
-        let wrapper = inputObject.closest('.wrapperInput')
-        wrapper.style.display = "flex"
-    });
+            <div id="selectWrapperSelectTypeTicket" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Tipo de Comprobante</h3>
+                <div class="containerInputAndOptions">
+                    <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="tipoComprobante" id="tipoComprobante" placeholder ="Seleccionar" autocomplete="off">
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    <ul class="list-select-custom options">
+                        <li data-value="A">A</li>
+                        <li data-value="B">B</li>
+                        <li data-value="C">C</li>
+                        <li data-value="TK">TK</li>
+                        <li data-value="X">X</li>
+                        <li data-value="RC">RC</li>
+                    </ul>
+                </div>
+            </div>
 
-    main_modalNewEgresoIngreso.classList.add("active")
-    main_modalNewEgresoIngreso.style.opacity = "1"
+            <div class="wrapperInput">
+                <h3 class="labelInput" >N° de comprobante</h3>
+                <input name="nroComprobante" id="nroComprobanteMov" class="input-read-write-default inputEgresoIngreso">
+            </div>
 
+            <div id="selectWrapperSelectTypeID" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Tipo de Identificacion</h3>
+                <div class="containerInputAndOptions">
+                    <img id="tipoIDIconDisplay" class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="tipoID" id="tipoID" placeholder ="Seleccionar" autocomplete="off">
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    
+                    <ul class="list-select-custom options">
+                          <li data-value="DNI">DNI</li>
+                          <li data-value="CUIT">CUIT</li>
+                          <li data-value="Legajo">Legajo</li>
+                          <li data-value="Otro">Otro</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="wrapperInput">
+                <h3 class="labelInput">N° de Identificacion</h3>
+                <input name="nroIdentificacion" id="nroIdentificacionMov" class="input-read-write-default">
+            </div>
+
+            <div class="wrapperInput">
+                <h3 class="labelInput">Denominacion</h3>
+                <input name="denominacion" id="denominacionMov" class="input-read-write-default">
+            </div>
+
+            <div id="selectWrapperAgencia" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Agencia</h3>
+                <div class="containerInputAndOptions">
+                    <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="agencia" id="agencia" placeholder ="Seleccionar" autocomplete="off">
+                    
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    <ul class="list-select-custom options">
+                        ${agencias.map(ag => `
+                            <li data-value="${ag.id}">${ag.pseudonimo}</li>
+                        `).join('')}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="wrapperInput">
+                <h3 class="labelInput">Importe</h3>
+                <input name="dinero" id="dineroMov" class="input-read-write-default">
+            </div>
+
+            <div id="selectWrapperSelectTypePayments" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Tipo de pago</h3>
+                <div class="containerInputAndOptions">
+                    <img id="tipoPagoIconDisplay"class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="tipoPago" id="tipoDePago" placeholder="Seleccionar" autocomplete="off">
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                  <ul class="list-select-custom options">
+                        ${metodos_de_pago.map(mp => `
+                            <li data-value="${mp.id}">${mp.nombre}</li>
+                        `).join('')}
+                  </ul>
+                </div>
+            </div>
+
+            <div class="wrapperCalendario wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Fecha de emicion</h3>
+                <div class="containerCalendario">
+                    <input id="${uniqueFechaId}" name="fecha" class="pseudo-input-select-wrapper inputEgresoIngreso" type="text" placeholder="Seleccionar" readonly />
+                </div>
+            </div>
+
+            <div id="selectWrapperSelectEnte" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Ente recaudador</h3>
+                <div class="containerInputAndOptions">
+                    <img class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="ente" id="enteMov" placeholder="Seleccionar" autocomplete="off">
+                    
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    <ul class="list-select-custom options">
+                        ${cuentas_de_cobro.map(cc => `
+                            <li data-value="${cc.id}">${cc.nombre}</li>
+                        `).join('')}       
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="selectWrapperSelectCampania" class="wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Campaña</h3>
+                <div class="containerInputAndOptions">
+                    <img class="iconDesplegar" src="${imgNext}" alt="">
+                    <input type="hidden" name="campania" id="campaniaMov" placeholder="Seleccionar" autocomplete="off">
+                    
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+                    <ul class="list-select-custom options">
+                        ${campaniasDisponibles.map(c => `
+                            <li data-value="${c}">${c}</li>
+                        `).join('')}       
+                    </ul>
+                </div>
+            </div>
+
+            <div class="wrapperInput">
+                <h3 class="labelInput">Concepto</h3>
+                <input name="concepto" id="conceptoMov" class="input-read-write-default inputEgresoIngreso">
+            </div>
+        </form>
+    `
 }
 
+function modalNewMov(typeMov) {
+    let modal = new tingle.modal({
+        footer: true,
+        closeMethods: ['button', 'escape'],
+        cssClass: ['modalContainerFilter'],
 
-// Cierra el modal
-closeModalEgresoIngreso.addEventListener("click", () => {
-    main_modalNewEgresoIngreso.style.opacity = "0"
-    setTimeout(() => {
-        main_modalNewEgresoIngreso.classList.remove("active")
-        clearInputs()
-    }, 300)
-})
+        onOpen: function () {
+            initCustomSingleSelects()
+        },
+        onClose: function () {
+            deleteSingleCalendarTimeDOM()
+            modal.destroy();
+        },
+    });
 
-//#endregion ----------------------------------------------------------------------------------------------------------
+    let uniqueFechaId = 'newFecha_' + Date.now();
+    template = typeMov == "egreso" ? templateFormEgreso(uniqueFechaId) : templateFormIngreso(uniqueFechaId)
+    modal.setContent(template);
+
+    initSelectSingleDateWithTime(document.getElementById(`${uniqueFechaId}`));
+
+    // add a button
+    modal.addFooterBtn('Guardar', 'tingle-btn tingle-btn--primary add-button-default', async function () {
+        formNewMov = document.getElementById('formNewMov');
+        let response = await makeMov()
+        if (response.status) {
+            console.log("Salio todo bien");
+            // hiddenLoader();
+            updateMovs(currentPage);
+            modal.close();
+            modal.destroy();
+        } else {
+            console.log("Salio todo mal");
+            // hiddenLoader();
+            modal.close();
+            modal.destroy();
+        }
+    });
+
+    // add another button
+    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default button-default-style', function () {
+        modal.close();
+        modal.destroy();
+    });
+
+    // open modal
+    modal.open();
+}
+
 
 
 //#region ENVIA EL FORMULARIO DEL MOVIMIENTO ----------------------------------------------------------------------------
-confirmForm.addEventListener("click", () => {
-    makeMov().then(data => {
-        updateMovs(currentPage);
-        main_modalNewEgresoIngreso.style.opacity = "0"
-        setTimeout(() => {
-            main_modalNewEgresoIngreso.classList.remove("active")
-        }, 300)
-        clearInputs()
-    })
-        .catch(error => console.error('Error:', error));
-})
 
-
-// FUNCION PARA TOMAR EL FORMULARIO
 async function makeMov() {
     let newMov = await fetch("/create_new_mov/", {
         method: 'POST',
-        body: new FormData(formEgresoIngreso),
+        body: new FormData(formNewMov),
         headers: {
             "X-CSRFToken": getCookie('csrftoken')
         }
@@ -125,25 +388,3 @@ function getCookie(name) {
 }
 //#endregion -----------------------------------------------------------------------------------------------------------------
 
-function clearInputs() {
-    let inputs = document.querySelectorAll(".wrapperInput input:not(.notClear)")
-    inputs.forEach(element => element.value = "")
-    let inputsSelectPremio_Adelanto = document.querySelectorAll(".inputSelectPremio_Adelanto")
-    inputsSelectPremio_Adelanto.forEach(element => element.checked = false)
-}
-
-// Colocar la fecha automatica de hoy en el input de "Fecha de emicion"
-function dateToday() {
-    // Obtener la fecha actual
-    var fechaActual = new Date();
-
-    // Obtener el año, mes y día
-    var año = fechaActual.getFullYear();
-    var mes = fechaActual.getMonth() + 1; // Los meses van de 0 a 11, por lo que sumamos 1
-    var dia = fechaActual.getDate();
-
-    // Formatear la fecha como una cadena (en formato DD/MM/YYYY)
-    var fechaFormateada = (dia < 10 ? '0' : '') + dia + '/' + (mes < 10 ? '0' : '') + mes + '/' + año;
-
-    return fechaFormateada
-}

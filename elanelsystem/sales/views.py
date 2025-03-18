@@ -104,20 +104,8 @@ class CrearVenta(TestLogin,generic.DetailView):
         vendedores = Usuario.objects.filter(sucursales__in=[sucursal], rango__in=["Vendedor","Supervisor"])
         supervisores = Usuario.objects.filter(sucursales__in = [sucursal], rango="Supervisor")
         
-        campaniasDelAño = getAllCampaniaOfYear()
-        campaniaActual = getCampaniaActual()
-        campaniaAnterior = campaniasDelAño[campaniasDelAño.index(campaniaActual) - 1]
-        campaniasDisponibles = []
+        campaniasDisponibles = getCampanasDisponibles()
 
-        #region Para determinar si se habilita la campaña anterior
-        fechaActual = datetime.now()
-        ultimo_dia_mes_pasado = datetime.now().replace(day=1) - relativedelta(days=1)
-        diferencia_dias = (fechaActual - ultimo_dia_mes_pasado).days
-
-        if(diferencia_dias > 5): # Si la diferencia de dias es mayor a 5 dias, no se puede asignar la campania porque ya paso el tiempo limite para dar de alta una venta en la campania anterior
-            campaniasDisponibles = [campaniaActual]
-        else:
-            campaniasDisponibles = [campaniaActual,campaniaAnterior]
         #endregion
         context ={
             "object": self.object,
@@ -531,6 +519,7 @@ class DetailSale(TestLogin,generic.DetailView):
         context['deleteSaleUrl'] = reverse("sales:delete_sale", args=[self.object.pk])
         context['solicitudAnulacionCuotaUrl'] = reverse("sales:solicitudAnulacionCuota")
         context['confirmacionAnulacionCuotaUrl'] = reverse("sales:darBajaCuota")
+        context['obtenerReciboCuotaUrl'] = reverse("sales:getReciboCuota")
 
 
         request.session["venta"] = model_to_dict(self.object)
@@ -626,7 +615,7 @@ def getUnaCuotaDeUnaVenta(request):
 
             buttonSolicitudDeCancelacionPago = '<button type="button" onclick="solicitudBajaCuota()" class="buttonCancelarPago delete-button-default" id="btnBajaCuota">Cancelar pago</button>'
             buttonConfirmacionDeCancelacionPago = '<button type="button" onclick="anulacionCuota()" class="buttonAnularCuota delete-button-default" id="btnAnularCuota">Anular pago</button>'
-
+            buttonObtenerRecibo = '<button type="button" class="buttonReciboCuota" id="btnReciboCuota"><img src="/static/images/icons/receipt_icon.svg" alt=""></button>'
             cuotasPagadas_parciales = venta.cuotas_pagadas() + venta.cuotas_parciales()
             lista_cuotasPagadasSinCredito = getCuotasPagadasSinCredito(cuotasPagadas_parciales)
             
@@ -635,12 +624,16 @@ def getUnaCuotaDeUnaVenta(request):
                     cuota["styleBloqueado"] = f"background-image: url('{bloqueado_path}')"
                     if len(lista_cuotasPagadasSinCredito) != 0 and lista_cuotasPagadasSinCredito[-1]["cuota"] == cuota["cuota"] and "sales.my_anular_cuotas" in permisosUser:
                         cuota["buttonAnularCuota"] = buttonAnularCuota
-                    print("------------------------")
-                    print(cuota["status"])
+                    
                     if (cuota["status"] == "pagado" or cuota["status"] =="parcial") and not cuota["autorizada_para_anular"]:
                         cuota["buttonCancelacionDePago"] = buttonSolicitudDeCancelacionPago
                     elif(cuota["status"] == "pagado" or cuota["status"] =="parcial") and cuota["autorizada_para_anular"]:
                         cuota["buttonCancelacionDePago"] = buttonConfirmacionDeCancelacionPago
+                    if(cuota["status"] == "pagado"):
+                        cuota["buttonObtenerRecibo"] = buttonObtenerRecibo
+                        texto = convertir_moneda_a_texto(cuota["pagos"][0]["monto"])
+                        print(texto)
+                        request.session["reciboCuota"] = cuota
                     return JsonResponse(cuota, safe=False)
 
         # except Exception as error:
@@ -1711,6 +1704,35 @@ def viewsPDFInformePostVenta(request):
         response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
         return response
 
+def viewPDFReciboCuota(request):
+    cuotaData = request.session.get("reciboCuota",{})
+    print(cuotaData)
+    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "pdf_recibo_cuota.pdf")
+    informeName = "Recibo"
+    context = {
+        "numero_recibo": "000001",
+        "fecha": "18/03/2025",
+        "cuit_emisor": "30-12345678-9",
+        "responsable_tipo": "Monotributo",
+        "nombre_cliente": "Cliente de Ejemplo",
+        "cuit_cliente": "20-87654321-0",
+        "domicilio_cliente": "Calle Falsa 123",
+        "localidad_cliente": "Springfield",
+        "monto_en_letras": "Mil pesos",
+        "monto_numero": "1000.00",
+        "concepto_recibo": "Pago de cuota pendiente",
+        "forma_de_pago": "Efectivo",
+        "fecha_impresion": "18/03/2025",
+        # ... y cualquier otro dato que necesites
+    }
+
+    printPDF(context,request.build_absolute_uri(),urlPDF,"pdf_recibo_cuota.html","static/css/pdfReciboCuota.css")
+
+    
+    with open(urlPDF, 'rb') as pdf_file:
+        response = HttpResponse(pdf_file,content_type="application/pdf")
+        response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
+        return response
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -1732,6 +1754,8 @@ class Caja(TestLogin,generic.View):
         context["cuentas_de_cobro"] = [{"id":cuenta.id,"nombre":cuenta.alias} for cuenta in CuentaCobranza.objects.all()]
         context["metodos_de_pago"] = [{"id":metodo.id,"nombre":metodo.alias} for metodo in MetodoPago.objects.all()]
         context["campanias"] = getTodasCampaniasDesdeInicio()
+        context["campaniasDisponibles"] = getCampanasDisponibles()
+
 
         
         # print(os.path.join(settings.BASE_DIR, "templates/mailPlantilla.html"))
@@ -1871,7 +1895,7 @@ def requestMovimientos(request):
         agencia = request.user.sucursales.first().pseudonimo if not request.GET.get("agencia") else request.GET.get("agencia") # Si no hay agencia seleccionada, se coloca la primera sucursal del usuario
         # print(request)
         cannons = dataStructureCannons(agencia)
-        print(cannons)
+        # print(cannons)
         cannons = list(filter(lambda x: x["estado"]["data"] in ["pagado", "parcial"], cannons))
         
         allMovimientos = dataStructureMovimientosExternos(agencia) + cannons
@@ -1886,6 +1910,8 @@ def requestMovimientos(request):
             "request": request.GET,
             "movs": allMovimientosTidy
         }
+        print(f"request - - - - - \n {response_data['request']}")
+
         
 
         movs = filterMainManage(response_data["request"], response_data["movs"])
@@ -1906,7 +1932,7 @@ def requestMovimientos(request):
 
         # Extrae las tuplas segun los querys filtrados en clearContext
         filtros_activados = list(filter(lambda x: x[0] in clearContext, FILTROS_EXISTENTES))
-        print(f'Filtros: {filtros_activados}')
+        # print(f'Filtros: {filtros_activados}')
         # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
         # Es lo mismo que decir clearContext["metodoPago"], etc, etc
         filtros = list(map(lambda x: {x[1]: clearContext[x[0]]}, filtros_activados))
@@ -1915,23 +1941,33 @@ def requestMovimientos(request):
         request.session["informe_data"] = movs # Por si se quiere imprimir el informe
 
         # region Logica para obtener el resumen de cuenta de los diferentes tipos de pagos
-        resumenEstadoCuenta={}
-        tiposDePago = {"efectivo":"Efectivo",
-                    "banco":"Banco", 
-                    "posnet":"Posnet", 
-                    "merPago":"Mercado Pago", 
-                    "transferencia":"Transferencia"}  
+        resumenEstadoCuenta=[]
+        total_money = 0
 
-        montoTotal = 0
-        for clave in tiposDePago.keys():
-            itemsTypePayment = list(filter(lambda x: x['metodoPago'] == tiposDePago[clave], movs))
-            montoTypePaymentEgreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Egreso'])
-            montoTypePaymentIngreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Ingreso'])
-            montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso  
-            montoTotal += montoTypePayment 
-            resumenEstadoCuenta[clave] = montoTypePayment
-        resumenEstadoCuenta["total"] = montoTotal
+        metodosPagos = MetodoPago.objects.all()
+        for metodo in metodosPagos:
+            estado_cuenta_by_metodo = {}
+            estado_cuenta_by_metodo["verbose_name"] = metodo.alias
 
+            metodoClean = metodo.alias.replace(" ","_").lower() + "_total_money"
+            estado_cuenta_by_metodo["name_clean"] = metodoClean
+
+            movs_by_metodo = list(filter(lambda mov:mov["metodoPago"]["data"] == int(metodo.id), movs))
+            money_by_metodo_ingreso = sum([mov["monto"]["data"] for mov in movs_by_metodo if mov["tipo_mov"]["data"] == "ingreso"])
+            money_by_metodo_egreso = sum([mov["monto"]["data"] for mov in movs_by_metodo if mov["tipo_mov"]["data"] == "egreso"])
+            money_by_metodo = money_by_metodo_ingreso - money_by_metodo_egreso
+            estado_cuenta_by_metodo["money"] = money_by_metodo
+            resumenEstadoCuenta.append(estado_cuenta_by_metodo)
+            
+            total_money += money_by_metodo
+
+        dictTotal = {
+            "verbose_name": "Total",
+            "name_clean": "total_money",
+            "money": total_money
+        }
+        resumenEstadoCuenta.append(dictTotal)
+        
         #endregion
 
         #region Paginación
@@ -1953,118 +1989,27 @@ def requestMovimientos(request):
         return JsonResponse({"data": [], "numbers_pages": 0,"filtros":[],"estadoCuenta":{},"status": False}, safe=False)
 
 
-# def requestMovimientos(request):
-#     try:
-#         #region Logica para obtener los movimientos segun los filtros aplicados 
-#         agencia = request.user.sucursales.first().pseudonimo if not request.GET.get("agencia") else request.GET.get("agencia") # Si no hay agencia seleccionada, se coloca la primera sucursal del usuario
-#         print(request)
-#         cannons = dataStructureCannons(agencia)
-#         cannons = list(filter(lambda x: x["estado"]["data"] in ["pagado", "parcial"], cannons))
-        
-#         allMovimientos = dataStructureMovimientosExternos(agencia) + cannons
-#         allMovimientosTidy = sorted(allMovimientos, key=lambda x: datetime.strptime(x['fecha']["data"], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
-#         # Agregar a cada diccionario del movimiento el campo id_cont para poder identificarlo en el template 
-#         for i, mov in enumerate(allMovimientosTidy):
-#             mov["id_cont"] = i
-#         #endregion
-        
-        
-#         #region Limpiar los cannos que tienen pagos en forma de credito
-#         movsDePagosEnFormaCredito = [mov for mov in allMovimientosTidy if mov["metodoPago"] == "Credito"]
-
-#         #Elimina los pagos en forma de credito segun los indices
-#         for movs in movsDePagosEnFormaCredito:
-#             if (movs in allMovimientosTidy):
-#                 allMovimientosTidy.remove(movs)
-#         #endregion
-
-#         response_data ={
-#             "request": request.GET,
-#             "movs": allMovimientosTidy
-#         }
-
-#         movs = filterMainManage(response_data["request"], response_data["movs"])
-        
-#         #endregion
-        
-#         #region Logica para pasar al template los filtros aplicados a los movimientos
-#         paramsDict = (request.GET).dict()
-#         FILTROS_EXISTENTES = (
-#             ("tipo_mov","Tipo de movimiento"),
-#             ("metodoPago", "Metodo de pago"),
-#             ("fecha", "Fecha"),
-#             ("cobrador","Cobrador"),
-#             ("agencia","Agencia"),
-#         )
-#         clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
-
-#         # Extrae las tuplas segun los querys filtrados en clearContext
-#         filtros_activados = list(filter(lambda x: x[0] in clearContext, FILTROS_EXISTENTES))
-        
-#         # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
-#         # Es lo mismo que decir clearContext["metodoPago"], etc, etc
-#         filtros = list(map(lambda x: {x[1]: clearContext[x[0]]}, filtros_activados))
-#         #endregion
-        
-#         request.session["informe_data"] = movs # Por si se quiere imprimir el informe
-
-#         # region Logica para obtener el resumen de cuenta de los diferentes tipos de pagos
-#         resumenEstadoCuenta={}
-#         tiposDePago = {"efectivo":"Efectivo",
-#                     "banco":"Banco", 
-#                     "posnet":"Posnet", 
-#                     "merPago":"Mercado Pago", 
-#                     "transferencia":"Transferencia"}  
-
-#         montoTotal = 0
-#         for clave in tiposDePago.keys():
-#             itemsTypePayment = list(filter(lambda x: x['metodoPago'] == tiposDePago[clave], movs))
-#             montoTypePaymentEgreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Egreso'])
-#             montoTypePaymentIngreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Ingreso'])
-#             montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso  
-#             montoTotal += montoTypePayment 
-#             resumenEstadoCuenta[clave] = montoTypePayment
-#         resumenEstadoCuenta["total"] = montoTotal
-
-#         #endregion
-
-#         #region Paginación
-#         page = request.GET.get('page')
-#         items_per_page = 10  # Número de elementos por página
-#         paginator = Paginator(movs, items_per_page)
-
-#         try:
-#             movs = paginator.page(page)
-#         except PageNotAnInteger:
-#             movs = paginator.page(1)
-#         except EmptyPage:
-#             movs = paginator.page(paginator.num_pages)
-#         #endregion -----------------------------------------------------
-
-#         return JsonResponse({"data": list(movs), "numbers_pages": paginator.num_pages,"filtros":filtros,"estadoCuenta":resumenEstadoCuenta,"status": True}, safe=False)
-#     except Exception as e:
-#         print(e)
-#         return JsonResponse({"data": [], "numbers_pages": 0,"filtros":[],"estadoCuenta":{},"status": False}, safe=False)
-
-
-
 # Funcion para crear un nuevo movimiento externo
 def createNewMov(request):
     if request.method == 'POST':
         newMov = MovimientoExterno()
         movimiento = request.POST.get("movimiento")
+        print(movimiento)
         newMov.movimiento=movimiento
-        newMov.agencia = Sucursal.objects.get(pseudonimo = request.POST.get('agencia'))
-        newMov.metodoPago= request.POST.get('metodoPago')
-        newMov.ente= request.POST.get('ente')
-        newMov.fecha=datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
+        newMov.agencia = Sucursal.objects.get(id = request.POST.get('agencia'))
+        newMov.ente= CuentaCobranza.objects.filter(id=request.POST.get('ente')).first() 
+        newMov.fecha=request.POST.get("fecha")
         newMov.concepto= request.POST.get('concepto')
-        newMov.metodoPago= request.POST.get('tipoPago')
+        newMov.metodoPago= MetodoPago.objects.filter(id=request.POST.get('tipoPago')).first() 
         newMov.dinero= float(request.POST.get('dinero'))
+        newMov.campania = request.POST.get("campania")
 
-        if movimiento == 'Ingreso':
+        if movimiento == 'ingreso':
+            print("Entro a ingreso")
+
             newMov.tipoMoneda = request.POST.get('tipoMoneda')
-        elif movimiento == 'Egreso':
+        elif movimiento == 'egreso':
+            print("Entro a egreso")
             newMov.tipoIdentificacion=request.POST.get('tipoID')
             newMov.nroIdentificacion=request.POST.get('nroIdentificacion')
             newMov.tipoComprobante=request.POST.get('tipoComprobante')

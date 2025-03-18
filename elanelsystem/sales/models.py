@@ -719,9 +719,10 @@ class MovimientoExterno(models.Model):
     tipoMoneda = models.CharField("Tipo de moneda:", max_length=3, choices=TIPOS_MONEDAS, blank=True, null=True)
     movimiento = models.CharField("Movimiento:",max_length=8, choices=TIPOS_MOVIMIENTOS)
     dinero = models.FloatField("Dinero:")
-    metodoPago = models.CharField("Metodo de pago:",max_length=30)
-    agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
-    ente = models.CharField("Ente:",max_length=40)
+    metodoPago = models.ForeignKey(MetodoPago,on_delete=models.SET_NULL,related_name="metodo_movs", null=True)
+    agencia = models.ForeignKey(Sucursal, on_delete=models.SET_NULL, related_name="agencia_movs", null=True)
+    ente = models.ForeignKey(CuentaCobranza, on_delete=models.SET_NULL, related_name="ente_movs", null=True)
+
     fecha = models.CharField("Fecha:",max_length=16)
     campania = models.CharField("Campaña:",max_length=30)
     concepto = models.CharField("Concepto:",max_length=200)

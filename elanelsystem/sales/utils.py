@@ -17,6 +17,10 @@ from django.templatetags.static import static
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from dateutil.relativedelta import relativedelta
+from num2words import num2words
+from configuracion.models import Configuracion
+
 
 #region Funciones para exportar PDFs
 def printPDFBaja(data,url,productoName):
@@ -244,6 +248,26 @@ def getTodasCampaniasDesdeInicio():
     return campanias
 
 
+# """
+# Retorna las campañas disponibles segun las cantidad de dias.
+# Ya que si hay mas de 5 dias de diferencia entre la campaña actual con la anterior no se
+# habilita la campaña actual, pero sino, si.
+# """
+def getCampanasDisponibles():
+    campaniasDelAño = getAllCampaniaOfYear()
+    campaniaActual = getCampaniaActual()
+    campaniaAnterior = campaniasDelAño[campaniasDelAño.index(campaniaActual) - 1]
+
+
+    fechaActual = datetime.datetime.now()
+    ultimo_dia_mes_pasado = datetime.datetime.now().replace(day=1) - relativedelta(days=1)
+    diferencia_dias = (fechaActual - ultimo_dia_mes_pasado).days
+    if(diferencia_dias > 5): # Si la diferencia de dias es mayor a 5 dias, no se puede asignar la campania porque ya paso el tiempo limite para dar de alta una venta en la campania anterior
+        return [campaniaActual]
+    else:
+        return [campaniaActual,campaniaAnterior]
+
+
 def obtener_ultima_campania():
     # Lo importo aqui para evitar el error de dependencias circulares
     from sales.models import Ventas
@@ -320,6 +344,17 @@ def formatear_moneda(valor):
         # Maneja valores inválidos devolviendo un string vacío
         return ""
 
+
+def convertir_moneda_a_texto(cantidad):
+    # Eliminar símbolos y puntos
+    cantidad = str(cantidad)
+    cantidad_limpia = cantidad.replace('$', '').replace('.', '').replace(',', '')
+    # Convertir a entero
+    numero = int(cantidad_limpia)
+    # Convertir número a palabras en español
+    texto = num2words(numero, lang='es')
+    # Retornar el texto con la palabra "pesos"
+    return f"{texto} pesos"
 #region Data Structures ----------------------------------------------------------
 
 def getInfoBaseCannon(venta, cuota):
@@ -331,7 +366,7 @@ def getInfoBaseCannon(venta, cuota):
         'nombre_del_cliente': {'data': cliente.nombre, 'verbose_name': 'Nombre del Cliente'},
         'nro_del_cliente': {'data': cliente.nro_cliente, 'verbose_name': 'N° del Cliente'},
         'agencia': {'data': venta.agencia.pseudonimo, 'verbose_name': 'Agencia'},
-        'tipo_mov': {'data': "Ingreso", 'verbose_name': 'Tipo de Movimiento'},
+        'tipo_mov': {'data': "ingreso", 'verbose_name': 'Tipo de Movimiento'},
         'fecha_de_vencimiento': {'data': cuota['fechaDeVencimiento'], 'verbose_name': 'Fecha de Vencimiento'},
         'descuento': {'data': cuota['descuento'], 'verbose_name': 'Descuento'},
         'estado': {'data': cuota['status'], 'verbose_name': 'Estado'},
@@ -364,10 +399,13 @@ def dataStructureCannons(sucursal=None):
             if cuota["status"] in ["pagado", "parcial", "atrasado"]:
                 for pago in cuota["pagos"]:
                     mov = {**getInfoBaseCannon(venta, cuota), **{
-                        'metodoPago': {'data': MetodoPago.objects.filter(id=int(pago['metodoPago']))[0].alias, 'verbose_name': 'Método de Pago'},
+                        'metodoPago': {'data': int(pago['metodoPago']), 'verbose_name': 'Método de Pago'},
+                        'metodoPagoAlias': {'data': MetodoPago.objects.filter(id=int(pago['metodoPago']))[0].alias, 'verbose_name': 'Método de Pago'},
                         'monto': {'data': pago['monto'], 'verbose_name': 'Monto Pagado'},
                         'fecha': {'data': pago['fecha'], 'verbose_name': 'Fecha de Pago'},
-                        'cobrador': {'data': CuentaCobranza.objects.filter(id=int(pago['cobrador']))[0].alias, 'verbose_name': 'Cobrador'},
+                        'cobrador': {'data': int(pago['cobrador']), 'verbose_name': 'Cobrador'},
+                        'cobradorAlias': {'data': CuentaCobranza.objects.filter(id=int(pago['cobrador']))[0].alias, 'verbose_name': 'Cobrador'},
+                        'campania': {'data': pago["campaniaPago"], 'verbose_name': 'Campaña'},
                     }}
                     cuotas_data.append(mov)
             else:
@@ -454,7 +492,9 @@ def dataStructureMovimientosExternos(sucursal=None):
     
     if sucursal:
         listaAgencias = convertirValoresALista({"agencia":sucursal})["agencia"]
+        # print(f"Listas de agencias: {listaAgencias}")
         movs_externos = MovimientoExterno.objects.filter(agencia__pseudonimo__in=listaAgencias)
+        # print(f"MOvimientos: {movs_externos[0]}")
     
     else:
         movs_externos = MovimientoExterno.objects.all()
@@ -470,9 +510,10 @@ def dataStructureMovimientosExternos(sucursal=None):
             "tipoMoneda": {'data': movs_externo.tipoMoneda, 'verbose_name': 'Tipo Moneda'},
             "tipo_mov": {'data': movs_externo.movimiento, 'verbose_name': 'Tipo Movimiento'},
             "monto": {'data': movs_externo.dinero, 'verbose_name': 'Monto'},
-            "metodoPago": {'data': movs_externo.metodoPago, 'verbose_name': 'Método de Pago'},
+            "metodoPago": {'data': int(movs_externo.metodoPago.id), 'verbose_name': 'Método de Pago'},
+            "metodoPagoAlias": {'data': movs_externo.metodoPago.alias, 'verbose_name': 'Método de Pago'},
             "agencia": {'data': movs_externo.agencia.pseudonimo, 'verbose_name': 'Sucursal'},
-            "cobrador": {'data': movs_externo.cobrador, 'verbose_name': 'Cobrador'},
+            "ente": {'data': movs_externo.ente.alias, 'verbose_name': 'Ente recaudador'},
             "fecha": {'data': movs_externo.fecha, 'verbose_name': 'Fecha'},
             "campania": {'data': movs_externo.campania, 'verbose_name': 'Campaña'},
             "concepto": {'data': movs_externo.concepto, 'verbose_name': 'Concepto'},
@@ -621,6 +662,20 @@ def getDineroEntregado(cuotas):
                 dineroEntregado += pago["monto"]
     return dineroEntregado
 
+
+def obtener_siguiente_numero_recibo():
+    # Buscar el número en la configuración o crearlo si no existe
+    config, created = Configuracion.objects.get_or_create(clave="ultimo_numero_recibo", defaults={"valor": "0000"})
+
+    # Convertir a entero, sumar uno y formatear
+    nuevo_numero = int(config.valor) + 1
+    nuevo_numero_formateado = f"{nuevo_numero:04d}"  # Genera "0001", "0002", etc.
+
+    # Guardar el nuevo número
+    config.valor = nuevo_numero_formateado
+    config.save()
+
+    return nuevo_numero_formateado
 #endregion
 
 

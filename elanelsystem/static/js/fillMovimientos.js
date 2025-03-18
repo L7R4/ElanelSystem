@@ -15,24 +15,19 @@ let appliedFilters = {};
 // Funcion para actualizar la informacion de los movimientos
 async function updateMovs(page) {
     let dataMovs = await movsGetChangePage(page); // Solicita los movimientos
-    console.log(dataMovs)
+    // console.log(dataMovs["estadoCuenta"])
     movsPages.textContent = page + " / " + dataMovs["numbers_pages"] // Actualiza en la pagina en la que estamos
 
     // textFilters(dataMovs["filtros"]) // Actualiza los filtros que estamos usando para mostrar los movimientos
-    
+
     // Verifica si el numero de paginas solicitado es el maximo para blockear el boton de "siguiente"
     page == dataMovs["numbers_pages"] ? buttonNext.classList.add("blocked") : buttonNext.classList.remove("blocked");
 
     // Verifica si el numero de paginas solicitado es el minimo para blockear el boton de "atras"
     page == 1 ? buttonBack.classList.add("blocked") : buttonBack.classList.remove("blocked");
 
-    // #region Logica para settear los totales de los diferentes tipo de pago 
-    resumEfectivo.textContent = "$ " + dataMovs["estadoCuenta"]["efectivo"]
-    resumBanco.textContent = "$ " + dataMovs["estadoCuenta"]["banco"]
-    resumPosnet.textContent = "$ " + dataMovs["estadoCuenta"]["posnet"]
-    resumMerPago.textContent = "$ " + dataMovs["estadoCuenta"]["merPago"]
-    resumTrans.textContent = "$ " + dataMovs["estadoCuenta"]["transferencia"]
-    resumTotal.textContent = "$ " + dataMovs["estadoCuenta"]["total"]
+    refreshResumenMoney(dataMovs["estadoCuenta"])
+
     // #endregion
     containerMovimientos.innerHTML = ""; // Limpiar el contenedor de movimientos antes de agregar los nuevos
 
@@ -42,10 +37,21 @@ async function updateMovs(page) {
         const nuevoElementoLi = document.createElement("li");
         nuevoElementoLi.classList.add("mov");
         nuevoElementoLi.id = `${element.id_cont}`;
+        if (element["concepto"]) {
+            nuevoElementoLi.classList.add("externo");
+        } else {
+            nuevoElementoLi.classList.add("cannon");
+        }
+        if (element["tipo_mov"]["data"] == "ingreso") {
+            nuevoElementoLi.classList.add("ingreso");
+        } else {
+            nuevoElementoLi.classList.add("egreso");
+        }
 
         nuevoElementoLi.innerHTML = createItemSegunMovimiento(element) // Establece el contenido HTML del <li> con un string
 
         containerMovimientos.appendChild(nuevoElementoLi); // Agrega el nuevo <li> al elemento padre (la lista)
+
     });
     cuotasButtons = document.querySelectorAll(".mov")
 
@@ -81,17 +87,17 @@ function createItemSegunMovimiento(mov) {
     let fechaRecortada = mov.fecha.data.slice(0, 10)
     let stringForHTML = `<div><p class="fecha">${fechaRecortada}</p></div>`
     if ("concepto" in mov) {
-        let conceptoStringRecortado = mov.concepto.slice(0, 18);
+        let conceptoStringRecortado = mov.concepto.data.slice(0, 18);
         stringForHTML += `
         <div><p class="concept">${conceptoStringRecortado}</p></div>
         <div><p class="nCuotas"> - </p></div>
         `;
-        if ("Ingreso" == mov["tipo_mov"]) {
+        if ("ingreso" == mov["tipo_mov"]["data"]) {
             stringForHTML += `
             <div><p class="monto">$${mov.monto.data}</p></div>
             <div><p class="monto"> - </p></div>
             `;
-        } else if ("Egreso" == mov["tipo_mov"]) {
+        } else if ("egreso" == mov["tipo_mov"]["data"]) {
             stringForHTML += `
             <div><p class="monto"> - </p></div>
             <div><p class="monto">$${mov.monto.data}</p></div>
@@ -110,6 +116,20 @@ function createItemSegunMovimiento(mov) {
     return stringForHTML;
 }
 
+function refreshResumenMoney(data) {
+    console.log(data);
+    const resumCuentas = document.querySelector(".resum_table>tbody");
+    resumCuentas.innerHTML = ""; // Limpiar contenido previo
+
+    data.forEach(item => {
+        const item_h4 = `<tr class="${item["name_clean"]}">
+            <td>${item["verbose_name"]}</td>
+            <td>$${item["money"]}</td>
+        </tr>`;
+        resumCuentas.insertAdjacentHTML('beforeend', item_h4);
+    });
+
+}
 
 // Actualiza los filtros que estamos usando para mostrar los movimientos
 function textFilters(dicc) {
@@ -145,36 +165,6 @@ function modalViewMovimiento(mov, type_mov) {
     modal.setContent(template);
 
 
-    // add a button
-    // modal.addFooterBtn('Auditar', 'tingle-btn tingle-btn--primary buttonAuditControl', async function () {
-
-    //     let form = document.querySelector("#containerModularForm")
-    //     showLoader()
-    //     let response = await sendGradeVenta(form)
-    //     console.log(response);
-
-    //     if (response.status) {
-    //         console.log("Salio todo bien");
-    //         hiddenLoader();
-    //         refreshVenta(response);
-
-    //         const ventaElement = document.getElementById(venta_id);
-    //         const button = ventaElement.querySelector('.displayDetailInfoButton'); // Ajusta el selector según tu caso
-    //         if (button) toggleWrapperDetail(button);
-
-    //         modal.close();
-    //         modal.destroy();
-    //     } else {
-    //         console.log("Salio todo mal");
-    //         hiddenLoader();
-
-    //         modal.close();
-    //         modal.destroy();
-    //     }
-    //     newModalMessage(response["message"], response["iconMessage"]);
-
-    // });
-
     // add another button
     modal.addFooterBtn('Cerrar', 'tingle-btn tingle-btn--default button-default-style', function () {
         modal.close();
@@ -184,8 +174,6 @@ function modalViewMovimiento(mov, type_mov) {
     // open modal
     modal.open();
 
-    // // Se bloquea hasta que los campos esten todos completos
-    // document.querySelector(".tingle-btn--primary").disabled = true;
 }
 
 function renderViewCannon(mov) {
@@ -193,49 +181,55 @@ function renderViewCannon(mov) {
     <div class="cannon-info">
         <h2>Información del Cannon</h2>
         <div>
-            <p><strong>Número de Venta:</strong></p>
+            <p><strong>Número de Venta</strong></p>
             <div>
                 <p>${mov["nro_operacion"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Número de Cliente:</strong></p>
+            <p><strong>Número de Cliente</strong></p>
             <div>
                 <p>${mov["nro_del_cliente"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Número de Cuota:</strong></p>
+            <p><strong>Número de Cuota</strong></p>
             <div>
                 <p>${mov["cuota"]["data"]}</p>
             </div>
         </div>
-        <div>
-            <p><strong>Monto:</strong></p>
+        <div>s
+            <p><strong>Monto</strong></p>
             <div>
                 <p>$${mov["monto"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Método de Pago:</strong></p>
+            <p><strong>Método de Pago</strong></p>
             <div>
-                <p>${mov["metodoPago"]["data"]}</p>
+                <p>${mov["metodoPagoAlias"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Cobrador:</strong></p>
+            <p><strong>Cobrador</strong></p>
             <div>
-                <p>${mov["cobrador"]["data"]}</p>
+                <p>${mov["cobradorAlias"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Fecha de Pago:</strong></p>
+            <p><strong>Campaña</strong></p>
+            <div>
+                <p>${mov["campania"]["data"]}</p>
+            </div>
+        </div>
+        <div>
+            <p><strong>Fecha de Pago</strong></p>
             <div>
                 <p>${mov["fecha"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Sucursal:</strong></p>
+            <p><strong>Sucursal</strong></p>
             <div>
                 <p>${mov["agencia"]["data"]}</p>
             </div>
@@ -244,75 +238,81 @@ function renderViewCannon(mov) {
     `;
     return stringForHTML;
 }
-
 function renderViewMovimiento(mov) {
     let stringForHTML = `
     <div class="movimiento-info">
         <h2>Información del Movimiento</h2>
         <div>
-            <p><strong>Tipo de Comprobante:</strong></p>
+            <p><strong>Tipo de Comprobante</strong></p>
             <div>
-                 <p>${mov["tipoComprobante"]}</p>
+                 <p>${mov["tipoComprobante"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Número de Comprobante:</strong></p>
+            <p><strong>Número de Comprobante</strong></p>
             <div>
-                <p>${mov["nroComprobante"]}</p>
+                <p>${mov["nroComprobante"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Tipo de Identificación:</strong></p> 
+            <p><strong>Tipo de Identificación</strong></p> 
             <div>
-                <p>${mov["tipoIdentificacion"]}</p>
+                <p>${mov["tipoIdentificacion"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Número de Identificación:</strong></p> 
+            <p><strong>Número de Identificación</strong></p> 
             <div>
-                <p>${mov["nroIdentificacion"]}</p>
+                <p>${mov["nroIdentificacion"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Denominación:</strong></p> 
+            <p><strong>Denominación</strong></p> 
             <div>
-                <p>${mov["denominacion"]}</p>
+                <p>${mov["denominacion"]["data"]}</p>
+            </div>
+        </div>
+        ${mov["tipo_mov"]["data"] === "ingreso" ? `
+        <div>
+            <p><strong>Tipo de Moneda</strong></p> 
+            <div>
+                <p>${mov["tipoMoneda"]["data"]}</p>
+            </div>
+        </div>` : ''}
+        <div>
+            <p><strong>Monto</strong></p> 
+            <div>
+                <p>$${mov["monto"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Tipo de Moneda:</strong></p> 
+            <p><strong>Método de Pago</strong></p> 
             <div>
-                <p>${mov["tipoMoneda"]}</p>
+                <p>${mov["metodoPagoAlias"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Monto:</strong></p> 
+            <p><strong>Campaña</strong></p>
             <div>
-                <p>$${mov["monto"]}</p>
+                <p>${mov["campania"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Método de Pago:</strong></p> 
+            <p><strong>Fecha</strong></p> 
             <div>
-                <p>${mov["metodoPago"]}</p>
+                <p>${mov["fecha"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Fecha:</strong></p> 
+            <p><strong>Ente</strong></p> 
             <div>
-                <p>${mov["fecha"]}</p>
+                <p>${mov["ente"]["data"]}</p>
             </div>
         </div>
         <div>
-            <p><strong>Ente:</strong></p> 
+            <p><strong>Concepto</strong></p> 
             <div>
-                <p>${mov["ente"]}</p>
-            </div>
-        </div>
-        <div>
-            <p><strong>Concepto:</strong></p> 
-            <div>
-                <p>${mov["concepto"]}</p>
+                <p>${mov["concepto"]["data"]}</p>
             </div>
         </div>
     </div>
@@ -320,31 +320,6 @@ function renderViewMovimiento(mov) {
     return stringForHTML;
 }
 
-// function renderViewMovimiento(mov) {
-//     let stringForHTML = `
-//     <form method="POST" class="containerModularForm" id="containerModularForm">
-//         ${CSRF_TOKEN}
-//         <input type="hidden" name="idVenta" id="idVenta" value="${venta_id}" readonly>
-//         <h2>Selecciona el estado de la auditoria</h2>
-//         <div class="wrapperButtonsGrade">
-//             <div class="buttonsWrapper">
-//                 <input type="radio" name="grade" id="aprobarI" value="a">
-//                 <label for="aprobarI" id="aprobarLabel" class="labelInputGrade">Aprobar</label>
-//                 <input type="radio" name="grade" id="desaprobarI" value="d">
-//                 <label for="desaprobarI" id="desaprobarLabel" class="labelInputGrade">Desaprobar</label>
-//             </div>
-//         </div>
-//         <div class="wrapperFormComentario">
-//             <div class="wrapperInputComent">
-//                 <label for="comentarioInput">Comentario</label>
-//                 <textarea name="comentarioInput" id="comentarioInput" cols="30" rows="10"></textarea>
-//             </div>
-//         </div>
-//     </form>
-//     `;
-//     return stringForHTML;
-// }
-{/* <div class="calendar" id="calendar"></div> */ }
 function renderTemplateFormFilter(uniqueFechaId) {
     return `
         <form method="GET" id="filterForm" class="filterForm">
@@ -358,7 +333,7 @@ function renderTemplateFormFilter(uniqueFechaId) {
                 <div id="selectWrapperSelectTypePayments" class="wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Metodo de pago</h3>
                     <div class="containerInputAndOptions">
-                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                      <img class="iconDesplegar" src="${imgNext}" alt="">
                       <input type="hidden" class="filterInput" name="metodoPago" id="tipoDePago" placeholder="Seleccionar" autocomplete="off" readonly>
                       <div class="multipleSelect pseudo-input-select-wrapper">
                             <h3></h3>
@@ -374,7 +349,7 @@ function renderTemplateFormFilter(uniqueFechaId) {
                 <div id="selectWrapperSelectCobrador" class="wrapperSelectFilter wrapperInput wrapperSelectCustom">
                     <label class="labelInput">Cuenta de cobro</label>
                     <div class="containerInputAndOptions">
-                        <img id="cobradorIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""/>
+                        <img id="cobradorIconDisplay" class="iconDesplegar" src="${imgNext}" alt=""/>
                         
                         <input type="hidden" class="filterInput" name="cobrador" required="" autocomplete="off" maxlength="100" class="input-metodoPago">
                         
@@ -392,7 +367,7 @@ function renderTemplateFormFilter(uniqueFechaId) {
                 <div id="selectWrapperSelectAgency" class="wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Agencia</h3>
                     <div class="containerInputAndOptions">
-                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                      <img class="iconDesplegar" src="${imgNext}" alt="">
                       <input type="hidden" class="filterInput" name="agencia" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
                       <div class="multipleSelect pseudo-input-select-wrapper">
                             <h3></h3>
@@ -408,7 +383,7 @@ function renderTemplateFormFilter(uniqueFechaId) {
                 <div id="selectWrapperSelectCampania" class="wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Campaña</h3>
                     <div class="containerInputAndOptions">
-                        <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                        <img class="iconDesplegar" src="${imgNext}" alt="">
                         <input type="hidden" class="filterInput" name="ente" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
                         <div class="multipleSelect pseudo-input-select-wrapper">
                             <h3></h3>
@@ -424,7 +399,7 @@ function renderTemplateFormFilter(uniqueFechaId) {
                 <div id="selectWrapperSelectCampania" class="wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Tipo de Movimiento</h3>
                     <div class="containerInputAndOptions">
-                        <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                        <img class="iconDesplegar" src="${imgNext}"    alt="">
                         <input type="hidden" class="filterInput" name="tipo_mov" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
                         <div class="multipleSelect pseudo-input-select-wrapper">
                               <h3></h3>
@@ -441,19 +416,16 @@ function renderTemplateFormFilter(uniqueFechaId) {
 }
 
 function modalFilter() {
-    console.log(appliedFilters)
-
     let modal = new tingle.modal({
         footer: true,
         closeMethods: ['overlay', 'button', 'escape'],
         cssClass: ['modalContainerFilter'],
 
         onOpen: function () {
-            // enableAuditarButton()
             initMultipleCustomSelects(appliedFilters)
         },
         onClose: function () {
-            deleteCalendarDOM()
+            deleteMultipleCalendarDOM()
             modal.destroy();
         },
     });
@@ -463,11 +435,10 @@ function modalFilter() {
     let uniqueFechaId = 'newFecha_' + Date.now();
     template = renderTemplateFormFilter(uniqueFechaId)
     modal.setContent(template);
-    initSelectFecha(document.getElementById(`${uniqueFechaId}`))
-    ordersZindexSelects()
+    initSelectMultipleFecha(document.getElementById(`${uniqueFechaId}`))
 
     inputsFilters = document.querySelectorAll('.filterInput')
-    
+
     // add a button
     modal.addFooterBtn('Filtrar', 'tingle-btn tingle-btn--primary add-button-default', async function () {
         let response = await movsGetFilter(inputsFilters)
@@ -500,8 +471,8 @@ function modalFilter() {
 // Funcion para obtener todos los movimientos por pagina 
 async function movsGetFilter(inputs) {
     let url = createParamsUrl(inputs)
-    console.log(`inputs: ${inputs}`)
-    console.log(`url: ${url}`)
+    // console.log(`inputs: ${inputs}`)
+    // console.log(`url: ${url}`)
     urlForFilter = url
 
     const response = await fetch(`/requestmovs/?page=1${urlForFilter}`, {
@@ -552,8 +523,14 @@ function storeAppliedFilters(inputs) {
     appliedFilters = {};
     inputs.forEach(input => {
         if (input.value.trim() !== "") {
+            console.log(input)
             let textElement = input.parentElement.querySelector('h3');
-            appliedFilters[input.name] = { "data": input.value, "text": textElement.textContent };
+            if (textElement) {
+                appliedFilters[input.name] = { "data": input.value, "text": textElement.textContent };
+            } else {
+                appliedFilters[input.name] = { "data": input.value, "text": input.value };
+
+            }
         }
     });
 }
