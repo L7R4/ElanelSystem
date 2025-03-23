@@ -39,8 +39,8 @@ function renderMessage(message, iconMessage) {
 }
 
 //#region Manejar el display del loader
-function showLoader() {
-    document.querySelector('.modalContainerImport').children[0].style.display = "none";
+function showLoader(containerClassName) {
+    document.querySelector(`.${containerClassName}`).children[0].style.display = "none";
     document.getElementById('wrapperLoader').style.display = 'flex';
 }
 
@@ -77,37 +77,20 @@ function newModalImport() {
             "agencia": agenciaInput.value,
         }
 
-        showLoader()
-        setTimeout(async function () {
-            let response = await fetchFunction(body, urlImportData);
-
-            if (response.status) {
-                console.log("Salio todo bien");
-                hiddenLoader();
-                modal.close();
-                modal.destroy();
-            } else {
-                console.log("Salio todo mal");
-                hiddenLoader();
-
-                modal.close();
-                modal.destroy();
-            }
-            newModalMessage(response.message, response.iconMessage);
-        }, 5000);  // 10,000 milisegundos = 10 segundos
-        // let response = await fetchFunction(body,urlImportData)
-        // if(response.status){
-        //     console.log("Salio todo bien")
-        //     modal.close();
-        //     modal.destroy();
-        // }
-        // else{
-        //     console.log("Salio todo mal")
-        //     modal.close();
-        //     modal.destroy();
-        // }
-        // newModalMessage(response.message,response.iconMessage)
-
+        showLoader("modalContainerImport")
+        let response = await fetchFunction(body, urlImportData);
+        if (response.status) {
+            console.log("Salio todo bien");
+            hiddenLoader();
+            modal.close();
+            modal.destroy();
+        } else {
+            console.log("Salio todo mal");
+            hiddenLoader();
+            modal.close();
+            modal.destroy();
+        }
+        newModalMessage(response.message, response.iconMessage, "modalContainerImport");
     });
 
     // add another button
@@ -135,7 +118,6 @@ function enableImportButton() {
 
     // Función que verifica si los inputs están completos
     function checkInputs() {
-        console.log("asda")
         if (agenciaInput.value && importDataInput.files.length > 0) {
             importButton.disabled = false;  // Habilitar el botón
             importButton.classList.remove("disabled")
@@ -152,11 +134,11 @@ function enableImportButton() {
     importDataInput.addEventListener("input", checkInputs);
 }
 
-function newModalMessage(message, iconMessage) {
+function newModalMessage(message, iconMessage, containerClassName) {
     let modalMessage = new tingle.modal({
         footer: true,
         closeMethods: ['overlay', 'button', 'escape'],
-        cssClass: ['modalContainerMessage'],
+        cssClass: [containerClassName],
 
     });
 

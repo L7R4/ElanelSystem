@@ -198,7 +198,7 @@ function renderViewCannon(mov) {
                 <p>${mov["cuota"]["data"]}</p>
             </div>
         </div>
-        <div>s
+        <div>
             <p><strong>Monto</strong></p>
             <div>
                 <p>$${mov["monto"]["data"]}</p>
@@ -326,7 +326,7 @@ function renderTemplateFormFilter(uniqueFechaId) {
                 <div class="wrapperCalendario wrapperTypeFilter wrapperSelectCustom">
                     <h3 class="labelInput">Fecha</h3>
                     <div class="containerCalendario">
-                        <input id="${uniqueFechaId}" name="fecha" class="pseudo-input-select-wrapper filterInput" type="text" placeholder="Choose date" readonly />
+                        <input id="${uniqueFechaId}" name="fecha" class="pseudo-input-select-wrapper filterInput" type="text" placeholder="Seleccionar" readonly />
                     </div>
                 </div>
 

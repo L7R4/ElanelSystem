@@ -54,62 +54,25 @@
             </div>
         </div>
 
-        <div class="resumTableWrapper">
-            <table class="resum_table">
-              <thead>
-                <tr>
-                    <th>Tipo de caja</th>
-                    <th>Saldo</th>
-                </tr>
-              </thead>
-              <tbody>
-              </tbody>
-            </table>
-        </div>
-        {% comment %} <div class="resum">
-            <div class="resum__cuenta">
-                <div class="resum__cuenta__tipoCaja">
-                    <h2>Tipo de caja</h2>
-
-                    {% for metodo in metodos_de_pago %}
-                        <h4>{{metodo.nombre}}</h4>
-                        
-                    {% endfor %}
-                    <h4>Total</h4>
-                </div>
-                <div class="resum__cuenta__saldo">
-                    <h2>Saldo</h2>
-                </div>
+        <div class="resumWrapper">
+            <div class="resumTableWrapper">
+                <table class="resum_table">
+                    <thead>
+                        <tr>
+                            <th>Tipo de caja</th>
+                            <th>Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
-            {% if filtros %}    
-                <div class="wrapperFiltroTexto">
-                    <h3>Filtrado por: </h3>
-                    <ul>
-                    </ul>
-                    <a href="{% url 'sales:caja' %}">Limpiar filtros</a>
-                </div>
-                
-            {% endif %}
             <div class="wrapperButtonInforme">
                 <a href="{% url 'sales:informePDF' %}" target="_blank">Hacer informe</a>
-                <a href="{% url 'sales:informeSend' %}" target="_blank">Hacer informe y enviar</a> 
-                <a href="{% url 'sales:exportExcel' %}">Exportar excel</a>
             </div>
-        </div> {% endcomment %}
-    </div>
 
-    {% comment %} <div class="resumTableWrapper">
-        <table class="resum_table">
-          <thead>
-            <tr>
-                <th>Tipo de caja</th>
-                <th>Saldo</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
-        </table>
-    </div> {% endcomment %}
+        </div>
+    </div>
 
 {% endblock content %}
 

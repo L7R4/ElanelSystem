@@ -5,15 +5,30 @@
 <link rel="stylesheet" href="{% static 'css/list_colaboradores.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link rel="stylesheet" href="{% static 'css/loader.css' %}">
-<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 
-<link href="{% static 'js/vanilla-calendar/build/vanilla-calendar.min.css' %}" rel="stylesheet">
-<script src="{% static 'js/vanilla-calendar/build/vanilla-calendar.min.js' %}" defer></script>
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+<link rel="stylesheet" href="{% static 'id_cover/index.css' %}">
+
+<link href="{% static 'js/vanilla-calendar-pro/styles/index.css' %}" rel="stylesheet">
+<script src="{% static 'js/vanilla-calendar-pro/index.js' %}" defer></script>
 {% endblock css %}
 
 {% block content %}
 <div id="wrapperLoader">
   <span id="loader"></span>
+</div>
+<div class="ldcv">
+  <div class="base">
+    <div class="inner">
+      <div class="wrapperContextMenuDescuento">
+          <h2 class="nombreUsuario"></h2>
+          <div class="wrapperButton">
+              <button type="button" class="add-button-default" data-ldcv-set="" onclick ="newModal(this)" id="descuentoButton">Aplicar adelanto</button>
+              <button type="button" class="add-button-default" data-ldcv-set="" onclick ="newModal(this)" id="premioButton">Aplicar premio</button>
+          </div>
+      </div> 
+    </div>
+  </div>
 </div>
 
 <div class="filters">
@@ -33,7 +48,7 @@
               <input type="text" placeholder="Sucursal" readonly name="sucursal" id="sucursalInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
               <ul class="list-select-custom options">
                 {% for s in sucursales %}
-                  <li>{{s}}</li>
+                  <li>{{s.pseudonimo}}</li>
                 {% endfor %}
               </ul>
           </div>
@@ -97,10 +112,12 @@
 <script>
   var csrf_token = '{%csrf_token%}'
   var campaniasDisponibles = {{ campaniasDisponibles|safe }}
+  var metodosDePago = {{ metodosDePago|safe }}
   var urlPostDescuento = "{{urlPostDescuento}}"
   var urlImportData = "{% url 'users:importUsuarios' %}"
   var sucursalesDisponibles = {{ sucursalesDisponibles|safe }}
   var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}"
+  var imgNext = "{% static 'images/icons/arrowDown.png' %}";
 </script>
 
 <script>
@@ -116,12 +133,18 @@
 </script>
 
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+<script src="{% static 'id_cover/index.js' %}"></script>
+
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
-<script src="{% static 'js/menuContextCreateDescuentoUser.js' %}"></script>
-<script src="{% static 'js/modalCreateDescuento.js' %}"></script>
+<script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+<script src="{% static 'js/z_index_orders_selects.js' %}"></script>
+
 <script src="{% static 'js/importDataUsers.js' %}"></script>
 <script src="{% static 'js/x_filter_users.js' %}"></script>
-<script src="{% static 'js/vanilla-calendar/simpleCalendarManage.js' %}" defer></script>
+<script src="{% static 'js/vanilla-calendar-pro/singleCalendarWithTime.js' %}" defer></script>
+<script src="{% static 'js/menuContextCreateDescuentoUser.js' %}"></script>
+<script src="{% static 'js/modalCreateDescuento.js' %}"></script>
+
 
 
 

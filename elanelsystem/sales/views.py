@@ -1611,49 +1611,129 @@ def viewsPDFInforme(request):
     datos = request.session.get('informe_data', {})
 
     # Para pasar el detalles de los movs
-
     datos_modificado = [
         {
-            "Moviem.": d.get("tipo_mov", "-"),
-            "Compro.": "---" if d.get("tipoComprobante") is None or d.get("tipoComprobante") == "null" else d.get("tipoComprobante", "---"),
-            "Nro Comprob.": "---" if d.get("nroComprobante") is None or d.get("nroComprobante") == "null" else d.get("nroComprobante", "---"),
-            "Denominacion": "---" if d.get("denominacion") is None or d.get("denominacion") == "null" else d.get("denominacion", "---"),
-            "T. de ID": "---" if d.get("tipoIdentificacion") is None or d.get("tipoIdentificacion") == "null" else d.get("tipoIdentificacion", "---"),
-            "Nro de ID.": "---" if d.get("nroIdentificacion") is None or d.get("nroIdentificacion") == "null" else d.get("nroIdentificacion", "---"),
-            "Sucursal": d.get("sucursal", "-"),
-            "Moneda": "---" if d.get("tipoMoneda") is None or d.get("tipoMoneda") == "null" else d.get("tipoMoneda", "---"),
-            "Dinero": d.get("monto", "-"),
-            "Metodo de pago": d.get("metodoPago", "-"),
-            "Ente recau.": d.get("ente") if d.get("ente") is not None else d.get("cobrador"),
-            "Concepto": d.get("concepto", "-"),
-            "Fecha": d.get("fecha", "-"),
+            "Moviem.": (
+                d.get("tipo_mov", {})
+                 .get("data", "---")
+                ).capitalize(),
+
+            "Compro.": (
+                d.get("tipoComprobante", {}).get("data", None).capitalize()
+                if d.get("tipoComprobante", {}).get("data", None) 
+                not in (None, "null")
+                else "---"
+            ),
+
+            "Nro Comprob.": (
+                d.get("nroComprobante", {}).get("data", "---")
+                if d.get("nroComprobante", {}).get("data", None)
+                not in (None, "null")
+                else "---"
+            ),
+
+            "Denominacion": (
+                d.get("denominacion", {}).get("data", "---")
+                if d.get("denominacion", {}).get("data", None)
+                not in (None, "null")
+                else "---"
+            ),
+
+            "T. de ID": (
+                d.get("tipoIdentificacion", {}).get("data", "---")
+                if d.get("tipoIdentificacion", {}).get("data", None)
+                not in (None, "null")
+                else "---"
+            ),
+
+            "Nro de ID.": (
+                d.get("nroIdentificacion", {}).get("data", "---")
+                if d.get("nroIdentificacion", {}).get("data", None)
+                not in (None, "null")
+                else "---"
+            ),
+
+            "Sucursal": (
+                d.get("agencia", {}).get("data", "---")
+                if d.get("agencia", {}).get("data", None)
+                not in (None, "null")
+                else "---"
+            ),
+
+            "Moneda": (
+                d.get("tipoMoneda", {}).get("data", "---")
+                if d.get("tipoMoneda", {}).get("data", None)
+                not in (None, "null")
+                else "---"
+            ),
+
+            "Dinero": (
+                d.get("monto", {}).get("data", "---")
+                if d.get("monto", {}).get("data", None)
+                not in (None, "null")
+                else "---"
+            ),
+
+            "Metodo de pago": (
+                d.get("metodoPagoAlias", {}).get("data", "---")
+                if d.get("metodoPagoAlias", {}).get("data", None)
+                not in (None, "null")
+                else "---"
+            ),
+
+            "Ente recau.": (
+                d.get("ente", {}).get("data", "---")
+                if d.get("ente", {}).get("data", None)
+                not in (None, "null")
+                else d.get("cobradorAlias", {}).get("data", "---")
+            ),
+
+            "Concepto": (
+                d.get("concepto", {}).get("data", "---")
+                if d.get("concepto", {}).get("data", None)
+                not in (None, "null")
+                else "---"
+            ),
+
+            "Fecha": (
+                d.get("fecha", {}).get("data", "---")
+                if d.get("fecha", {}).get("data", None)
+                not in (None, "null")
+                else "---"
+            ),
         }
         for d in datos
     ]
     # Para pasar el resumen de tipos de pagos 
+    resumenEstadoCuenta=[]
+    total_money = 0
+    metodosPagos = MetodoPago.objects.all()
+    for metodo in metodosPagos:
+        estado_cuenta_by_metodo = {}
+        estado_cuenta_by_metodo["verbose_name"] = metodo.alias
+        metodoClean = metodo.alias.replace(" ","_").lower() + "_total_money"
+        estado_cuenta_by_metodo["name_clean"] = metodoClean
 
-    metodosPagosResumen={}
-    tiposDePago = {"efectivo":"Efectivo",
-                   "banco":"Banco", 
-                   "posnet":"Posnet", 
-                   "merPago":"Mercado Pago", 
-                   "transferencia":"Transferencia"}  
-    
-    montoTotal = 0
-    for clave in tiposDePago.keys():
-        itemsTypePayment = list(filter(lambda x: x['metodoPago'] == tiposDePago[clave], datos))
-        montoTypePaymentEgreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Egreso'])
-        montoTypePaymentIngreso = sum([monto['monto'] for monto in itemsTypePayment if monto['tipo_mov'] == 'Ingreso'])
-        montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso
-        montoTotal += montoTypePayment 
-        metodosPagosResumen[clave] = montoTypePayment
-    metodosPagosResumen["total"] = montoTotal
+        movs_by_metodo = list(filter(lambda mov:mov["metodoPago"]["data"] == int(metodo.id), datos))
+        money_by_metodo_ingreso = sum([mov["monto"]["data"] for mov in movs_by_metodo if mov["tipo_mov"]["data"] == "ingreso"])
+        money_by_metodo_egreso = sum([mov["monto"]["data"] for mov in movs_by_metodo if mov["tipo_mov"]["data"] == "egreso"])
+        money_by_metodo = money_by_metodo_ingreso - money_by_metodo_egreso
+        estado_cuenta_by_metodo["money"] = money_by_metodo
+        resumenEstadoCuenta.append(estado_cuenta_by_metodo)
+        
+        total_money += money_by_metodo
+    dictTotal = {
+        "verbose_name": "Total",
+        "name_clean": "total_money",
+        "money": total_money
+    }
+    resumenEstadoCuenta.append(dictTotal)
 
     informeName = "Informe"
     urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "liquidacion.pdf")
     
     # printPDFinforme({"data":datos_modificado},request.build_absolute_uri(),urlPDF)
-    printPDFinforme({"data":datos_modificado,"metodosPagosResumen":metodosPagosResumen},request.build_absolute_uri(),urlPDF)
+    printPDFinforme({"data":datos_modificado,"metodosPagosResumen":resumenEstadoCuenta},request.build_absolute_uri(),urlPDF)
 
     
     with open(urlPDF, 'rb') as pdf_file:
@@ -1709,21 +1789,24 @@ def viewPDFReciboCuota(request):
     print(cuotaData)
     urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "pdf_recibo_cuota.pdf")
     informeName = "Recibo"
+    numero_recibo = obtener_siguiente_numero_recibo()
+    cliente_de_cuota = Ventas.objects.get(nro_operacion=int(cuotaData["nro_operacion"])).nro_cliente
+    agencia = Ventas.objects.get(nro_operacion=int(cuotaData["nro_operacion"])).agencia
     context = {
-        "numero_recibo": "000001",
-        "fecha": "18/03/2025",
-        "cuit_emisor": "30-12345678-9",
-        "responsable_tipo": "Monotributo",
-        "nombre_cliente": "Cliente de Ejemplo",
-        "cuit_cliente": "20-87654321-0",
-        "domicilio_cliente": "Calle Falsa 123",
-        "localidad_cliente": "Springfield",
-        "monto_en_letras": "Mil pesos",
-        "monto_numero": "1000.00",
-        "concepto_recibo": "Pago de cuota pendiente",
-        "forma_de_pago": "Efectivo",
-        "fecha_impresion": "18/03/2025",
-        # ... y cualquier otro dato que necesites
+        "numero_recibo": numero_recibo,
+        "fecha": cuotaData["pagos"][0]["fecha"][:10],
+        "cuit_empresa": "30-12345678-9",
+        # "responsable_tipo": "Monotributo",
+        "nombre_cliente": cliente_de_cuota.nombre,
+        "domicilio_cliente": cliente_de_cuota.domic,
+        "localidad_cliente": cliente_de_cuota.loc,
+        "monto_en_letras": convertir_moneda_a_texto(cuotaData["total"]),
+        
+        "monto_numero": cuotaData["total"],
+        "direcc_agencia": agencia.direccion,
+        "tel_agencia": agencia.tel_ref,
+        "email_agencia": agencia.email_ref,
+        "concepto_recibo" : f"Pago de cuota N°{cuotaData['cuota'][6:]}"
     }
 
     printPDF(context,request.build_absolute_uri(),urlPDF,"pdf_recibo_cuota.html","static/css/pdfReciboCuota.css")
@@ -1782,25 +1865,25 @@ class CierreCaja(TestLogin,generic.View):
         json_data = requestMovimientos(request)
         movsData = json.loads(json_data.content)
         
-        today = datetime.date.today().strftime("%d/%m/%Y %H:%M")
-        movimientosHoy = filtroMovimientos_fecha(str(today),movsData["data"],str(today))
+        today = datetime.today().strftime("%d/%m/%Y %H:%M")
+        # movimientosHoy = filtroMovimientos_fecha(str(today),movsData["data"],str(today))
 
         # FILTRA LOS MOVIMIENTOS SEGUN SE TIPO DE MOVIMIENTO
-        movimientos_Ingreso_Hoy = list(filter(lambda x: x["tipo_mov"] == "Ingreso" and x["tipo_pago"] == "Efectivo", movimientosHoy))
-        movimientos_Egreso_Hoy = list(filter(lambda x:x["tipo_mov"] == "Egreso" and x["tipo_pago"] == "Efectivo", movimientosHoy))
+        # movimientos_Ingreso_Hoy = list(filter(lambda x: x["tipo_mov"] == "Ingreso" and x["tipo_pago"] == "Efectivo", movimientosHoy))
+        # movimientos_Egreso_Hoy = list(filter(lambda x:x["tipo_mov"] == "Egreso" and x["tipo_pago"] == "Efectivo", movimientosHoy))
 
         # SUMA EL TOTAL DE SEGUN EL TIPO DE MOVIMIENTO
-        montoTotal_Ingreso_Hoy = sum([item["pagado"] for item in movimientos_Ingreso_Hoy])
-        montoTotal_Egreso_Hoy = sum([item["pagado"] for item in movimientos_Egreso_Hoy])
+        # montoTotal_Ingreso_Hoy = sum([item["pagado"] for item in movimientos_Ingreso_Hoy])
+        # montoTotal_Egreso_Hoy = sum([item["pagado"] for item in movimientos_Egreso_Hoy])
 
-        if len(movimientosHoy) == 0:
-            context["movs"] = 0
-        else:
-            context["movs"] = int(montoTotal_Ingreso_Hoy - montoTotal_Egreso_Hoy)
+        # if len(movimientosHoy) == 0:
+        #     context["movs"] = 0
+        # else:
+        #     context["movs"] = int(montoTotal_Ingreso_Hoy - montoTotal_Egreso_Hoy)
 
-        context["sucursal"] = request.user.sucursal
+        context["sucursal"] = request.user.sucursales.all()[0]
         context["sucursales"] = Sucursal.objects.all()
-        context["fecha"] =  datetime.date.today().strftime("%d/%m/%Y")
+        context["fecha"] =  datetime.today().strftime("%d/%m/%Y")
         context["admin"]= request.user
         
         return render(request, self.template_name, context)

@@ -1,4 +1,4 @@
-function renderFormDescuento(item, type) {
+function renderFormDescuento(item, type, uniqueFechaId) {
     let nombre = item.querySelector(".nombreUser").textContent
     let email = item.querySelector(".emailUser").textContent
     let operationType = type.id == "descuentoButton" ? "descuento" : "premio"
@@ -8,7 +8,7 @@ function renderFormDescuento(item, type) {
       <div class="tittleModal">
           <h3 id="tittleModalEgresoIngreso">
             ${operationType == "descuento" ?
-            "Descuento o adelanto" :
+            "Adelanto" :
             "Premio"} 
             a ${nombre}
             </h3>
@@ -22,39 +22,65 @@ function renderFormDescuento(item, type) {
 
           <div class="wrapperInput">
               <h3 class="labelInput">Dinero</h3>
-              <input name="dinero" id="dineroInput" class="input-read-write-default">
+              <input type="number" name="dinero" id="dineroInput" class="input-read-write-default">
           </div>
 
-          <div id="selectWrapperSelectTypePayments" class="wrapperInput">
-              <h3 class="labelInput">Metodo de pago</h3>
+          <div id="selectWrapperMetodoPago" class="wrapperInput wrapperSelectCustom">
+              <h3 class="labelInput">Metodo de Pago</h3>
               <div class="containerInputAndOptions">
-                <img id="tipoPagoIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" name="metodoPago" class="onlySelect input-select-custom " id="metodoPagoInput" placeholder="Seleccionar" autocomplete="off" readonly="">
-                <ul class="list-select-custom options">
-                    <li data-value="Efectivo">Efectivo</li>
-                    <li data-value="Banco">Banco</li>
-                    <li data-value="Transferencia">Transferencia</li>
-                </ul>
-              </div>
-          </div>
-
-          <div class="wrapperInput">
-              <h3 class="labelInput">Fecha</h3>
-              <input name="fecha" id="fechaInput" class="input-read-only-default inputEgresoIngreso">
-          </div>
-
-          <div id="selectWrapperSelectCampania" class="wrapperInput">
-              <h3 class="labelInput">Campaña</h3>
-
-              <div class="containerInputAndOptions">
-                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                  <input type="text" name="campania" id="campaniaInput" class="input-select-custom onlySelect" placeholder="Seleccionar" autocomplete="off" readonly="">
+                  <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="${imgNext}" alt="">
+                  <input type="hidden" name="metodoPago" id="metodoPagoInput" placeholder ="Seleccionar" autocomplete="off">
+                  
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                      <h3></h3>
+                  </div>
                   <ul class="list-select-custom options">
-                    ${campaniasDisponibles.map(item => `
-                        <li>${item}</li>
-                    `).join('')}   
+                      ${metodosDePago.map(mp => `
+                          <li data-value="${mp.id}">${mp.alias}</li>
+                      `).join('')}
                   </ul>
               </div>
+          </div>
+
+          <div id="selectWrapperCampanias" class="wrapperInput wrapperSelectCustom">
+              <h3 class="labelInput">Campaña</h3>
+              <div class="containerInputAndOptions">
+                  <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="${imgNext}" alt="">
+                  <input type="hidden" name="campania" id="campaniaInput" placeholder ="Seleccionar" autocomplete="off">
+                  
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                      <h3></h3>
+                  </div>
+                  <ul class="list-select-custom options">
+                      ${campaniasDisponibles.map(c => `
+                          <li data-value="${c}">${c}</li>
+                      `).join('')}
+                  </ul>
+              </div>
+          </div>
+
+          <div id="selectWrapperMetodoPago" class="wrapperInput wrapperSelectCustom">
+              <h3 class="labelInput">Agencia</h3>
+              <div class="containerInputAndOptions">
+                  <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="${imgNext}" alt="">
+                  <input type="hidden" name="agencia" id="agenciaInput" placeholder ="Seleccionar" autocomplete="off">
+                  
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                      <h3></h3>
+                  </div>
+                  <ul class="list-select-custom options">
+                      ${sucursalesDisponibles.map(sd => `
+                          <li data-value="${sd.id}">${sd.pseudonimo}</li>
+                      `).join('')}
+                  </ul>
+              </div>
+          </div>
+
+          <div class="wrapperCalendario wrapperInput wrapperSelectCustom">
+                <h3 class="labelInput">Fecha</h3>
+                <div class="containerCalendario">
+                    <input id="${uniqueFechaId}" name="fecha" class="pseudo-input-select-wrapper inputEgresoIngreso" type="text" placeholder="Seleccionar" readonly />
+                </div>
           </div>
 
           
@@ -72,23 +98,22 @@ function newModal(type) {
     var modal = new tingle.modal({
         footer: true,
         closeMethods: ['overlay', 'button', 'escape'],
-        cssClass: ['custom-class-1', 'custom-class-2'],
+        cssClass: ['modalNewDescuentoPremio'],
         onOpen: function () {
-            cargarListenersEnInputs() // Para cargar los listeners de los inputs selects custom
+            initCustomSingleSelects() // Para cargar los listeners de los inputs selects custom
         },
-        // onClose: function() {
-        //     console.log('modal closed');
-        // },
-        beforeClose: function () {
-            // here's goes some logic
-            // e.g. save content before closing the modal
-            return true;
 
-        }
+        onClose: function () {
+            deleteSingleCalendarTimeDOM()
+            modal.destroy();
+        },
     });
 
     // set content
-    modal.setContent(renderFormDescuento(itemDOMSelected, type));
+    let uniqueFechaId = 'newFecha_' + Date.now();
+    modal.setContent(renderFormDescuento(userSelectedDOM, type, uniqueFechaId));
+
+    initSelectSingleDateWithTime(document.getElementById(`${uniqueFechaId}`));
 
     // add a button
     modal.addFooterBtn('Confirmar', 'tingle-btn tingle-btn--primary', async function () {
@@ -100,10 +125,14 @@ function newModal(type) {
             "metodoPago": metodoPagoInput.value,
             "dinero": dineroInput.value,
             "campania": campaniaInput.value,
-            "fecha": fechaInput.value,
+            "agencia": agenciaInput.value,
+            "fecha": document.querySelector(".wrapperCalendario input").value,
             "concepto": conceptoInput.value
         }
+        showLoader("modalNewDescuentoPremio")
         let response = await formFETCH(body, urlPostDescuento)
+        hiddenLoader();
+
         if (response.status) {
             console.log("Salio todo bien")
             modal.close();
@@ -114,6 +143,9 @@ function newModal(type) {
             modal.close();
             modal.destroy();
         }
+
+        newModalMessage(response.message, response.iconMessage, "modalNewDescuentoPremio");
+
 
     });
 
@@ -127,6 +159,7 @@ function newModal(type) {
     // open modal
     modal.open();
 }
+
 
 //#region Fetch data
 function getCookie(name) {

@@ -10,12 +10,12 @@ from django.shortcuts import redirect, render
 from django.views import generic
 
 from users.utils import printPDFNewUSer
-from sales.utils import getAllCampaniaOfYear, getCampaniaActual
+from sales.utils import getAllCampaniaOfYear, getCampanasDisponibles, getCampaniaActual
 
 from .models import Usuario,Cliente,Sucursal,Key
 from products.models import Products
 from sales.models import CuentaCobranza
-from sales.models import Ventas,ArqueoCaja,MovimientoExterno
+from sales.models import Ventas,ArqueoCaja,MovimientoExterno,MetodoPago
 from sales.utils import getEstadoVenta
 # from .forms import CreateClienteForm
 from django.urls import reverse_lazy, reverse
@@ -228,24 +228,10 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     def get(self,request,*args, **kwargs):
         users = Usuario.objects.all()
 
-        #region Para determinar si se habilita la campaña anterior
-        campaniasDisponibles = []
-        campaniasDelAño = getAllCampaniaOfYear()
-        campaniaActual = getCampaniaActual()
-        
-        campaniaAnterior = campaniasDelAño[campaniasDelAño.index(campaniaActual) - 1]
-        fechaActual = datetime.datetime.now()
-        ultimo_dia_mes_pasado = datetime.datetime.now().replace(day=1) - relativedelta(days=1)
-        diferencia_dias = (fechaActual - ultimo_dia_mes_pasado).days
-
-        if(diferencia_dias > 5): # Si la diferencia de dias es mayor a 5 dias, no se puede asignar la campania porque ya paso el tiempo limite para dar de alta una venta en la campania anterior
-            campaniasDisponibles = [campaniaActual]
-        else:
-            campaniasDisponibles = [campaniaActual,campaniaAnterior]
-        #endregion
-
-        sucursalesObject = Sucursal.objects.all()
-        sucursales = [sucursal.pseudonimo for sucursal in sucursalesObject ]
+        campaniasDisponibles = getCampanasDisponibles()
+        metodosPago = [{"id": metodo.id, "alias": metodo.alias } for metodo in MetodoPago.objects.all()]
+        sucursales = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in Sucursal.objects.all() ]
+        sucursalesDisponibles = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in request.user.sucursales.all()]
 
         users_data = []
         for user in Usuario.objects.all():
@@ -266,8 +252,9 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
             "users": users_data,
             "urlPostDescuento": reverse_lazy("users:realizarDescuento"),
             "campaniasDisponibles": json.dumps(campaniasDisponibles),
-            "sucursalesDisponibles": json.dumps(sucursales),
-            "sucursales": sucursales
+            "sucursalesDisponibles": json.dumps(sucursalesDisponibles),
+            "sucursales": sucursales,
+            "metodosDePago": json.dumps(metodosPago)
         }
         return render(request, self.template_name,context)
 
@@ -593,11 +580,11 @@ def realizarDescuento(request):
         metodoPago = form["metodoPago"]
         dinero = form["dinero"]
         campania = form["campania"]
-        agencia = usuario.sucursales.all()[0].pseudonimo
+        agencia = form["agencia"]
         fecha = form["fecha"]
         operationType = form["operationType"]
         concepto = form["concepto"]
-
+        message =""
         # Crear el diccionario de descuento
         data_dict ={
             "metodoPago": metodoPago,
@@ -605,7 +592,7 @@ def realizarDescuento(request):
             "agencia": agencia,
             "campania": campania,
             "fecha": fecha,
-            "concepto": concepto
+            "concepto": f"{operationType.capitalize()}: {concepto}" 
         }
 
         if(operationType == "descuento"):
@@ -613,17 +600,20 @@ def realizarDescuento(request):
             descuentos_actuales.append(data_dict) # Agregar el nuevo descuento
             usuario.descuentos = descuentos_actuales # Asignar la lista actualizada al campo descuentos
             usuario.save()
+            message = "Adelanto aplicado correctamente"
 
         elif (operationType == "premio"): 
             premios_actuales = usuario.premios # Obtener la lista actual de descuentos, o inicializarla si está vacía
             premios_actuales.append(data_dict) # Agregar el nuevo descuento
             usuario.premios = premios_actuales # Asignar la lista actualizada al campo descuentos
             usuario.save()
+            message = "Premio aplicado correctamente"
 
-        return JsonResponse({"status": True, "message": "Descuento aplicado correctamente"},safe=False)
+        iconMessage = "/static/images/icons/checkMark.svg"
+        return JsonResponse({"status": True, "message": message, "iconMessage": iconMessage},safe=False)
     except Exception as e:
-        print(e)
-        return JsonResponse({"status": False, "message": "Error al aplicar descuento"},safe=False)
+        iconMessage = "/static/images/icons/error_icon.svg"
+        return JsonResponse({"status": False, "iconMessage": iconMessage, "message": "Ocurrió un error al generar el adelanto/premio"},safe=False)
 
 
 def importar_usuarios(request):

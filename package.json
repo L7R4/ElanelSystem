@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "ldcover": "^3.5.4"
+  }
+}
