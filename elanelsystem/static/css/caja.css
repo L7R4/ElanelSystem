@@ -104,14 +104,18 @@
 
 
 /* #region SECTOR DE RESUMEN DE ESTADOS DE CUENTA */
-.resumTableWrapper {
+.resumWrapper {
     max-width: 43rem;
     min-width: 27.5rem;
     height: fit-content;
-    padding: 1rem;
     flex: 1 1 30%;
+}
+
+.resumWrapper>div.resumTableWrapper {
     background-color: var(--third-color);
     border-radius: 1rem;
+    padding: 1rem;
+
 }
 
 table.resum_table {
@@ -525,4 +529,53 @@ table.resum_table>tbody>tr>td:last-child {
     font-size: clamp(1.2rem, 1.2vw, 1.5rem);
     font-family: raleway-semibold;
     color: var(--background-color);
+}
+
+.movimiento-info,
+.cannon-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.movimiento-info>h2,
+.cannon-info>h2 {
+    flex: 1 1 100%;
+    font-size: clamp(1.8rem, 1.4vw, 2.5rem);
+    font-family: raleway-semibold;
+    color: var(--primary-color);
+}
+
+.movimiento-info>div,
+.cannon-info>div {
+    flex: 1 1 25%;
+    min-width: 25rem;
+}
+
+.movimiento-info>div>p,
+.cannon-info>div>p {
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+}
+
+.movimiento-info>div>div,
+.cannon-info>div>div {
+    border: 2px solid var(--secundary-color);
+    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
+    background-color: transparent;
+    position: relative;
+    border-radius: .6rem;
+    outline: none;
+    padding: .5rem 1.3rem;
+    width: 100%;
+    font-feature-settings: "pnum" on, "lnum" on;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+
+.modalContainerViewMov .tingle-modal-box__footer>button {
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
 }

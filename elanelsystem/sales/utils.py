@@ -354,7 +354,7 @@ def convertir_moneda_a_texto(cantidad):
     # Convertir número a palabras en español
     texto = num2words(numero, lang='es')
     # Retornar el texto con la palabra "pesos"
-    return f"{texto} pesos"
+    return f"{texto} pesos".capitalize()
 #region Data Structures ----------------------------------------------------------
 
 def getInfoBaseCannon(venta, cuota):

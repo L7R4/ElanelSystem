@@ -1,54 +1,32 @@
 const usuarios = document.querySelectorAll(".information > .values > .user_item")
+var ldcv;
+var userSelectedDOM;
 
-function renderMenuContextDescuento() {
-
-    return `
-    <div class="wrapperContextMenuDescuento">
-        <div class="wrapperButton">
-            <button type="button" class="add-button-default" onclick ="newModal(this)" id="descuentoButton">Aplicar descuento o adelanto</button>
-            <button type="button" class="add-button-default" onclick ="newModal(this)" id="premioButton">Aplicar premio</button>
-        </div>
-    </div> 
-    `;
-}
-
-var itemDOMSelected;
+document.addEventListener("DOMContentLoaded", function () {
+    ldcv = new ldcover({
+        root: ".ldcv"
+    });
+});
 
 function contextMenuManagement(usuarios) {
     usuarios.forEach(usuario => {
         usuario.addEventListener('contextmenu', function (e) {
             e.preventDefault();
 
-            const existingMenu = document.querySelector('.context-menu');
-            if (existingMenu) {
-                existingMenu.remove();
-            }
-            itemDOMSelected = usuario;
-            // console.log(itemDOMSelected)
+            userSelectedDOM = usuario;
+            let nombre_usuario = userSelectedDOM.querySelector(".nombreUser").textContent;
 
-            const contextMenu = document.createElement('div');
-            contextMenu.classList.add('context-menu');
-            contextMenu.innerHTML = renderMenuContextDescuento();
-            document.body.appendChild(contextMenu);
-
-            contextMenu.style.top = `${e.clientY}px`;
-            contextMenu.style.left = `${e.clientX}px`;
-            contextMenu.style.display = 'block';
+            ldcv.toggle();
+            updateNameContext(nombre_usuario);
         });
     });
-
 }
-contextMenuManagement(usuarios)
 
-// Evento global para cerrar el menú contextual si se hace clic fuera de él
-document.addEventListener('click', function (e) {
-    const contextMenu = document.querySelector('.context-menu');
+function updateNameContext(nombre_usuario) {
+    let contextMenu = document.querySelector(".wrapperContextMenuDescuento");
+    let nombre = contextMenu.querySelector(".nombreUsuario");
+    nombre.textContent = nombre_usuario;
+}
 
-    if (contextMenu && !contextMenu.contains(e.target)) {
-        contextMenu.remove();
-    } else {
-        e.stopPropagation();
-    }
-});
-
+contextMenuManagement(usuarios);
 

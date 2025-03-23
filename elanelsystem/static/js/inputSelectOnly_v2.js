@@ -3,7 +3,6 @@ function initCustomSingleSelects(preValues = {}) {
     document.querySelectorAll(".containerInputAndOptions > .onlySelect.pseudo-input-select-wrapper").forEach(selectWrapper => {
         initSingleSelect(selectWrapper, preValues);
     });
-    console.log("wepsd")
     ordersZindexSelects()
 }
 
