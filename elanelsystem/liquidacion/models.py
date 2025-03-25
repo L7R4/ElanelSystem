@@ -75,6 +75,7 @@ class CoeficientePorProductividadVendedor(models.Model):
 
 class LiquidacionVendedor(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
+    sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     campania = models.CharField("Campaña",max_length=50)
     cant_ventas = models.IntegerField("Cantidad de ventas")
     productividad = models.FloatField("Productividad")
@@ -88,7 +89,7 @@ class LiquidacionVendedor(models.Model):
 class LiquidacionSupervisor(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
     campania = models.CharField("Campaña",max_length=50)
-
+    sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     cant_ventas = models.IntegerField("Cantidad de ventas")
     productividad = models.FloatField("Productividad",default=0)
     total_comisionado = models.FloatField("Total comisionado")

@@ -171,9 +171,9 @@ def filterMainManage(request,dataStructure):
         if filter_name in params_dict_clear:
             # print("WEpsss")
             # print(filter_name)
-            print(f"Filtro : {filter_name}")
+            # print(f"Filtro : {filter_name}")
             filter_value = params_dict_clear[filter_name]
-            print(f"valor: {filter_value}")
+            # print(f"valor: {filter_value}")
             try:
                 filtered_data = filter_func(filtered_data, filter_value)
             except Exception as e:

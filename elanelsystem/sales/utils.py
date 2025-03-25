@@ -316,33 +316,20 @@ def obtenerStatusAuditoria(venta): # Devuelve el estado de la ultima auditoria
     elif ultima_auditoria.get("grade") is False:
         return {"statusText": "Desaprobada", "statusIcon": static(f"images/icons/operationBaja.svg")}  # No auditada
 
-
-def formatear_moneda(valor):
-    """
-    Formatea un número en formato de moneda, separando miles con puntos.
-    
-    Args:
-        valor (int, float, str): Número a formatear.
-    
-    Returns:
-        str: Número formateado en formato de moneda.
-    """
+def formatear_moneda_sin_centavos(valor):
     try:
-        # Convierte el valor a float, en caso de que sea string
         valor = float(valor)
-        
-        # Divide el entero y los decimales
-        entero, decimal = divmod(valor, 1)
-        entero_formateado = f"{int(entero):,}".replace(",", ".")
-        
-        # Si hay decimales, los añade con coma, redondeando a 2 dígitos
-        if decimal > 0:
-            return f"{entero_formateado},{round(decimal * 100):02d}"
-        
-        return entero_formateado
+        return f"{valor:,.0f}".replace(",", "X").replace(".", ",").replace("X", ".")
     except (ValueError, TypeError):
-        # Maneja valores inválidos devolviendo un string vacío
-        return ""
+        return "-"
+    
+def formatear_moneda_con_centavos(valor):
+    try:
+        valor = float(valor)
+        return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except (ValueError, TypeError):
+        return "-"
+
 
 
 def convertir_moneda_a_texto(cantidad):
@@ -389,22 +376,26 @@ def dataStructureCannons(sucursal=None):
         ventas = Ventas.objects.all()
 
     cuotas_data = []
-
+    print(ventas)
     for i in range(int(ventas.count())):
         venta = ventas[i]
 
         for k in range(len(venta.cuotas)):
             cuota = venta.cuotas[k]
-
-            if cuota["status"] in ["pagado", "parcial", "atrasado"]:
+            cuotaStatusCleaned = cuota["status"].replace(" ", "").lower()
+            if cuotaStatusCleaned in ["pagado", "parcial", "atrasado"]:
                 for pago in cuota["pagos"]:
+                    metodo_pago_obj = get_or_create_metodo_pago(pago['metodoPago'])
+                    cobrador_obj = get_or_create_cobrador(pago["cobrador"])
+
                     mov = {**getInfoBaseCannon(venta, cuota), **{
-                        'metodoPago': {'data': int(pago['metodoPago']), 'verbose_name': 'Método de Pago'},
-                        'metodoPagoAlias': {'data': MetodoPago.objects.filter(id=int(pago['metodoPago']))[0].alias, 'verbose_name': 'Método de Pago'},
+                        'metodoPago': {'data': str(metodo_pago_obj.id), 'verbose_name': 'Método de Pago'},
+                        'metodoPagoAlias': {'data': metodo_pago_obj.alias, 'verbose_name': 'Método de Pago'},
                         'monto': {'data': pago['monto'], 'verbose_name': 'Monto Pagado'},
+                        'montoFormated': {'data': formatear_moneda_sin_centavos(pago['monto']), 'verbose_name': 'Monto Pagado'},
                         'fecha': {'data': pago['fecha'], 'verbose_name': 'Fecha de Pago'},
-                        'cobrador': {'data': int(pago['cobrador']), 'verbose_name': 'Cobrador'},
-                        'cobradorAlias': {'data': CuentaCobranza.objects.filter(id=int(pago['cobrador']))[0].alias, 'verbose_name': 'Cobrador'},
+                        'cobrador': {'data': str(cobrador_obj.id), 'verbose_name': 'Cobrador'},
+                        'cobradorAlias': {'data': cobrador_obj.alias, 'verbose_name': 'Cobrador'},
                         'campania': {'data': pago["campaniaPago"], 'verbose_name': 'Campaña'},
                     }}
                     cuotas_data.append(mov)
@@ -418,6 +409,9 @@ def dataStructureCannons(sucursal=None):
                 cuotas_data.append(mov)
 
     # cuotas_data.reverse()
+    # Obtener las cuotas con nro_operacion == 597
+    # w = [cuota for cuota in cuotas_data if cuota['nro_operacion']['data'] == "597"]
+    # print(f"\n\n\n {type(w[0]['metodoPago']['data'])} \n\n\n")
     return cuotas_data
 
 
@@ -442,15 +436,33 @@ def dataStructureVentas(sucursal=None):
             'nro_cuotas': {'data': venta.nro_cuotas, 'verbose_name': 'N° cuotas'},
             'id': {'data': venta.id, 'verbose_name': 'ID'},
             'campania': {'data': venta.campania, 'verbose_name': 'Campaña'},
+
             'importe': {'data': venta.importe, 'verbose_name': 'Importe'},
+            'importe_formated': {'data': formatear_moneda_sin_centavos(venta.importe), 'verbose_name': 'Importe'},
+
             'paquete': {'data': venta.paquete, 'verbose_name': 'Paquete'},
+            
             'primer_cuota': {'data': venta.primer_cuota, 'verbose_name': 'Primer cuota'},
+            'primer_cuota_formated': {'data': formatear_moneda_sin_centavos(venta.primer_cuota), 'verbose_name': 'Primer cuota'},
+            
             'suscripcion': {'data': venta.anticipo, 'verbose_name': 'Suscripción'},
+            'suscripcion_formated': {'data': formatear_moneda_sin_centavos(venta.anticipo), 'verbose_name': 'Suscripción'},
+
             'cuota_comercial': {'data': venta.importe_x_cuota, 'verbose_name': 'Cuota comercial'},
+            'cuota_comercial_formated': {'data': formatear_moneda_sin_centavos(venta.importe_x_cuota), 'verbose_name': 'Cuota comercial'},
+            
             'interes_generado': {'data': venta.intereses_generados, 'verbose_name': 'Interés generado'},
+            'interes_generado_formated': {'data': formatear_moneda_sin_centavos(venta.intereses_generados), 'verbose_name': 'Interés generado'},
+            
             'total_a_pagar': {'data': venta.total_a_pagar, 'verbose_name': 'Total a pagar'},
+            'total_a_pagar_formated': {'data': formatear_moneda_sin_centavos(venta.total_a_pagar), 'verbose_name': 'Total a pagar'},
+
             'dinero_entregado': {'data': getDineroEntregado(venta.cuotas), 'verbose_name': 'Dinero entregado'},
+            'dinero_entregado_formated': {'data': formatear_moneda_sin_centavos(getDineroEntregado(venta.cuotas)), 'verbose_name': 'Dinero entregado'},
+            
             'dinero_restante': {'data': venta.total_a_pagar - getDineroEntregado(venta.cuotas), 'verbose_name': 'Dinero restante'},
+            'dinero_restante_formated': {'data': formatear_moneda_sin_centavos(venta.total_a_pagar - getDineroEntregado(venta.cuotas)), 'verbose_name': 'Dinero restante'},
+            
             'vendedor': {'data': venta.vendedor.nombre, 'verbose_name': 'Vendedor'},
             'producto': {'data': venta.producto.nombre, 'verbose_name': 'Producto'},
             'supervisor': {'data': venta.supervisor.nombre, 'verbose_name': 'Supervisor'},
@@ -510,19 +522,22 @@ def dataStructureMovimientosExternos(sucursal=None):
             "tipoMoneda": {'data': movs_externo.tipoMoneda, 'verbose_name': 'Tipo Moneda'},
             "tipo_mov": {'data': movs_externo.movimiento, 'verbose_name': 'Tipo Movimiento'},
             "monto": {'data': movs_externo.dinero, 'verbose_name': 'Monto'},
-            "metodoPago": {'data': int(movs_externo.metodoPago.id), 'verbose_name': 'Método de Pago'},
+            'montoFormated': {'data': formatear_moneda_sin_centavos(movs_externo.dinero), 'verbose_name': 'Monto Pagado'},
+            
+            "metodoPago": {'data': str(movs_externo.metodoPago.id), 'verbose_name': 'Método de Pago'},
             "metodoPagoAlias": {'data': movs_externo.metodoPago.alias, 'verbose_name': 'Método de Pago'},
             "agencia": {'data': movs_externo.agencia.pseudonimo, 'verbose_name': 'Sucursal'},
             "ente": {'data': movs_externo.ente.alias, 'verbose_name': 'Ente recaudador'},
             "fecha": {'data': movs_externo.fecha, 'verbose_name': 'Fecha'},
             "campania": {'data': movs_externo.campania, 'verbose_name': 'Campaña'},
             "concepto": {'data': movs_externo.concepto, 'verbose_name': 'Concepto'},
-            "premio": {'data': movs_externo.premio, 'verbose_name': 'Premio'},
-            "adelanto": {'data': movs_externo.adelanto, 'verbose_name': 'Adelanto'},
+            "observaciones": {'data': movs_externo.observaciones, 'verbose_name': 'Observaciones'},
+            "premio": {'data':  "Si" if movs_externo.premio else "No", 'verbose_name': 'Premio'},
+            "adelanto": {'data': "Si" if movs_externo.adelanto else "No", 'verbose_name': 'Adelanto'},
         }
         
         movsExternosList.append(movsExternoDict)
-    
+    print(movsExternosList)
     return movsExternosList
 
 
@@ -637,12 +652,14 @@ def getCuotasPagadasSinCredito(cuotas):
 
 
 def bloquer_desbloquear_cuotas(cuotas):
+    print(cuotas)
     nuevas_cuotas = []
     for i in range(0,len(cuotas)):
         cuota = cuotas[i]
         if not (i == 0):
             pagos = cuota["pagos"]
             metodoDePagoDeCuota = [pago["metodoPago"] for pago in pagos] # Obtiene los metodos de pago de la cuota
+            print("Hasta aca esta todo bien")
             if(cuotas[i-1]["status"] == "Pagado"):
                 cuota["bloqueada"] = False
             elif("Credito" in metodoDePagoDeCuota):
@@ -676,6 +693,69 @@ def obtener_siguiente_numero_recibo():
     config.save()
 
     return nuevo_numero_formateado
+
+
+def get_or_create_metodo_pago(metodo_str):
+    """
+    Devuelve un objeto MetodoPago (creándolo si no existe).
+    metodo_str puede ser un ID (string con dígitos) o un alias (por ejemplo, "Efectivo").
+    Retorna un objeto MetodoPago válido.
+    """
+    from sales.models import MetodoPago
+
+    # 1) Intentar parsear como entero para usarlo como ID
+    try:
+        metodo_id = int(metodo_str)
+        # Buscar si existe
+        metodo_pago = MetodoPago.objects.get(id=metodo_id)
+        return metodo_pago
+    except ValueError:
+        # No es un entero, pasamos a buscarlo por alias
+        pass
+    except Exception:
+        pass
+
+    # 2) Buscarlo por alias (o nombre)
+    alias = metodo_str.strip().lower()  # " Efectivo "
+    metodo_pago_qs = MetodoPago.objects.filter(alias__iexact=alias)
+    if metodo_pago_qs.exists():
+        return metodo_pago_qs.first()
+
+    # 3) No existe => lo creamos
+    metodo_pago = MetodoPago.objects.create(
+        alias=alias,
+    )
+    return metodo_pago
+
+
+def get_or_create_cobrador(cobrador_str):
+    """
+    Recibe un string que puede ser un ID ('1', '3') o un alias (por ej. 'Juan').
+    Devuelve un objeto CuentaCobranza (creándolo si no existe).
+    """
+    from sales.models import CuentaCobranza
+
+    # 1) Intentar parsearlo como un entero para usarlo como ID
+    try:
+        cobrador_id = int(cobrador_str)
+        return CuentaCobranza.objects.get(id=cobrador_id)
+    except ValueError:
+        # No es un entero, será un alias
+        pass
+    except Exception:
+        pass
+
+    # 2) Buscarlo por alias (ignorando mayúsculas/minúsculas con __iexact)
+    alias = cobrador_str.strip().lower()
+    qs = CuentaCobranza.objects.filter(alias__iexact=alias)
+    if qs.exists():
+        return qs.first()
+
+    # 3) Si no existe, se crea
+    # Ajusta los campos según tu modelo (alias, nombre, etc.)
+    return CuentaCobranza.objects.create(
+        alias=alias
+    )
 #endregion
 
 
@@ -710,35 +790,33 @@ def send_html_email(subject, template, context, from_email, to_email):
 #endregion
 
 
+# from sales.utils import *
+def asignar_usuario_a_ventas():
+    import random
+    from sales.models import Ventas
+    from users.models import Usuario  # Ajusta esto al nombre de tu app de usuarios
 
+    # Obtiene todas las ventas que no tienen vendedor o supervisor
+    ventas_sin_vendedor_o_supervisor = Ventas.objects.filter(
+        vendedor__isnull=True
+    ) | Ventas.objects.filter(
+        supervisor__isnull=True
+    )
 
+    # Obtiene todos los usuarios del modelo Usuario
+    usuarios = list(Usuario.objects.all())
+    if not usuarios:
+        print("No hay usuarios disponibles para asignar.")
+        return
 
-# def asignar_usuario_a_ventas():
-#     import random
-#     from sales.models import Ventas
-#     from users.models import Usuario  # Ajusta esto al nombre de tu app de usuarios
+    # Asigna un usuario aleatorio a cada venta
+    for venta in ventas_sin_vendedor_o_supervisor:
+        if not venta.vendedor:
+            venta.vendedor = random.choice(usuarios)  # Asigna un vendedor aleatorio
+        if not venta.supervisor:
+            venta.supervisor = random.choice(usuarios)  # Asigna un supervisor aleatorio
 
-#     # Obtiene todas las ventas que no tienen vendedor o supervisor
-#     ventas_sin_vendedor_o_supervisor = Ventas.objects.filter(
-#         vendedor__isnull=True
-#     ) | Ventas.objects.filter(
-#         supervisor__isnull=True
-#     )
+        # Guarda los cambios en la base de datos
+        venta.save()
 
-#     # Obtiene todos los usuarios del modelo Usuario
-#     usuarios = list(Usuario.objects.all())
-#     if not usuarios:
-#         print("No hay usuarios disponibles para asignar.")
-#         return
-
-#     # Asigna un usuario aleatorio a cada venta
-#     for venta in ventas_sin_vendedor_o_supervisor:
-#         if not venta.vendedor:
-#             venta.vendedor = random.choice(usuarios)  # Asigna un vendedor aleatorio
-#         if not venta.supervisor:
-#             venta.supervisor = random.choice(usuarios)  # Asigna un supervisor aleatorio
-
-#         # Guarda los cambios en la base de datos
-#         venta.save()
-
-#     print(f"Se han actualizado {ventas_sin_vendedor_o_supervisor.count()} ventas.")
+    print(f"Se han actualizado {ventas_sin_vendedor_o_supervisor.count()} ventas.")

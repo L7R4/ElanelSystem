@@ -4,17 +4,21 @@ function renderFormImportData() {
         <h2 class="tittleModal">Importar colaboradores</h2>
         <form id="importForm" enctype="multipart/form-data">
           ${csrf_token}
-          <div id="agenciaWrapper" class="inputWrapper">
-            <label class="labelInput">Sucursal</label>
-            <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="${logoDisplayMore}" alt="">
-                <input placeholder="Seleccionar" type="text" readonly name="agencia" id="agenciaInput" required="required" autocomplete="off" maxlength="50" class="checkInput input-select-custom onlySelect">
-                <ul id="contenedorAgencia" class="list-select-custom options">
-                ${sucursalesDisponibles.map(item => `
-                    <li>${item}</li>
-                `).join('')}   
-                </ul>
-            </div>
+          <div id="selectWrapperAgencia" class="wrapperInput wrapperSelectCustom">
+              <h3 class="labelInput">Agencia</h3>
+              <div class="containerInputAndOptions">
+                  <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="${imgNext}" alt="">
+                  <input type="hidden" name="agencia" id="agenciaInput" placeholder ="Seleccionar" autocomplete="off">
+                  
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                      <h3></h3>
+                  </div>
+                  <ul class="list-select-custom options">
+                      ${sucursalesDisponibles.map(sd => `
+                          <li data-value="${sd.id}">${sd.pseudonimo}</li>
+                      `).join('')}
+                  </ul>
+              </div>
           </div>
           <div class="containerSelectFile">
             <label for="importDataInput" class="button-default-style ">
@@ -56,7 +60,7 @@ function newModalImport() {
         cssClass: ['modalContainerImport'],
 
         onOpen: function () {
-            cargarListenersEnInputs() // Para cargar los listeners de los inputs selects custom
+            initCustomSingleSelects() // Para cargar los listeners de los inputs selects custom
             enableImportButton()
         },
         onClose: function () {

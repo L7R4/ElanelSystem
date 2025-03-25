@@ -107,8 +107,27 @@ def formatear_dd_mm_yyyy(valor):
     # print(valor)
     fechaRequest= datetime.strptime(valor, '%d/%m/%Y %H:%M')
     fechaFormated = fechaRequest.strftime('%d/%m/%Y')
-    print(fechaFormated)
+    # print(fechaFormated)
     return fechaFormated
+
+
+def formatear_dd_mm_yyyy_h_m(valor):
+    try:
+        # Intenta parsear como solo fecha
+        fecha = datetime.strptime(valor, "%d/%m/%Y")
+        return fecha.strftime("%d/%m/%Y %H:%M")  # fuerza 00:00
+    except ValueError:
+        pass  # No es solo fecha, seguimos probando
+
+    try:
+        # Intenta parsear como fecha con hora (ya formateado)
+        datetime.strptime(valor, "%d/%m/%Y %H:%M")
+        return valor  # Ya está bien
+    except ValueError:
+        pass
+
+    # No es ninguno de los formatos esperados
+    return valor  # o lanzá una excepción si preferís
 
 
 def parse_fecha(fecha_str):

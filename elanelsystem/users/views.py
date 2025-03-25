@@ -232,6 +232,7 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
         metodosPago = [{"id": metodo.id, "alias": metodo.alias } for metodo in MetodoPago.objects.all()]
         sucursales = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in Sucursal.objects.all() ]
         sucursalesDisponibles = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in request.user.sucursales.all()]
+        ente_recaudadores = [{"id":cuenta.id,"alias":cuenta.alias} for cuenta in CuentaCobranza.objects.all()]
 
         users_data = []
         for user in Usuario.objects.all():
@@ -254,7 +255,8 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
             "campaniasDisponibles": json.dumps(campaniasDisponibles),
             "sucursalesDisponibles": json.dumps(sucursalesDisponibles),
             "sucursales": sucursales,
-            "metodosDePago": json.dumps(metodosPago)
+            "metodosDePago": json.dumps(metodosPago),
+            "ente_recaudadores": json.dumps(ente_recaudadores)
         }
         return render(request, self.template_name,context)
 
@@ -577,23 +579,47 @@ def realizarDescuento(request):
     form = json.loads(request.body)
     try:
         usuario = Usuario.objects.get(email = form["usuarioEmail"])
-        metodoPago = form["metodoPago"]
+        metodoPago = MetodoPago.objects.filter(id=form["metodoPago"]).first()
         dinero = form["dinero"]
         campania = form["campania"]
-        agencia = form["agencia"]
+        agencia = Sucursal.objects.filter(id=form["agencia"]).first()
         fecha = form["fecha"]
         operationType = form["operationType"]
-        concepto = form["concepto"]
+        denominacion = usuario.nombre
+        tipoID = "DNI"
+        nroID = usuario.dni
+        ente_recaudador = CuentaCobranza.objects.filter(id=form["ente_recaudador"]).first()
+        observaciones = form["observaciones"]
+
         message =""
         # Crear el diccionario de descuento
         data_dict ={
-            "metodoPago": metodoPago,
+            "metodoPago": metodoPago.alias,
             "dinero": dinero,
-            "agencia": agencia,
+            "agencia": agencia.pseudonimo,
             "campania": campania,
             "fecha": fecha,
-            "concepto": f"{operationType.capitalize()}: {concepto}" 
+            "concepto": f"{operationType.capitalize()}: {denominacion}",
+            "denominacion":denominacion,
+            "tipoID":tipoID,
+            "nroID":nroID,
+            "ente_recaudador":ente_recaudador.alias,
+            "observaciones":observaciones
         }
+
+        newMovimiento = MovimientoExterno()
+        newMovimiento.metodoPago = metodoPago
+        newMovimiento.dinero = dinero
+        newMovimiento.agencia = agencia
+        newMovimiento.campania = campania
+        newMovimiento.fecha = fecha
+        newMovimiento.concepto = f"{operationType.capitalize()}: {denominacion}"
+        newMovimiento.denominacion = denominacion
+        newMovimiento.tipoIdentificacion = tipoID
+        newMovimiento.nroIdentificacion = nroID
+        newMovimiento.ente = ente_recaudador
+        newMovimiento.observaciones = observaciones
+        newMovimiento.movimiento = "egreso"
 
         if(operationType == "descuento"):
             descuentos_actuales = usuario.descuentos # Obtener la lista actual de descuentos, o inicializarla si está vacía
@@ -601,6 +627,7 @@ def realizarDescuento(request):
             usuario.descuentos = descuentos_actuales # Asignar la lista actualizada al campo descuentos
             usuario.save()
             message = "Adelanto aplicado correctamente"
+            newMovimiento.adelanto = True
 
         elif (operationType == "premio"): 
             premios_actuales = usuario.premios # Obtener la lista actual de descuentos, o inicializarla si está vacía
@@ -608,10 +635,13 @@ def realizarDescuento(request):
             usuario.premios = premios_actuales # Asignar la lista actualizada al campo descuentos
             usuario.save()
             message = "Premio aplicado correctamente"
+            newMovimiento.premio = True
+        newMovimiento.save()
 
         iconMessage = "/static/images/icons/checkMark.svg"
         return JsonResponse({"status": True, "message": message, "iconMessage": iconMessage},safe=False)
     except Exception as e:
+        print(e)
         iconMessage = "/static/images/icons/error_icon.svg"
         return JsonResponse({"status": False, "iconMessage": iconMessage, "message": "Ocurrió un error al generar el adelanto/premio"},safe=False)
 

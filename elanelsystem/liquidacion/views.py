@@ -73,7 +73,11 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             ]
             datos = request.session.get('liquidacion_data', {})
 
-            
+            LiquidacionVendedor.objects.filter(campania=campania, sucursal=sucursalObject).delete()
+            LiquidacionSupervisor.objects.filter(campania=campania, sucursal=sucursalObject).delete()
+            LiquidacionGerenteSucursal.objects.filter(campania=campania, sucursal=sucursalObject).delete()
+            LiquidacionCompleta.objects.filter(campania=campania, sucursal=sucursalObject).delete()
+
             #region Liquidacion por tipo de colaborador 
             vendedores = []
             supervisores = []
@@ -84,6 +88,7 @@ class LiquidacionesComisiones(TestLogin,generic.View):
                     newLiquidacion = LiquidacionVendedor()
                     newLiquidacion.usuario = Usuario.objects.get(pk=item["id"])
                     newLiquidacion.campania = campania
+                    newLiquidacion.sucursal = sucursalObject
                     newLiquidacion.cant_ventas = item["info_total_de_comision"]["cant_ventas_propia"]
                     newLiquidacion.productividad = item["info_total_de_comision"]["productividad_propia"]
                     newLiquidacion.total_comisionado = item["comisionTotal"]
@@ -95,6 +100,7 @@ class LiquidacionesComisiones(TestLogin,generic.View):
                     newLiquidacion = LiquidacionSupervisor()
                     newLiquidacion.usuario = Usuario.objects.get(pk=item["id"])
                     newLiquidacion.campania = campania
+                    newLiquidacion.sucursal = sucursalObject
                     newLiquidacion.cant_ventas = item["info_total_de_comision"]["cant_ventas_fromRol"]
                     newLiquidacion.productividad = item["info_total_de_comision"]["productividad_fromRol"]
                     newLiquidacion.total_comisionado = item["comisionTotal"]

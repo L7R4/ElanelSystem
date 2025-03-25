@@ -332,21 +332,34 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
             for i in range(nextIndiceBusquedaCuotas, len(sheetEstados)):
                 filaEstado = sheetEstados.iloc[i]
                 print(f"Procesando fila {i} del contrato {nro_orden}")
+                print(filaEstado)
 
                 try:
+                    print("1111111111111111111")
+                    print(filaEstado["id_venta"])
+                    print(rowVenta['id_venta'])
+
                     if(int(filaEstado["id_venta"]) == int(rowVenta['id_venta'])):
-
                         cuota = filaEstado["cuotas"].replace(" ","").split("-")[1]
-                        # print(f"Tipo de fecha de vencimiento {type(filaEstado['fecha_venc'])}")
 
-                        # print(f"Fecha de vencimiento {filaEstado['fecha_venc']}")
-                        
                         total_a_pagar += int(filaEstado["importe_cuotas"])
+
+                        statusCuota = str(filaEstado["estado"]).title() if filaEstado["estado"] not in ["Vencido", "BAJA","vencido","baja"] else "vencido"
+
+                        print(f"ESTADO DE CUOTA {statusCuota}")
+                        metodo_pago_obj = ""
+                        cobrador_obj = ""
+                        if(statusCuota == "Pagado"):
+                            metodo_pago_obj = get_or_create_metodo_pago(filaEstado["medio_de_pago"].title())
+                            cobrador_obj = get_or_create_cobrador(filaEstado["cobrador"].capitalize())
+                        
+
                         if(filaEstado["cuotas"] == "cuota -  0"):
+                            print("Weps1")
                             info = {
                                 "cuota" :f'Cuota {cuota}',
                                 "nro_operacion": str(int(rowVenta['id_venta'])),
-                                "status": str(filaEstado["estado"]).title() if filaEstado["estado"] not in ["Vencido", "BAJA","vencido","baja"] else "vencido",
+                                "status": statusCuota,
                                 "total": int(filaEstado["importe_cuotas"]) * cantidadContratos,
                                 "descuento": {'autorizado': "", 'monto': 0},
                                 "bloqueada": False,
@@ -354,17 +367,22 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                                 "diasRetraso": 0,
                                 "pagos":[{
                                     "monto": int(filaEstado["importe_cuotas"]) * cantidadContratos,
-                                    "metodoPago": filaEstado["medio_de_pago"].title(),
+                                    "metodoPago": metodo_pago_obj.id,
                                     "fecha": format_date(filaEstado["fecha_de_pago"]),
-                                    "cobrador": filaEstado["cobrador"].capitalize(),
+                                    "cobrador": cobrador_obj.id,
+                                    "campaniaPago": obtenerCampaña_atraves_fecha(format_date(filaEstado["fecha_de_pago"]))
                                 }],
+                                "autorizada_para_anular": False
+
                             }
                         
                         else:
+                            print("Weps2")
+
                             info = {
                                 "cuota" :f'Cuota {cuota}',
                                 "nro_operacion": str(int(rowVenta['id_venta'])),
-                                "status": str(filaEstado["estado"]).title() if filaEstado["estado"] not in ["Vencido", "BAJA","vencido","baja"] else "vencido",
+                                "status": statusCuota,
                                 "total": int(filaEstado["importe_cuotas"]) * cantidadContratos,
                                 "descuento": {'autorizado': "", 'monto': 0},
                                 "bloqueada": False,
@@ -372,15 +390,22 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                                 "diasRetraso": int(float(str(filaEstado["dias_de_mora"]).replace("-",""))),
                                 "interesPorMora": 0,
                                 "totalFinal": 0,
+                                "autorizada_para_anular": False
+
                             }
                             if(info["status"] == "Pagado"):
+                                print("Weps3")
+
                                 info["pagos"] = [{
                                     "monto": int(filaEstado["importe_cuotas"]) * cantidadContratos,
-                                    "metodoPago": filaEstado["medio_de_pago"].title(),
+                                    "metodoPago": metodo_pago_obj.id,
                                     "fecha": format_date(filaEstado["fecha_de_pago"]),
-                                    "cobrador": filaEstado["cobrador"].capitalize(),
+                                    "cobrador": cobrador_obj.id,
+                                    "campaniaPago": obtenerCampaña_atraves_fecha(format_date(filaEstado["fecha_de_pago"]))
                                 }]
                             else:
+                                print("Weps4")
+
                                 info["pagos"] = []
                             
                         cuotas.append(info)
@@ -396,11 +421,19 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                         
             cuotas.reverse()
             newVenta.total_a_pagar = float(total_a_pagar * cantidadContratos)
+            print("??????????????????")
             newVenta.cuotas=bloquer_desbloquear_cuotas(cuotas)
+            print("2222222222222222")
             newVenta.primer_cuota = newVenta.cuotas[1]["total"]
+            print("33333333333")
+
             newVenta.anticipo = newVenta.cuotas[0]["total"]
+            print("4444444444444444")
+
             newVenta.intereses_generados = newVenta.total_a_pagar - newVenta.importe
             newVenta.importe_x_cuota = newVenta.cuotas[2]["total"]
+            print("5555555555555555")
+
             newVenta.nro_cuotas = len(cuotas)-1
             newVenta.setDefaultFields()
             newVenta.save()
@@ -651,7 +684,7 @@ def pagarCuota(request):
             metodoPago = data.get("metodoPago")
             formaPago = data.get("typePayment") # Si es parcial o total
             cobrador = data.get('cobrador')
-            print(f"Cobrador: {cobrador}")
+
             monto = 0
             if(formaPago =="total"):
                 cuota = list(filter(lambda x:x["cuota"] == cuotaRequest,venta.cuotas))[0]
@@ -1232,7 +1265,7 @@ class PostVenta(TestLogin,generic.View):
                     "statusText": obtenerStatusAuditoria(venta)["statusText"],
                     "statusIcon":obtenerStatusAuditoria(venta)["statusIcon"],
                     "nombre": venta.nro_cliente.nombre,
-                    "dni": formatear_moneda(venta.nro_cliente.dni),
+                    "dni": formatear_moneda_sin_centavos(venta.nro_cliente.dni),
                     "nro_operacion": venta.nro_operacion,
                     "fecha": formatear_dd_mm_yyyy(venta.fecha),
                     "tel": str(int(float(venta.nro_cliente.tel))) if venta.nro_cliente.tel else "",
@@ -1313,14 +1346,23 @@ def filtroVentasAuditoria(request):
     if(request.method =="POST"):
         # try:
             form = json.loads(request.body)
-            campania = form.get("campania","")
-            sucursal = form.get("sucursal","Sucursal central")
-            sucursalObject = Sucursal.objects.get(pseudonimo=sucursal)
-            ventas = Ventas.objects.filter(campania=campania, agencia=sucursalObject)
+            ventas = Ventas.objects.all()
+
+            sucursal_id = form.get("sucursal", "")
+            if sucursal_id:
+                try:
+                    sucursal = Sucursal.objects.get(id=int(sucursal_id))
+                    ventas = ventas.filter(agencia=sucursal)
+                except (ValueError, Sucursal.DoesNotExist):
+                    pass  # Si viene un ID inválido o no existe, no se filtra
+
+            campania = form.get("campania", "")
+            if campania:
+                ventas = ventas.filter(campania=campania)
 
              # Filtrar según el estado
             estado = form.get("estado","")
-            print(form)
+            # print(form)
             if estado == "Pendientes":  # No auditadas
                 ventas = ventas.filter(Q(auditoria=[]))
             elif estado == "Realizadas":  # Realizadas
@@ -1352,7 +1394,7 @@ def filtroVentasAuditoria(request):
                     "statusText": obtenerStatusAuditoria(venta)["statusText"],
                     "statusIcon":obtenerStatusAuditoria(venta)["statusIcon"],
                     "nombre": venta.nro_cliente.nombre,
-                    "dni": formatear_moneda(venta.nro_cliente.dni),
+                    "dni": formatear_moneda_sin_centavos(venta.nro_cliente.dni),
                     "nro_operacion": venta.nro_operacion,
                     "fecha": formatear_dd_mm_yyyy(venta.fecha),
                     "tel": str(int(float(venta.nro_cliente.tel))) if venta.nro_cliente.tel else "",
@@ -1668,8 +1710,8 @@ def viewsPDFInforme(request):
             ),
 
             "Dinero": (
-                d.get("monto", {}).get("data", "---")
-                if d.get("monto", {}).get("data", None)
+                d.get("montoFormated", {}).get("data", "---")
+                if d.get("montoFormated", {}).get("data", None)
                 not in (None, "null")
                 else "---"
             ),
@@ -1713,19 +1755,18 @@ def viewsPDFInforme(request):
         estado_cuenta_by_metodo["verbose_name"] = metodo.alias
         metodoClean = metodo.alias.replace(" ","_").lower() + "_total_money"
         estado_cuenta_by_metodo["name_clean"] = metodoClean
-
-        movs_by_metodo = list(filter(lambda mov:mov["metodoPago"]["data"] == int(metodo.id), datos))
+        movs_by_metodo = list(filter(lambda mov:mov["metodoPago"]["data"] == str(metodo.id), datos))
         money_by_metodo_ingreso = sum([mov["monto"]["data"] for mov in movs_by_metodo if mov["tipo_mov"]["data"] == "ingreso"])
         money_by_metodo_egreso = sum([mov["monto"]["data"] for mov in movs_by_metodo if mov["tipo_mov"]["data"] == "egreso"])
         money_by_metodo = money_by_metodo_ingreso - money_by_metodo_egreso
-        estado_cuenta_by_metodo["money"] = money_by_metodo
+        estado_cuenta_by_metodo["money"] = formatear_moneda_sin_centavos(money_by_metodo)
         resumenEstadoCuenta.append(estado_cuenta_by_metodo)
         
         total_money += money_by_metodo
     dictTotal = {
         "verbose_name": "Total",
         "name_clean": "total_money",
-        "money": total_money
+        "money": formatear_moneda_sin_centavos(total_money)
     }
     resumenEstadoCuenta.append(dictTotal)
 
@@ -1979,10 +2020,10 @@ def requestMovimientos(request):
         # print(request)
         cannons = dataStructureCannons(agencia)
         # print(cannons)
-        cannons = list(filter(lambda x: x["estado"]["data"] in ["pagado", "parcial"], cannons))
-        
+        cannons = list(filter(lambda x: x["estado"]["data"].lower() in ["pagado", "parcial"], cannons))
+        # allMovimientos = cannons
         allMovimientos = dataStructureMovimientosExternos(agencia) + cannons
-        allMovimientosTidy = sorted(allMovimientos, key=lambda x: datetime.strptime(x['fecha']["data"], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
+        allMovimientosTidy = sorted(allMovimientos, key=lambda x: datetime.strptime(formatear_dd_mm_yyyy_h_m(x['fecha']["data"]), '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
         # Agregar a cada diccionario del movimiento el campo id_cont para poder identificarlo en el template 
         for i, mov in enumerate(allMovimientosTidy):
             mov["id_cont"] = i
@@ -2001,25 +2042,25 @@ def requestMovimientos(request):
         # print(f"MOvimientos - - - - - \n {movs}")
         #endregion
         
-        #region Logica para pasar al template los filtros aplicados a los movimientos
-        paramsDict = (request.GET).dict()
-        FILTROS_EXISTENTES = (
-            ("tipo_mov","Tipo de movimiento"),
-            ("campania","Campaña"),
-            ("metodoPago", "Metodo de pago"),
-            ("fecha", "Fecha"),
-            ("cobrador","Cobrador"),
-            ("agencia","Agencia"),
-        )
-        clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
+        # #region Logica para pasar al template los filtros aplicados a los movimientos
+        # paramsDict = (request.GET).dict()
+        # FILTROS_EXISTENTES = (
+        #     ("tipo_mov","Tipo de movimiento"),
+        #     ("campania","Campaña"),
+        #     ("metodoPago", "Metodo de pago"),
+        #     ("fecha", "Fecha"),
+        #     ("cobrador","Cobrador"),
+        #     ("agencia","Agencia"),
+        # )
+        # clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
 
-        # Extrae las tuplas segun los querys filtrados en clearContext
-        filtros_activados = list(filter(lambda x: x[0] in clearContext, FILTROS_EXISTENTES))
-        # print(f'Filtros: {filtros_activados}')
-        # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
-        # Es lo mismo que decir clearContext["metodoPago"], etc, etc
-        filtros = list(map(lambda x: {x[1]: clearContext[x[0]]}, filtros_activados))
-        #endregion
+        # # Extrae las tuplas segun los querys filtrados en clearContext
+        # filtros_activados = list(filter(lambda x: x[0] in clearContext, FILTROS_EXISTENTES))
+        # # print(f'Filtros: {filtros_activados}')
+        # # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
+        # # Es lo mismo que decir clearContext["metodoPago"], etc, etc
+        # filtros = list(map(lambda x: {x[1]: clearContext[x[0]]}, filtros_activados))
+        # #endregion
         
         request.session["informe_data"] = movs # Por si se quiere imprimir el informe
 
@@ -2035,11 +2076,12 @@ def requestMovimientos(request):
             metodoClean = metodo.alias.replace(" ","_").lower() + "_total_money"
             estado_cuenta_by_metodo["name_clean"] = metodoClean
 
-            movs_by_metodo = list(filter(lambda mov:mov["metodoPago"]["data"] == int(metodo.id), movs))
+            movs_by_metodo = list(filter(lambda mov:mov["metodoPago"]["data"] == str(metodo.id), movs))
             money_by_metodo_ingreso = sum([mov["monto"]["data"] for mov in movs_by_metodo if mov["tipo_mov"]["data"] == "ingreso"])
             money_by_metodo_egreso = sum([mov["monto"]["data"] for mov in movs_by_metodo if mov["tipo_mov"]["data"] == "egreso"])
+            print(f"Metodo: {metodo.alias} - Ingreso: {money_by_metodo_ingreso} - Egreso: {money_by_metodo_egreso}")
             money_by_metodo = money_by_metodo_ingreso - money_by_metodo_egreso
-            estado_cuenta_by_metodo["money"] = money_by_metodo
+            estado_cuenta_by_metodo["money"] = formatear_moneda_sin_centavos(money_by_metodo)
             resumenEstadoCuenta.append(estado_cuenta_by_metodo)
             
             total_money += money_by_metodo
@@ -2047,7 +2089,7 @@ def requestMovimientos(request):
         dictTotal = {
             "verbose_name": "Total",
             "name_clean": "total_money",
-            "money": total_money
+            "money": formatear_moneda_sin_centavos(total_money)
         }
         resumenEstadoCuenta.append(dictTotal)
         
@@ -2055,7 +2097,7 @@ def requestMovimientos(request):
 
         #region Paginación
         page = request.GET.get('page')
-        items_per_page = 3  # Número de elementos por página
+        items_per_page = 20  # Número de elementos por página
         paginator = Paginator(movs, items_per_page)
 
         try:
@@ -2066,7 +2108,7 @@ def requestMovimientos(request):
             movs = paginator.page(paginator.num_pages)
         #endregion -----------------------------------------------------
 
-        return JsonResponse({"data": list(movs), "numbers_pages": paginator.num_pages,"filtros":filtros_activados,"estadoCuenta":resumenEstadoCuenta,"status": True}, safe=False)
+        return JsonResponse({"data": list(movs), "numbers_pages": paginator.num_pages,"estadoCuenta":resumenEstadoCuenta,"status": True}, safe=False)
     except Exception as e:
         print(e)
         return JsonResponse({"data": [], "numbers_pages": 0,"filtros":[],"estadoCuenta":{},"status": False}, safe=False)
@@ -2115,11 +2157,11 @@ def createNewMov(request):
 def requestVentasAuditoria(request):
     if(request.method == "GET"):
         sucursal = request.GET.get('sucursal')
-        campaign = request.GET.get('campania')
+        campania = request.GET.get('campania')
         responseData = {"ventas": [],"resumenAuditorias":{"pendientes": 0, "realizadas":0, "aprobadas":0, "desaprobadas":0}}
-        
-        sucursal = searchSucursalFromStrings(sucursal)
-        allVentas = Ventas.objects.filter(campania=campaign, agencia=sucursal)
+        print(request)
+        # sucursal = searchSucursalFromStrings(sucursal)
+        allVentas = Ventas.objects.filter(campania=campania, agencia=sucursal)
 
         auditorias_realidas = allVentas.filter(auditoria__0__realizada=True)
         responseData["resumenAuditorias"]["realizadas"] = len(auditorias_realidas)
