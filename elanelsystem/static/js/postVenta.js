@@ -113,6 +113,9 @@ function refreshVenta(ventaUpdated) {
     //#region Actualiza las auditorias
     if (ventaElement.querySelector(".containerHistorialAuditorias")) {
         ventaElement.querySelector(".containerHistorialAuditorias").innerHTML = "";
+    } else {
+        let containerHistorialAuditorias = `<div class="containerHistorialAuditorias"></div>`;
+        ventaElement.querySelector(".wrapperDetailInfo").insertAdjacentHTML("beforeend", containerHistorialAuditorias)
     }
 
     let stringHTMLAuditorias = ``;
@@ -147,7 +150,7 @@ function refreshVenta(ventaUpdated) {
 
     // #region Actualiza los botones
     ventaElement.querySelector(".buttonsWrapper").innerHTML = `
-    <button class="editarButton" onclick="modalForm(v${ventaUpdated.id})">Editar</button>
+    <button class="editarButton" onclick="modalForm('v${ventaUpdated["ventaUpdated_id"]}')">Editar</button>
     `;
     // #endregion
 

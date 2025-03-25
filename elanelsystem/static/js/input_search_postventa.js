@@ -10,6 +10,7 @@ inputsFiltersVentas.forEach(input => {
             "estado": document.getElementById("inputEstado").value,
             "search": document.getElementById("inputSearch").value
         }
+        console.log("Esperando respuesta de ventas")
         let response = await formFETCH(body, "/ventas/postventas/filtrar/")
         console.log(response)
         containerListVentas.innerHTML = "";

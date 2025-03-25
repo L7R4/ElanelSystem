@@ -4,7 +4,7 @@ from django.urls import reverse
 from users.models import Usuario
 from django.db.models import Max
 from sales.models import Ventas
-from sales.utils import obtener_ultima_campania, formatear_moneda
+from sales.utils import obtener_ultima_campania, formatear_moneda_sin_centavos
 from elanelsystem.utils import formatear_dd_mm_yyyy
 
 register = template.Library()
@@ -102,4 +102,4 @@ def formato_moneda(valor):
     """
     Filtro de template para formatear números en formato moneda.
     """
-    return formatear_moneda(valor)
+    return formatear_moneda_sin_centavos(valor)

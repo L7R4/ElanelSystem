@@ -76,6 +76,23 @@ function renderFormDescuento(item, type, uniqueFechaId) {
               </div>
           </div>
 
+          <div id="selectWrapperEnteRecaudador" class="wrapperInput wrapperSelectCustom">
+              <h3 class="labelInput">Ente recaudador</h3>
+              <div class="containerInputAndOptions">
+                  <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="${imgNext}" alt="">
+                  <input type="hidden" name="ente" id="enteInput" placeholder ="Seleccionar" autocomplete="off">
+                  
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                      <h3></h3>
+                  </div>
+                  <ul class="list-select-custom options">
+                      ${ente_recaudadores.map(er => `
+                          <li data-value="${er.id}">${er.alias}</li>
+                      `).join('')}
+                  </ul>
+              </div>
+          </div>
+
           <div class="wrapperCalendario wrapperInput wrapperSelectCustom">
                 <h3 class="labelInput">Fecha</h3>
                 <div class="containerCalendario">
@@ -84,9 +101,9 @@ function renderFormDescuento(item, type, uniqueFechaId) {
           </div>
 
           
-          <div class="wrapperInput">
-            <h3 class="labelInput">Concepto</h3>
-            <input name="concepto" id="conceptoInput" class="input-read-write-default inputEgresoIngreso">
+          <div class="wrapperInput wrapperObservaciones">
+            <h3 class="labelInput">Observaciones</h3>
+            <textarea name="observaciones" id="observacionesInput" class="input-read-write-default inputEgresoIngreso" rows="10"></textarea>            
           </div>
           
       </form>
@@ -127,7 +144,8 @@ function newModal(type) {
             "campania": campaniaInput.value,
             "agencia": agenciaInput.value,
             "fecha": document.querySelector(".wrapperCalendario input").value,
-            "concepto": conceptoInput.value
+            "ente_recaudador": enteInput.value,
+            "observaciones": observacionesInput.value
         }
         showLoader("modalNewDescuentoPremio")
         let response = await formFETCH(body, urlPostDescuento)

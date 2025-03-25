@@ -222,14 +222,15 @@ def setPremiosPorObjetivo(usuario,campania,agencia,comisiones=0,cantVentas=0):
         dineroAsegurado = asegurado.dinero
          # Si la suma de ventas del equipo supera 80, se le suma el asegurado como premio
         if cantVentas > 80:
-            oldPremiosPorCantVentas = list(filter(lambda x: x["concepto"].lower() == "Premio por cantidad de ventas" and x["campania"] == campania, premios))
+            oldPremiosPorCantVentas = list(filter(lambda x: x["concepto"].lower() == "premio por cantidad de ventas" and x["campania"] == campania, premios))
             if(len(oldPremiosPorCantVentas) != 0):
                 premio = {"metodoPago": "---", 
                         "dinero": f"{dineroAsegurado}", 
-                        "agencia": f"{agencia.pseudonimo}", 
+                        "agencia": f"{agencia.id}", 
                         "campania": f"{campania}", 
-                        "fecha": f"{datetime.now().strftime('%d/%m/%Y')}", 
-                        "concepto": "Premio por cantidad de ventas"}
+                        "fecha": f"{datetime.now().strftime('%d/%m/%Y %H:%M')}", 
+                        "concepto": "Premio: por cantidad de ventas"
+                        }
             
                 premios.append(premio)
             else:
@@ -327,7 +328,8 @@ def getComisionCantVentas(usuario,campania,agencia):
         venta for venta in ventas
         if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
     ]
-    cantVentas = ventas.count()
+    print(f"\n\n\n Ventas desde getComisionCantVentas -> {ventas} \n\n\n")
+    cantVentas = len(ventas)
 
     total_comisionado = 0
 
@@ -425,13 +427,13 @@ def getCuotasX(campania,agencia):
     # Cuota de inscripcion
     cantCuotas0 = 0
     dineroTotal_Cuota0 = 0
-    objetivo = Asegurado.objects.get(dirigido ="Gerente sucursal").objetivo
+    # objetivo = Asegurado.objects.get(dirigido ="Gerente sucursal").objetivo
     dinero = Asegurado.objects.get(dirigido ="Gerente sucursal").dinero
     for v in ventas:
         if(v.cuotas[0]["status"] == "Pagado"):
             cantCuotas0 += 1
             dineroTotal_Cuota0 += v.cuotas[0]["total"]
-    comisionTotal_x_Cuota0 = dinero * cantCuotas0 if cantCuotas0 >= objetivo else 0
+    comisionTotal_x_Cuota0 = dinero * cantCuotas0 if cantCuotas0 >= 300 else 0
     cantidadTotalCuotas += cantCuotas0
     dineroTotalCuotas += dineroTotal_Cuota0
     comisionTotalCuotas += comisionTotal_x_Cuota0
@@ -462,8 +464,6 @@ def getCuotasX(campania,agencia):
 #endregion - - - - - - - - - - - - - - - - - - -
 
 
-
-
 def getComisionTotal(usuario,campania,agencia): 
     desempenioDeColaborador = {}
     detailDesempenioDict = {}
@@ -485,15 +485,16 @@ def getComisionTotal(usuario,campania,agencia):
 
     # Esto se tiene que descontar de la comision ---> (detailDesempenioDict["adelantos"]["dineroTotal"] + detailDesempenioDict["ausencias_tardanzas"]["total_descuentos"])
     desempenioDeColaborador["subtotal_comisionado_ventasPropias"] = (detailDesempenioDict["cantidad_ventasPropias_comision"]["comisionTotal"] + detailDesempenioDict["productividad_ventasPropias_comision"] + detailDesempenioDict["cuotas1"]["totalDinero"])
-    # print("---------------------")
-    # print(usuario.rango.lower())
-
+    
+    
+    desempenioDeColaborador["cant_ventas_fromRol"] = 0
+    desempenioDeColaborador["productividad_fromRol"] = 0
     if(usuario.rango.lower() not in "admin"):
         if(usuario.rango.lower() == "supervisor"):
             desempenioDeColaborador["cant_ventas_fromRol"] = calcular_ventas_supervisor(usuario,campania,agencia)
             desempenioDeColaborador["productividad_fromRol"] = calcular_productividad_supervisor(usuario,campania,agencia)
             desempenioDeColaborador["desempenioEquipo"] = desempenioEquipo(usuario,campania,agencia)
-            detailDesempenioDict["cantidad_ventasFromRol_comision"] = getComisionCantVentas(usuario,campania,agencia) if desempenioDeColaborador["asegurado"] == 0 else 0
+            detailDesempenioDict["cantidad_ventasFromRol_comision"] = getComisionCantVentas(usuario,campania,agencia)
             detailDesempenioDict["productividad_ventasFromRol_comision"] = getPremioxProductividad(usuario,campania,agencia)
 
             desempenioDeColaborador["subtotal_comisionado_fromRol"] = detailDesempenioDict["cantidad_ventasFromRol_comision"] + detailDesempenioDict["productividad_ventasFromRol_comision"]
@@ -508,10 +509,11 @@ def getComisionTotal(usuario,campania,agencia):
     desempenioDeColaborador["descuentoTotal"] = (detailDesempenioDict["adelantos"]["dineroTotal"] + detailDesempenioDict["ausencias_tardanzas"]["total_descuentos"])
     desempenioDeColaborador["comisionado_sin_descuento"] = (desempenioDeColaborador["subtotal_comisionado_fromRol"] + desempenioDeColaborador["subtotal_comisionado_ventasPropias"])
     desempenioDeColaborador["comisionado_con_descuento"] = (desempenioDeColaborador["subtotal_comisionado_fromRol"] + desempenioDeColaborador["subtotal_comisionado_ventasPropias"])  - desempenioDeColaborador["descuentoTotal"]
-    desempenioDeColaborador["asegurado"] = getAsegurado(usuario,desempenioDeColaborador["comisionado_con_descuento"])
-
+    desempenioDeColaborador["asegurado"] = getAsegurado(usuario,desempenioDeColaborador["comisionado_sin_descuento"])
+    # desempenioDeColaborador["total_comisionado_sin_asegurado"] = desempenioDeColaborador["comisionado_sin_descuento"]
     
-    setPremiosPorObjetivo(usuario,campania,agencia,desempenioDeColaborador["total_comisionado_sin_asegurado"], desempenioDeColaborador["cant_ventas_fromRol"])
+    setPremiosPorObjetivo(usuario,campania,agencia,desempenioDeColaborador["cant_ventas_fromRol"])
+
     premios = getPremiosPorObjetivo(usuario,campania)   
     desempenioDeColaborador["premios"] = premios["totalPremios"]
     detailDesempenioDict["premios"] = premios["premiosList"]

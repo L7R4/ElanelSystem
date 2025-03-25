@@ -691,10 +691,6 @@ class ArqueoCaja(models.Model):
 
 #region MOVsEXTERNOS
 class MovimientoExterno(models.Model):
-    TIPOS_MOVIMIENTOS = (
-        ('Ingreso', 'Ingreso'),
-        ('Egreso', 'Egreso'), 
-    )
     TIPOS_COMPROBANTES = (
         ('A', 'A'),
         ('B', 'B'),
@@ -717,7 +713,7 @@ class MovimientoExterno(models.Model):
     nroComprobante = models.CharField("Nro de comprobante:", max_length=40, blank=True, null=True)
     denominacion = models.CharField("Denominacion del ente:", max_length=60, blank=True, null=True)
     tipoMoneda = models.CharField("Tipo de moneda:", max_length=3, choices=TIPOS_MONEDAS, blank=True, null=True)
-    movimiento = models.CharField("Movimiento:",max_length=8, choices=TIPOS_MOVIMIENTOS)
+    movimiento = models.CharField("Movimiento:",max_length=8)
     dinero = models.FloatField("Dinero:")
     metodoPago = models.ForeignKey(MetodoPago,on_delete=models.SET_NULL,related_name="metodo_movs", null=True)
     agencia = models.ForeignKey(Sucursal, on_delete=models.SET_NULL, related_name="agencia_movs", null=True)
@@ -728,6 +724,8 @@ class MovimientoExterno(models.Model):
     concepto = models.CharField("Concepto:",max_length=200)
     premio = models.BooleanField("Premio:", default=False)
     adelanto = models.BooleanField("Adelanto:",default=False)
+    observaciones = models.TextField("Observaciones:",blank=True,null=True)
+
 
     def clean(self):
         cleaned_data = super().clean()

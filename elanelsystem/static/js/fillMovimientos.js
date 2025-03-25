@@ -14,8 +14,11 @@ let appliedFilters = {};
 
 // Funcion para actualizar la informacion de los movimientos
 async function updateMovs(page) {
+    console.log("Esperando movimientos")
     let dataMovs = await movsGetChangePage(page); // Solicita los movimientos
-    // console.log(dataMovs["estadoCuenta"])
+    console.log("Movimientos listos")
+
+    console.log(dataMovs)
     movsPages.textContent = page + " / " + dataMovs["numbers_pages"] // Actualiza en la pagina en la que estamos
 
     // textFilters(dataMovs["filtros"]) // Actualiza los filtros que estamos usando para mostrar los movimientos
@@ -100,7 +103,7 @@ function createItemSegunMovimiento(mov) {
         } else if ("egreso" == mov["tipo_mov"]["data"]) {
             stringForHTML += `
             <div><p class="monto"> - </p></div>
-            <div><p class="monto">$${mov.monto.data}</p></div>
+            <div><p class="monto">$${mov.montoFormated.data}</p></div>
             `;
         }
     } else {
@@ -109,7 +112,7 @@ function createItemSegunMovimiento(mov) {
         stringForHTML += `
         <div><p class="concept">${conceptoStringRecortado}</p></div>
         <div><p class="nCuotas">${cuotaStringRecortada} </p></div>
-        <div><p class="monto">$${mov.monto.data}</p></div>
+        <div><p class="monto">$${mov.montoFormated.data}</p></div>
         <div><p class="monto"> - </p></div>
         `;
     }
@@ -238,22 +241,44 @@ function renderViewCannon(mov) {
     `;
     return stringForHTML;
 }
+
 function renderViewMovimiento(mov) {
-    let stringForHTML = `
+    const isIngreso = mov["tipo_mov"]["data"] === "ingreso";
+    const showComprobante = mov["premio"]["data"] === "No" && mov["adelanto"]["data"] === "No";
+
+    let comprobanteBlock = "";
+    let observacionesBlock = "";
+
+    if (showComprobante) {
+        comprobanteBlock = `
+            <div>
+                <p><strong>Tipo de Comprobante</strong></p>
+                <div>
+                    <p>${mov["tipoComprobante"]["data"]}</p>
+                </div>
+            </div>
+            <div>
+                <p><strong>Número de Comprobante</strong></p>
+                <div>
+                    <p>${mov["nroComprobante"]["data"]}</p>
+                </div>
+            </div>`;
+    } else {
+        observacionesBlock = `
+            <div>
+                <p><strong>Observaciones</strong></p>
+                <div>
+                    <p>${mov["observaciones"]["data"]}</p>
+                </div>
+            </div>`;
+    }
+
+    const stringForHTML = `
     <div class="movimiento-info">
         <h2>Información del Movimiento</h2>
-        <div>
-            <p><strong>Tipo de Comprobante</strong></p>
-            <div>
-                 <p>${mov["tipoComprobante"]["data"]}</p>
-            </div>
-        </div>
-        <div>
-            <p><strong>Número de Comprobante</strong></p>
-            <div>
-                <p>${mov["nroComprobante"]["data"]}</p>
-            </div>
-        </div>
+
+        ${comprobanteBlock} 
+
         <div>
             <p><strong>Tipo de Identificación</strong></p> 
             <div>
@@ -272,7 +297,7 @@ function renderViewMovimiento(mov) {
                 <p>${mov["denominacion"]["data"]}</p>
             </div>
         </div>
-        ${mov["tipo_mov"]["data"] === "ingreso" ? `
+        ${isIngreso ? `
         <div>
             <p><strong>Tipo de Moneda</strong></p> 
             <div>
@@ -315,8 +340,10 @@ function renderViewMovimiento(mov) {
                 <p>${mov["concepto"]["data"]}</p>
             </div>
         </div>
-    </div>
-    `;
+
+        ${observacionesBlock} 
+    </div>`;
+
     return stringForHTML;
 }
 
