@@ -349,7 +349,9 @@ def getInfoBaseCannon(venta, cuota):
     return {
         'cuota': {'data': cuota["cuota"], 'verbose_name': 'Cuota'},
         'nro_operacion': {'data': cuota["nro_operacion"], 'verbose_name': 'N° Operación'},
+        'modalidad': {'data': venta.modalidad, 'verbose_name': 'Modalidad'},
         'contratos': {'data': venta.cantidadContratos, 'verbose_name': 'Cantidad de Contratos'},
+        "fecha_inscripcion": {'data': venta.fecha, 'verbose_name': 'Fecha Inscripción'},
         'nombre_del_cliente': {'data': cliente.nombre, 'verbose_name': 'Nombre del Cliente'},
         'nro_del_cliente': {'data': cliente.nro_cliente, 'verbose_name': 'N° del Cliente'},
         'agencia': {'data': venta.agencia.pseudonimo, 'verbose_name': 'Agencia'},
@@ -358,14 +360,19 @@ def getInfoBaseCannon(venta, cuota):
         'descuento': {'data': cuota['descuento'], 'verbose_name': 'Descuento'},
         'estado': {'data': cuota['status'], 'verbose_name': 'Estado'},
         'dias_de_mora': {'data': cuota['diasRetraso'], 'verbose_name': 'Días de Mora'},
+        'cuota_comercial': {'data': cuota.get('total', 0), 'verbose_name': 'Cuota comercial'},
         'total_final': {'data': cuota.get('totalFinal', 0), 'verbose_name': 'Total Final'},
         'interes_por_mora': {'data': cuota.get('interesPorMora', 0), 'verbose_name': 'Interés por Mora'},
+        'vendedor': {'data': venta.vendedor.nombre, 'verbose_name': 'Vendedor'},
+        'supervisor': {'data': venta.supervisor.nombre, 'verbose_name': 'Supervisor'},
+
     }
 
 
-def dataStructureCannons(sucursal=None):
+def dataStructureCannons(sucursal=None, ventas=[]):
     from sales.models import Ventas, MetodoPago, CuentaCobranza
     from elanelsystem.views import convertirValoresALista
+    from elanelsystem.utils import formatear_dd_mm_yyyy_h_m
     
     ventas = ""
     
@@ -376,7 +383,7 @@ def dataStructureCannons(sucursal=None):
         ventas = Ventas.objects.all()
 
     cuotas_data = []
-    print(ventas)
+
     for i in range(int(ventas.count())):
         venta = ventas[i]
 
@@ -387,6 +394,20 @@ def dataStructureCannons(sucursal=None):
                 for pago in cuota["pagos"]:
                     metodo_pago_obj = get_or_create_metodo_pago(pago['metodoPago'])
                     cobrador_obj = get_or_create_cobrador(pago["cobrador"])
+                    dias_diferencia = ""
+                    if pago["fecha"] and venta.fecha:
+                        try:
+                            # Parsear fecha de pago
+                            fecha_pago = datetime.datetime.strptime(formatear_dd_mm_yyyy_h_m(pago["fecha"]), "%d/%m/%Y %H:%M").date()
+
+                            # Parsear fecha de inscripción (venta.fecha)
+                            fecha_inscripcion = datetime.datetime.strptime(formatear_dd_mm_yyyy_h_m(venta.fecha), "%d/%m/%Y %H:%M").date()
+
+                            # Calcular diferencia
+                            dias_diferencia = (fecha_pago - fecha_inscripcion).days
+                        except ValueError as e:
+                            print(f"Error al parsear fechas: {e}")
+                            dias_diferencia = ""
 
                     mov = {**getInfoBaseCannon(venta, cuota), **{
                         'metodoPago': {'data': str(metodo_pago_obj.id), 'verbose_name': 'Método de Pago'},
@@ -397,6 +418,8 @@ def dataStructureCannons(sucursal=None):
                         'cobrador': {'data': str(cobrador_obj.id), 'verbose_name': 'Cobrador'},
                         'cobradorAlias': {'data': cobrador_obj.alias, 'verbose_name': 'Cobrador'},
                         'campania': {'data': pago["campaniaPago"], 'verbose_name': 'Campaña'},
+                        'dias_de_diferencia': {'data': dias_diferencia,'verbose_name': 'Días de diferencia'}
+
                     }}
                     cuotas_data.append(mov)
             else:
@@ -429,7 +452,7 @@ def dataStructureVentas(sucursal=None):
         
         ventaDict = {
             'nro_operacion': {'data': venta.nro_operacion, 'verbose_name': 'N° ope'},
-            'fecha': {'data': venta.fecha, 'verbose_name': 'Fecha'},
+            'fecha': {'data': venta.fecha, 'verbose_name': 'Fecha de inscripción'},
             'nro_cliente': {'data': venta.nro_cliente.nro_cliente, 'verbose_name': 'N° cliente'},
             'nombre_de_cliente': {'data': venta.nro_cliente.nombre, 'verbose_name': 'Nombre del cliente'},
             'agencia': {'data': venta.agencia.pseudonimo, 'verbose_name': 'Agencia'},
@@ -438,31 +461,34 @@ def dataStructureVentas(sucursal=None):
             'campania': {'data': venta.campania, 'verbose_name': 'Campaña'},
 
             'importe': {'data': venta.importe, 'verbose_name': 'Importe'},
-            'importe_formated': {'data': formatear_moneda_sin_centavos(venta.importe), 'verbose_name': 'Importe'},
+            'importe_formated': {'data': f"${formatear_moneda_sin_centavos(venta.importe)}", 'verbose_name': 'Importe'},
 
             'paquete': {'data': venta.paquete, 'verbose_name': 'Paquete'},
             
             'primer_cuota': {'data': venta.primer_cuota, 'verbose_name': 'Primer cuota'},
-            'primer_cuota_formated': {'data': formatear_moneda_sin_centavos(venta.primer_cuota), 'verbose_name': 'Primer cuota'},
+            'primer_cuota_formated': {'data': f"${formatear_moneda_sin_centavos(venta.primer_cuota)}", 'verbose_name': 'Primer cuota'},
             
             'suscripcion': {'data': venta.anticipo, 'verbose_name': 'Suscripción'},
-            'suscripcion_formated': {'data': formatear_moneda_sin_centavos(venta.anticipo), 'verbose_name': 'Suscripción'},
+            'suscripcion_formated': {'data': f"${formatear_moneda_sin_centavos(venta.anticipo)}", 'verbose_name': 'Suscripción'},
 
             'cuota_comercial': {'data': venta.importe_x_cuota, 'verbose_name': 'Cuota comercial'},
-            'cuota_comercial_formated': {'data': formatear_moneda_sin_centavos(venta.importe_x_cuota), 'verbose_name': 'Cuota comercial'},
+            'cuota_comercial_formated': {'data': f"${formatear_moneda_sin_centavos(venta.importe_x_cuota)}", 'verbose_name': 'Cuota comercial'},
             
             'interes_generado': {'data': venta.intereses_generados, 'verbose_name': 'Interés generado'},
-            'interes_generado_formated': {'data': formatear_moneda_sin_centavos(venta.intereses_generados), 'verbose_name': 'Interés generado'},
+            'interes_generado_formated': {'data': f"${formatear_moneda_sin_centavos(venta.intereses_generados)}", 'verbose_name': 'Interés generado'},
             
             'total_a_pagar': {'data': venta.total_a_pagar, 'verbose_name': 'Total a pagar'},
-            'total_a_pagar_formated': {'data': formatear_moneda_sin_centavos(venta.total_a_pagar), 'verbose_name': 'Total a pagar'},
+            'total_a_pagar_formated': {'data': f"${formatear_moneda_sin_centavos(venta.total_a_pagar)}", 'verbose_name': 'Total a pagar'},
 
             'dinero_entregado': {'data': getDineroEntregado(venta.cuotas), 'verbose_name': 'Dinero entregado'},
-            'dinero_entregado_formated': {'data': formatear_moneda_sin_centavos(getDineroEntregado(venta.cuotas)), 'verbose_name': 'Dinero entregado'},
+            'dinero_entregado_formated': {'data': f"${formatear_moneda_sin_centavos(getDineroEntregado(venta.cuotas))}", 'verbose_name': 'Dinero entregado'},
             
             'dinero_restante': {'data': venta.total_a_pagar - getDineroEntregado(venta.cuotas), 'verbose_name': 'Dinero restante'},
-            'dinero_restante_formated': {'data': formatear_moneda_sin_centavos(venta.total_a_pagar - getDineroEntregado(venta.cuotas)), 'verbose_name': 'Dinero restante'},
+            'dinero_restante_formated': {'data': f"${formatear_moneda_sin_centavos(venta.total_a_pagar - getDineroEntregado(venta.cuotas))}", 'verbose_name': 'Dinero restante'},
             
+            "cantidad_chances":{'data': len(venta.cantidadContratos), 'verbose_name': 'Cantidad de chances'},
+            "total_por_contrato":{'data': round(venta.importe / len(venta.cantidadContratos),0), 'verbose_name': 'Importe por contrato'},
+
             'vendedor': {'data': venta.vendedor.nombre, 'verbose_name': 'Vendedor'},
             'producto': {'data': venta.producto.nombre, 'verbose_name': 'Producto'},
             'supervisor': {'data': venta.supervisor.nombre, 'verbose_name': 'Supervisor'},

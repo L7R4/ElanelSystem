@@ -34,12 +34,12 @@
         </div>
     </div>
 
-    {% comment %} <div class="wrapperSections">
+    <div class="wrapperSections">
         <div class ="tittleWrapper">
             <h4>Detalle de ventas <h4>
         </div>
         <div class="buttonWrapper">
-            <a href="{% url 'liquidacion:liquidacionesDetalleVentas' %}" class="buttonMore">
+            <a href="{% url 'liquidacion:detallesComisionesView' 'ventas' %}" class="buttonMore">
                 <div>
                     <h3>Ir</h3>
                     <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
@@ -47,7 +47,21 @@
             </a>    
         </div>
                
-    </div> {% endcomment %}
+    </div>
+    
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Cuotas 1 adelantadas<h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="{% url 'liquidacion:detallesComisionesView' 'cuotas_1' %}" class="buttonMore">
+                <div>
+                    <h3>Ir</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>
+        </div>
+    </div>
 
     <div class="wrapperSections">
         <div class ="tittleWrapper">
@@ -62,19 +76,6 @@
             </a>
         </div>
     </div>
-    {% comment %} <div class="wrapperSections">
-        <div class ="tittleWrapper">
-            <h4>Cuotas adelantadas<h4>
-        </div>
-        <div class="buttonWrapper">
-            <a href="{% url 'liquidacion:liquidacionesDetalleCuotasAdelantadas' %}" class="buttonMore">
-                <div>
-                    <h3>Ir</h3>
-                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
-                </div>
-            </a>
-        </div>
-    </div> {% endcomment %}
     {% comment %} <div class="wrapperSections">
         <div class ="tittleWrapper">
             <h4>Tabla de porcentajes<h4>

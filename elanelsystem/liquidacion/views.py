@@ -8,7 +8,9 @@ from users.models import Usuario,Sucursal
 from .models import *
 from django.urls import reverse_lazy
 from django.contrib.auth.models import Group
-from sales.utils import getAllCampaniaOfYear, getTodasCampaniasDesdeInicio
+from sales.utils import formatear_moneda_sin_centavos, getAllCampaniaOfYear, getTodasCampaniasDesdeInicio, dataStructureCannons, dataStructureClientes, dataStructureVentas, dataStructureMovimientosExternos,deleteFieldsInDataStructures
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 import datetime
 import json
 from elanelsystem.utils import printPDF
@@ -471,3 +473,89 @@ class HistorialLiquidaciones(generic.ListView):
         
         return render(request, self.template_name, context)
     
+class DetallesComisionesView(generic.View):
+    template_name = 'detalle_comisiones.html'
+
+    
+
+    def get(self, request, tipo_slug):
+        # Obtén los datos del modelo basado en el slug
+        sucursal = request.GET.get("agencia") if request.GET.get("agencia") else "Sucursal central"
+
+        MODELOS = {
+            'cuotas_1': dataStructureCannons(sucursal),
+            'ventas': dataStructureVentas(sucursal),
+        }
+
+        datos = MODELOS.get(tipo_slug)
+
+        # Definir atributos a mostrar según el modelo
+        if tipo_slug == "ventas":
+            attrs = ["nro_operacion", "fecha", "nro_cliente", "nombre_de_cliente", "agencia", "nro_cuotas","campania", "cantidad_chances","total_por_contrato_formated","importe_formated", "interes_generado_formated","total_a_pagar_formated","dinero_entregado_formated","dinero_restante_formated","cuota_comercial_formated",'producto', 'paquete', 'vendedor', 'supervisor']
+
+        elif tipo_slug == "cuotas_1":
+            cuota_comercial = None
+            for d in datos:
+                if d['cuota']['data'] == "Cuota 2": 
+                    cuota_comercial = int(d['cuota_comercial']['data'])
+
+            for d in datos:
+                d["cuota_comercial"] = {
+                    "data": f"${formatear_moneda_sin_centavos(cuota_comercial)}",
+                    "verbose_name": "Cuota Comercial"
+                }
+                d["comision"] = {
+                    "data": f"${formatear_moneda_sin_centavos(round(cuota_comercial * 0.10, 0))}",
+                    "verbose_name": "Comisión (10%)"
+                }
+            datos = [cuota for cuota in datos if cuota["cuota"]["data"] == "Cuota 1" and cuota["estado"]["data"] == "Pagado" ]
+            print(datos)
+            attrs = ["nro_operacion","agencia","nro_del_cliente", "nombre_del_cliente", "cuota", "fecha_de_vencimiento", "fecha","fecha_inscripcion", "dias_de_diferencia","cuota_comercial","comision","metodoPagoAlias","vendedor", "supervisor", "estado"]
+        
+        else:
+            attrs = []  # Por defecto no mostrar atributos si no se definen
+
+        # Filtrar los datos según los atributos definidos
+        datos_filtrados = [
+            {attr: obj[attr] for attr in attrs if attr in obj}
+            for obj in datos
+        ]
+
+        # datos_filtrados = []
+        request.session['datos'] = {'data': datos_filtrados, 'tipo': tipo_slug}
+
+
+        # Paginación
+        page = request.GET.get('page', 1)
+        paginator = Paginator(datos_filtrados, 20)  # 20 elementos por página
+
+        try:
+            data_paginated = paginator.page(page)
+        except PageNotAnInteger:
+            data_paginated = paginator.page(1)
+        except EmptyPage:
+            data_paginated = paginator.page(paginator.num_pages)
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'data': list(data_paginated),  # Serializa la página actual
+                'has_next': data_paginated.has_next(),
+                'has_previous': data_paginated.has_previous(),
+                'next_page': data_paginated.next_page_number() if data_paginated.has_next() else None,
+                'previous_page': data_paginated.previous_page_number() if data_paginated.has_previous() else None,
+                'page': data_paginated.number,
+                'total_pages': paginator.num_pages,
+            })
+
+        # Renderizar la plantilla con los datos y atributos
+        return render(
+            request, 
+            self.template_name, 
+            {
+                'tipo': tipo_slug,
+                'data': data_paginated,
+                'sucursales': Sucursal.objects.all(),
+                'sucursalDefault': Sucursal.objects.get(pseudonimo="Sucursal central"),
+            }
+        )
+  
