@@ -208,7 +208,7 @@ def getCuotas1(usuario,campania,agencia):
 
                if((fechaCuota-fechaAltaVenta).days <= 15):
                     cuotas1Adelantadas.append(v.cuotas[1])
-                    totalDineroCuotas1 += v.cuotas[2]["total"]
+                    totalDineroCuotas1 += v.cuotas[2]["total"] * 0.10
                     
         return {"totalDinero": totalDineroCuotas1,"detalle":cuotas1Adelantadas, "cantidadCuotas1": len(cuotas1Adelantadas)}
 

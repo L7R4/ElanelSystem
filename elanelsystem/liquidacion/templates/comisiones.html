@@ -16,27 +16,35 @@
     <div class="wrapperHeader">
         
         <div class="wrapperInputsSearchs">
-            <div id="sucursalWrapper" class="inputWrapper">
+            <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+                <h3 class="labelInput">Sucursal</h3>
                 <div class="containerInputAndOptions">
-                    <img id="tipoComprobanteIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                    <input type="text" readonly="" placeholder="Sucursal" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" class="input-read-write-default onlySelect">
-                    <ul id="contenedorSucursal" class="list-select-custom options">
-                        {% for sucursal in sucursales %}
-                            <li>{{sucursal}}</li>
-                        {% endfor %}
-                    </ul>
+                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                  <input type="hidden" class="filterInput" name="sucursal" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                  </div>
+                  <ul id="contenedorSucursal" class="list-select-custom options">
+                    {% for sucursal in sucursales %}
+                        <li>{{sucursal}}</li>
+                    {% endfor %}
+                </ul>
                 </div>
             </div>
-
-            <div id="campaniaWrapper" class="inputWrapper">
+            
+            <div id="campaniaWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+                <h3 class="labelInput">Campaña</h3>
                 <div class="containerInputAndOptions">
-                    <img id="tipoComprobanteIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                    <input type="text" readonly="" placeholder="Campaña" name="campania" id="campaniaInput" required="required" autocomplete="off" maxlength="50" class="input-read-write-default onlySelect">
-                    <ul id="contenedorCampania" class="list-select-custom options">
-                        {% for campania in campanias %}
+                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                  <input type="hidden" class="filterInput" name="campania" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                  </div>
+                  <ul id="contenedorSucursal" class="list-select-custom options">
+                    {% for campania in campanias %}
                             <li>{{campania}}</li>
                         {% endfor %}
-                    </ul>
+                </ul>
                 </div>
             </div>
         </div>
@@ -151,6 +159,8 @@
     <script src="{% static 'js/input_select_create_user.js' %}"></script>
     <script src="{% static 'js/filters_liquidacion.js' %}"></script>
     <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+    <script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+
     <script src="{% static 'js/redirectToPDFNewLiquidacion.js' %}"></script>
     
 {% endblock js %}
