@@ -155,6 +155,8 @@ def filterMainManage(request,dataStructure):
         "cobrador": filterDataBy_enteRecaudadores,
         "tipo_mov": filterDataBy_typeMovements,
         "campania": filterDataBy_campania,
+        "campaniaPago": filterDataBy_campaniaPago,
+
         # "agencia": filterDataBy_agency,
         "mora": filterDataBy_cannonsMora,
         "vendedor": filterDataBy_seller,
@@ -320,8 +322,11 @@ def filterDataBy_typePayments(dataStructure, typePayment):
 def filterDataBy_typeMovements(dataStructure, typeMovement):
     return list(filter(lambda item:item["tipo_mov"]["data"] in typeMovement, dataStructure))
 
-def filterDataBy_campania(dataStructure, campania):
+def filterDataBy_campaniaPago(dataStructure, campania):
     return list(filter(lambda item:item["campaniaPago"]["data"] in campania, dataStructure))
+
+def filterDataBy_campania(dataStructure, campania):
+    return list(filter(lambda item:item["campania"]["data"] in campania, dataStructure))
 
 
 def filterDataBy_enteRecaudadores(dataStructure, typeEnteRecaudador):

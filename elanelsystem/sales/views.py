@@ -335,9 +335,9 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                 print(filaEstado)
 
                 try:
-                    print("1111111111111111111")
-                    print(filaEstado["id_venta"])
-                    print(rowVenta['id_venta'])
+                    # print("1111111111111111111")
+                    # print(filaEstado["id_venta"])
+                    # print(rowVenta['id_venta'])
 
                     if(int(filaEstado["id_venta"]) == int(rowVenta['id_venta'])):
                         cuota = filaEstado["cuotas"].replace(" ","").split("-")[1]
@@ -356,17 +356,28 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
 
                         if(filaEstado["cuotas"] == "cuota -  0"):
                             print("Weps1")
+                            # Valor oficial que se supone para cuota 0
+                            valor_oficial_cuota0 = newVenta.anticipo * cantidadContratos
+
+                            # Valor que realmente dice el Excel
+                            valor_excel = int(filaEstado["importe_cuotas"]) * cantidadContratos
+
+                            # Si Excel es menor => interpretamos la diferencia como 'descuento'
+                            descuento = 0
+                            if valor_excel < valor_oficial_cuota0:
+                                descuento = valor_oficial_cuota0 - valor_excel
+
                             info = {
                                 "cuota" :f'Cuota {cuota}',
                                 "nro_operacion": str(int(rowVenta['id_venta'])),
                                 "status": statusCuota,
-                                "total": int(filaEstado["importe_cuotas"]) * cantidadContratos,
-                                "descuento": {'autorizado': "", 'monto': 0},
+                                "total": valor_oficial_cuota0,
+                                "descuento": {'autorizado': "Gerente de la sucursal", 'monto': descuento},
                                 "bloqueada": False,
                                 "fechaDeVencimiento":"", 
                                 "diasRetraso": 0,
                                 "pagos":[{
-                                    "monto": int(filaEstado["importe_cuotas"]) * cantidadContratos,
+                                    "monto": valor_excel,
                                     "metodoPago": metodo_pago_obj.id,
                                     "fecha": format_date(filaEstado["fecha_de_pago"]),
                                     "cobrador": cobrador_obj.id,
@@ -375,10 +386,37 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                                 "autorizada_para_anular": False
 
                             }
-                        
-                        else:
-                            print("Weps2")
+                        elif(filaEstado["cuotas"] == "cuota -  1"):
+                            # Valor oficial
+                            valor_oficial_cuota1 = newVenta.primer_cuota * cantidadContratos
 
+                            # Lo que indica el Excel
+                            valor_excel = int(filaEstado["importe_cuotas"]) * cantidadContratos
+
+                            descuento = 0
+                            if valor_excel < valor_oficial_cuota1:
+                                descuento = valor_oficial_cuota1 - valor_excel
+
+                            info = {
+                                "cuota" :f'Cuota {cuota}',
+                                "nro_operacion": str(int(rowVenta['id_venta'])),
+                                "status": statusCuota,
+                                "total": valor_oficial_cuota1,
+                                "descuento": {'autorizado': "Gerente de la sucursal", 'monto': descuento},
+                                "bloqueada": False,
+                                "fechaDeVencimiento":"", 
+                                "diasRetraso": 0,
+                                "pagos":[{
+                                    "monto": valor_excel,
+                                    "metodoPago": metodo_pago_obj.id,
+                                    "fecha": format_date(filaEstado["fecha_de_pago"]),
+                                    "cobrador": cobrador_obj.id,
+                                    "campaniaPago": obtenerCampaña_atraves_fecha(format_date(filaEstado["fecha_de_pago"]))
+                                }],
+                                "autorizada_para_anular": False
+                            }
+
+                        else:
                             info = {
                                 "cuota" :f'Cuota {cuota}',
                                 "nro_operacion": str(int(rowVenta['id_venta'])),
@@ -391,11 +429,9 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                                 "interesPorMora": 0,
                                 "totalFinal": 0,
                                 "autorizada_para_anular": False
-
                             }
-                            if(info["status"] == "Pagado"):
-                                print("Weps3")
 
+                            if(info["status"] == "Pagado"):
                                 info["pagos"] = [{
                                     "monto": int(filaEstado["importe_cuotas"]) * cantidadContratos,
                                     "metodoPago": metodo_pago_obj.id,
@@ -404,8 +440,6 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                                     "campaniaPago": obtenerCampaña_atraves_fecha(format_date(filaEstado["fecha_de_pago"]))
                                 }]
                             else:
-                                print("Weps4")
-
                                 info["pagos"] = []
                             
                         cuotas.append(info)
@@ -421,18 +455,13 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                         
             cuotas.reverse()
             newVenta.total_a_pagar = float(total_a_pagar * cantidadContratos)
-            print("??????????????????")
             newVenta.cuotas=bloquer_desbloquear_cuotas(cuotas)
-            print("2222222222222222")
             newVenta.primer_cuota = newVenta.cuotas[1]["total"]
-            print("33333333333")
 
             newVenta.anticipo = newVenta.cuotas[0]["total"]
-            print("4444444444444444")
 
             newVenta.intereses_generados = newVenta.total_a_pagar - newVenta.importe
             newVenta.importe_x_cuota = newVenta.cuotas[2]["total"]
-            print("5555555555555555")
 
             newVenta.nro_cuotas = len(cuotas)-1
             newVenta.setDefaultFields()

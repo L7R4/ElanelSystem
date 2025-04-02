@@ -690,7 +690,7 @@ def importar_usuarios(request):
                     usuario.xp_laboral = handle_nan(row['XP Laboral'])
                     usuario.c = str(row['DNI']) + '_elanel'
                     usuario.groups.add(Group.objects.filter(name=row["Rango"]).first())
-                    sucursal_object = Sucursal.objects.get(pseudonimo=agencia)
+                    sucursal_object = Sucursal.objects.get(id=agencia)
                     usuario.sucursales.add(sucursal_object)
                     usuario.save()
 

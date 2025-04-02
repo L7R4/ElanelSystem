@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views import generic
 from elanelsystem import settings
+from elanelsystem.views import filterDataBy_campania
 from sales.mixins import TestLogin
 from users.models import Usuario,Sucursal
 from .models import *
@@ -312,6 +313,7 @@ class LiquidacionesRanking(TestLogin,generic.View):
 
 
         # Calcular ventas y productividad de supervisores
+        totalSuper ={}
         for usuario in Usuario.objects.filter(rango="Supervisor",sucursales__in=[sucursalObject]):
                 ventasPorEquipo = calcular_ventas_supervisor(usuario,campania,sucursalObject)
                 productividadEquipo = calcular_productividad_supervisor(usuario,campania,sucursalObject)
@@ -326,14 +328,18 @@ class LiquidacionesRanking(TestLogin,generic.View):
 
                 vendedoresACargo.sort(key=lambda x: x['cantidadVentas'], reverse=True)
 
+                cantidadTotal_cuotas1 = sum([vendedor["cuotas1Adelantadas"] for vendedor in vendedoresACargo])
 
                 supervisores.append({
                     'email_usuario':usuario.email,
                     'nombre_usuario':usuario.nombre,
                     'cantidadVentas': ventasPorEquipo,
                     'productividad': productividadEquipo,
+                    'cuotas_1_total': cantidadTotal_cuotas1,
                     'vendedoresACargo': vendedoresACargo
                 })
+                
+                
         
 
         #Ordenar por cantidad de ventas
@@ -480,8 +486,10 @@ class DetallesComisionesView(generic.View):
 
     def get(self, request, tipo_slug):
         # Obtén los datos del modelo basado en el slug
-        sucursal = request.GET.get("agencia") if request.GET.get("agencia") else "Sucursal central"
+        sucursal = request.GET.get("agencia") if request.GET.get("agencia") else str(Sucursal.objects.first().id)
+        campania = request.GET.get("campania") if request.GET.get("campania") else ""
 
+        print(request)
         MODELOS = {
             'cuotas_1': dataStructureCannons(sucursal),
             'ventas': dataStructureVentas(sucursal),
@@ -490,6 +498,7 @@ class DetallesComisionesView(generic.View):
         datos = MODELOS.get(tipo_slug)
 
         # Definir atributos a mostrar según el modelo
+        datos = filterDataBy_campania(datos,campania) if campania != "" else datos
         if tipo_slug == "ventas":
             attrs = ["nro_operacion", "fecha", "nro_cliente", "nombre_de_cliente", "agencia", "nro_cuotas","campania", "cantidad_chances","total_por_contrato_formated","importe_formated", "interes_generado_formated","total_a_pagar_formated","dinero_entregado_formated","dinero_restante_formated","cuota_comercial_formated",'producto', 'paquete', 'vendedor', 'supervisor']
 
@@ -509,8 +518,8 @@ class DetallesComisionesView(generic.View):
                     "verbose_name": "Comisión (10%)"
                 }
             datos = [cuota for cuota in datos if cuota["cuota"]["data"] == "Cuota 1" and cuota["estado"]["data"] == "Pagado" ]
-            print(datos)
-            attrs = ["nro_operacion","agencia","nro_del_cliente", "nombre_del_cliente", "cuota", "fecha_de_vencimiento", "fecha","fecha_inscripcion", "dias_de_diferencia","cuota_comercial","comision","metodoPagoAlias","vendedor", "supervisor", "estado"]
+            # print(datos)
+            attrs = ["nro_operacion","agencia","campania","nro_del_cliente", "nombre_del_cliente", "cuota", "fecha_de_vencimiento", "fecha","fecha_inscripcion", "dias_de_diferencia","campaniaPago", "cuota_comercial","comision","metodoPagoAlias","vendedor", "supervisor", "estado"]
         
         else:
             attrs = []  # Por defecto no mostrar atributos si no se definen
@@ -523,6 +532,8 @@ class DetallesComisionesView(generic.View):
 
         # datos_filtrados = []
         request.session['datos'] = {'data': datos_filtrados, 'tipo': tipo_slug}
+
+        print(datos)
 
 
         # Paginación
@@ -555,7 +566,8 @@ class DetallesComisionesView(generic.View):
                 'tipo': tipo_slug,
                 'data': data_paginated,
                 'sucursales': Sucursal.objects.all(),
-                'sucursalDefault': Sucursal.objects.get(pseudonimo="Sucursal central"),
+                "campanias": getTodasCampaniasDesdeInicio()
+                # 'sucursalDefault': Sucursal.objects.first()
             }
         )
   

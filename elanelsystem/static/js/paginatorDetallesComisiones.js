@@ -2,16 +2,16 @@
 const dataContainer = document.getElementById('data-container');
 const buttonsPagesManage = document.querySelectorAll('.buttonsPagesManage');
 const informationTable = document.querySelector('.informationTable');
-const selectAgencia = document.getElementById('inputSucursal');
+
+const selectFilters = document.querySelectorAll(".wrapperTypeFilter .filterInput") 
+let url = window.location.pathname
 
 let page = 1;
-let agencia = selectAgencia.value;
 buttonsPagesManage.forEach(button => {
     button.addEventListener('click', async () => {
         page = button.value;
         wrapperLoader.style.display = "flex";
-        console.log("WEPS")
-        let request = await fetchFunction(`/ventas/liquidaciones/detalles/${tipoSlug}?agencia=${agencia}&page=${page}`);
+        let request = await movsGetFilter(selectFilters,url);
         wrapperLoader.style.display = "none";
 
         updateValuePages(request);
@@ -63,34 +63,51 @@ function updateValuePages(data) {
 
 // Filtro por sucursal
 
-
-selectAgencia.addEventListener('input', async () => {
-    agencia = selectAgencia.value;
-    wrapperLoader.style.display = "flex";
-    let request = await fetchFunction(`/ventas/liquidaciones/detalles/${tipoSlug}/?agencia=${agencia}&page=${page}`);
-    wrapperLoader.style.display = "none";
-
-
-    updateValuePages(request);
-    displayData(request);
+selectFilters.forEach(select=>{
+    select.addEventListener('input', async () => {
+        wrapperLoader.style.display = "flex";
+        let request = await movsGetFilter(selectFilters,url);
+        wrapperLoader.style.display = "none";
+    
+    
+        updateValuePages(request);
+        displayData(request);
+    })
 })
 
 
-async function fetchFunction(url) {
-    try {
-        let response = await fetch(url, {
-            method: 'GET',
-            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
-        })
-
-        if (!response.ok) {
-            throw new Error("Error")
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
+// Funcion para obtener todos los movimientos por pagina 
+async function movsGetFilter(inputs, url) {
+    let urlParams = createParamsUrl(inputs)
+    urlForFilter = urlParams
+    console.log("a")
+    const response = await fetch(`${url}?page=${page}${urlForFilter}`, {
+        method: 'get',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+        // cache: 'no-store',
+    });
+    if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
     }
+    const data = await response.json();
+    return data;
 }
 
+
+
+function createParamsUrl(inputs) {
+    let urlParams = ""
+
+    inputs.forEach(input => {
+        if (input.value.trim() !== "") {
+            urlParams += "&";
+
+            const inputName = input.name; // Obtener el atributo 'name' del input
+            const inputValue = input.value; // Obtener el valor seleccionado
+            let newParam = `${inputName}=${inputValue}`;
+            urlParams += newParam;
+        }
+    })
+    return urlParams
+}
 
