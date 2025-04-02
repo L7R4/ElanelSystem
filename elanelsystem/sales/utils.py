@@ -295,9 +295,13 @@ def searchSucursalFromStrings(sucursal):
 
 def get_ventasBySucursal(sucursal):
     from sales.models import Ventas
+    from elanelsystem.views import convertirValoresALista
+
     if sucursal == "":
         return Ventas.objects.all()
-    return Ventas.objects.filter(agencia__pseudonimo=sucursal)
+    else:
+        listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
+        return Ventas.objects.filter(agencia__id__in=listaAgencias)
 
 
 def obtenerStatusAuditoria(venta): # Devuelve el estado de la ultima auditoria
@@ -350,6 +354,7 @@ def getInfoBaseCannon(venta, cuota):
         'cuota': {'data': cuota["cuota"], 'verbose_name': 'Cuota'},
         'nro_operacion': {'data': cuota["nro_operacion"], 'verbose_name': 'N° Operación'},
         'modalidad': {'data': venta.modalidad, 'verbose_name': 'Modalidad'},
+        'campania': {'data': venta.campania, 'verbose_name': 'Campaña de venta'},
         'contratos': {'data': venta.cantidadContratos, 'verbose_name': 'Cantidad de Contratos'},
         "fecha_inscripcion": {'data': venta.fecha, 'verbose_name': 'Fecha Inscripción'},
         'nombre_del_cliente': {'data': cliente.nombre, 'verbose_name': 'Nombre del Cliente'},
@@ -369,16 +374,13 @@ def getInfoBaseCannon(venta, cuota):
     }
 
 
-def dataStructureCannons(sucursal=None, ventas=[]):
+def dataStructureCannons(sucursal=None):
     from sales.models import Ventas, MetodoPago, CuentaCobranza
     from elanelsystem.views import convertirValoresALista
     from elanelsystem.utils import formatear_dd_mm_yyyy_h_m
     
-    ventas = ""
-    
     if sucursal:
-        listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
-        ventas = Ventas.objects.filter(agencia__pseudonimo__in=listaAgencias)
+        ventas = get_ventasBySucursal(sucursal)
     else:
         ventas = Ventas.objects.all()
 
@@ -417,7 +419,7 @@ def dataStructureCannons(sucursal=None, ventas=[]):
                         'fecha': {'data': pago['fecha'], 'verbose_name': 'Fecha de Pago'},
                         'cobrador': {'data': str(cobrador_obj.id), 'verbose_name': 'Cobrador'},
                         'cobradorAlias': {'data': cobrador_obj.alias, 'verbose_name': 'Cobrador'},
-                        'campania': {'data': pago["campaniaPago"], 'verbose_name': 'Campaña'},
+                        'campaniaPago': {'data': pago["campaniaPago"], 'verbose_name': 'Campaña de pago'},
                         'dias_de_diferencia': {'data': dias_diferencia,'verbose_name': 'Días de diferencia'}
 
                     }}

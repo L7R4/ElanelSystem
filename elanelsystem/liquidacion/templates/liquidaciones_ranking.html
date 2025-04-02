@@ -57,7 +57,15 @@
         </div>
     </div>
     <div class="containerBoth">
-        <div class="containerSupervisores">
+        <div class="colaborators_type_buttons_wrapper">
+            <div id="supervisoresWrapper" class="on">
+                <h2>Supervisores</h2>
+            </div>
+            <div id="vendedoresWrapper">
+                <h2>Vendedores</h2>
+            </div>
+        </div>
+        <div class="containerUsers containerSupervisores on">
             <div class="information">
                 <div class="tittleAndOrder">
                     <h2>Supervisores</h2>
@@ -78,7 +86,8 @@
                     <ul class="tittles">
                         <li>Supervisor</li>
                         <li>Dinero total</li>
-                        <li>Cantidad total</li>
+                        <li>Cantidad ventas</li>
+                        <li>Cuotas 1</li>
                     </ul>   
                 </div>
 
@@ -87,10 +96,11 @@
                         <li class ="item">
                             {% for super in supervisores %}
                                 <div class="backgroundItem">
-                                    <img class="imageMore" src="{% static 'images/icons/moreWhite.png' %}" alt="">
+                                    <img class="imageMore" src="{% static 'images/icons/arrowDown.png' %}" alt="">
                                     <div><p>{{super.nombre_usuario}}</p></div>
                                     <div><p>${{super.productividad}}</p></div>
                                     <div><p>{{super.cantidadVentas}}</p></div>
+                                    <div><p>{{super.cuotas_1_total}}</p></div>
                                 </div>
                                 <ul class="detallesItem">
                                     <h2>Vendedores a cargo</h2>
@@ -98,7 +108,8 @@
                                         <ul class="tittles">
                                             <li>Vendedor</li>
                                             <li>Dinero total</li>
-                                            <li>Cantidad total</li>
+                                            <li>Cantidad ventas</li>
+                                            <li>Cuotas 1</li>
                                         </ul>   
                                     </div>
                                     <div class="valuesWrapperItem">
@@ -109,6 +120,7 @@
                                                         <div><p>{{v.nombre_usuario}}</p></div>
                                                         <div><p>${{v.productividad}}</p></div>
                                                         <div><p>{{v.cantidadVentas}}</p></div>
+                                                        <div><p>{{v.cuotas1Adelantadas}}</p></div>
                                                     </div>
                                                 </li>
                                             {% endfor %}
@@ -120,10 +132,19 @@
                         </li>
                     </ul>       
                 </div>
+
+                <div class="totalWrapper">
+                    <ul class="tittles">
+                        <li>Total</li>
+                        <li>{{totalSuper.productividad}}</li>
+                        <li>{{totalSuper.cantVentas}}</li>
+                        <li>{{totalSuper.cuotas_1}}</li>
+                    </ul>   
+                </div>
             </div> 
         </div>
 
-        <div class="containerVendedores">
+        <div class="containerUsers containerVendedores">
             <div class="information">
                 <div class="tittleAndOrder">
                     <h2>Vendedores</h2>

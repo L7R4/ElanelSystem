@@ -4,12 +4,13 @@
 
 .wrapper_content {
     padding: 1rem;
+    overflow: hidden;
 }
 
 .filterContainer {
     width: 100%;
     padding: 1rem 2rem;
-    /* height: 10%; */
+    height: 15%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -103,17 +104,31 @@
 .containerBoth {
     display: flex;
     width: 100%;
+    height: 85%;
+    flex-wrap: wrap;
 }
 
-.containerSupervisores,
-.containerVendedores {
-    width: 50%;
+.containerUsers {
+    flex: 1 1 100%;
     padding: 1rem;
-    height: 90%;
+    height: 94%;
+}
+.containerBoth > div.containerUsers{
+    display: none;
+}
+.containerBoth > div.containerUsers.on{
+    display: unset;
+}
+.containerUsers > .information{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
-.containerSupervisores {
-    border-right: 2px solid #fff;
+.containerUsers > .information > .valuesWrapper{
+    overflow: auto;
+    padding-bottom: 5rem;
+    flex: 1 1 100%;
 }
 
 .information>h2 {
@@ -150,7 +165,7 @@
     /* background-color: var(--third-color); */
 }
 
-.containerSupervisores .tittlesWrapper>.tittles>li {
+.containerUsers .tittlesWrapper>.tittles>li {
     color: white;
     font-size: clamp(1.3rem, 1.2vw, 1.7rem);
     font-family: raleway-semibold;
@@ -159,7 +174,7 @@
     text-align: center;
 }
 
-.containerVendedores .tittlesWrapper>.tittles>li {
+.containerUsers .tittlesWrapper>.tittles>li {
     color: white;
     font-size: clamp(1.3rem, 1.2vw, 1.7rem);
     font-family: raleway-semibold;
@@ -169,10 +184,10 @@
 }
 
 .valuesWrapper>.values>li {
-    font-family: raleway;
+    font-family: raleway-semibold;
     position: relative;
     width: 100%;
-    color: rgb(241, 237, 237);
+    color: var(--background-color);
     cursor: pointer;
     text-decoration: none;
     position: relative;
@@ -180,8 +195,8 @@
 }
 
 .valuesWrapper>.values>li>.backgroundItem {
-    background-color: #131820;
-
+    background-color: var(--third-color);
+    outline: 2px solid var(--third-color);
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     width: 100%;
     display: flex;
@@ -191,7 +206,6 @@
     z-index: 2;
     padding: 1rem 0;
     border-radius: .6rem;
-    border: 1px solid #000000c4;
     transition: .2s all ease;
 }
 
@@ -201,35 +215,39 @@
     right: 2rem;
 }
 
-/* .valuesWrapper > .values > li:hover
-{
-} */
+.valuesWrapper>.values>li>.backgroundItem>.imageMore.active{
+    transform: rotate(180deg);
+}
 
-.containerSupervisores .valuesWrapper>.values>li>.backgroundItem>div {
+
+.containerUsers .valuesWrapper>.values>li>.backgroundItem>div {
     width: 33.3%;
     text-align: center;
 }
 
-.containerVendedores .valuesWrapper>.values>li>.backgroundItem>div {
+.containerUsers .valuesWrapper>.values>li>.backgroundItem>div {
     width: 25%;
     text-align: center;
 }
 
 .detallesItem {
-    background-color: #304361;
+    /* background-color: var(--third-color); */
     border-bottom-left-radius: 0.6rem;
     border-bottom-right-radius: 0.6rem;
-    position: absolute;
     width: 100%;
-    top: 90%;
-    border: 1px solid #0000009b;
-    border-top-color: transparent;
-    height: 0px;
+    position: relative;
+    top: -15px;
+    /* padding: 2rem; */
     margin-bottom: 0px;
     overflow-y: hidden;
-    max-height: 400px;
-    transition: .2s all ease;
+    max-height: 0;
+    overflow: auto;
+    /* transition: max-height 0.3s ease; */
+    outline: 2px solid var(--primary-color);
 }
+.detallesItem.open {
+    max-height: 350px;
+  }
 
 /* .detallesItem.active{
 
@@ -238,12 +256,13 @@
 .detallesItem>h2 {
     font-size: clamp(1.4rem, 1.3vw, 1.6rem);
     font-family: raleway-semibold;
-    color: white;
-    padding: 1rem 2rem;
+    color: var(--primary-color);
+    padding: 2rem;
+    padding-top: 3%;
 }
 
 .tittlesWrapperItem>.tittles>li {
-    color: rgba(255, 255, 255, 0.883);
+    color: var(--third-color);
     font-size: clamp(1.3rem, 1.2vw, 1.5rem);
     font-family: raleway-semibold;
     padding: 1rem 0;
@@ -253,36 +272,22 @@
 
 .valuesWrapperItem>ul {
     list-style: none;
-    /* display: flex; */
+    padding: 1rem;
     list-style: none;
     width: 100%;
     justify-content: space-around;
 }
 
 .valuesWrapperItem>ul>.itemValores {
-    color: rgba(255, 255, 255, 0.883);
+    color: var(--third-color);
     font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    padding: 1rem 0;
+    /* padding: 1rem 0; */
     width: 100%;
+    margin-bottom: 1rem;
 
 }
 
 .valuesWrapperItem>ul>.itemValores>.backgroundItemVendedores {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    font-family: raleway-semibold;
-
-}
-
-.valuesWrapperItem>ul>.itemValores>.backgroundItemVendedores>div {
-    width: 33.3%;
-    padding: 0 .6rem;
-    text-align: center;
-}
-
-.containerVendedores .backgroundItemVendedores {
     background-color: #13182080;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     width: 100%;
@@ -293,7 +298,15 @@
     padding: 1rem 0;
     border-radius: .6rem;
     border: 1px solid #000000c4;
+
 }
+
+.valuesWrapperItem>ul>.itemValores>.backgroundItemVendedores>div {
+    width: 33.3%;
+    padding: 0 .6rem;
+    text-align: center;
+}
+
 
 .backgroundItemVendedores>div {
     width: 25%;
@@ -301,12 +314,13 @@
     text-align: center;
 }
 
-.containerVendedores .valuesWrapper>.values {
+.containerUsers .valuesWrapper>.values {
     list-style: none;
 }
 
-.containerVendedores .valuesWrapper>.values>li.item {
+.containerUsers .valuesWrapper>.values>li.item {
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    flex-direction: column ;
     width: 100%;
     display: flex;
     align-items: center;
@@ -314,4 +328,36 @@
     padding: 1rem;
     border-bottom: 1px solid #ffffff2c;
     border-top: 1px solid #ffffff2c;
+}
+
+.colaborators_type_buttons_wrapper{
+    display: flex;
+    gap: 1rem;
+    height: 7%;
+}
+
+.colaborators_type_buttons_wrapper > div{
+    flex: 1 1 20%;
+    min-width: 15rem;
+    max-width: 25rem;
+    border: 1px solid var(--secundary-color);
+    padding:1rem;
+    border-radius: 1rem;
+    text-align: center;
+    cursor: pointer;
+    height: fit-content;
+}
+
+.colaborators_type_buttons_wrapper > div:hover{
+    background-color: var(--secundary-color);
+}
+
+.colaborators_type_buttons_wrapper > div.on{
+    background-color: var(--secundary-color);
+}
+
+.colaborators_type_buttons_wrapper > div > h2{
+    font-size: clamp(1.1rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
 }

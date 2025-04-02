@@ -120,7 +120,6 @@ function createItemSegunMovimiento(mov) {
 }
 
 function refreshResumenMoney(data) {
-    console.log(data);
     const resumCuentas = document.querySelector(".resum_table>tbody");
     resumCuentas.innerHTML = ""; // Limpiar contenido previo
 

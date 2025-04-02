@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/detallesDatosDeNegocio.css' %}">
+<link rel="stylesheet" href="{% static 'css/detallesComisiones.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 
@@ -22,13 +22,13 @@
             <h3 class="labelInput">Sucursal</h3>
             <div class="containerInputAndOptions">
               <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-              <input type="hidden" class="filterInput" name="sucursal" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
+              <input type="hidden" class="filterInput" name="agencia" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
               <div class="onlySelect pseudo-input-select-wrapper">
                     <h3></h3>
               </div>
               <ul id="contenedorSucursal" class="list-select-custom options">
                 {% for sucursal in sucursales %}
-                    <li>{{sucursal}}</li>
+                    <li data-value="{{sucursal.id}}">{{sucursal.pseudonimo}}</li>
                 {% endfor %}
             </ul>
             </div>
@@ -44,7 +44,7 @@
               </div>
               <ul id="contenedorSucursal" class="list-select-custom options">
                 {% for campania in campanias %}
-                        <li>{{campania}}</li>
+                        <li data-value="{{campania}}">{{campania}}</li>
                 {% endfor %}
             </ul>
             </div>
@@ -115,6 +115,7 @@
 
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/paginatorDetallesComisiones.js' %}"></script>
+<script src="{% static 'js/z_index_orders_selects.js' %}"></script>
 <script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
 
 

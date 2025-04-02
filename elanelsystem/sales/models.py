@@ -163,7 +163,6 @@ class Ventas(models.Model):
     adjudicado = models.JSONField(default=dict,blank=True,null=True)
     deBaja = models.JSONField(default=dict,blank=True,null=True)
     cuotas = models.JSONField(default=list,blank=True,null=True)
-    # realizada_por = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="ventas_real_usuario")
     #endregion
     
 

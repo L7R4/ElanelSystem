@@ -1,13 +1,15 @@
-let itemsSupervisores = document.querySelectorAll(".containerSupervisores > .information > .valuesWrapper > .values > .item > .backgroundItem")
-
 function listenersItemsDisplay() {
+    let itemsSupervisores = document.querySelectorAll(".containerSupervisores .backgroundItem");
     itemsSupervisores.forEach(element => {
-        element.addEventListener("click", () => {
-            let alturaUl = element.nextElementSibling.scrollHeight
-            element.nextElementSibling.style.height = (element.nextElementSibling.style.height === alturaUl + 'px') ? '0px' : alturaUl + 'px';
-            element.style.marginBottom = (element.nextElementSibling.style.height === alturaUl + 'px') ? alturaUl + 10 + 'px' : "0px";
-        })
+      element.addEventListener("click", () => {
+        // 1) Rotar la flechita
+        let imageMore = element.querySelector(".imageMore");
+        imageMore.classList.toggle("active");
+  
+        // 2) Mostrar/ocultar la .detallesItem
+        let detallesItem = element.nextElementSibling; 
+        detallesItem.classList.toggle("open");
+      });
     });
-
-}
-listenersItemsDisplay()
+  }
+  listenersItemsDisplay();
