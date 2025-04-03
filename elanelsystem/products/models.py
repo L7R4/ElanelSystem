@@ -6,12 +6,7 @@ class Plan(models.Model):
     valor_nominal = models.PositiveIntegerField()
 
     # Opciones para el campo tipoDePlan
-    TIPO_PLAN_CHOICES = [
-        ('Basico', 'Basico'),
-        ('Estandar', 'Estandar'),
-        ('Premium', 'Premium'),
-    ]
-    tipodePlan = models.CharField(max_length=8, choices=TIPO_PLAN_CHOICES)
+    
     suscripcion = models.IntegerField(default=0)
     primer_cuota = models.IntegerField(default=0)
 
@@ -21,14 +16,13 @@ class Plan(models.Model):
     c60_porcentage = models.FloatField("Porcentaje de 60 c",default=0)
     
     def __str__(self):
-        return f"Plan {self.valor_nominal} - {self.tipodePlan}"
+        return f"Plan {self.valor_nominal}"
     
     
     #region Validaciones
     def clean(self):
         errors = {}
         validation_methods = [
-            self.validation_tipodePlan,
             self.validation_valor_nominal,
             self.validation_c24_porcentage,
             self.validation_c30_porcentage,
@@ -69,12 +63,6 @@ class Plan(models.Model):
         if self.c60_porcentage <= 0:
             raise ValidationError({'c60_porcentage': 'Debe contener un valor valido'})
    
-
-    def validation_tipodePlan(self):
-        planes = [t[0] for t in self.TIPO_PLAN_CHOICES]
-
-        if self.tipodePlan not in  planes:
-            raise ValidationError({'paquete': 'Tipo de plan incorrecto.'})
         
     def validation_valor_nominal(self):
         if Plan.objects.filter(valor_nominal=self.valor_nominal).exists():
@@ -97,6 +85,12 @@ class Products(models.Model):
     )
 
     # precio = models.PositiveIntegerField(default=0)
+    TIPO_PLAN_CHOICES = [
+        ('Base', 'Base'),
+        ('Estandar', 'Estandar'),
+        ('Premium', 'Premium'),
+    ]
+    tipodePlan = models.CharField(max_length=8, default="Estandar",choices=TIPO_PLAN_CHOICES)
     tipo_de_producto = models.CharField(max_length=20,choices=TIPO_PRODUCTO)
     nombre = models.CharField(max_length=100)
     plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, related_name="plan_producto", null=True, blank=True)
