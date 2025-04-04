@@ -12,6 +12,7 @@ def ejecutar_acciones_al_crear_venta(sender, instance, created, **kwargs):
         print("¡Venta creada!", instance)
         instance.testVencimientoCuotas()
         instance.suspenderOperacion()
+
         # Llama a cualquier función que necesites
         # por ejemplo:
         # enviar_notificacion(instance)
