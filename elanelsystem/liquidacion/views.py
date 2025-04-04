@@ -513,6 +513,10 @@ class DetallesComisionesView(generic.View):
                     "data": f"${formatear_moneda_sin_centavos(cuota_comercial)}",
                     "verbose_name": "Cuota Comercial"
                 }
+                # fecha_pago = datetime.datetime.strptime(formatear_dd_mm_yyyy_h_m(d["fecha"]), "%d/%m/%Y %H:%M").()
+                # if(d["fecha"]){
+
+                # }
                 d["comision"] = {
                     "data": f"${formatear_moneda_sin_centavos(round(cuota_comercial * 0.10, 0))}",
                     "verbose_name": "Comisión (10%)"
