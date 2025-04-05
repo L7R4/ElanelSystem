@@ -369,6 +369,85 @@ def detalle_de_equipo_x_supervisor(usuario, campania, agencia):
     return detalle_vendedores
 #endregion
 
+#region Funciones enfocadas a los gerentes de sucursal
+
+def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota=0):
+    """
+    Retorna un dict con la comision generada por las cuotas 0,1,2,3,4.
+    """
+    cuotasDict = {"porcetage_x_cuota": porcetage_x_cuota, "detalleCuota": {}}
+    cantidadTotalCuotas = 0
+    dineroTotalCuotas = 0
+    comisionTotalCuotas = 0
+
+    ventas_qs = Ventas.objects.filter(
+        agencia=agencia,
+        campania=campania,
+        adjudicado__status=False,
+        deBaja__status=False
+    )
+    ventas_auditadas = [
+        v for v in ventas_qs
+        if v.auditoria and len(v.auditoria) > 0 and v.auditoria[-1].get("grade") is True
+    ]
+
+    # Otras cuotas => 1,2,3,4
+    cuotasToFilter = ['1','2','3','4']
+    for number in cuotasToFilter:
+        cnt = 0
+        dineroTotalX = 0
+        for vent in ventas_auditadas:
+            if vent.cuotas[int(number)]["status"] == "Pagado":
+                cnt += len(vent.cantidadContratos)
+                dineroTotalX += vent.cuotas[int(number)]["total"]
+
+        comisionX = dineroTotalX * porcetage_x_cuota
+        cantidadTotalCuotas += cnt
+        dineroTotalCuotas += dineroTotalX
+        comisionTotalCuotas += comisionX
+
+        cuotasDict["detalleCuota"][f"cuotas{number}"] = {
+            "cantidad": cnt,
+            "dinero_x_cuota": dineroTotalX,
+            "comision": comisionX
+        }
+
+    cuotasDict["cantidad_total_cuotas"] = cantidadTotalCuotas
+    cuotasDict["dinero_total_cuotas"] = dineroTotalCuotas
+    cuotasDict["comision_total_cuotas"] = comisionTotalCuotas
+    return cuotasDict
+
+
+def get_detalle_cuotas_0(campania, agencia):
+    """
+    Retorna un dict con la comision generada por las cuotas 0.
+    """
+
+    ventas_qs = Ventas.objects.filter(
+        agencia=agencia,
+        campania=campania,
+        adjudicado__status=False,
+        deBaja__status=False
+    )
+    ventas_auditadas = [
+        v for v in ventas_qs
+        if v.auditoria and len(v.auditoria) > 0 and v.auditoria[-1].get("grade") is True
+    ]
+
+    ventas_segun_chances = sum(len(v.cantidadContratos) for v in ventas_auditadas)
+    cantidad_cuotas_0 = ventas_segun_chances
+
+    dinero_recadudado_cuotas_0 = 0
+    for vent in ventas_auditadas:
+        if vent.cuotas[0]["status"] == "Pagado":
+            dinero_recadudado_cuotas_0 += vent.cuotas[0]["total"]
+
+    return {
+        "cantidad_cuotas_0": cantidad_cuotas_0,
+        "dinero_recadudado_cuotas_0": dinero_recadudado_cuotas_0
+    }
+
+#endregion
 def detalle_liquidado_ventasPropias(usuario,campania,agencia):
     cantidad_ventas = calcular_cantidad_ventasPropias(usuario,campania,agencia)
     productividad_x_ventas_propias = calcular_productividad_ventasPropias(usuario,campania,agencia)
@@ -417,7 +496,7 @@ def detalle_premios_x_objetivo(usuario,campania,agencia):
         pass
     pass
 
-def detalle_liquidado_x_rol(usuario,campania,agencia):
+def detalle_liquidado_x_rol(usuario,campania,agencia, porcentage_x_cuota_gerente=0):
     if(str(usuario.rango).lower() == "supervisor"):
         cantidad_ventas_x_equipo = calcular_ventas_supervisor(usuario,campania,agencia)
         productividad_x_equipo = calcular_productividad_supervisor(usuario,campania,agencia)
@@ -433,7 +512,19 @@ def detalle_liquidado_x_rol(usuario,campania,agencia):
             }
         }
     elif(str(usuario.rango).lower() == "gerente de sucursal"):
-        pass
+        cantidad_total_de_cuotas = get_detalle_cuotas_x(campania, agencia, porcentage_x_cuota_gerente)["cantidad_total_cuotas"]
+        dinero_total_recaudado_cuotas = get_detalle_cuotas_x(campania, agencia, porcentage_x_cuota_gerente)["dinero_total_cuotas"]
+        comision_x_cuotas = get_detalle_cuotas_x(campania, agencia, porcentage_x_cuota_gerente)["comision_total_cuotas"]
+        detalle_x_cuotas = get_detalle_cuotas_x(campania, agencia, porcentage_x_cuota_gerente)["detalleCuota"]
+        
+        return{
+            "comision_subtotal": comision_x_cuotas,
+            "detalle":{
+                "cantidad_cuotas_1_4": cantidad_total_de_cuotas,
+                "dinero_recaudado_cuotas": dinero_total_recaudado_cuotas,
+                "detalle_x_cuotas": detalle_x_cuotas,
+            }
+        }
 
 
 
