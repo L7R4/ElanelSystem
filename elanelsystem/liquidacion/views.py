@@ -16,10 +16,10 @@ import datetime
 import json
 from elanelsystem.utils import printPDF
 from .utils import (
-    calcular_productividad_supervisor,
-    calcular_productividad_vendedor,
-    calcular_ventas_supervisor,
-    calcular_ventas_vendedor,
+    # calcular_productividad_supervisor,
+    # calcular_productividad_vendedor,
+    # calcular_ventas_supervisor,
+    # calcular_ventas_vendedor,
     getCuotas1,
     liquidaciones_countFaltas,
     liquidaciones_countTardanzas,
@@ -159,7 +159,7 @@ def requestColaboradoresWithComisiones(request):
     
     sucursalObject = Sucursal.objects.get(pseudonimo = form["sucursal"])
     campania = form["campania"]
-
+    print(form)
     tipo_colaborador = form["tipoColaborador"]
     colaboradores = Usuario.objects.filter(sucursales__in=[sucursalObject])
 
@@ -297,7 +297,7 @@ class LiquidacionesRanking(TestLogin,generic.View):
         # Calcular ventas y productividad de vendedores
         for usuario in Usuario.objects.filter(sucursales__in=[sucursalObject]):
             ventasPropias = calcular_ventas_vendedor(usuario,campania,sucursalObject)
-            productividadPropia = calcular_productividad_vendedor(usuario,campania,sucursalObject)
+            # productividadPropia = calcular_productividad_vendedor(usuario,campania,sucursalObject)
             cuotas1Adelantadas = getCuotas1(usuario,campania,sucursalObject)
 
             vendedores.append({
@@ -305,7 +305,9 @@ class LiquidacionesRanking(TestLogin,generic.View):
                 'nombre_usuario':usuario.nombre,
                 'rango_usuario': usuario.rango,
                 'cantidadVentas':ventasPropias,
-                'productividad':productividadPropia,
+                # 'productividad':productividadPropia,
+                'productividad':0,
+
                 'cuotas1Adelantadas':cuotas1Adelantadas["cantidadCuotas1"]
             })
 
