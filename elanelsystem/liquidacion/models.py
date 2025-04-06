@@ -36,43 +36,6 @@ class Asegurado(models.Model):
         return str(self.dinero) + "--" + str(self.dirigido)
 
 
-class CoeficientePorCantidadSupervisor(models.Model):
-    cantidad_minima = models.IntegerField("Cantidad minima", default = 0)
-    cantidad_maxima = models.IntegerField("Cantidad maxima", default = 0)
-    coeficiente = models.FloatField("Coeficiente")
-
-    def __str__(self):
-        return str(self.cantidad_maxima) + "--" + str(self.coeficiente)
-
-
-class CoeficientePorCantidadVendedor(models.Model):
-    cantidad_minima = models.IntegerField("Cantidad minima", default = 0)
-    cantidad_maxima = models.IntegerField("Cantidad maxima", default = 0)
-    com_48_60 = models.FloatField("48/60 Cuotas")
-    com_24_30_motos = models.FloatField("24/30 Cuotas Motos")
-    com_24_30_elec_soluc = models.FloatField("24/30 Cuotas Elec/Soluc")
-
-
-    def __str__(self):
-        return str(self.cantidad_maxima) + "--" + str(self.com_48_60) + "--" + str(self.com_24_30_motos) + "--" + str(self.com_24_30_elec_soluc)
-    
-
-class CoeficientePorProductividadSupervisor(models.Model):
-    dinero = models.FloatField("Dinero")
-    coeficiente = models.FloatField("Coeficiente")
-
-    def __str__(self):
-        return str(self.dinero) + "--" + str(self.coeficiente)
-
-
-class CoeficientePorProductividadVendedor(models.Model):
-    dinero = models.FloatField("Dinero")
-    premio = models.FloatField("Premio")
-
-    def __str__(self):
-        return str(self.dinero) + "--" + str(self.premio)
-
-
 class LiquidacionVendedor(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)
     sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)

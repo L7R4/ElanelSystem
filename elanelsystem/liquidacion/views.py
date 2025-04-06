@@ -16,17 +16,11 @@ import datetime
 import json
 from elanelsystem.utils import printPDF
 from .utils import (
-    # calcular_productividad_supervisor,
-    # calcular_productividad_vendedor,
-    # calcular_ventas_supervisor,
-    # calcular_ventas_vendedor,
-    getCuotas1,
     liquidaciones_countFaltas,
     liquidaciones_countTardanzas,
     obtener_ultima_campania,
-    searchSucursalFromStrings,
     getComisionTotal,
-    getDetalleComisionPorCantVentasPropias
+    get_detalle_comision_x_cantidad_ventasPropias
 )
 
 class LiquidacionesPanel(TestLogin,generic.View):
