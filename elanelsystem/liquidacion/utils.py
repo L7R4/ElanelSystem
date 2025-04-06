@@ -447,7 +447,63 @@ def get_detalle_cuotas_0(campania, agencia):
         "dinero_recadudado_cuotas_0": dinero_recadudado_cuotas_0
     }
 
+
+def get_premio_x_cantidad_ventas_sucursal(campania, agencia,objetivo_gerente=0):
+    
+    objetivo_gerente = 200
+    cantidad_cuotas_0 = get_detalle_cuotas_0(campania, agencia)["cantidad_cuotas_0"]
+
+    return 1000 * cantidad_cuotas_0 if cantidad_cuotas_0 >= objetivo_gerente else 0
+
 #endregion
+
+
+#region Funciones enfocadas en los descuentos
+
+def get_ausencias_tardanzas(usuario, campania):
+    """
+    Retorna un dict con 'total_descuentos' y un detalle de cuántas faltas/tardanzas
+    están registradas para cierto usuario en una campaña dada.
+    """
+
+    if not usuario.faltas_tardanzas:
+        return {
+            "total_descuentos": 0,
+            "detalle": {
+                "faltas": {"cantidad": 0, "dinero": 0,"detalle":{}},
+                "tardanzas": {"cantidad": 0, "dinero": 0,"detalle":{}}
+            }
+        }
+
+    data_campania = [item for item in usuario.faltas_tardanzas if item["campania"] == campania]
+    faltas = [x for x in data_campania if x["tipoEvento"].lower() == "falta"]
+    tardanzas = [x for x in data_campania if x["tipoEvento"].lower() == "tardanza"]
+
+    objMonto = MontoTardanzaAusencia.objects.first()
+    montoPorFalta = objMonto.monto_ausencia
+    montoPorTardanza = objMonto.monto_tardanza
+
+    total_desc = (len(tardanzas) * montoPorTardanza) + (len(faltas) * montoPorFalta)
+
+    return {
+        "total_descuentos": int(total_desc),
+        "detalle": {
+            "faltas": {
+                "cantidad": len(faltas),
+                "dinero": int(montoPorFalta * len(faltas)),
+                "detalle": faltas
+            },
+            "tardanzas": {
+                "cantidad": len(tardanzas),
+                "dinero": int(montoPorTardanza * len(tardanzas)),
+                "detalle": tardanzas
+            }
+        }
+    }
+
+
+#endregion
+
 def detalle_liquidado_ventasPropias(usuario,campania,agencia):
     cantidad_ventas = calcular_cantidad_ventasPropias(usuario,campania,agencia)
     productividad_x_ventas_propias = calcular_productividad_ventasPropias(usuario,campania,agencia)
@@ -472,14 +528,25 @@ def detalle_liquidado_ventasPropias(usuario,campania,agencia):
 
 
 def detalle_descuestos(usuario,campania,agencia):
-    pass
+    total_descuentos = 0
+    descuento_x_tardanzas_faltas = get_ausencias_tardanzas(usuario,campania)["total_descuentos"]
+    detalle_descuento_x_tardanzas_faltas = get_ausencias_tardanzas(usuario,campania)["detalle"]
+
+    total_descuentos += descuento_x_tardanzas_faltas
+
+    return{
+        "total_descuentos": total_descuentos,
+        "detalle":{
+            "tardanzas_faltas": detalle_descuento_x_tardanzas_faltas,
+        }
+    }
 
 
-def detalle_premios_x_objetivo(usuario,campania,agencia):
+def detalle_premios_x_objetivo(usuario,campania,agencia,objetivo_gerente=0):
     premio_subtotal = 0
     detalle = {}
 
-    premio_x_productividad_ventas_propias = get_premio_x_productividad_ventasPropias(usuario,campania,agencia) # Sumar
+    premio_x_productividad_ventas_propias = get_premio_x_productividad_ventasPropias(usuario,campania,agencia)
     
     if (str(usuario.rango).lower() == "supervisor"):
         premio_x_cantidad_ventas = get_premio_x_cantidad_ventas_equipo(usuario,campania,agencia)
@@ -493,8 +560,21 @@ def detalle_premios_x_objetivo(usuario,campania,agencia):
         premio_subtotal += premio_x_cantidad_ventas + premio_x_productividad_ventas
         
     elif (str(usuario.rango).lower() == "gerente de sucursal"):
-        pass
-    pass
+        premio_x_cantidad_ventas_agencia = get_premio_x_cantidad_ventas_sucursal(campania, agencia, objetivo_gerente)
+        
+        detalle = {
+            "premio_x_cantidad_ventas_agencia": premio_x_cantidad_ventas_agencia,
+        }
+
+        premio_subtotal += premio_x_cantidad_ventas_agencia
+
+    premio_subtotal += premio_x_productividad_ventas_propias
+
+    return {
+        "total_premios": premio_subtotal,
+        "detalle": detalle
+    }
+
 
 def detalle_liquidado_x_rol(usuario,campania,agencia, porcentage_x_cuota_gerente=0):
     if(str(usuario.rango).lower() == "supervisor"):
@@ -512,412 +592,197 @@ def detalle_liquidado_x_rol(usuario,campania,agencia, porcentage_x_cuota_gerente
             }
         }
     elif(str(usuario.rango).lower() == "gerente de sucursal"):
-        cantidad_total_de_cuotas = get_detalle_cuotas_x(campania, agencia, porcentage_x_cuota_gerente)["cantidad_total_cuotas"]
+        cantidad_total_de_cuotas_0 = get_detalle_cuotas_0(campania, agencia)["cantidad_cuotas_0"]
+        cantidad_total_de_cuotas_x = get_detalle_cuotas_x(campania, agencia, porcentage_x_cuota_gerente)["cantidad_total_cuotas"]
         dinero_total_recaudado_cuotas = get_detalle_cuotas_x(campania, agencia, porcentage_x_cuota_gerente)["dinero_total_cuotas"]
+        dinero_total_recaudado_cuotas_0 = get_detalle_cuotas_0(campania, agencia)["dinero_recadudado_cuotas_0"]
         comision_x_cuotas = get_detalle_cuotas_x(campania, agencia, porcentage_x_cuota_gerente)["comision_total_cuotas"]
         detalle_x_cuotas = get_detalle_cuotas_x(campania, agencia, porcentage_x_cuota_gerente)["detalleCuota"]
         
         return{
             "comision_subtotal": comision_x_cuotas,
             "detalle":{
-                "cantidad_cuotas_1_4": cantidad_total_de_cuotas,
+                "cantidad_cuotas_0": cantidad_total_de_cuotas_0,
+                "dinero_recaudado_cuotas_0": dinero_total_recaudado_cuotas_0,
+                "cantidad_cuotas_1_4": cantidad_total_de_cuotas_x,
                 "dinero_recaudado_cuotas": dinero_total_recaudado_cuotas,
                 "detalle_x_cuotas": detalle_x_cuotas,
             }
         }
 
 
+def get_comision_total(usuario, campania, agencia):
+    """
+    Calcula la comisión total para un colaborador en determinada campaña y agencia,
+    integrando la información de:
+      - Ventas propias (detail_liquidado_ventasPropias)
+      - Descuentos (detail_descuestos)
+      - Premios por objetivo (detail_premios_x_objetivo)
+      - Comisiones / lógica específica según rol (detail_liquidado_x_rol)
+    
+    Retorna un dict con la estructura:
+    {
+      "comision_total": <número>,
+      "detalle": {
+         "ventasPropias": { ... },
+         "descuentos": { ... },
+         "premios": { ... },
+         "rol": { ... }
+      }
+    }
+    """
 
+    # 1) Sección ventasPropias
+    ventas_propias_dict = detalle_liquidado_ventasPropias(usuario, campania, agencia)
+    #   - extraemos la comision_subtotal
+    comision_ventas_propias = ventas_propias_dict["comision_subtotal"]
 
+    # 2) Sección descuentos
+    descuentos_dict = detalle_descuestos(usuario, campania, agencia)
+    #   - total_descuentos
+    total_desc = descuentos_dict["total_descuentos"]
 
+    # 3) Sección premios por objetivo
+    premios_dict = detalle_premios_x_objetivo(usuario, campania, agencia)
+    #   - total_premios
+    total_premios = premios_dict["total_premios"]
 
+    # 4) Sección rol
+    #    Nota: si el usuario NO es supervisor / gerente, tu función debe manejarlo (por ejemplo, retornar comision_subtotal=0).
+    rol_dict = detalle_liquidado_x_rol(usuario, campania, agencia)
+    comision_rol = rol_dict["comision_subtotal"]
+
+    # 5) Cálculo final
+    #    Sumar las comisiones (ventas propias + rol + premios), restar los descuentos
+    #    Aquí cada quien decide si los premios van antes o después de los descuentos,
+    #    según tu política. El ejemplo: sumamos todo, luego restamos descuentos.
+    comision_neta = (comision_ventas_propias + comision_rol + total_premios) - total_desc
+
+    # 6) Armamos el dict final
+    resultado_final = {
+        "comision_total": comision_neta,
+        "detalle": {
+            "ventasPropias": ventas_propias_dict,
+            "descuentos": descuentos_dict,
+            "premios": premios_dict,
+            "rol": rol_dict
+        }
+    }
+
+    return resultado_final
 #--------------------------------------------------------------------------------------------------------------------------------
-def calcularAseguradoSegunDiasTrabajados(dinero,fecha_ingreso):
-    # Obtener la fecha actual
-    fecha_actual = datetime.now()
+# def calcularAseguradoSegunDiasTrabajados(dinero,fecha_ingreso):
+#     # Obtener la fecha actual
+#     fecha_actual = datetime.now()
 
-    # Obtener el último día del mes actual
-    ultimo_dia_mes = datetime(fecha_actual.year, fecha_actual.month, 1) + timedelta(days=32)
-    ultimo_dia_mes = ultimo_dia_mes.replace(day=1) - timedelta(days=1)
+#     # Obtener el último día del mes actual
+#     ultimo_dia_mes = datetime(fecha_actual.year, fecha_actual.month, 1) + timedelta(days=32)
+#     ultimo_dia_mes = ultimo_dia_mes.replace(day=1) - timedelta(days=1)
 
     
-    # Inicializar contador de días hábiles
-    dias_habiles = 0
+#     # Inicializar contador de días hábiles
+#     dias_habiles = 0
 
-    # Recorrer cada día entre la fecha de ingreso y el último día del mes
+#     # Recorrer cada día entre la fecha de ingreso y el último día del mes
+#     fecha_iter = datetime.strptime(fecha_ingreso, '%d/%m/%Y')
+#     while fecha_iter <= ultimo_dia_mes:
+#         # Si el día de la semana no es domingo, aumentar contador de días hábiles
+#         if fecha_iter.weekday() != 6:  # El código 6 corresponde al domingo
+#             dias_habiles += 1
+#         fecha_iter += timedelta(days=1)
+
+
+
+#     dinero_a_pagar = 0
+#     if(dias_habiles < ultimo_dia_mes.day):
+#         # Calcular el dinero correspondiente por día
+#         dinero_por_dia = dinero / ultimo_dia_mes.day 
+
+#         # Calcular el monto a pagar al trabajador
+#         dinero_a_pagar = dinero_por_dia * dias_habiles
+
+#     elif(dias_habiles >= ultimo_dia_mes.day):
+#         dinero_a_pagar = dinero
+
+#     return dinero_a_pagar
+
+# def getAsegurado(usuario,comisiones):
+#     dineroAsegurado = 0
+#     if(usuario.rango.lower() in "vendedor"):
+#         asegurado = Asegurado.objects.get(dirigido="Vendedor")
+#         dineroAsegurado = asegurado.dinero
+#         # Si las comisiones son menores que el dinero asegurado, se cobra el asegurado
+#         if comisiones < dineroAsegurado:
+#             return dineroAsegurado
+#         return 0
+    
+#     if(usuario.rango.lower() in "supervisor"):
+#         asegurado = Asegurado.objects.get(dirigido="Supervisor")
+#         dineroAsegurado = asegurado.dinero
+
+#         if comisiones < dineroAsegurado:
+#             return dineroAsegurado
+#         return 0
+
+
+#     return calcularAseguradoSegunDiasTrabajados(dineroAsegurado,usuario.fec_ingreso)
+
+# def getAdelantos(usuario,campania):
+#     descuentosDeCampaña = [descuento for descuento in usuario.descuentos if descuento["campania"] == campania]
+
+#     dineroTotal = sum([int(item["dinero"]) for item in descuentosDeCampaña])
+
+#     return {'dineroTotal': dineroTotal, 'detalle': descuentosDeCampaña}
+def calcularAseguradoSegunDiasTrabajados(dinero, fecha_ingreso):
+    """
+    Si el colaborador no estuvo todo el mes, se paga proporcional a días trabajados (excluyendo domingos).
+    """
+    from datetime import datetime
+
+    fecha_actual = datetime.now()
+    # último día del mes
+    ultimo_dia_mes = (fecha_actual.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
     fecha_iter = datetime.strptime(fecha_ingreso, '%d/%m/%Y')
+    dias_habiles = 0
     while fecha_iter <= ultimo_dia_mes:
-        # Si el día de la semana no es domingo, aumentar contador de días hábiles
-        if fecha_iter.weekday() != 6:  # El código 6 corresponde al domingo
+        if fecha_iter.weekday() != 6:
             dias_habiles += 1
         fecha_iter += timedelta(days=1)
 
+    total_dias_mes = ultimo_dia_mes.day
+    if dias_habiles < total_dias_mes:
+        # proporción
+        return (dinero / total_dias_mes) * dias_habiles
+    return dinero
 
 
-    dinero_a_pagar = 0
-    if(dias_habiles < ultimo_dia_mes.day):
-        # Calcular el dinero correspondiente por día
-        dinero_por_dia = dinero / ultimo_dia_mes.day 
-
-        # Calcular el monto a pagar al trabajador
-        dinero_a_pagar = dinero_por_dia * dias_habiles
-
-    elif(dias_habiles >= ultimo_dia_mes.day):
-        dinero_a_pagar = dinero
-
-    return dinero_a_pagar
-
-def getAsegurado(usuario,comisiones):
+def get_asegurado(usuario, comisiones):
+    """
+    Retorna el asegurado (mínimo a cobrar) si las comisiones no superan ese monto.
+    Si no, retorna 0.
+    Para otros roles se usa calcularAseguradoSegunDiasTrabajados.
+    """
     dineroAsegurado = 0
-    if(usuario.rango.lower() in "vendedor"):
-        asegurado = Asegurado.objects.get(dirigido="Vendedor")
-        dineroAsegurado = asegurado.dinero
-        # Si las comisiones son menores que el dinero asegurado, se cobra el asegurado
-        if comisiones < dineroAsegurado:
-            return dineroAsegurado
-        return 0
+    rango = usuario.rango.lower()
+
+    if "vendedor" in rango:
+        asegurado_obj = Asegurado.objects.get(dirigido="Vendedor")
+        dineroAsegurado = asegurado_obj.dinero
+        return dineroAsegurado if comisiones < dineroAsegurado else 0
+
+    if "supervisor" in rango:
+        asegurado_obj = Asegurado.objects.get(dirigido="Supervisor")
+        dineroAsegurado = asegurado_obj.dinero
+        return dineroAsegurado if comisiones < dineroAsegurado else 0
     
-    if(usuario.rango.lower() in "supervisor"):
-        asegurado = Asegurado.objects.get(dirigido="Supervisor")
-        dineroAsegurado = asegurado.dinero
+    if "gerente sucursal" in rango:
+        asegurado_obj = Asegurado.objects.get(dirigido="Gerente de sucursal")
+        dineroAsegurado = asegurado_obj.dinero
+        return dineroAsegurado if comisiones < dineroAsegurado else 0
 
-        if comisiones < dineroAsegurado:
-            return dineroAsegurado
-        return 0
-
-
-    return calcularAseguradoSegunDiasTrabajados(dineroAsegurado,usuario.fec_ingreso)
-
-def getDetalleComisionPorCantVentasPropias(usuario,campania,agencia):
-    typePlanes = ["com_48_60","com_24_30_motos","com_24_30_elec_soluc"]
-    detalleDict = {"planes":{}}
-    cantVentasTotal = 0
-    comisionTotal = 0
-    ventas = ""
-    
-    for typePlan in typePlanes:
-        if(typePlan =="com_48_60"):
-            ventas = Ventas.objects.filter(vendedor=usuario, campania=campania, agencia=agencia ,nro_cuotas__in=[48, 60], adjudicado__status=False, deBaja__status=False)
-        elif (typePlan =="com_24_30_motos"):
-            ventas = Ventas.objects.filter(vendedor=usuario, campania=campania, agencia=agencia ,nro_cuotas__in=[24, 30] , producto__tipo_de_producto="Moto", adjudicado__status=False, deBaja__status=False)
-        elif (typePlan =="com_24_30_elec_soluc"):
-            ventas = Ventas.objects.filter(vendedor=usuario, campania=campania, agencia=agencia ,nro_cuotas__in=[24, 30] , producto__tipo_de_producto__in=["Prestamo","Electrodomestico"], adjudicado__status=False, deBaja__status=False)
-        
-        ventas = [
-            venta for venta in ventas
-            if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
-        ]
-        cantVentas = len(ventas)
-
-        comision = 0
-        bandas = [
-            (0, 9, 0.0135),
-            (9,20, 0.0140),
-            (20, 30, 0.0145),
-            (30, float("inf"), 0.0155),
-        ]
-        coeficienteSelected = 0
-        for low, high, coeficiente in bandas:
-            if low <= cantVentas < high:
-                coeficienteSelected = coeficiente
-                break
-
-    
-        for venta in ventas:
-            # Calcular la comisión por venta y sumarla al total
-            comision_por_venta = (venta.importe * coeficienteSelected)
-            comision += comision_por_venta
-        
-        detalleDict["planes"][typePlan] = {
-            "cantidad_ventas": cantVentas, 
-            "comision": comision, 
-            "ventas": [
-                {"pk":venta.pk, 
-                 "importe":venta.importe,
-                 "nro_cuotas":venta.nro_cuotas,
-                 "producto":venta.producto.nombre,
-                 "fecha":venta.fecha,
-                 "cantidadContratos":venta.cantidadContratos,
-                 "nro_operacion":venta.nro_operacion,
-                 "nro_cliente":venta.nro_cliente.nro_cliente,
-                 "nombre_cliente":venta.nro_cliente.nombre} 
-                for venta in ventas
-                ]}
-
-        cantVentasTotal += cantVentas 
-        comisionTotal += comision 
-
-    detalleDict["cantVentasTotalPropias"] = cantVentasTotal
-    detalleDict["comisionTotal"] = comisionTotal
-    return detalleDict
-
-def getPremioProductividadVentasPropias(usuario,campania,agencia):
-    # Consulta para obtener las ventas del vendedor en la campaña
-
-    ventas = Ventas.objects.filter(vendedor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
-    ventas = [
-        venta for venta in ventas
-        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
-    ]
-
-    # Sumar los importes de los productos asociados a cada ventacom_CantVentas_total
-    productividad = sum(venta.importe for venta in ventas)
-    premio = 0
-    
-    # Lista de tuplas: (limite_inferior, limite_superior, premio)
-    bandas = [
-        (0,        6000000, 0),
-        (6000000,  8000000, 10000),
-        (8000000, 10000000, 15000),
-        (10000000, float("inf"), 20000),
-    ]
-    for low, high, dinero in bandas:
-        if low <= productividad < high:
-            premio = dinero
-            break
-    print("Premio seleccionado -> " + str(premio) )
-    return premio
-
-def getAusenciasTardanzas(usuario, campania):
-        if(usuario.faltas_tardanzas == []):
-            return {"total_descuentos": 0, 
-                    "detalle":
-                        {"faltas":{"cantidad":0,"dinero":0},
-                         "tardanzas":{"cantidad":0,"dinero":0}
-                        }
-                    }
-        else:
-            ausencias_tardanzas = [item for item in usuario.faltas_tardanzas if item["campania"] == campania]
-            faltas = [item for item in ausencias_tardanzas if item["tipoEvento"] == "Falta"]
-            tardanzas = [item for item in ausencias_tardanzas if item["tipoEvento"] == "Tardanza"]
-
-            montoPorFalta = MontoTardanzaAusencia.objects.first().monto_ausencia
-            montoPorTardanza = MontoTardanzaAusencia.objects.first().monto_tardanza
-
-            total_descuentos = (montoPorTardanza*len(tardanzas))+(montoPorFalta*len(faltas))
-           
-            return {"total_descuentos": int(total_descuentos), 
-                    "detalle": 
-                        {"faltas":{"cantidad":len(faltas),"dinero":int(montoPorFalta*len(faltas))},
-                         "tardanzas":{"cantidad":len(tardanzas),"dinero":int(montoPorTardanza*len(tardanzas))}
-                        } 
-                    }
-
-def getAdelantos(usuario,campania):
-    descuentosDeCampaña = [descuento for descuento in usuario.descuentos if descuento["campania"] == campania]
-
-    dineroTotal = sum([int(item["dinero"]) for item in descuentosDeCampaña])
-
-    return {'dineroTotal': dineroTotal, 'detalle': descuentosDeCampaña}
-
-def getCuotas1(usuario,campania,agencia):
-        totalDineroCuotas1 = 0
-        cuotas1Adelantadas = []
-        ventas = Ventas.objects.filter(vendedor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
-        ventas = [
-            venta for venta in ventas
-            if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
-        ]
-        for v in ventas:
-            if(v.cuotas[1]["status"] == "Pagado"):
-               fechaCuota = parse_fecha(v.cuotas[1]["pagos"][0]["fecha"])
-               fechaAltaVenta = parse_fecha(v.fecha)
-
-               if((fechaCuota-fechaAltaVenta).days <= 15):
-                    cuotas1Adelantadas.append(v.cuotas[1])
-                    totalDineroCuotas1 += v.cuotas[2]["total"] * 0.10
-                    
-        return {"totalDinero": totalDineroCuotas1,"detalle":cuotas1Adelantadas, "cantidadCuotas1": len(cuotas1Adelantadas)}
-
-def setPremiosPorObjetivo(usuario,campania,agencia,comisiones=0,cantVentas=0):
-    premios = list(usuario.premios)
-    if(usuario.rango.lower() in "vendedor"):
-        pass
-
-    if(usuario.rango.lower() in "supervisor"):
-        asegurado = Asegurado.objects.get(dirigido="Supervisor")
-        dineroAsegurado = asegurado.dinero
-         # Si la suma de ventas del equipo supera 80, se le suma el asegurado como premio
-        if cantVentas > 80:
-            oldPremiosPorCantVentas = list(filter(lambda x: x["concepto"].lower() == "premio por cantidad de ventas" and x["campania"] == campania, premios))
-            if(len(oldPremiosPorCantVentas) != 0):
-                premio = {"metodoPago": "---", 
-                        "dinero": f"{dineroAsegurado}", 
-                        "agencia": f"{agencia.id}", 
-                        "campania": f"{campania}", 
-                        "fecha": f"{datetime.now().strftime('%d/%m/%Y %H:%M')}", 
-                        "concepto": "Premio: por cantidad de ventas"
-                        }
-            
-                premios.append(premio)
-            else:
-                pass
-
-    # return monto
-
-def getPremiosPorObjetivo(usuario, campania):
-    listaPosiblesPremios = ["premio por cantidad de ventas", "premio por productividad de ventas"]
-    premios = list(usuario.premios)
-    premios = list(filter(lambda x: x["concepto"].lower() in listaPosiblesPremios and x["campania"] == campania, premios))
-
-    premiosDinero = list(map(lambda x: int(x["dinero"]), premios))
-
-    return {"premiosList": premios,"totalPremios": sum(premiosDinero)}
-
-#region Funciones especificas del supervisor - - - - - - - -   
- 
-def calcular_ventas_supervisor(usuario,campania,agencia):
-    # Consulta para obtener la cantidad total de ventas del vendedor en la campaña
-    ventas_totales = Ventas.objects.filter(supervisor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
-    ventas_totales = [
-        venta for venta in ventas_totales
-        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
-    ]
-    ventas_segun_chances = [len(venta.cantidadContratos) for venta in ventas_totales]
-    ventas_segun_chances = sum(ventas_segun_chances)
-    # print(f"Cantidad de ventas del supervisor {usuario.nombre} de la agencia {agencia.pseudonimo} en la {campania} \n\n {ventas_segun_chances}")
-    
-    return ventas_segun_chances
-
-def calcular_productividad_supervisor(usuario,campania,agencia):
-    # Consulta para obtener las ventas del vendedor en la campaña
-    ventas = Ventas.objects.filter(
-        supervisor=usuario, 
-        campania=campania,
-        agencia=agencia, 
-        adjudicado__status=False, 
-        deBaja__status=False
-        )
-    
-    ventas = [
-        venta for venta in ventas
-        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
-    ]
-
-    # Sumar los importes de los productos asociados a cada venta
-    suma_importes = sum(venta.total_a_pagar for venta in ventas)
-    return suma_importes
-
-def getPremioxProductividad_supervisor(usuario,campania,agencia):
-    totalProductividad = calcular_productividad_supervisor(usuario,campania,agencia)
-    premio = 0
-    bandas = [
-        (0, 16000000, 0),
-        (16000000, 18000000, 0.00020),
-        (18000000, 22000000, 0.00030),
-        (22000000, 26000000, 0.00050),
-        (26000000, 30000000, 0.00075),
-        (30000000, float("inf"), 0.001),
-    ]
-    for low, high, coeficiente in bandas:
-        if low <= totalProductividad < high:
-            premio = totalProductividad * coeficiente
-            break
-
-    return premio
-
-def getComisionCantVentas_supervisor(usuario,campania,agencia):
-    ventas = Ventas.objects.filter(supervisor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
-    ventas = [
-        venta for venta in ventas
-        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
-    ]
-
-    cantVentas = len(ventas)
-    bandas = [
-        (0, 30, 0),
-        (30, 40, 0.0027),
-        (40, 50, 0.0029),
-        (50, 60, 0.0031),
-        (60, 70, 0.0033),
-        (70, 80, 0.0035),
-        (80, 90, 0.0037),
-        (90, float("inf"), 0.0039),
-    ]
-    coeficienteSelected = 0
-    for low, high, coeficiente in bandas:
-        if low <= cantVentas < high:
-            coeficienteSelected = coeficiente
-            break
-    
-    total_comisionado = 0
-    # Iterar sobre las ventas y calcular la comisión total
-    for venta in ventas:
-        # Calcular la comisión por venta y sumarla al total
-        comision_por_venta = venta.importe * coeficienteSelected
-        total_comisionado += comision_por_venta
-    return total_comisionado
-
-def desempenioEquipo_supervisor(usuario,campania,agencia):
-    listaVendedores = []
-    ventas = Ventas.objects.filter(supervisor=usuario, campania=campania,agencia=agencia, adjudicado__status=False, deBaja__status=False)
-    ventas = [
-        venta for venta in ventas
-        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
-    ]
-    for venta in ventas:
-        vendedor = venta.vendedor
-        desempenioVendedor = {"nombre": vendedor.nombre,"cantidad_ventas": calcular_cantidad_ventasPropias(vendedor,campania,agencia), "productividad":calcular_productividad_ventasPropias(vendedor,campania,agencia)}
-        listaVendedores.append(desempenioVendedor)
-
-    return listaVendedores
-
-#endregion - - - - - - - - - - - - - - - - - - -
-
-#region Funcionsaes especificas del gerente de sucursal - - - - - - - - - -
-
-def getCuotasX(campania,agencia):
-    cuotasToFilter = ['1','2','3','4']
-    cuotasDict = {}
-    
-    cantidadTotalCuotas = 0
-    dineroTotalCuotas = 0
-    comisionTotalCuotas = 0
-    ventas = Ventas.objects.filter(agencia=agencia,campania=campania, adjudicado__status=False, deBaja__status=False)
-    ventas = [
-        venta for venta in ventas
-        if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
-    ]
-    # print()
-
-    # Cuota de inscripcion
-    cantCuotas0 = 0
-    dineroTotal_Cuota0 = 0
-    # objetivo = Asegurado.objects.get(dirigido ="Gerente sucursal").objetivo
-    dinero = Asegurado.objects.get(dirigido ="Gerente sucursal").dinero
-    for v in ventas:
-        if(v.cuotas[0]["status"] == "Pagado"):
-            cantCuotas0 += 1
-            dineroTotal_Cuota0 += v.cuotas[0]["total"]
-    comisionTotal_x_Cuota0 = dinero * cantCuotas0 if cantCuotas0 >= 300 else 0
-    cantidadTotalCuotas += cantCuotas0
-    dineroTotalCuotas += dineroTotal_Cuota0
-    comisionTotalCuotas += comisionTotal_x_Cuota0
-    cuotasDict["detalleCuota"] = {}
-    cuotasDict["detalleCuota"]["cuotas0"] = {"cantCuotas": cantCuotas0,"dineroTotal":dineroTotal_Cuota0,"dineroComisionado":comisionTotal_x_Cuota0}
-
-    # Otras cuotas
-    for number in cuotasToFilter:
-        cantCuotasX = 0
-        dineroTotal_CuotaX = 0
-        for v in ventas:
-            if(v.cuotas[int(number)]["status"] == "Pagado"):
-                cantCuotasX += 1
-                dineroTotal_CuotaX += v.cuotas[int(number)]["total"]
-
-        comisionTotal_x_CuotaX = dineroTotal_CuotaX * 0.08
-        cantidadTotalCuotas += cantCuotasX
-        dineroTotalCuotas += dineroTotal_CuotaX
-        comisionTotalCuotas += comisionTotal_x_CuotaX
-
-        cuotasDict["detalleCuota"][f"cuotas{number}"] = {"cantidad": cantCuotasX, "dineroTotal": dineroTotal_CuotaX,"dineroComisionado":comisionTotal_x_CuotaX}
-
-    cuotasDict["cantidadTotal_Cuotas"] = cantidadTotalCuotas
-    cuotasDict["dineroTotal_Cuotas"] = dineroTotalCuotas
-    cuotasDict["comisionTotal_Cuotas"] = comisionTotalCuotas
-    return cuotasDict
-    
-#endregion - - - - - - - - - - - - - - - - - - -
+    # Para otros roles => "gerente" etc.
+    return calcularAseguradoSegunDiasTrabajados(dineroAsegurado, usuario.fec_ingreso)
 
 
 def getComisionTotal(usuario,campania,agencia): 
