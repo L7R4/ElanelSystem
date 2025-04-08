@@ -1,6 +1,4 @@
 let contendorColaboradores = document.querySelector(".listColaboradoresWrapper > .valuesWrapper > .values ")
-let contendorAdministradores = document.querySelector(".listAdmins > .valuesWrapper > .values ")
-const wrapperManageLiquidacion = document.querySelector(".wrapperManageLiquidacion")
 const radioFiltros = document.querySelectorAll('.inputSelectTipoColaborador');
 
 
@@ -18,8 +16,6 @@ let inputSucursal = document.getElementById("sucursalInput")
 inputSucursal.addEventListener("input", async ()=>{
     
     if(habilitarPanelComision()){
-        wrapperButtonsActions.classList.remove("blocked")
-        wrapperManageLiquidacion.classList.add("active")
 
         body.sucursal = inputSucursal.value;
         body.campania = inputCampania.value;
@@ -32,11 +28,11 @@ inputSucursal.addEventListener("input", async ()=>{
 
 
     }else{
-        wrapperButtonsActions.classList.add("blocked")
-        wrapperManageLiquidacion.classList.remove("active")
         contendorColaboradores.innerHTML = ""
-        totalComisionesTextColaboradores.textContent = "$ 0"
+        actualizarTotalComisionado(0)
     }
+    update_textPreValues_to_values()
+
 })
 //#endregion  - - - - - - - - - - - - - - - - - - - 
 
@@ -46,9 +42,6 @@ let inputCampania = document.getElementById("campaniaInput")
 inputCampania.addEventListener("input", async ()=>{
     
     if(habilitarPanelComision()){
-        wrapperButtonsActions.classList.remove("blocked")
-        wrapperManageLiquidacion.classList.add("active")
-
         body.sucursal = inputSucursal.value;
         body.campania = inputCampania.value;
         body.tipoColaborador = colaboradoresAFiltrar;
@@ -61,11 +54,11 @@ inputCampania.addEventListener("input", async ()=>{
 
     }
     else{
-        wrapperButtonsActions.classList.add("blocked")
-        wrapperManageLiquidacion.classList.remove("active")
         contendorColaboradores.innerHTML = ""
-        totalComisionesTextColaboradores.textContent = "$ 0"
+        actualizarTotalComisionado(0)
     }
+    update_textPreValues_to_values()
+
 
 })
 //#endregion  - - - - - - - - - - - - - - - - - - - 
@@ -75,6 +68,7 @@ inputCampania.addEventListener("input", async ()=>{
 
 radioFiltros.forEach(radio => {
     radio.addEventListener('change', async () => {
+        console.log("Funciona input de tipo de colaboradores")
         colaboradoresAFiltrar = radio.value // Actuliza el valor de la variable global para posibles filtros
         body.sucursal = inputSucursal.value;
         body.campania = inputCampania.value;
@@ -87,6 +81,7 @@ radioFiltros.forEach(radio => {
     });
 })
 //#endregion  - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 
 
 //#region Fetch data
@@ -129,108 +124,131 @@ async function fetchFunction(body, url) {
 
 
 //#region Funciones para actualizar panel de comisiones de colaboradores sin administradores
-
+let itemsColaboradores;
 function actualizarResultadosColaboradores(resultados, contenedor) {
     console.log(resultados)
   // Limpia el contenedor de los datos
   contenedor.innerHTML = "";
-  let itemsColaboradores = resultados.filter(item => !item.tipo_colaborador.includes("Administracion"))
+  itemsColaboradores = resultados.filter(item => !item.tipo_colaborador.includes("Administracion"))
 
   // Se reccore los datos filtrados
   itemsColaboradores.forEach((item) => {
     let divs ="";
     // Se reccore los campos de cada elemento y se lo guarda en un div
-    divs += `<li>
-        <div>
+    divs += `<li id="idColaborador_${item.id}">
+        <div class="wrapperNombreColaborador">
             <p>${item.nombre}</p>
         </div>
-        <div>
+        <div class="wrapperComisionColaborador">
             <p>$ ${item.comisionTotal}</p>
         </div>
+        <div>
+            <button type="button" class="button-default-style" id="liquidarButton" onclick="modal_ajuste_comision(${item.id}, '${item.nombre}')">Ajustar comision</button>
+        </div>
     </li>`;
-    
     contenedor.insertAdjacentHTML("beforeend",divs)
-  });
+  
+});
+}
+
+function render_form_ajuse_comision(nombre_usuario) {
+    return `<form method="POST" class="modal_form" id="formNewMov">
+
+            <div class="wrapperTittle">
+                <h3 class="labelInput">Ajustar comisiones a ${nombre_usuario}</h3>
+            </div>
+            ${CSRF_TOKEN}
+
+            <div class="wrapperInput">
+                <h3 class="labelInput">Dinero</h3>
+                <input type="number" name="dinero" id="dineroAjusteInput" class="input-read-write-default">
+            </div>
+            <div class="wrapperInputObservaciones">
+                <label for="observacionesInput">Observaciones</label>
+                <textarea name="observaciones" id="observacionesInput" cols="30" rows="10"></textarea>
+            </div>
+        </form>`
+}
+
+function modal_ajuste_comision(id_usuario, nombre_usuario){
+    let modal = new tingle.modal({
+        footer: true,
+        closeMethods: [''],
+        cssClass: ['moda_container_ajusteComision'],
+
+        onOpen: function () {
+            initCustomSingleSelects()
+        },
+
+        onClose: function () {
+            modal.destroy();
+        },
+    });
+    console.log(id_usuario, nombre_usuario)
+
+
+    // set content
+    modal.setContent(render_form_ajuse_comision(nombre_usuario));
+
+
+    // add a button
+    modal.addFooterBtn('Guardar', 'tingle-btn tingle-btn--primary', async function () {
+
+        body = {
+            "campania": document.querySelector("#campaniaInput").value,
+            "agencia": document.querySelector("#sucursalInput").value,
+        }
+        console.log(body)
+        // showLoader()
+        // let response = await fetchCRUD(body, urlLiquidacion)
+
+        // if (response.status) {
+        //     console.log("Salio todo bien");
+        //     hiddenLoader();
+        //     modal.close();
+        //     modal.destroy();
+        // }else{
+        //     console.log("Salio mal")
+        //     hiddenLoader()
+        //     modal.close();
+        //     modal.destroy();
+        // }
+    });
+
+    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default', function () {
+        modal.close();
+        modal.destroy();
+    });
+
+    modal.open();
 }
 
 function actualizarTotalComisionado(dinero){
-    let totalComisionesTextColaboradores = document.querySelector("#totalComisionesTextColaboradores")
-    totalComisionesTextColaboradores.textContent = "$ " + dinero
+    let totalComisionesTextColaboradores = document.querySelector("#totalComisionesTextColaboradores_wrapper > h3")
+    totalComisionesTextColaboradores.textContent = "Total $" + dinero
+}
+
+function update_textPreValues_to_values() {
+    let textPreValues = document.querySelector("#textPreValuesColaboradores")
+    let valuesWrapper = document.querySelector(".listColaboradoresWrapper > .valuesWrapper")
+    let wrapperButtonsActions = document.querySelector(".wrapperButtonsActions")
+
+    if(habilitarPanelComision()){
+        textPreValues.classList.add("hidden")
+        valuesWrapper.classList.remove("preValues")
+        wrapperButtonsActions.classList.remove("hidden")
+    }else{
+        textPreValues.classList.remove("hidden")
+        valuesWrapper.classList.add("preValues")
+        wrapperButtonsActions.classList.add("hidden")
+
+    }
+
+
 }
 
 
 //#endregion  - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-// Funciones para actualizar lista de administradores
-
-// function actualizarResultadosAdministradores(resultados, contenedor) {
-//     // Limpia el contenedor de los datos
-   
-//     contenedor.innerHTML = "";
-//     let itemsAdministrativos = resultados.filter(item => {
-//         console.log(item)
-//         // item.tipo_colaborador.includes("Admin")   
-//     })
-//     console.log(itemsAdministrativos)
-//     // Se reccore los datos filtrados
-//     itemsAdministrativos.forEach((item) => {
-//       let divs ="";
-//       // Se reccore los campos de cada elemento y se lo guarda en un div
-//       divs += `<li>
-//             <div>
-//                 <p>${item.nombre}</p>
-//             </div>
-//             <div>
-//                 <p>$</p>
-//                 <input type="number" class="inputHaberesAdmin" id="input_haberesAdmin_${item.id}" name="comision_${item.id}" value=0 min=0>
-//             </div>
-//             <div>
-//                 <p>$</p>
-//                 <input type="number" class="inputHorariosAdmin" id="input_honorariosAdmin_${item.id}" name="premio_${item.pk}" value=0 min=0>
-//             </div>
-//         </li>`;
-      
-//       contenedor.insertAdjacentHTML("beforeend",divs)
-//     });
-
-//         // MANEJO DE LOS INPUTS DE ADMINISTRADORES
-//     let inputsHaberesAdmin = document.querySelectorAll(".inputHaberesAdmin")
-//     inputsHaberesAdmin.forEach(input => {
-//         input.addEventListener("input",()=>{
-//             let nextInput = input.parentElement.nextElementSibling.querySelector(".inputHorariosAdmin")
-//             let sumaDeValores = parseFloat(input.value) + parseFloat(nextInput.value)
-            
-//             // Para actualizar el total
-//             let total = parseFloat(totalAdminText.textContent)
-//             total += sumaDeValores
-//             totalAdminText.textContent = total
-
-//             // if(input_comisionAdmin.value == "" || input_premioAdmin.value == ""){
-//             //     totalAdminText.textContent = "$ 0"
-//             // }
-//         })
-//     });
-
-
-//     let inputsHonorariosAdmin = document.querySelectorAll(".inputHorariosAdmin")
-//     inputsHonorariosAdmin.forEach(input => {
-//         input.addEventListener("input",()=>{
-//             let nextInput = input.parentElement.previousElementSibling.querySelector(".inputHaberesAdmin")
-//             let sumaDeValores = parseFloat(input.value) + parseFloat(nextInput.value)
-            
-//             // Para actualizar el total
-//             let total = parseFloat(totalAdminText.textContent)
-//             total += sumaDeValores
-//             totalAdminText.textContent = total
-
-
-//         // if(input_premioAdmin.value == "" || input_comisionAdmin.value == ""){
-//         //     totalAdminText.textContent = "$ 0"
-//         // }
-//         })
-//     })
-// }
 
 
 

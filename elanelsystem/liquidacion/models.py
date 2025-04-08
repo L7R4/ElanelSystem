@@ -46,7 +46,7 @@ class LiquidacionVendedor(models.Model):
     detalle = models.JSONField(default=dict)
 
     def __str__(self):
-        return self.usuario.nombre + "en camapaña" + self.campania + ": Productividad: " + str(self.productividad) + " Ventas: " + str(self.cant_ventas) + " Comision: " + str(self.total_comisionado)  
+        return self.usuario.nombre + "en campaña" + self.campania + ": Productividad: " + str(self.productividad) + " Ventas: " + str(self.cant_ventas) + " Comision: " + str(self.total_comisionado)  
 
 
 class LiquidacionSupervisor(models.Model):
@@ -59,7 +59,7 @@ class LiquidacionSupervisor(models.Model):
     detalle = models.JSONField(default=dict)
 
     def __str__(self):
-        return self.usuario.nombre + "en camapaña" + self.campania + ": Productividad: " + str(self.productividad) + " Ventas: " + str(self.cant_ventas) + " Comision: " + str(self.total_comisionado)  
+        return self.usuario.nombre + "en campaña" + self.campania + ": Productividad: " + str(self.productividad) + " Ventas: " + str(self.cant_ventas) + " Comision: " + str(self.total_comisionado)  
     
 
 class LiquidacionGerenteSucursal(models.Model):
@@ -70,7 +70,7 @@ class LiquidacionGerenteSucursal(models.Model):
     detalle = models.JSONField(default=dict)
 
     def __str__(self):
-        return self.usuario.nombre + "en camapaña" + self.campania + ": Total comisionado: " + str(self.total_comisionado) 
+        return self.usuario.nombre + "en campaña" + self.campania + ": Total comisionado: " + str(self.total_comisionado) 
 
         
 class LiquidacionAdmin(models.Model):
