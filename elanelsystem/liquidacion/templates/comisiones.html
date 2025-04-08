@@ -48,16 +48,14 @@
                 </div>
             </div>
         </div>
-        <div class="wrapperButtonsActions blocked" id="wrapperButtonsActions">
+        {% comment %} <div class="wrapperButtonsActions blocked" id="wrapperButtonsActions">
             <a href="{% url 'liquidacion:preViewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
             <button type="button" id="liquidarButton" onclick="newModalLiquidacion()">Liquidar</button>
-        </div>
+        </div> {% endcomment %}
     </div>
 
     <div class="wrapperManageLiquidacion">
         <div class="colaboradoresWrapper">
-            <h3>Elige los colaboradores</h3>
-            <div>
                 <div class="selectTipoColaborador">
                     <div>
                         <input type="radio" name="tipoColaborador" id="todos" value="todos" class="inputSelectTipoColaborador" checked>
@@ -77,6 +75,7 @@
                     </div>
                 </div>
 
+                
                 <div class="colaboradores">
                     {% comment %} <div class="searchFilter">
                         <input type="text" class="operation" id="operation" placeholder="Buscar">
@@ -105,48 +104,16 @@
                             </ul>       
                         </div>
                     </div>
-                    <div class="resumenWrapper">
-                        <div>
-                            <h3>Total</h3>
-                            <h3 id="totalComisionesTextColaboradores">$0</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-{% comment %} 
-        <div class="administradoresWrapper">
-            <h3>Coloque la comision para los administradores/as</h3>
-            <div>
-                <div class="colaboradoresWrapper">
-                    <h4>Seleccione a uno/a e ingrese su comision</h4>
-                    <div class="listAdmins">
-                        <div class="tittlesWrapper">
-                            <ul class="tittles">
-                                <li>Nombre</li>
-                                <li>Haberes</li>
-                                <li>Honorarios</li>
-                            </ul>   
-                        </div>
-                
-                        <div class="valuesWrapper">
-                            <ul class="values">
-                            </ul>       
-                        </div>
-                    </div>
                 </div>
 
+                
                 <div class="resumenWrapper">
                     <div>
                         <h3>Total</h3>
-                        <div>
-                            <p>$</p>
-                            <h3 id="totalAdminText">0</h3>
-                        </div>
+                        <h3 id="totalComisionesTextColaboradores">$0</h3>
                     </div>
                 </div>
             </div>
-        </div> {% endcomment %}
     </div>
    
 {% endblock content %}

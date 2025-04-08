@@ -19,7 +19,7 @@ from .utils import (
     liquidaciones_countFaltas,
     liquidaciones_countTardanzas,
     obtener_ultima_campania,
-    getComisionTotal,
+    get_comision_total,
     get_detalle_comision_x_cantidad_ventasPropias
 )
 
@@ -168,8 +168,8 @@ def requestColaboradoresWithComisiones(request):
         "dni":item.dni,
         "sucursal": form["sucursal"],
         "campania": campania,
-        "comisionTotal": getComisionTotal(item,campania,sucursalObject)["total_comisionado"],
-        "info_total_de_comision": getComisionTotal(item,campania,sucursalObject)
+        "comisionTotal": get_comision_total(item,campania,sucursalObject)["comision_total"],
+        "info_total_de_comision": get_comision_total(item,campania,sucursalObject)
         } 
         for item in colaboradores if item.rango != "Admin"]
     
