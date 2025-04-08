@@ -62,7 +62,9 @@
                             </ul>   
                         </div>
                 
-                        <div class="valuesWrapper">
+                        <div class="valuesWrapper preValues">
+                            
+                            <h3 id="textPreValuesColaboradores">Seleccione la sucursal y campaña antes de comenzar</h3>
                             <ul class="values">
                             </ul>       
                         </div>
@@ -92,7 +94,7 @@
                     <div id="totalComisionesTextColaboradores_wrapper">
                         <h3>Total $0</h3>
                     </div>
-                    <div class="wrapperButtonsActions blocked" id="wrapperButtonsActions">
+                    <div class="wrapperButtonsActions hidden" id="wrapperButtonsActions">
                         <a href="{% url 'liquidacion:preViewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
                         <button type="button" id="liquidarButton" onclick="newModalLiquidacion()">Liquidar</button>
                     </div> 
@@ -103,7 +105,9 @@
 {% endblock content %}
 {% block js %}
     <script> 
+        var CSRF_TOKEN = '{% csrf_token %}';
         const urlRequestColaboradores = "{{urlRequestColaboradores}}"
+
     </script>
     <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 
