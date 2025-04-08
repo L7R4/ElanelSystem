@@ -16,8 +16,26 @@
 */
 
 let inputSelectMultipleCustom = document.querySelectorAll(".containerInputAndOptions > input.multipleSelect");
-console.log("Input select multiple custom")
-console.log(inputSelectMultipleCustom)
+
+function cargarListenersEnInputsMultipleSelect() {
+    let inputSelectMultipleCustom = document.querySelectorAll(".containerInputAndOptions > input.multipleSelect");
+
+    inputSelectMultipleCustom.forEach(input => {
+        let optionsList = input.nextElementSibling;
+        let options = optionsList.querySelectorAll("li");
+
+        toggleOptionsLists(input, optionsList);
+
+        options.forEach(option => {
+            option.addEventListener("click", () => {
+                toggleOptions(input, option)
+
+                // Disparar el evento "input" en el input después de seleccionar una opción
+                input.dispatchEvent(new Event('input'));
+            });
+        });
+    });
+}
 
 inputSelectMultipleCustom.forEach(input => {
     let optionsList = input.nextElementSibling;

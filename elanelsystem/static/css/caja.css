@@ -1,6 +1,7 @@
 .wrapper_content {
     padding: 3rem;
     box-sizing: border-box;
+    overflow-y: unset;
 }
 
 .caja {
@@ -103,45 +104,75 @@
 
 
 /* #region SECTOR DE RESUMEN DE ESTADOS DE CUENTA */
-.resum {
+.resumWrapper {
     max-width: 43rem;
     min-width: 27.5rem;
-    height: 100%;
+    height: fit-content;
     flex: 1 1 30%;
 }
 
-.resum__cuenta {
+.resumWrapper>div.resumTableWrapper {
     background-color: var(--third-color);
-    width: 100%;
     border-radius: 1rem;
-    display: flex;
-    padding: 1rem 0;
+    padding: 1rem;
+
+}
+
+table.resum_table {
+    width: 100%;
+    /* border-collapse: collapse; */
+    /* Elimina el espacio entre bordes */
+    border-spacing: 0;
+    /* Asegura que no haya separación entre celdas */
+}
+
+table.resum_table tr>* {
+    padding: 1rem;
     text-align: center;
-
-}
-
-.resum__cuenta__tipoCaja {
-    width: 60%;
-
-}
-
-.resum__cuenta__saldo {
-    width: 40%;
-}
-
-.resum__cuenta>div>h4 {
-    border-top: 1px black solid;
-    padding: .2rem 2rem;
-    font-size: clamp(1.2rem, 1vw, 1.3rem);
+    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+    color: var(--background-color);
     font-family: raleway-semibold;
-    padding: .6rem 0;
+    white-space: nowrap;
+}
+
+
+table.resum_table>thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-width: 18rem;
+    background-color: var(--fourth-color);
+    border-radius: .8rem;
+}
+
+table.resum_table>thead>tr>th {
+    color: var(--third-color);
 
 }
 
-.resum__cuenta>div>h2 {
-    padding: 0rem 2rem .7rem 2rem;
-    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-    font-family: raleway-semibold;
+table.resum_table>thead>tr>th:first-child {
+    border-top-left-radius: .6rem;
+    border-bottom-left-radius: .6rem;
+}
+
+table.resum_table>thead>tr>th:last-child {
+    border-top-right-radius: .6rem;
+    border-bottom-right-radius: .6rem;
+}
+
+table.resum_table>tbody>tr:last-child>td {
+    border: 2px solid var(--secundary-color);
+}
+
+table.resum_table>tbody>tr>td:first-child {
+    border-top-left-radius: .6rem;
+    border-bottom-left-radius: .6rem;
+    border-right: none;
+}
+
+table.resum_table>tbody>tr>td:last-child {
+    border-top-right-radius: .6rem;
+    border-bottom-right-radius: .6rem;
 }
 
 .wrapperButtonInforme>a {
@@ -333,10 +364,11 @@
 .wrapperData>.input-read-only-default {
     background-color: var(--third-color);
     border-radius: 1rem;
+    border: 2px solid var(--secundary-color);
     display: flex;
     font: unset;
     align-items: center;
-    width: 80%;
+    width: 100%;
     padding: .8rem;
     height: fit-content;
     min-height: unset;
@@ -362,7 +394,6 @@
 /* #region TEXTO DE FILTROS DE MOVIMIENTOS */
 .wrapperFiltroTexto {
     width: 80%;
-    margin: 0 auto;
     margin-top: 2rem;
 }
 
@@ -388,6 +419,15 @@
     font-size: clamp(1.2rem, 1.2vw, 1.5rem);
     font-family: raleway-semibold;
     color: white;
+}
+
+.wrapperFiltroTexto>a {
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
+    /* text-decoration: none; */
+    margin-top: 1rem;
+    display: block;
 }
 
 /* #endregion */
@@ -432,190 +472,110 @@
 /* #endregion */
 
 
-/* #region MODAL DE NUEVO INGRESO O EGRESO */
-.main_modalNewEgresoIngreso {
+#filterForm {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    visibility: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-    z-index: 5;
-    opacity: 0;
-    transition: opacity .3s ease;
-}
-
-.main_modalNewEgresoIngreso.active {
-    visibility: visible;
-}
-
-.background__newEgresoIngreso {
-    background-color: rgba(0, 0, 0, 0.5);
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-}
-
-.modal_newEgresoIngreso {
-    width: 60%;
-    max-width: 100rem;
-    max-height: 80%;
-    background-color: var(--third-color);
-    border-radius: 1rem;
-    position: absolute;
-    padding: 3rem;
-    box-sizing: border-box;
-
-}
-
-.modal_newEgresoIngreso>.tittleModal {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal_newEgresoIngreso>.tittleModal>h3 {
-    font-size: clamp(2rem, 1.7vw, 3rem);
-    font-family: raleway-semibold;
-    color: var(--third-color);
-}
-
-.modal_newEgresoIngreso>.tittleModal>button {
-    outline: none;
-    border-color: transparent;
-    background-color: transparent;
-    cursor: pointer;
-}
-
-.modal_newEgresoIngreso>.tittleModal>button>img {
-    width: 3rem;
-}
-
-#formNewIngresoEgreso {
-    display: flex;
-    width: 100%;
     flex-wrap: wrap;
-    column-gap: 1.5rem;
-    row-gap: 1rem;
+    gap: 1.2rem;
 }
 
-#formNewIngresoEgreso>.wrapperInput {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    width: 30%;
+#filterForm>div {
+    width: 25%;
+    flex: auto;
     min-width: 20rem;
-    max-width: 48%;
+    max-width: 30rem;
+    height: fit-content;
+
 }
 
-#formNewIngresoEgreso>.wrapperInput>.input-read-write-default {
-    background-color: var(--third-color);
+#filterForm>div .containerInputAndOptions {
+    height: unset;
 }
 
-#formNewIngresoEgreso .input-select-custom {
-    background-color: var(--third-color);
-}
-
-.modal_newEgresoIngreso>#confirmMovimiento {
-    width: unset;
-    padding: 1rem 3rem;
-    margin-left: auto;
-    margin-top: 1rem;
-}
-
-.labelInput {
-    font: clamp(1.2rem, 1.2vw, 1.6rem) 'raleway-semibold';
+#filterForm>div>.labelInput {
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
     color: var(--background-color);
 }
 
-#formNewIngresoEgreso #tipoComprobanteIconDisplay {
-    z-index: 10;
+
+.pseudo-input-select-wrapper {
+    background-color: var(--third-color);
 }
 
-#formNewIngresoEgreso #tipoComprobante {
-    z-index: 9;
+.containerCalendario>input {
+    font-weight: bold;
 }
 
-#formNewIngresoEgreso #tipoComprobante+ul.list-select-custom {
-    z-index: 8;
+.modalContainerFilter .tingle-modal-box__footer>button {
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
 }
 
-#formNewIngresoEgreso #tipoIDIconDisplay {
-    z-index: 7;
-}
-
-#formNewIngresoEgreso #tipoID {
-    z-index: 6;
-}
-
-#formNewIngresoEgreso #tipoID+ul.list-select-custom {
-    z-index: 5;
-}
-
-#formNewIngresoEgreso #tipoMonedaIconDisplay {
-    z-index: 6;
-
-}
-
-#formNewIngresoEgreso #tipoMoneda {
-    z-index: 5;
-
-}
-
-#formNewIngresoEgreso #tipoMoneda+ul.list-select-custom {
-    z-index: 4;
-}
-
-#formNewIngresoEgreso #tipoPagoIconDisplay {
-    z-index: 3;
-
-}
-
-#formNewIngresoEgreso #tipoDePago {
-    z-index: 2;
-
-}
-
-#formNewIngresoEgreso #tipoDePago+ul.list-select-custom {
-    z-index: 1;
-}
-
-
-/* #region INPUTs radios */
-#formNewIngresoEgreso>.wrapperInput#wrapperSelectAdelanto_Premio {
-    min-width: 100%;
-    margin-top: .3rem;
-}
-
-#wrapperSelectAdelanto_Premio>div {
+.modal_form {
     display: flex;
-    column-gap: 1.3rem;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
-#wrapperSelectAdelanto_Premio>div>div.inputsRadiosContainer>input {
-    display: none;
+.modal_form>div.wrapperInput {
+    width: 25%;
+    flex: auto;
+    min-width: 20rem;
+    max-width: 30rem;
+    height: fit-content;
 }
 
-#wrapperSelectAdelanto_Premio>div>div.inputsRadiosContainer>label {
-    padding: .3rem 2rem;
-    font: clamp(1.2rem, 1.2vw, 1.6rem) 'raleway-semibold';
-    border: 2px solid var(--fourth-color);
-    border-radius: .6rem;
-    cursor: pointer;
+.modal_form>div.wrapperInput>.labelInput {
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+}
+
+.movimiento-info,
+.cannon-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.movimiento-info>h2,
+.cannon-info>h2 {
+    flex: 1 1 100%;
+    font-size: clamp(1.8rem, 1.4vw, 2.5rem);
+    font-family: raleway-semibold;
+    color: var(--primary-color);
+}
+
+.movimiento-info>div,
+.cannon-info>div {
+    flex: 1 1 25%;
+    min-width: 25rem;
+}
+
+.movimiento-info>div>p,
+.cannon-info>div>p {
+    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+}
+
+.movimiento-info>div>div,
+.cannon-info>div>div {
+    border: 2px solid var(--secundary-color);
+    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
     background-color: transparent;
+    position: relative;
+    border-radius: .6rem;
+    outline: none;
+    padding: .5rem 1.3rem;
+    width: 100%;
+    font-feature-settings: "pnum" on, "lnum" on;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
 }
 
-#wrapperSelectAdelanto_Premio>div>div.inputsRadiosContainer>input:checked+label {
-    background-color: var(--fourth-color);
-    color: var(--third-color);
+.modalContainerViewMov .tingle-modal-box__footer>button {
+    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+    font-family: raleway-semibold;
 }
-
-
-/* #endregion */
-
-/* #endregion */

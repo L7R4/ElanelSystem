@@ -1,169 +1,166 @@
 .wrapper_content {
-    padding: 2rem;
-    box-sizing: border-box;
+    padding: 4rem;
+    overflow: hidden;
 }
 
-.sucursalItem {
-    width: 80%;
-    background-color: #fff;
-    margin-bottom: 1.4rem;
-    border-radius: .7rem;
-    box-sizing: border-box;
+.headersPanelsWrapper {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    /* margin-bottom: 2rem; */
+    height: 10%;
+}
+.panel-container{
+    height: 90%;
+}
+
+.headersPanelsWrapper>div {
+    border: 1px solid var(--third-color);
     padding: 1rem 2rem;
-}
-
-.sucursalItem>h2 {
-    font-size: clamp(1.8rem, 1.5vw, 2.2rem);
-    font-family: raleway-semibold;
-    color: var(--primary-color);
-}
-
-.containerInputs {
-    display: flex;
-    gap: 1rem;
-    margin: .7rem 0rem;
-    width: 100%;
-    flex-wrap: wrap;
-}
-
-.wrapperInput {
-    width: 30%;
-}
-
-.wrapperInput:first-child {
-    width: 50%;
-}
-
-.wrapperInput>label {
-    display: block;
-    font-size: clamp(1.3rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    margin-bottom: .3rem;
-    /* color:var(--primary-color);  */
-}
-
-.wrapperInput>input {
-    width: 100%;
-    box-sizing: border-box;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    background-color: #3043615e;
-    color: #000000c2;
-    border: 2px solid var(--third-color);
-    border-radius: 0.6rem;
-    display: flex;
-    align-items: center;
-    padding: .6rem;
-    text-indent: 1rem;
-    outline: none;
-    pointer-events: none;
-}
-
-.wrapperInput>input.open {
-    color: var(--background-color);
-    pointer-events: unset;
-    background-color: transparent;
-    border: 2px solid var(--primary-color);
-
-}
-
-.wrapperInputNew {
-    width: 47%;
-}
-
-.wrapperInputNew>label {
-    display: block;
-    font-size: clamp(1.3rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    margin-bottom: .3rem;
-    /* color:var(--primary-color);  */
-}
-
-.wrapperInputNew>input {
-    width: 100%;
-    box-sizing: border-box;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    border: 2px solid var(--third-color);
-    background-color: #3043615e;
-    color: #000000c2;
-    border-radius: 0.6rem;
-    display: flex;
-    align-items: center;
-    padding: .6rem;
-    text-indent: 1.2rem;
-    outline: none;
-}
-
-.wrapperInputNew>input.open {
-    color: var(--background-color);
-    pointer-events: unset;
-    background-color: transparent;
-    border: 2px solid var(--primary-color);
-
-}
-
-.buttonsActions {
-    width: 100%;
-    display: flex;
-    gap: 1rem;
-}
-
-.deleteSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-}
-
-#buttonStopAddSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--background-color);
-}
-
-.enableForm,
-.uploadForm,
-#buttonConfirmAddSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-}
-
-.desableForm {
-    color: var(--background-color);
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-}
-
-#buttonAddSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-    width: 20%;
-    padding: 1.2rem .9rem;
+    opacity: .7;
     cursor: pointer;
+    height: fit-content;
+    border-radius: .6rem;
 }
 
-#buttonAddSucursal.blocked {
-    display: none;
+.headersPanelsWrapper>div.active {
+    border: 1px solid var(--primary-color);
+    background-color: var(--primary-color);
+    opacity: 1;
 }
 
-.div {
-    width: 2rem;
-    height: 2rem;
-    background-color: red;
+.headersPanelsWrapper>div>h2 {
+    font-size: clamp(1.5rem, 1.3vw, 1.8rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
 }
 
-.desableForm,
-.uploadForm {
-    display: none;
-}
-
-.desableForm.active,
-.uploadForm.active {
+#formNewProuducto {
     display: flex;
+    justify-content: center;
+    height: 100%;
 }
 
-.div.active {
-    background-color: green;
-
+#formNewProuducto>.panel {
+    width: 90%;
+    display: none;
 }
 
-.formSucursal {
+#formNewProuducto>.panel>.buttonsActions {
+    display: flex;
+    gap: 1rem;
+    padding: 0 3rem;
+    height: 10%;
+    align-items: end;
+}
+
+#formNewProuducto>.panel.active {
+    display: unset;
+}
+
+
+#formNewProuducto>.panel>.tableContainer{
+    height: 90%;
+    overflow-y: auto;
+}
+
+#formNewProuducto>.panel table {
+    width: 100%;
+    margin-bottom: 2rem;
+    padding: 1rem 3rem;
+}
+
+#formNewProuducto>.panel table>thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-width: 18rem;
+    background-color: var(--fourth-color);
+    border-radius: .6rem;
+}
+
+#formNewProuducto>.panel table>thead tr>* {
+    padding: 1rem 2rem;
+    text-align: start;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    color: var(--third-color);
+    font-family: raleway-semibold;
+}
+
+#formNewProuducto>.panel table>tbody>tr {
     position: relative;
+}
+
+#formNewProuducto>.panel table>tbody>tr>td {
+    padding: 1rem 2rem;
+    color: var(--third-color);
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    /* text-align: center; */
+}
+
+
+#formNewProuducto>.panel table tr>*:last-child {
+    border-top-right-radius: .8rem;
+    border-bottom-right-radius: .8rem;
+}
+
+#formNewProuducto>.panel table tr>*:first-child {
+    border-top-left-radius: .8rem;
+    border-bottom-left-radius: .8rem;
+}
+
+#formNewProuducto>.panel table>tbody>tr>td input {
+    padding: .6rem;
+    color: var(--third-color);
+    font-family: raleway-semibold;
+    background-color: var(--background-color);
+}
+
+#formNewProuducto>.panel table>tbody>tr>td input#paquete_input {
+    padding: .8rem;
+    background-color: rgba(255, 255, 255, 0.171);
+
+}
+
+#rowNewFormProduct .containerInputAndOptions>.iconDesplegar {
+    filter: invert(1);
+    z-index: 4;
+}
+
+#rowNewFormProduct .containerInputAndOptions>input {
+    z-index: 3;
+}
+
+#rowNewFormProduct .containerInputAndOptions>ul.options {
+    z-index: 2;
+}
+
+.button_cell {
+    width: 0;
+    position: relative;
+    left: -98%;
+}
+
+.buttonDeleteItem {
+    width: 1.4vw;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    height: 1.4vw;
+    border-radius: 50%;
+    outline: none;
+    padding: .3rem;
+    border: 1px solid var(--third-color);
+    background-color: transparent;
+    overflow: hidden;
+    display: none;
+    cursor: pointer;
+    transform: translateY(-50%);
+    position: absolute;
+    z-index: 3;
+    left: 0;
+}
+
+.buttonDeleteItem>img {
+    width: 100%;
 }

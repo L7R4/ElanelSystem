@@ -10,21 +10,61 @@ from django.shortcuts import redirect, render
 from django.views import generic
 
 from users.utils import printPDFNewUSer
+from sales.utils import getAllCampaniaOfYear, getCampanasDisponibles, getCampaniaActual
 
 from .models import Usuario,Cliente,Sucursal,Key
+from products.models import Products
 from sales.models import CuentaCobranza
-from sales.models import Ventas,ArqueoCaja,MovimientoExterno
+from sales.models import Ventas,ArqueoCaja,MovimientoExterno,MetodoPago
+from sales.utils import getEstadoVenta
 # from .forms import CreateClienteForm
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.models import Permission
 from sales.mixins import TestLogin
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.validators import validate_email
 import json
 from django.http import HttpResponse, JsonResponse
+from dateutil.relativedelta import relativedelta
+from elanelsystem.utils import format_date, formatear_columnas, handle_nan
 
+from django.views.decorators.cache import cache_control
+from django.utils.decorators import method_decorator
+
+import pandas as pd
+from django.core.files.storage import FileSystemStorage
+from django.db.models import Q
 #region Usuarios - - - - - - - - - - - - - - - - - - - -
 
+class ConfiguracionPerfil(TestLogin,generic.View):
+    model = Usuario
+    template_name = "configurarPerfil.html"
+
+    def get(self,request,*args,**kwargs):
+        context = {}
+        context["additional_passwords"] = request.user.additional_passwords
+        return render(request, self.template_name, context)
+    
+    def post(self,request,*args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            message = ""
+            for key, value in data.items():
+                if key == "inputContrasenia":
+                    request.user.set_password(value)
+                    request.user.c = value
+                    message = 'Contraseña de tu usuario actualizada'
+                else:
+                    request.user.additional_passwords[key]["password"] = value
+                    message = f'{request.user.additional_passwords[key]["descripcion"]} actualizada'
+            
+            request.user.save()
+            return JsonResponse({'success': True,"message" : message}, safe=False)
+        
+        except Exception as e:
+            message = f' Hubo un error inesperado al actualizar la contraseña'
+            return JsonResponse({'success': False,"message" : message}, safe=False)
+            
 
 class CrearUsuario(TestLogin, generic.View):
     model = Usuario
@@ -49,7 +89,7 @@ class CrearUsuario(TestLogin, generic.View):
         rango = form['rango']
         sucursales_text = form['sucursal']
         sucursales_split = [nombre.strip() for nombre in sucursales_text.split('-')]
-        print(sucursales_split)
+        
         email=form['email']
         dni=form['dni']
 
@@ -172,37 +212,97 @@ class CrearUsuario(TestLogin, generic.View):
                 usuario.sucursales.add(sucursal_object)
 
             usuario.groups.add(rango)
+            usuario.setAdditionalPasswords() # Seteamos las contraseñas adicionales segun los permisos
             usuario.save()
 
             response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
             return JsonResponse(response_data, safe=False)         
-
   
+
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
     template_name = "list_users.html"
     permission_required = "sales.my_ver_resumen"
+
+
     def get(self,request,*args, **kwargs):
         users = Usuario.objects.all()
-        context = {
-            "users": users
-        }
-        users_list = []
-        for c in users:
-            data_user = {}
-            data_user["pk"] = c.pk
-            data_user["nombre"] = c.nombre
-            data_user["dni"] = c.dni
-            data_user["email"] = c.email
-            # data_user["sucursal"] = str(c.sucursal)
-            data_user["tel"] = c.tel
-            data_user["rango"] = c.rango
-            users_list.append(data_user)
-        data = json.dumps(users_list)
 
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return HttpResponse(data, 'application/json')
+        campaniasDisponibles = getCampanasDisponibles()
+        metodosPago = [{"id": metodo.id, "alias": metodo.alias } for metodo in MetodoPago.objects.all()]
+        sucursales = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in Sucursal.objects.all() ]
+        sucursalesDisponibles = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in request.user.sucursales.all()]
+        ente_recaudadores = [{"id":cuenta.id,"alias":cuenta.alias} for cuenta in CuentaCobranza.objects.all()]
+
+        users_data = []
+        for user in Usuario.objects.all():
+            # Obtén los pseudónimos de las sucursales asociadas a cada usuario
+            sucursales_pseudonimos = [sucursal.pseudonimo for sucursal in user.sucursales.all()]
+            # Agrega el diccionario con la información del usuario y sus sucursales
+            users_data.append({
+                "id": user.id,
+                "nombre": user.nombre,
+                "dni": user.dni,
+                "email": user.email,
+                "tel": user.tel,
+                "rango": user.rango,
+                "sucursales": sucursales_pseudonimos
+            })
+            
+        context = {
+            "users": users_data,
+            "urlPostDescuento": reverse_lazy("users:realizarDescuento"),
+            "campaniasDisponibles": json.dumps(campaniasDisponibles),
+            "sucursalesDisponibles": json.dumps(sucursalesDisponibles),
+            "sucursales": sucursales,
+            "metodosDePago": json.dumps(metodosPago),
+            "ente_recaudadores": json.dumps(ente_recaudadores)
+        }
         return render(request, self.template_name,context)
+
+    def post(self, request, *args, **kwargs):
+        # Cargar los filtros desde el body de la solicitud
+        form = json.loads(request.body)
+        
+        # Crear un diccionario para almacenar los filtros dinámicos
+        filters = {}
+        
+        # Filtrar por sucursal si se envía en el request
+        if "sucursal" in form and form["sucursal"]:
+            filters["sucursales__pseudonimo__icontains"] = form["sucursal"]
+
+        # Aplicar el filtro general de búsqueda
+        if "search" in form and form["search"]:
+            search_value = form["search"]
+            # Usar Q objects para búsqueda en múltiples campos
+            search_filter = (
+                Q(nombre__icontains=search_value) |
+                Q(dni__icontains=search_value) |
+                Q(email__icontains=search_value) |
+                Q(tel__icontains=search_value) |
+                Q(rango__icontains=search_value)
+            )
+
+            usuarios = Usuario.objects.filter(**filters).filter(search_filter).distinct()
+        else:
+            # Si no hay búsqueda, solo aplicar los filtros
+            usuarios = Usuario.objects.filter(**filters).distinct()
+
+        # Preparar los datos a enviar en la respuesta
+        user_data = [
+            {
+                "id": user.id,
+                "nombre": user.nombre,
+                "dni": user.dni,
+                "email": user.email,
+                "tel": user.tel,
+                "sucursales": [sucursal.pseudonimo for sucursal in user.sucursales.all()],
+                "rango": user.rango,
+                "url": reverse('users:detailUser', args=[user.id])
+            } for user in usuarios
+        ]
+        # Retornar los datos filtrados como JSON
+        return JsonResponse({"users": user_data, "status": True})
 
 
 class DetailUser(TestLogin, generic.DetailView):
@@ -359,11 +459,12 @@ class DetailUser(TestLogin, generic.DetailView):
 
             usuario.groups.add(rango)
             usuario.set_password(form['password'])
+            usuario.setAdditionalPasswords() # Seteamos las contraseñas adicionales segun los permisos
+
             usuario.save()
 
             response_data = {"urlPDF":reverse_lazy('users:newUserPDF',args=[usuario.pk]),"urlRedirect": reverse_lazy('users:list_users'),"success": True}
             return JsonResponse(response_data, safe=False)         
-
 
 
 def viewsPDFNewUser(request,pk):
@@ -375,6 +476,7 @@ def viewsPDFNewUser(request,pk):
     fecha = datetime.datetime.strptime(newUserObject.fec_ingreso, '%d/%m/%Y')
     nombre_mes = fecha.strftime('%B')
     
+
     context ={
                 "day": fecha.strftime("%d"),
                 "month": fecha.strftime("%m"),
@@ -394,9 +496,9 @@ def viewsPDFNewUser(request,pk):
                 "estado_civil" : newUserObject.estado_civil,
                 "xp_laboral" : newUserObject.xp_laboral,
                 "datos_familiares" : newUserObject.datos_familiares,
-                "agenciaNombre": newUserObject.sucursal,
-                "provincia_localidad_sucursal": newUserObject.sucursal.localidad + "," + newUserObject.sucursal.provincia,
-                "agenciaDireccion": newUserObject.sucursal.direccion,
+                "agenciaNombre": newUserObject.sucursales.all(),
+                # "provincia_localidad_sucursal": newUserObject.sucursal.localidad + "," + newUserObject.sucursal.provincia,
+                # "agenciaDireccion": newUserObject.sucursal.direccion,
             }
             
     userName = str(newUserObject.nombre)
@@ -408,8 +510,8 @@ def viewsPDFNewUser(request,pk):
         response = HttpResponse(pdf_file,content_type="application/pdf")
         response['Content-Disposition'] = 'inline; filename='+userName+"_ficha"+'.pdf'
         return response
+   
     
-
 def requestUsuarios(request):
     request = json.loads(request.body)
     sucursal_filter = [nombre.strip() for nombre in request["sucursal"].split('-')][0]
@@ -428,7 +530,211 @@ def requestUsuarios(request):
 
     return JsonResponse({"data":usuarios_filtrados_listDict})
 
-    
+
+def requestUsuarios2(request):
+    query_params = request.GET
+    usuarios = Usuario.objects.all()
+    print(query_params)
+    # Mapeo de parámetros a condiciones Q
+    filter_map = {
+        'nombre': 'nombre__icontains',
+        'email': 'email__icontains',
+        'rango': 'rango__icontains',
+        'dni': 'dni__icontains',
+        'tel': 'tel__icontains',
+        'prov': 'prov__icontains',
+        'loc': 'loc__icontains',
+        'sucursal': 'sucursales__id',
+    }
+
+    # Construcción dinámica de filtros
+    filters = Q()
+    for param, query in filter_map.items():
+        if param in query_params:
+            filters &= Q(**{query: query_params[param]})
+
+    # Aplicar los filtros al modelo Usuario
+    usuarios = Usuario.objects.filter(filters).distinct()
+    print("Usuarios filtrados")
+    print(usuarios)
+    # Serializar la respuesta
+    data = [
+        {
+            'id': usuario.id,
+            'nombre': usuario.nombre,
+            'email': usuario.email,
+            'rango': usuario.rango,
+            'dni': usuario.dni,
+            'tel': usuario.tel,
+            'prov': usuario.prov,
+            'loc': usuario.loc,
+        }
+        for usuario in usuarios
+    ]
+
+    return JsonResponse(data, safe=False)
+
+
+def realizarDescuento(request):
+    form = json.loads(request.body)
+    try:
+        usuario = Usuario.objects.get(email = form["usuarioEmail"])
+        metodoPago = MetodoPago.objects.filter(id=form["metodoPago"]).first()
+        dinero = form["dinero"]
+        campania = form["campania"]
+        agencia = Sucursal.objects.filter(id=form["agencia"]).first()
+        fecha = form["fecha"]
+        operationType = form["operationType"]
+        denominacion = usuario.nombre
+        tipoID = "DNI"
+        nroID = usuario.dni
+        ente_recaudador = CuentaCobranza.objects.filter(id=form["ente_recaudador"]).first()
+        observaciones = form["observaciones"]
+
+        message =""
+        # Crear el diccionario de descuento
+        data_dict ={
+            "metodoPago": metodoPago.alias,
+            "dinero": dinero,
+            "agencia": agencia.pseudonimo,
+            "campania": campania,
+            "fecha": fecha,
+            "concepto": f"{operationType.capitalize()}: {denominacion}",
+            "denominacion":denominacion,
+            "tipoID":tipoID,
+            "nroID":nroID,
+            "ente_recaudador":ente_recaudador.alias,
+            "observaciones":observaciones
+        }
+
+        newMovimiento = MovimientoExterno()
+        newMovimiento.metodoPago = metodoPago
+        newMovimiento.dinero = dinero
+        newMovimiento.agencia = agencia
+        newMovimiento.campania = campania
+        newMovimiento.fecha = fecha
+        newMovimiento.concepto = f"{operationType.capitalize()}: {denominacion}"
+        newMovimiento.denominacion = denominacion
+        newMovimiento.tipoIdentificacion = tipoID
+        newMovimiento.nroIdentificacion = nroID
+        newMovimiento.ente = ente_recaudador
+        newMovimiento.observaciones = observaciones
+        newMovimiento.movimiento = "egreso"
+
+        if(operationType == "descuento"):
+            descuentos_actuales = usuario.descuentos # Obtener la lista actual de descuentos, o inicializarla si está vacía
+            descuentos_actuales.append(data_dict) # Agregar el nuevo descuento
+            usuario.descuentos = descuentos_actuales # Asignar la lista actualizada al campo descuentos
+            usuario.save()
+            message = "Adelanto aplicado correctamente"
+            newMovimiento.adelanto = True
+
+        elif (operationType == "premio"): 
+            premios_actuales = usuario.premios # Obtener la lista actual de descuentos, o inicializarla si está vacía
+            premios_actuales.append(data_dict) # Agregar el nuevo descuento
+            usuario.premios = premios_actuales # Asignar la lista actualizada al campo descuentos
+            usuario.save()
+            message = "Premio aplicado correctamente"
+            newMovimiento.premio = True
+        newMovimiento.save()
+
+        iconMessage = "/static/images/icons/checkMark.svg"
+        return JsonResponse({"status": True, "message": message, "iconMessage": iconMessage},safe=False)
+    except Exception as e:
+        print(e)
+        iconMessage = "/static/images/icons/error_icon.svg"
+        return JsonResponse({"status": False, "iconMessage": iconMessage, "message": "Ocurrió un error al generar el adelanto/premio"},safe=False)
+
+
+def importar_usuarios(request):
+    if request.method == "POST":
+
+        # Recibir el archivo y el dato adicional 'agencia'
+        uploaded_file = request.FILES['file']
+        agencia = request.POST.get('agencia')
+
+        fs = FileSystemStorage()
+        filename = fs.save(uploaded_file.name, uploaded_file)
+        file_path = fs.path(filename)
+        new_number_rows_cont = 0
+
+        try:
+            df = pd.read_excel(file_path, sheet_name="Colaboradores")
+                
+            for i, row in df.iterrows():
+                dni = handle_nan(row['DNI'])
+                usuario_existente = Usuario.objects.filter(dni=str(dni)).first()
+
+                if not usuario_existente:
+                    new_number_rows_cont += 1                        
+                    usuario = Usuario()
+
+                    usuario = Usuario.objects.create_user(
+                        email=row['Email'],
+                        nombre=row['Nombre'],
+                        dni=row['DNI'],
+                        rango=row['Rango'],
+                        password=str(row['DNI']) + '_elanel'
+                    )
+                
+                    # Asignar campos adicionales
+                    usuario.tel = handle_nan(row['Telefono'])
+                    usuario.domic = handle_nan(row['Domicilio'])
+                    usuario.prov = handle_nan(row['Provincia'])
+                    usuario.loc = handle_nan(row['Localidad'])
+                    usuario.cp = handle_nan(row['CP'])
+                    usuario.lugar_nacimiento = handle_nan(row['Lugar de nacimiento'])
+                    usuario.fec_nacimiento = format_date(handle_nan(row['Fec-Nacimiento']))
+                    usuario.fec_ingreso = format_date(handle_nan(row['Fecha ingreso']))
+                    usuario.estado_civil = handle_nan(row['Estado civil'])
+                    usuario.xp_laboral = handle_nan(row['XP Laboral'])
+                    usuario.c = str(row['DNI']) + '_elanel'
+                    usuario.groups.add(Group.objects.filter(name=row["Rango"]).first())
+                    sucursal_object = Sucursal.objects.get(id=agencia)
+                    usuario.sucursales.add(sucursal_object)
+                    usuario.save()
+
+            # Segunda pasada para asignar los vendedores a los supervisores
+            for _, row in df.iterrows():
+                dni_vendedor = handle_nan(row['DNI'])
+                supervisor_dni = handle_nan(row['Supervisor'])
+
+                # Obtener el supervisor basado en su DNI
+                supervisor = Usuario.objects.filter(dni=str(supervisor_dni)).first()
+
+                if supervisor:
+                    # Obtener el vendedor basado en su DNI
+                    vendedor = Usuario.objects.filter(dni=str(dni_vendedor)).first()
+                    
+                    # Crear el diccionario del vendedor
+                    vendedor_data = {
+                        'nombre': vendedor.nombre,
+                        'email': vendedor.email
+                    }
+
+                    # Verificar si el campo vendedores_a_cargo existe o está vacío
+                    if not supervisor.vendedores_a_cargo:
+                        supervisor.vendedores_a_cargo = []
+
+                    # Agregar el vendedor al campo vendedores_a_cargo del supervisor
+                    supervisor.vendedores_a_cargo.append(vendedor_data)
+
+                    # Guardar los cambios en el supervisor
+                    supervisor.save()
+
+            # Eliminar el archivo después de procesar
+            fs.delete(filename)
+
+            iconMessage = "/static/images/icons/checkMark.svg"
+            message = f"Datos importados correctamente. Se agregaron {new_number_rows_cont} usuarios nuevos"
+            return JsonResponse({"message": message, "iconMessage": iconMessage, "status": True})
+
+        except Exception as e:
+            print(f"Error al importar: {e}")
+
+            iconMessage = "/static/images/icons/error_icon.svg"
+            message = "Error al procesar el archivo"
+            return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
 
@@ -439,26 +745,116 @@ class ListaClientes(TestLogin, generic.View):
 
     def get(self,request,*args, **kwargs):
         customers = Cliente.objects.filter(agencia_registrada = request.user.sucursales.all()[0])
+        sucursalesObject = Sucursal.objects.all()
+        sucursales = [sucursal.pseudonimo for sucursal in sucursalesObject ]
+
         context = {
-            "customers": customers
+            "customers": customers,
+            "importClientesURL" : reverse_lazy("users:importClientes"),
+            "sucursalesDisponiblesJSON": json.dumps(sucursales),
+            "sucursales": sucursales
+
         }
-        customers_list = []
-        for c in customers:
-            data_customer = {}
-            data_customer["pk"] = c.pk
-            data_customer["nombre"] = c.nombre
-            data_customer["dni"] = c.dni
-            data_customer["tel"] = c.tel
-            data_customer["loc"] = c.loc
-            data_customer["prov"] = c.prov
-            customers_list.append(data_customer)
-        data = json.dumps(customers_list)
-
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return HttpResponse(data, 'application/json')
         return render(request, self.template_name,context)
+    
+    def post(self, request, *args, **kwargs):
+        # Cargar los filtros desde el body de la solicitud
+        form = json.loads(request.body)
+        
+        # Crear un diccionario para almacenar los filtros dinámicos
+        filters = {}
+        
+        # Filtrar por sucursal si se envía en el request
+        if "sucursal" in form and form["sucursal"]:
+            filters["agencia_registrada__pseudonimo"] = form["sucursal"]
 
-   
+        # Aplicar el filtro general de búsqueda
+        if "search" in form and form["search"]:
+            search_value = form["search"]
+            # Usar Q objects para búsqueda en múltiples campos
+            search_filter = Q(nombre__icontains=search_value) | \
+                            Q(dni__icontains=search_value) | \
+                            Q(tel__icontains=search_value) | \
+                            Q(prov__icontains=search_value) | \
+                            Q(loc__icontains=search_value)
+            
+            # Filtrar clientes aplicando los filtros de búsqueda
+            customers = Cliente.objects.filter(**filters).filter(search_filter)
+        else:
+            # Si no hay búsqueda, solo aplicar los filtros
+            customers = Cliente.objects.filter(**filters)
+
+        # Preparar los datos a enviar en la respuesta
+        customer_data = [
+            {
+                "id": customer.id,
+                "nombre": customer.nombre,
+                "dni": customer.dni,
+                "tel": customer.tel,
+                "prov": customer.prov,
+                "loc": customer.loc,
+                "sucursal": customer.agencia_registrada.pseudonimo,
+                "url": reverse('users:cuentaUser', args=[customer.id])
+            } for customer in customers
+        ]
+
+        # Retornar los datos filtrados como JSON
+        return JsonResponse({"customers": customer_data, "status": True})
+
+def importar_clientes(request):
+    if request.method == "POST":
+
+        # Recibir el archivo y el dato adicional 'agencia'
+        uploaded_file = request.FILES['file']
+        agencia = request.POST.get('agencia')
+
+        fs = FileSystemStorage()
+        filename = fs.save(uploaded_file.name, uploaded_file)
+        file_path = fs.path(filename)
+        new_number_rows_cont = 0
+
+        try:
+            # Leer y formatear la hoja "CLIENTES" del archivo Excel
+            df = formatear_columnas(file_path, sheet_name="CLIENTES")
+            
+            # Procesar cada fila
+            for _, row in df.iterrows():
+
+                dni=handle_nan(row['dni'])
+                cliente_existente = Cliente.objects.filter(dni=dni).first()
+                
+                if not cliente_existente:
+                    new_number_rows_cont +=1
+                    Cliente.objects.create(
+                        nro_cliente = row['nro'],
+                        nombre=handle_nan(row['cliente']),
+                        dni= str(int(float(row['dni']))) if handle_nan(row['dni']) != "" else "",
+                        agencia_registrada = Sucursal.objects.get(pseudonimo = agencia),
+                        domic=handle_nan(row['domic']) ,
+                        loc = handle_nan(row["loc"]) ,
+                        prov = handle_nan(row["prov"]) ,
+                        cod_postal = str(int(float(row["cod_pos"]))) if handle_nan(row["cod_pos"]) != "" else "",
+                        tel= str(int(float(row['tel_1']))) if handle_nan(row['tel_1']) != "" else "" ,
+                        fec_nacimiento = format_date(handle_nan(row["fecha_de_nac"])),
+                        estado_civil = handle_nan(row["estado_civil"]) ,
+                        ocupacion = handle_nan(row["ocupacion"]) 
+                    )
+                
+
+            # Eliminar el archivo después de procesar
+            fs.delete(filename)
+
+            iconMessage = "/static/images/icons/checkMark.svg"
+            message= f"Datos importados correctamente. Se agregaron {new_number_rows_cont} clientes nuevos"
+            return JsonResponse({"message": message,"iconMessage": iconMessage, "status": True})
+
+        except Exception as e:
+            print(f"Error al importar: {e}")
+
+            iconMessage = "/static/images/icons/error_icon.svg"
+            message= "Error al procesar el archivo"
+            return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
+
 class CrearCliente(TestLogin, generic.CreateView):
     model = Cliente
     template_name = 'create_customers.html'
@@ -503,31 +899,82 @@ class CrearCliente(TestLogin, generic.CreateView):
             response_data = {"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
             return JsonResponse(response_data, safe=False)     
 
-
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch') # Para no guardar el cache cuando se presiona el boton de atras
 class CuentaUser(TestLogin, generic.DetailView):
     model = Cliente
     template_name = "cuenta_cliente.html"
 
     def get(self,request,*args,**kwargs):
-        # planes = Plan.objects.all()
         self.object = self.get_object()
-        # print(self.object.agencia_registrada)
         ventas = self.object.ventas_nro_cliente.all()
 
         for i in range (ventas.count()):
             ventas[i].suspenderOperacion()
-
+        
+        productosDelCliente = [venta.producto.nombre for venta in self.object.ventas_nro_cliente.all()]
+        productosDelCliente_no_repetidos = list(set(productosDelCliente))
         ventasOrdenadas = ventas.order_by("-adjudicado","deBaja","-nro_operacion")
         context = {"customer": self.object,
-                   "ventas": ventasOrdenadas}
+                   "ventas": ventasOrdenadas,
+                   "productoDelCliente": productosDelCliente_no_repetidos,
+                   }
         return render(request, self.template_name, context)
+    
+    def post(self,request,*args,**kwargs):
+        try:
+
+            form = json.loads(request.body)
+
+            # Obtenemos los valores de las claves del JSON o None si no existen
+            nro_operacion = form.get("nro_operacion", None)
+            producto = form.get("producto", None)
+
+            # Construimos un diccionario de filtros dinámicamente basado en los valores existentes
+            filters = {}
+            if nro_operacion is not None:
+                filters["nro_operacion"] = nro_operacion
+            if producto is not None:
+                filters["producto"] = Products.objects.get(nombre=producto).pk
+
+            # Realizar la consulta solo con los filtros disponibles
+            ventas = Ventas.objects.filter(**filters)
+
+            ventas_list = []
+            ventaDict ={}
+            for venta in ventas:
+                ventaDict = {
+                    "nro_operacion": venta.nro_operacion,
+                    "cuotas_pagadas": len(venta.cuotas_pagadas()),
+                    "nro_ordenes" : [contrato["nro_orden"] for contrato in venta.cantidadContratos],
+                    "producto": venta.producto.nombre,
+                    "tipo_producto": venta.producto.tipo_de_producto,
+                    "img_tipo_producto": "",
+                    "fecha_inscripcion": venta.fecha,
+                    "estado": getEstadoVenta(venta),
+                    "importe": venta.importe,
+                }
+                ventas_list.append(ventaDict)
+
+
+            # Convertir el QuerySet a una lista para que sea serializable por JSON
+
+
+            return JsonResponse({"status": True,"ventas":ventas_list}, safe=False)
+
+        except Exception as error:   
+            return JsonResponse({"status": False,"message":"Filtro fallido","detalleError":str(error)}, safe=False)
 
 
 class PanelAdmin(TestLogin,PermissionRequiredMixin,generic.View):
     template_name = "panelAdmin.html"
     permission_required = "sales.my_ver_resumen"
     def get(self,request,*args,**kwargs):
-        context= {}
+        sucursalesObject = Sucursal.objects.all()
+        sucursales = [sucursal.pseudonimo for sucursal in sucursalesObject ]
+        context= {
+            "sucursalesDisponibles": json.dumps(sucursales)
+        }
+        
         return render(request, self.template_name, context)
 #endregion  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -671,8 +1118,11 @@ class PanelSucursales(TestLogin, generic.View):
     # permission_required = "sales.my_ver_resumen"
     def get(self,request,*args,**kwargs):
         sucursales = Sucursal.objects.all()
+        gerentes = Usuario.objects.filter(rango="Gerente sucursal")
+
         context= {
             "sucursales": sucursales,
+            'gerentesDisponibles': [{"id":gerente.pk,"nombre":gerente.nombre} for gerente in gerentes],
             }
         return render(request, self.template_name, context)
 
@@ -681,11 +1131,14 @@ class PanelSucursales(TestLogin, generic.View):
         pk = request.POST.get("inputID")
         direccion = request.POST.get("inputDireccion")
         hora = request.POST.get("inputHora")
+        gerente = request.POST.get("gerente")
+
 
         # Para editar la sucursal 
         sucursal = Sucursal.objects.get(pk=pk)
         sucursal.direccion = direccion
         sucursal.hora_apertura = hora
+        sucursal.gerente = Usuario.objects.filter(nombre=gerente).first()
 
         sucursal.save()  
         response_data = {'message': 'Datos recibidos correctamente'}
@@ -693,49 +1146,82 @@ class PanelSucursales(TestLogin, generic.View):
     
 def updateSucursal(request):
     if request.method == "POST":
-        pk = json.loads(request.body)["sucursalPk"]
-        direccion = json.loads(request.body)["direccion"]
-        hora = json.loads(request.body)["horaApertura"]
-        
-        sucursal = Sucursal.objects.get(pk=pk)
-        sucursal.direccion = direccion
-        sucursal.hora_apertura = hora
-        sucursal.save()
-        
-        response_data = {"message":"Sucursal actualizada con exito!!"}
-        return JsonResponse(response_data)
+        try: 
+            pk = json.loads(request.body)["sucursalPk"]
+            direccion = json.loads(request.body)["direccion"]
+            hora = json.loads(request.body)["horaApertura"]
+            gerente = json.loads(request.body)["gerente"]
+            
+
+
+            sucursal = Sucursal.objects.get(pk=pk)
+            sucursal.direccion = direccion
+            sucursal.hora_apertura = hora
+            sucursal.gerente = Usuario.objects.filter(pk=gerente).first()
+            sucursal.save()
+
+
+            iconMessage = "/static/images/icons/checkMark.svg"
+            response_data = {"message":"Sucursal actualizada con exito","iconMessage":iconMessage, "status": True}
+            return JsonResponse(response_data)
+        except Exception as e:
+            print(e)
+            iconMessage = "/static/images/icons/error_icon.svg"
+            response_data = {"message":"Hubo un error al crear la sucursal", "iconMessage":iconMessage, "status": False}
+            return JsonResponse(response_data)
 
 def addSucursal(request):
     if request.method == "POST":
-        provincia = json.loads(request.body)["provincia"]
-        localidad = json.loads(request.body)["localidad"]
-        direccion = json.loads(request.body)["direccion"]
-        hora = json.loads(request.body)["horaApertura"]
+        try:
+            provincia = json.loads(request.body)["provincia"]
+            localidad = json.loads(request.body)["localidad"]
+            direccion = json.loads(request.body)["direccion"]
+            hora = json.loads(request.body)["horaApertura"]
+            gerente = json.loads(request.body)["gerente"]
+            
+            newSucursal = Sucursal()
+            newSucursal.provincia = provincia.title()
+            newSucursal.localidad = localidad.title()
+            newSucursal.direccion = direccion.capitalize()
+            newSucursal.gerente = Usuario.objects.filter(pk=gerente).first()
+            newSucursal.hora_apertura = hora
+            newSucursal.save()
+
+            iconMessage = "/static/images/icons/checkMark.svg"
+            response_data = {"message":"Sucursal creada exitosamente","iconMessage":iconMessage, "status": True, "pk":str(newSucursal.pk),'name': str(newSucursal.pseudonimo), "direccion": str(newSucursal.direccion), "hora": str(newSucursal.hora_apertura),"gerente": {"id":newSucursal.gerente.pk,"nombre":newSucursal.gerente.nombre}}
+            return JsonResponse(response_data)
         
-        newSucursal = Sucursal()
-        newSucursal.provincia = provincia.title()
-        newSucursal.localidad = localidad.title()
-        newSucursal.direccion = direccion.capitalize()
-        newSucursal.hora_apertura = hora
-        newSucursal.save()
+        except Exception as e:
+            print(e)
+            iconMessage = "/static/images/icons/error_icon.svg"
+            response_data = {"message":"Hubo un error al crear la sucursal", "iconMessage":iconMessage, "status": False}
+            return JsonResponse(response_data)
         
-        response_data = {"message":"Sucursal creada exitosamente!!","pk":str(newSucursal.pk),'name': str(newSucursal.pseudonimo), "direccion": str(newSucursal.direccion), "hora": str(newSucursal.hora_apertura)}
-        return JsonResponse(response_data)
     
 def removeSucursal(request):
     if request.method == "POST":
-        pk = int(json.loads(request.body)["pk"]) 
+        try:
+            pk = int(json.loads(request.body)["pk"]) 
 
-        deleteSucursal = Sucursal.objects.get(pk=pk)
+            deleteSucursal = Sucursal.objects.get(pk=pk)
 
-        Usuario.objects.filter(sucursal=deleteSucursal).update(sucursal=None) # Setear en None los usuarios asociados para que no se borren
-        Ventas.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None las ventas asociadas para que no se borren
-        MovimientoExterno.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los movimientos asociados para que no se borren
-        ArqueoCaja.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los arqueos asociados para que no se borren
+            # Eliminar la relación ManyToMany correctamente
+            usuarios_asociados = Usuario.objects.filter(sucursales=deleteSucursal)
+            for usuario in usuarios_asociados:
+                usuario.sucursales.remove(deleteSucursal)
+                
+            Ventas.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None las ventas asociadas para que no se borren
+            MovimientoExterno.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los movimientos asociados para que no se borren
+            ArqueoCaja.objects.filter(agencia=deleteSucursal).update(agencia=None) # Setear en None los arqueos asociados para que no se borren
 
-        deleteSucursal.delete()
+            deleteSucursal.delete()
+            iconMessage = "/static/images/icons/checkMark.svg"
+            response_data = {"message":"Agencia eliminada correctamente","iconMessage":iconMessage, "status": True}
+            return JsonResponse(response_data)
         
-        response_data = {"message":"Eliminado correctamente"}
-        return JsonResponse(response_data)
+        except Exception as e:
+            iconMessage = "/static/images/icons/error_icon.svg"
+            response_data = {"message":"Hubo un error al eliminar la agencia", "iconMessage":iconMessage, "status": False}
+            return JsonResponse(response_data)
 
 #endregion  - - - - - - - - - - - - - - - - - - - - - - - -

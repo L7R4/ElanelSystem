@@ -1,9 +1,9 @@
-.wrapper_content{
+.wrapper_content {
     padding: 3%;
     box-sizing: border-box;
 }
 
-.wrapperSections{
+.wrapperSections {
     width: 80%;
     height: 12%;
     padding: 2%;
@@ -17,12 +17,12 @@
     border-radius: .8rem;
 }
 
-.tittleWrapper > h4{
+.tittleWrapper>h4 {
     font-size: clamp(1.5rem, 1.4vw, 2rem);
     font-family: raleway-semibold;
 }
 
-.buttonWrapper > a.buttonMore{
+.buttonWrapper>.buttonMore {
     display: flex;
     gap: 0.2rem;
     padding: 1rem 1.5rem;
@@ -30,9 +30,11 @@
     text-decoration: none;
     border-radius: 1rem;
     min-width: 9rem;
+    border: none;
+    cursor: pointer;
 }
 
-.buttonWrapper > a.buttonMore > div{
+.buttonWrapper>.buttonMore>div {
     display: flex;
     gap: 0.4rem;
     align-items: center;
@@ -40,14 +42,107 @@
     justify-content: space-between;
 }
 
-.buttonWrapper > a.buttonMore > div > h3 {
+.buttonWrapper>.buttonMore>div>h3 {
     font-size: clamp(1.3rem, 1.2vw, 1.6rem);
     font-family: raleway;
     color: white;
 }
 
-.buttonWrapper > a.buttonMore > div > img {
+.buttonWrapper>.buttonMore>div>img {
     margin-top: 0.1rem;
     width: 20%;
-    
+
 }
+
+/*#region Import ventas  */
+.tingle-btn--primary.disabled {
+    pointer-events: none;
+    opacity: .7;
+}
+
+
+.tittleModal {
+    font-family: raleway-bold;
+    color: var(--primary-color);
+    font-size: clamp(2.4rem, 1.6vw, 4rem);
+}
+
+.tingle-btn {
+    font-family: raleway-semibold !important;
+    color: var(--third-color) !important;
+    font-size: clamp(1.3rem, 1.1vw, 1.5rem) !important;
+    border-radius: .6rem !important;
+
+}
+
+#importForm {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#importForm>.inputWrapper {
+    width: 40%;
+}
+
+#importForm .labelInput {
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: 'raleway-semibold';
+    margin-bottom: .3rem;
+    margin-left: .3rem;
+    color: var(--background-color);
+}
+
+.containerSelectFile {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.containerSelectFile>label {
+    color: var(--background-color);
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+}
+
+.containerSelectFile>#nameFile {
+    font-size: clamp(1.1rem, 1.1vw, 1.3rem);
+    font-family: 'raleway';
+    color: var(--background-color);
+}
+
+#messageStatusContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+#messageStatusContainer>img {
+    min-width: 5rem;
+    width: 35%;
+    max-width: 13rem;
+    /* min-height: 5rem;
+    min-height: 35%; */
+}
+
+#messageStatusContainer>h2 {
+    font-size: clamp(1.4rem, 1.3vw, 2rem);
+    font-family: 'raleway-semibold';
+    color: var(--background-color);
+}
+
+#importForm>#agenciaWrapper .iconDesplegar {
+    z-index: 3;
+}
+
+#importForm>#agenciaWrapper #agenciaInput {
+    z-index: 2;
+}
+
+#importForm>#agenciaWrapper .options {
+    z-index: 1;
+}
+
+/*#endregion  */

@@ -16,6 +16,7 @@
         <input type="text" name ="nro_operacion" class = "customer input-read-write-default" id="nro_ordenInput">
         <img src="{% static 'images/icons/search.svg' %}" alt="">
     </div>
+    <button type="button" disabled id="submitFormVenta" class="add-button-default"> Buscar </button>
 </form>
 
 <div class="accountWrapper">
@@ -37,4 +38,5 @@
 
 {% block js %}
 <script src="{% static 'js/search_ventas_suspendidas.js' %}"></script>
+
 {% endblock js %}

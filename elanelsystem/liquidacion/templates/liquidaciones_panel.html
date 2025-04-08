@@ -39,7 +39,7 @@
             <h4>Detalle de ventas <h4>
         </div>
         <div class="buttonWrapper">
-            <a href="{% url 'liquidacion:liquidacionesDetalleVentas' %}" class="buttonMore">
+            <a href="{% url 'liquidacion:detallesComisionesView' 'ventas' %}" class="buttonMore">
                 <div>
                     <h3>Ir</h3>
                     <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
@@ -47,6 +47,20 @@
             </a>    
         </div>
                
+    </div>
+    
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Cuotas 1 adelantadas<h4>
+        </div>
+        <div class="buttonWrapper">
+            <a href="{% url 'liquidacion:detallesComisionesView' 'cuotas_1' %}" class="buttonMore">
+                <div>
+                    <h3>Ir</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </a>
+        </div>
     </div>
 
     <div class="wrapperSections">
@@ -62,25 +76,25 @@
             </a>
         </div>
     </div>
-    <div class="wrapperSections">
+    {% comment %} <div class="wrapperSections">
         <div class ="tittleWrapper">
-            <h4>Cuotas adelantadas<h4>
+            <h4>Tabla de porcentajes<h4>
         </div>
         <div class="buttonWrapper">
-            <a href="{% url 'liquidacion:liquidacionesDetalleCuotasAdelantadas' %}" class="buttonMore">
+            <a href="#" class="buttonMore">
                 <div>
                     <h3>Ir</h3>
                     <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
                 </div>
             </a>
         </div>
-    </div>
+    </div> {% endcomment %}
     <div class="wrapperSections">
         <div class ="tittleWrapper">
-            <h4>Tabla de porcentajes<h4>
+            <h4>Historial de liquidaciones<h4>
         </div>
         <div class="buttonWrapper">
-            <a href="#" class="buttonMore">
+            <a href="{% url  'liquidacion:historialLiquidaciones' %}" class="buttonMore">
                 <div>
                     <h3>Ir</h3>
                     <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">

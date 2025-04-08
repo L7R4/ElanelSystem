@@ -6,111 +6,26 @@
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/caja.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
-<link rel="stylesheet" href="{% static 'css/modalWindows.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 
-<link href="{% static 'js/vanilla-calendar/build/vanilla-calendar.min.css' %}" rel="stylesheet">
-<script src="{% static 'js/vanilla-calendar/build/vanilla-calendar.min.js' %}" defer></script>
+<link href="{% static 'js/vanilla-calendar-pro/styles/index.css' %}" rel="stylesheet">
+<script src="{% static 'js/vanilla-calendar-pro/index.js' %}" defer></script>
+
 {% endblock css %}
 
 {% block content %}
     <div class="buttonsFilters">
         <a href="{% url 'sales:cierreDeCaja' %}">Cierre de caja</a>
-        <button class ="buttonNewMov" id="buttonEgreso" onclick="newEgreso()" type ="button">Nuevo Egreso</button>
-        <button class ="buttonNewMov" id="buttonIngreso" onclick="newIngreso()" type ="button">Nuevo Ingreso</button>
+        <button class ="buttonNewMov" value="egreso" id="buttonEgreso" onclick="modalNewMov(this.value)" type ="button">Nuevo Egreso</button>
+        <button class ="buttonNewMov" value="ingreso" id="buttonIngreso" onclick="modalNewMov(this.value)" type ="button">Nuevo Ingreso</button>
         <div class="buttonFilterWrapper">
-            <button id="openFilters" class="buttonActiveModalFilter" type ="button">Filtrar</button>
+            <button id="openFilters" class="buttonActiveModalFilter" onclick="modalFilter()" type ="button">Filtrar</button>
             <a href="{% url 'sales:caja' %}" id="clear_filters"> Limpiar filtros</a>
-        </div>
-            
+        </div>   
     </div>
-        
-    <!--  MODAL DE FILTROS DEFAULT  -->
-    <!-- Respetar estructura del modal-->
-    <div class="modalFilterContainer">
-        <div class="background"></div>
-        <div class="windowModal">
-        
-            <button type="button" id="closeFormFilter">
-                <img src="{% static 'images/icons/close.svg' %}" alt="">
-            </button>
 
-            <form method="GET" id="filterForm" class="filterForm">
-                <div class="wrapperCalendario wrapperTypeFilter">
-                    <h3 class="labelInput">Filtrar por fecha</h3>
-                    <div class="containerCalendario">
-                        <input id="calendar-input" name="fecha" class="filterInput input-read-write-default" type="text" placeholder="Choose date" readonly />
-                        <div class="calendar" id="calendar"></div>
-                    </div>
-                </div>
-
-                <div id="selectWrapperSelectTypePayments" class="wrapperTypeFilter">
-                    <h3 class="labelInput">Filtrar por tipo de pago</h3>
-                    <div class="containerInputAndOptions">
-                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-
-                      <input type="text" name="tipo_pago" class = "input-select-custom multipleSelect" id ="tipoDePago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
-                      <ul class="list-select-custom options">
-                            <li data-value="Efectivo">Efectivo</li>
-                            <li data-value="Banco">Banco</li>
-                            <li data-value="Mercado Pago">Mercado Pago</li>
-                            <li data-value="Posnet">Posnet</li>
-                            <li data-value="Transferencia">Transferencia</li>
-                      </ul>
-                    </div>
-                </div>
-                
-                <div id="selectWrapperSelectAgency" class="wrapperTypeFilter">
-                    <h3 class="labelInput">Filtrar por sucursal</h3>
-                    <div class="containerInputAndOptions">
-                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="agencia" class = "multipleSelect input-select-custom" id ="sucursalInput" value=""placeholder ="Elija la sucursal" autocomplete="off" readonly>
-                      <ul class="list-select-custom options">
-                        {% for  agencia in agencias %}
-
-                            <li data-value="agencia.pseudonimo">{{agencia.pseudonimo}}</li>
-
-                        {% endfor %}
-                      </ul>
-                    </div>
-                </div>
-
-                <div id="selectWrapperSelectCobrador"class="wrapperTypeFilter">
-                    <h3 class="labelInput">Filtrar por cobrador</h3>
-                    <div class="containerInputAndOptions">
-                      <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                      <input type="text" name="cobrador" class = "multipleSelect input-select-custom" id ="cobradorInput" value="" placeholder ="Elija el cobrador" autocomplete="off" readonly>
-                      <ul class="list-select-custom options">
-                            {% for cobrador in cobradores %}
-                                <li>{{cobrador.nombre}}</li>
-                            {% endfor %}
-                            <li data-value="Efectivo">Efectivo</li>
-                            <li data-value="Banco">Banco</li>
-                            <li data-value="Mercado Pago">Mercado Pago</li>
-                            <li data-value="Posnet">Posnet</li>
-                            <li data-value="Transferencia">Transferencia</li>
-                      </ul>
-                    </div>
-                </div>  
-
-                <div id="wrapperRadioEgresoIngreso" class="wrapperTypeFilter">
-                    <h3 class="labelInput">Filtrar por:</h3>
-                    <div class="selectEgreso_Ingreso inputsRadiosContainer">
-                        <input type="radio" name="tipo_mov" id="ingreso" value="Ingreso">
-                        <label for="ingreso">Ingreso</label>
-        
-                        <input type="radio" name="tipo_mov" id="egreso" value="Egreso">
-                        <label for="egreso">Egreso</label>
-                    </div>
-                </div>                  
-            </form>
-
-            <button id="submitFilter" class="add-button-default" form="filterForm" type="submit">Filtrar</button>
-        </div>
-    </div> 
-
-
+    <!-- INFORMACION DE CAJA -->
     <div class ="caja">
-        
         <div class="movimientos">
             <div class="tittlesWrapper">
                 <ul class="tittles">
@@ -139,332 +54,54 @@
             </div>
         </div>
 
-        <div class="resum">
-            <div class="resum__cuenta">
-                <div class="resum__cuenta__tipoCaja">
-                    <h2>Tipo de caja</h2>
-                    <h4>Saldo en efectivo</h4>
-                    <h4>Saldo en banco</h4>
-                    <h4>Saldo en Mer. Pago</h4>
-                    <h4>Saldo en Posnet</h4>
-                    <h4>Saldo en Transferencia</h4>
-                    <h4>Total</h4>
-                </div>
-                <div class="resum__cuenta__saldo">
-                    <h2>Saldo</h2>
-                    {% language 'de' %}
-                    <h4 id="resumEfectivo">${{efectivo}}</h4>
-                    <h4 id="resumBanco">${{banco}}</h4>
-                    <h4 id="resumMerPago">${{merPago}}</h4>
-                    <h4 id="resumPosnet">${{posnet}}</h4>
-                    <h4 id="resumTrans">${{transferencia}}</h4>
-                    <h4 id="resumTotal">${{total}}</h4>
-                    {% endlanguage %}
-
-                </div>
+        <div class="resumWrapper">
+            <div class="resumTableWrapper">
+                <table class="resum_table">
+                    <thead>
+                        <tr>
+                            <th>Tipo de caja</th>
+                            <th>Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
-            {% if filtros %}    
-                <div class="wrapperFiltroTexto">
-                    <h3>Filtrado por: </h3>
-                    <ul>
-                    </ul>
-                </div>
-            {% endif %}
             <div class="wrapperButtonInforme">
                 <a href="{% url 'sales:informePDF' %}" target="_blank">Hacer informe</a>
-                {% comment %} <a href="{% url 'sales:informeSend' %}" target="_blank">Hacer informe y enviar</a> {% endcomment %}
-                {% comment %} <a href="{% url 'sales:exportExcel' %}">Exportar excel</a> {% endcomment %}
             </div>
+
         </div>
     </div>
 
-
-    <div class="main_modalCuota">
-        <div class="background"></div>
-        <div class="modal"id="modalForCuotas">
-            <div class="tittleModal">
-                <h3>Detalle de cuota</h3>
-                <button type="button" class="closeModalCuotaInformation">
-                    <img src="{% static 'images/icons/close.svg' %}" alt="">
-                </button>
-            </div>
-            <div class="modal_information">
-                <div class="wrapperData">
-                    <h2>N° de Operacion</h2>
-                    <div  class="input-read-only-default">
-                        <h2 id="numeroVenta"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData">
-                    <h2>Metodo de pago</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="metodoPago"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData">
-                    <h2>Fecha de pago</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="fechaPago"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData">
-                    <h2>N° de Cuota</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="numeroCuota"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData">
-                    <h2>Dinero</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="dinero"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData">
-                    <h2>N° de Cliente</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="numeroCliente"></h2>
-                    </div>
-                </div>
-                
-                <div class="wrapperData">
-                    <h2>Cobrador</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="cobrador"></h2>
-                    </div>
-                </div>
-                
-                <div class="wrapperData">
-                    <h2>Sucursal</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="sucursal"></h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal" id="modalForMovsExternos">
-             <div class="tittleModal">
-                <h3>Detalle de movimiento</h3>
-                <button type="button" class="closeModalCuotaInformation">
-                    <img src="{% static 'images/icons/close.svg' %}" alt="">
-                </button>
-            </div>
-            <div class="modal_information">
-                <div class="wrapperData onlyEgreso">
-                    <h2>Tipo de comprobante</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="tipoComprobanteMovExterno"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData onlyEgreso">
-                    <h2>Nro de comprobante</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="nroComprobanteMovExterno"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData onlyEgreso">
-                    <h2>Tipo de Identificacion</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="tipoIdentificaionMovExterno"></h2>
-                    </div>
-                </div>
-                <div class="wrapperData onlyEgreso">
-                    <h2>Nro de identificacion</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="nroIdentificacionMovExterno"></h2>
-                    </div>
-                </div>
-
-                <div class="wrapperData onlyEgreso">
-                    <h2>Denominacion</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="denominacionMovExterno"></h2>
-                    </div>
-                </div>
-
-                <div class="wrapperData onlyIngreso">
-                    <h2>Tipo moneda</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="tipoMonedaMovExterno"></h2>
-                    </div>
-                </div>
-                
-                <div class="wrapperData">
-                    <h2>Importe</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="dineroMovExterno"></h2>
-                    </div>
-                </div>
-
-                <div class="wrapperData">
-                    <h2>Metodo de pago</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="metodoPagoMovExterno"></h2>
-                    </div>
-                </div>
-
-                <div class="wrapperData">
-                    <h2>Fecha de emicion</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="fechaMovExterno"></h2>
-                    </div>
-                </div>
-
-                <div class="wrapperData">
-                    <h2>Ente recaudador</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="enteMovExterno"></h2>
-                    </div>
-                </div>
-        
-                <div class="wrapperData">
-                    <h2>Concepto</h2>
-                    <div class="input-read-only-default">
-                        <h2 id="conceptoMovExterno"></h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    
-    <div class="main_modalNewEgresoIngreso">
-        <div class="background__newEgresoIngreso"></div>
-        <div class="modal_newEgresoIngreso">
-            <div class="tittleModal">
-                <h3 id="tittleModalEgresoIngreso"></h3>
-                <button type="button" id="closeModalEgresoIngreso">
-                    <img src="{% static 'images/icons/close.svg' %}" alt="">
-                </button>
-            </div>
-
-            <form method="POST" class="modal_form" id="formNewIngresoEgreso">
-                {% csrf_token %}
-                <input name="movimiento" id="typeMov" type="hidden" value="">
-
-                <div id="selectWrapperSelectTypeTicket" class="wrapperInput">
-                    <h3 class="labelInput">Tipo de Comprobante</h3>
-                    <div class="containerInputAndOptions">
-                        <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                        <input name="tipoComprobante" id="tipoComprobante" class="input-select-custom onlySelect" placeholder ="Elegir" autocomplete="off" readonly>
-                        <ul class="list-select-custom options">
-                            <li data-value="A">A</li>
-                            <li data-value="B">B</li>
-                            <li data-value="C">C</li>
-                            <li data-value="TK">TK</li>
-                            <li data-value="X">X</li>
-                            <li data-value="RC">RC</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="wrapperInput">
-                    <h3 class="labelInput" >N° de comprobante</h3>
-                    <input name="nroComprobante" id="nroComprobanteMov" class="input-read-write-default inputEgresoIngreso">
-                </div>
-
-                <div id="selectWrapperSelectTypeID" class="wrapperInput">
-                    <h3 class="labelInput">Tipo de Identificacion</h3>
-                    <div class="containerInputAndOptions">
-                        <img id="tipoIDIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                        <input name="tipoID" id="tipoID" class="input-select-custom onlySelect" placeholder ="Elegir" autocomplete="off" readonly>
-                        <ul class="list-select-custom options">
-                              <li data-value="DNI">DNI</li>
-                              <li data-value="CUIT">CUIT</li>
-                              <li data-value="Legajo">Legajo</li>
-                              <li data-value="Otro">Otro</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="wrapperInput">
-                    <h3 class="labelInput">N° de Identificacion</h3>
-                    <input name="nroIdentificacion" id="nroIdentificacionMov" class="input-read-write-default">
-                </div>
-
-                <div class="wrapperInput">
-                    <h3 class="labelInput">Denominacion</h3>
-                    <input name="denominacion" id="denominacionMov" class="input-read-write-default">
-                </div>
-
-                <div id="selectWrapperSelectTypeMoneda" class="wrapperInput">
-                    <h3 class="labelInput">Tipo de Moneda</h3>
-                    <div class="containerInputAndOptions">
-                        <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                        <input name="tipoMoneda" id="tipoMoneda" class="input-select-custom onlySelect" placeholder ="Elegir" autocomplete="off" readonly>
-                        <ul class="list-select-custom options">
-                            <li data-value="ARS">ARS</li>
-                            <li data-value="USD">USD</li>
-                            <li data-value="BRL">BRL</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="wrapperInput">
-                    <h3 class="labelInput">Importe</h3>
-                    <input name="dinero" id="dineroMov" class="input-read-write-default">
-                </div>
-
-                <div id="selectWrapperSelectTypePayments" class="wrapperInput">
-                    <h3 class="labelInput">Tipo de pago</h3>
-                    <div class="containerInputAndOptions">
-                      <img id="tipoPagoIconDisplay"class="iconDesplegar" src="/static/images/icons/arrowDown.png" alt="">
-                      <input type="text" name="tipoPago" class="onlySelect input-select-custom " id="tipoDePago" placeholder="Elegir" autocomplete="off" readonly="">
-                      <ul class="list-select-custom options">
-                            <li data-value="Efectivo">Efectivo</li>
-                            <li data-value="Banco">Banco</li>
-                            <li data-value="Mercado Pago">Mercado Pago</li>
-                            <li data-value="Posnet">Posnet</li>
-                            <li data-value="Transferencia">Transferencia</li>
-                      </ul>
-                    </div>
-                </div>
-
-                <div class="wrapperInput">
-                    <h3 class="labelInput">Fecha de emicion</h3>
-                    <input name="fecha" id="fechaMov" class="input-read-only-default inputEgresoIngreso" readonly>
-                </div>
-
-                <div class="wrapperInput">
-                    <h3 class="labelInput">Ente recaudador</h3>
-                    <input name="ente" id="enteMov" class="input-read-write-default inputEgresoIngreso">
-                </div>
-
-                <div class="wrapperInput">
-                    <h3 class="labelInput">Concepto</h3>
-                    <input name="concepto" id="conceptoMov" class="input-read-write-default inputEgresoIngreso">
-                </div>
-
-                <div id="wrapperSelectAdelanto_Premio" class="wrapperInput">
-                    <div>
-                        <div class="inputsRadiosContainer">
-                            <input type="radio" name="adelanto_premio" id="adelanto" value="adelanto" class="inputSelectPremio_Adelanto">
-                            <label class="labelInput" for="adelanto">Adelanto</label>
-                        </div>
-                        
-                        <div class="inputsRadiosContainer">
-                            <input type="radio" name="adelanto_premio" id="premio" value="premio" class="inputSelectPremio_Adelanto">
-                            <label class="labelInput" for="premio">Premio</label>
-                        </div>
-                        
-                    </div>
-                </div>
-                
-            </form>
-            <button type="submit" id="confirmMovimiento" class="add-button-default" form="modal_form">Realizar</button>
-        </div>
-    </div>
 {% endblock content %}
 
 {% block js %}
- <!-- Scripts bases: manejo de multipleSelects, OnlySelect, Controlar el modal de filter, el calendario de fechas, y el manejador de los inputs radios-->
-<script src="{% static 'js/inputsSelectsMultipleCustoms.js' %}"></script>
-<script src="{% static 'js/inputsRadiosManage.js' %}"></script>
-<script src="{% static 'js/manageModalFilter.js' %}"></script>
-<script src="{% static 'js/vanilla-calendar/manageJsCalendar.js' %}" defer></script>
+<script>
+    var campaniasDisponibles = {{campaniasDisponibles | safe}};
+    var CSRF_TOKEN = '{% csrf_token %}';
+    var imgNext = "{% static 'images/icons/arrowDown.png' %}";
+    var campanias = {{campanias | safe}};
+    var agencias = {{agencias_permitidas | safe}};
+    var cuentas_de_cobro = {{cuentas_de_cobro | safe}};
+    var metodos_de_pago = {{metodos_de_pago | safe}};
+</script>
+
+
+<!-- Scripts bases: manejo de multipleSelects, OnlySelect, Controlar el modal de filter, el calendario de fechas, y el manejador de los inputs radios-->
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+<script src="{% static 'js/vanilla-calendar-pro/multipleCalendarManage.js' %}" defer></script>
+<script src="{% static 'js/vanilla-calendar-pro/singleCalendarWithTime.js' %}" defer></script>
+
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
- <!-- ------------------------------------------------------------------------------------------  -->
+<script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+<script src="{% static 'js/inputsMultipleSelect_v2.js' %}"></script>
+
+
+<!-- ------------------------------------------------------------------------------------------  -->
 
 <script src="{% static 'js/fillMovimientos.js' %}"></script>
+<script src="{% static 'js/z_index_orders_selects.js' %}"></script>
 <script src="{% static 'js/createNewMov.js' %}"></script>
+
 {% endblock js %}

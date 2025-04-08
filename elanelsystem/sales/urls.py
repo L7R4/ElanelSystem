@@ -10,11 +10,18 @@ urlpatterns = [
     path("resumen/",Resumen.as_view(),name="resumen"),
     
     #region URLs Ventas ----------------------------------
+    path("ventas/importar/",importVentas,name="importVentas"),
     path("ventas/cliente/<int:pk>/crear_venta/",CrearVenta.as_view(),name="create_sale"),
+    path("ventas/get_vendedores_supervisores/",requestVendedores_Supervisores,name="requestVendedores_Supervisores"),
+    path("ventas/detalles", VentasDetalles.as_view(),name="detallesVentas"),
     path("ventas/detalle_venta/<int:pk>/",DetailSale.as_view(),name="detail_sale"),
+
+    path("ventas/detalle_venta/<int:pk>/eliminar_venta/",eliminarVenta,name="delete_sale"),
     path("ventas/detalle_venta/descuento_cuota/",aplicarDescuentoCuota,name="descCuota"),
     path("ventas/detalle_venta/get_specific_cuota/",getUnaCuotaDeUnaVenta,name="getCuota"),
     path("ventas/detalle_venta/pay_cuota/",pagarCuota,name="payCuota"),
+    # path("ventas/detalle_venta/anular_cuota/",anularCuota,name="anularCuota"),
+
     path("ventas/detalle_venta/<int:pk>/dar_baja/",darBaja,name="darBaja"),
     path("ventas/<int:pk>/adjudicacion/sorteo/",CreateAdjudicacion.as_view(),name="adjSorteo"),
     path("ventas/<int:pk>/adjudicacion/negociacion/",CreateAdjudicacion.as_view(),name="adjNegociacion"),
@@ -22,6 +29,14 @@ urlpatterns = [
     path("ventas/<int:pk>/cambiotitularidad",ChangeTitularidad.as_view(),name="changeTitu"),
     path("ventas/ventas_suspendidas",PanelVentasSuspendidas.as_view(),name="ventasSuspendidas"),
     path("ventas/simulador_plan_recupero/<int:pk>/",SimuladorPlanRecupero.as_view(),name="simuladorPlanrecupero"),
+    path("ventas/crear_plan_recupero/<int:pk>/",PlanRecupero.as_view(),name="planRecupero"),
+    
+    path("ventas/detalle_venta/solcitud_anulacion_cuota/",solicitudBajaCuota,name="solicitudAnulacionCuota"),
+    path('ventas/detalle_venta/autorizar-baja/<int:ventaID>/<str:cuota>/', darAutorizacionBajaCuota, name='autorizar_baja_cuota'),
+    path('ventas/detalle_venta/pagina_confirmacion_baja_cuota/', pagina_confirmacion, name='pagina_confirmacion_baja_cuota'),
+    path('ventas/detalle_venta/confirma-baja-cuota/', darBajaCuota, name='darBajaCuota'),
+
+    
     #endregion ----------------------------------------------------------
 
     #region URLs Caja -----------------------------------------------------
@@ -36,15 +51,19 @@ urlpatterns = [
     path("ventas/pdf/arqueo/<int:pk>/",viewPDFArqueo,name="arqueoPDF"),
     path('ventas/pdf/informe/', viewsPDFInforme, name='informePDF'),
     path('ventas/pdf/informesend/', viewPDFInformeAndSend, name='informeSend'),
+    path('ventas/detalle_venta/obtener-recibo-cuota/', viewPDFReciboCuota, name='getReciboCuota'),
     #endregion ---------------------------------------------------------
         
     #region URLs PostVentas --------------------------------------------
-    path('ventas/postventas/<int:campania>/', PostVenta.as_view(), name='postVentaList'),
+    path('ventas/postventas/', PostVenta.as_view(), name='postVentaList'),
+    path('ventas/postventas/filtrar/', filtroVentasAuditoria, name='postVentaListFiltered'),
     path('ventas/postventas/informe/', viewsPDFInformePostVenta, name='postVentaPDF'),
     #endregion ---------------------------------------------------------
     
     #region URLs Specifics Functions ------------------------------------------------------------
-    path('ventas/request_ventas/', requestVentas, name='requestVentas'),
+    # path('ventas/detalles/', requestDetallesVentas, name='requestDetallesVentas'),
+    # path('ventas/request_ventas/', requestVentasAuditoria, name='requestVentasAuditorias'),
+
     path('requestmovs/', requestMovimientos, name='rmovs'),
     path('create_new_mov/', createNewMov, name='create_new_mov'),
     #endregion --------------------------------------------------------------------------------

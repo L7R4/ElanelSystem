@@ -1,4 +1,5 @@
 let inputNroVenta = document.querySelector("#nro_ordenInput")
+let buttonSubmitSearch = document.querySelector("#submitFormVenta")
 let wrapperOperaciones = document.querySelector(".operationsList")
 
 function getCookie(name) {
@@ -36,9 +37,12 @@ async function fetchVenta(url, body) {
     } catch (error) { }
 }
 
+// Para habilitar el boton de buscar
+inputNroVenta.addEventListener("input", () => {
+    buttonSubmitSearch.disabled = inputNroVenta.value === '';
+})
 
-
-inputNroVenta.addEventListener('input', async () => {
+buttonSubmitSearch.addEventListener('click', async () => {
     wrapperOperaciones.innerHTML = ''
     if (inputNroVenta.value != '') {
         let venta = await fetchVenta(window.location.pathname, { 'nro_operacion': inputNroVenta.value })

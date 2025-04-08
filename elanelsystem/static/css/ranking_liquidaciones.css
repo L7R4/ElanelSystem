@@ -1,39 +1,137 @@
-*{
+* {
     box-sizing: border-box;
 }
-.wrapper_content{
+
+.wrapper_content {
     padding: 1rem;
+    overflow: hidden;
 }
-.wrapperTittle{
+
+.filterContainer {
     width: 100%;
     padding: 1rem 2rem;
-    height: 10%;
+    height: 15%;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.wrapperTittle > h2{
+
+.filterContainer>h2 {
     font-size: clamp(3rem, 3vw, 7rem);
     font-family: raleway-semibold;
-    color: white;   
-}
-.values{
-    list-style: none;
-}
-.containerBoth{
-    display: flex;
-    width: 100%;
+    color: white;
+    min-width: 10rem;
+    width: 20%;
 }
 
-.containerSupervisores,.containerVendedores{
-    width: 50%;
+.filterContainer>.filtersWrapper {
+    display: flex;
+    width: 80%;
+    justify-content: flex-end;
+}
+
+.wrapperSelectFilter {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: .3rem;
+    width: 30%;
     padding: 1rem;
-    height: 90%;
 }
-.containerSupervisores{
-    border-right: 2px solid #fff;
+
+.filtersWrapper>.wrapperSelectFilter>label {
+    color: var(--third-color);
+    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
 }
-.information > h2{
+
+.filter-select {
+    z-index: 15;
+}
+
+#selectWrapperSelectAgencia img {
+    z-index: 12;
+    filter: invert(1);
+}
+
+#selectWrapperSelectAgencia #inputSucursal {
+    z-index: 11;
+    background-color: var(--background-color);
+    color: var(--third-color);
+    font-family: raleway-semibold;
+}
+
+#selectWrapperSelectAgencia ul.options {
+    z-index: 10;
+    background-color: var(--background-color);
+}
+
+
+#selectWrapperSelectCampania img {
+    z-index: 15;
+    filter: invert(1);
+}
+
+#selectWrapperSelectCampania #inputCampania {
+    z-index: 14;
+    background-color: var(--background-color);
+    color: var(--third-color);
+    font-family: raleway-semibold;
+}
+
+#selectWrapperSelectCampania ul.options {
+    z-index: 13;
+    background-color: var(--background-color);
+}
+
+.tittleAndOrder {
+    border-bottom: 1px solid #ffffff99;
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+}
+
+.tittleAndOrder>h2 {
+    font-size: clamp(1.5rem, 1.4vw, 1.8rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
+}
+
+.values {
+    list-style: none;
+}
+
+.containerBoth {
+    display: flex;
+    width: 100%;
+    height: 85%;
+    flex-wrap: wrap;
+}
+
+.containerUsers {
+    flex: 1 1 100%;
+    padding: 1rem;
+    height: 94%;
+}
+.containerBoth > div.containerUsers{
+    display: none;
+}
+.containerBoth > div.containerUsers.on{
+    display: unset;
+}
+.containerUsers > .information{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.containerUsers > .information > .valuesWrapper{
+    overflow: auto;
+    padding-bottom: 5rem;
+    flex: 1 1 100%;
+}
+
+.information>h2 {
     color: white;
     font-size: clamp(1.5rem, 1.6vw, 2rem);
     font-family: raleway-semibold;
@@ -43,29 +141,31 @@
     border-bottom: 1px solid #ffffff99;
 }
 
-.information::-webkit-scrollbar{
+.information::-webkit-scrollbar {
     width: 2px;
     height: 5px;
     border-radius: 5px;
 }
-.information::-webkit-scrollbar-thumb{
+
+.information::-webkit-scrollbar-thumb {
     background: var(--third-color);
     border-radius: 1rem;
 }
 
-.tittles{
+.tittles {
     display: flex;
     /* column-gap: calc(100% / 6); */
     list-style: none;
     width: 100%;
-    justify-content: space-around;  
+    justify-content: space-around;
 }
-.information > .tittlesWrapper{
+
+.information>.tittlesWrapper {
     width: 100%;
     /* background-color: var(--third-color); */
 }
 
-.containerSupervisores .tittlesWrapper > .tittles > li {
+.containerUsers .tittlesWrapper>.tittles>li {
     color: white;
     font-size: clamp(1.3rem, 1.2vw, 1.7rem);
     font-family: raleway-semibold;
@@ -74,7 +174,7 @@
     text-align: center;
 }
 
-.containerVendedores .tittlesWrapper > .tittles > li {
+.containerUsers .tittlesWrapper>.tittles>li {
     color: white;
     font-size: clamp(1.3rem, 1.2vw, 1.7rem);
     font-family: raleway-semibold;
@@ -83,21 +183,20 @@
     text-align: center;
 }
 
-.valuesWrapper > .values > li
-{
-    font-family: raleway;
+.valuesWrapper>.values>li {
+    font-family: raleway-semibold;
     position: relative;
     width: 100%;
-    color: rgb(241, 237, 237);
+    color: var(--background-color);
     cursor: pointer;
     text-decoration: none;
     position: relative;
     margin-top: 1rem;
 }
 
-.valuesWrapper > .values > li > .backgroundItem{
-    background-color: #131820;
-
+.valuesWrapper>.values>li>.backgroundItem {
+    background-color: var(--third-color);
+    outline: 2px solid var(--third-color);
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
     width: 100%;
     display: flex;
@@ -107,59 +206,63 @@
     z-index: 2;
     padding: 1rem 0;
     border-radius: .6rem;
-    border: 1px solid #000000c4;
     transition: .2s all ease;
 }
 
-.valuesWrapper > .values > li > .backgroundItem >.imageMore{
+.valuesWrapper>.values>li>.backgroundItem>.imageMore {
     width: 2rem;
     position: absolute;
     right: 2rem;
 }
 
-/* .valuesWrapper > .values > li:hover
-{
-} */
+.valuesWrapper>.values>li>.backgroundItem>.imageMore.active{
+    transform: rotate(180deg);
+}
 
-.containerSupervisores .valuesWrapper > .values > li > .backgroundItem > div
-{
+
+.containerUsers .valuesWrapper>.values>li>.backgroundItem>div {
     width: 33.3%;
     text-align: center;
 }
 
-.containerVendedores .valuesWrapper > .values > li > .backgroundItem > div
-{
+.containerUsers .valuesWrapper>.values>li>.backgroundItem>div {
     width: 25%;
     text-align: center;
 }
-.detallesItem{
-    background-color: #304361;
+
+.detallesItem {
+    /* background-color: var(--third-color); */
     border-bottom-left-radius: 0.6rem;
     border-bottom-right-radius: 0.6rem;
-    position: absolute;
     width: 100%;
-    top: 90%;
-    border: 1px solid #0000009b;
-    border-top-color: transparent;
-    height: 0px;
+    position: relative;
+    top: -15px;
+    /* padding: 2rem; */
     margin-bottom: 0px;
     overflow-y: hidden;
-    max-height: 400px;
-    transition: .2s all ease;
+    max-height: 0;
+    overflow: auto;
+    /* transition: max-height 0.3s ease; */
+    outline: 2px solid var(--primary-color);
 }
+.detallesItem.open {
+    max-height: 350px;
+  }
+
 /* .detallesItem.active{
 
 } */
 
-.detallesItem > h2{
+.detallesItem>h2 {
     font-size: clamp(1.4rem, 1.3vw, 1.6rem);
     font-family: raleway-semibold;
-    color: white; 
-    padding: 1rem 2rem;
+    color: var(--primary-color);
+    padding: 2rem;
+    padding-top: 3%;
 }
 
-.tittlesWrapperItem > .tittles > li{
-    color: rgba(255, 255, 255, 0.883);
+.tittlesWrapperItem>.tittles>li {
+    color: var(--third-color);
     font-size: clamp(1.3rem, 1.2vw, 1.5rem);
     font-family: raleway-semibold;
     padding: 1rem 0;
@@ -167,48 +270,57 @@
     text-align: center;
 }
 
-.valuesWrapperItem > ul{
+.valuesWrapperItem>ul {
     list-style: none;
-    display: flex;
+    padding: 1rem;
     list-style: none;
     width: 100%;
-    justify-content: space-around;  
+    justify-content: space-around;
 }
 
-.valuesWrapperItem > ul > .itemValores{
-    color: rgba(255, 255, 255, 0.883);
+.valuesWrapperItem>ul>.itemValores {
+    color: var(--third-color);
     font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    padding: 1rem 0;
-    width: 33.3%;
-    text-align: center;
+    /* padding: 1rem 0; */
     width: 100%;
-    display: flex;
-    justify-content: center;
+    margin-bottom: 1rem;
+
 }
 
-.backgroundItemVendedores{
+.valuesWrapperItem>ul>.itemValores>.backgroundItemVendedores {
     background-color: #13182080;
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    width: 95%;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-around;
     position: relative;
     padding: 1rem 0;
     border-radius: .6rem;
-    /* border: 1px solid #000000c4; */
+    border: 1px solid #000000c4;
+
 }
-.backgroundItemVendedores > div{
+
+.valuesWrapperItem>ul>.itemValores>.backgroundItemVendedores>div {
     width: 33.3%;
+    padding: 0 .6rem;
     text-align: center;
 }
 
-.containerVendedores .valuesWrapper > .values{
+
+.backgroundItemVendedores>div {
+    width: 25%;
+    padding: 0 .6rem;
+    text-align: center;
+}
+
+.containerUsers .valuesWrapper>.values {
     list-style: none;
 }
-.containerVendedores .valuesWrapper > .values > li.item{
+
+.containerUsers .valuesWrapper>.values>li.item {
     font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+    flex-direction: column ;
     width: 100%;
     display: flex;
     align-items: center;
@@ -218,9 +330,34 @@
     border-top: 1px solid #ffffff2c;
 }
 
-.containerVendedores .valuesWrapper > .values > li > div
-{
-    width: 25%;
-    max-width: 25%;
+.colaborators_type_buttons_wrapper{
+    display: flex;
+    gap: 1rem;
+    height: 7%;
+}
+
+.colaborators_type_buttons_wrapper > div{
+    flex: 1 1 20%;
+    min-width: 15rem;
+    max-width: 25rem;
+    border: 1px solid var(--secundary-color);
+    padding:1rem;
+    border-radius: 1rem;
     text-align: center;
+    cursor: pointer;
+    height: fit-content;
+}
+
+.colaborators_type_buttons_wrapper > div:hover{
+    background-color: var(--secundary-color);
+}
+
+.colaborators_type_buttons_wrapper > div.on{
+    background-color: var(--secundary-color);
+}
+
+.colaborators_type_buttons_wrapper > div > h2{
+    font-size: clamp(1.1rem, 1.2vw, 1.4rem);
+    font-family: raleway-semibold;
+    color: var(--third-color);
 }

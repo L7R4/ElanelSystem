@@ -1,51 +1,64 @@
 import datetime
-from django.http import HttpResponseRedirect, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.views import LoginView
 from django.views import generic
 from django.urls import reverse, reverse_lazy
+from sales.models import MovimientoExterno, Ventas
 from users.forms import CustomLoginForm
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.cache import never_cache
-from sales.utils import dataStructureCannons, dataStructureVentas, dataStructureMovimientosExternos,deleteFieldsInDataStructures
-from users.models import Sucursal, Usuario
+from sales.utils import dataStructureCannons, dataStructureClientes, dataStructureVentas, dataStructureMovimientosExternos,deleteFieldsInDataStructures
+from users.models import Cliente, Sucursal, Usuario
 from sales.utils import exportar_excel, obtener_ultima_campania
 from django.contrib.auth.models import Permission
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+# class IndexLoginView(generic.FormView):
+#     form_class = CustomLoginForm
+#     template_name = "index.html"
 
-class IndexLoginView(generic.FormView):
-    form_class = CustomLoginForm
+#     @method_decorator(csrf_protect)
+#     @method_decorator(never_cache)
+#     def dispatch(self, request, *args, **kwargs):
+#         if request.user.is_authenticated:
+#             print("-  - - - - - - - - - Dispatch")
+#             return redireccionar_por_permisos(request.user)
+#         else:
+#             print("Else del dispatch")
+#             return super(IndexLoginView, self).dispatch(request, *args, **kwargs)
+
+#     def form_valid(self, form):
+#         """
+#         Si el formulario es válido, inicia sesión en el usuario
+#         """
+#         username = form.cleaned_data.get('username')
+#         password = form.cleaned_data.get('password')
+#         user = authenticate(username=username, password=password)
+#         if user is not None:
+#             print("- - - - - - - -Form valid")
+#             login(self.request, user)
+#             return redireccionar_por_permisos(self.request.user)
+#         return super(IndexLoginView, self).form_invalid(form)
+
+class IndexLoginView(LoginView):
     template_name = "index.html"
+    redirect_authenticated_user = True
 
-    @method_decorator(csrf_protect)
-    @method_decorator(never_cache)
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redireccionar_por_permisos(request.user)
-        return super(IndexLoginView, self).dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        """
-        Si el formulario es válido, inicia sesión en el usuario
-        """
-        username = form.cleaned_data.get('username')
-        password = form.cleaned_data.get('password')
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            login(self.request, user)
-            return redireccionar_por_permisos(user)
-        return super(IndexLoginView, self).form_invalid(form)
-
-
+    def get_success_url(self):
+        return redireccionar_por_permisos(self.request.user)
+        
+    
 def redireccionar_por_permisos(usuario):
     
     secciones = {
         # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
         "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
         "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
-        "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
-        "Post Venta": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList",args=[obtener_ultima_campania()])},
+        # "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
+        # "Post Venta": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList",args=[obtener_ultima_campania()])},
         "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
         "Liquidaciones": {"permisos": ["liquidacion.my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
         "Administracion": {"permisos": ["users.my_ver_administracion"], "url": reverse("users:panelAdmin")},
@@ -59,7 +72,7 @@ def redireccionar_por_permisos(usuario):
             secciones_permitidas[k] = v
 
     for k, v in secciones_permitidas.items():
-        return redirect(v["url"])
+        return v["url"]
 
 
 def logout_view(request):
@@ -71,7 +84,7 @@ class ReportesView(generic.View):
     template_name = 'reportes.html'
 
     def get(self, request,*args, **kwargs):
-        TIPOS_DE_REPORTES = ["Cannons", "Ventas", "Movimientos", "Clientes"]
+        TIPOS_DE_REPORTES = ["cannons", "ventas", "movimientos", "clientes"]
         context = {"tiposDeReportes": TIPOS_DE_REPORTES}
         return render(request,self.template_name,context)
     
@@ -113,10 +126,15 @@ class ReportesView(generic.View):
 
         return render(request,self.template_name,context)
 
+# Convierte los valores de cada clave a una lista
+def convertirValoresALista(diccValores):
+    for key, value in diccValores.items():
+        diccValores[key] = [val.strip() for val in value.split("-")]
+    return diccValores
+
 
 def filterMainManage(request,dataStructure):
     # Obtenemos los parámetros del POST y la estructura de datos de la sesión
-    print(request)
     params_dict = request
     # Limpiamos los parámetros para eliminar campos vacíos y otros no relevantes
     # Claves a excluir del filtrado
@@ -126,12 +144,19 @@ def filterMainManage(request,dataStructure):
         for key, value in params_dict.items()
         if value.strip() and key not in keys_to_exclude
     }
-
+    
+    params_dict_clear = convertirValoresALista(params_dict_clear) # Convertimos los valores  de cada clave a una lista
+    print(f"PArametros a filtrar: {params_dict_clear}")
+    # print(params_dict_clear)
     # Mapeo de filtros a funciones
     possible_filters = {
         "fecha": filterDataBy_date,
-        "tipo_pago": filterDataBy_typePayments,
+        "metodoPago": filterDataBy_typePayments,
+        "cobrador": filterDataBy_enteRecaudadores,
         "tipo_mov": filterDataBy_typeMovements,
+        "campania": filterDataBy_campania,
+        "campaniaPago": filterDataBy_campaniaPago,
+
         # "agencia": filterDataBy_agency,
         "mora": filterDataBy_cannonsMora,
         "vendedor": filterDataBy_seller,
@@ -142,10 +167,15 @@ def filterMainManage(request,dataStructure):
     # Aplicamos los filtros en el orden que se reciban en los parámetros
 
     filtered_data = dataStructure  # Usamos la estructura inicial
+    # print(f"Data Structure: - - - - - \ {filtered_data}")
 
     for filter_name, filter_func in possible_filters.items():
         if filter_name in params_dict_clear:
+            # print("WEpsss")
+            # print(filter_name)
+            # print(f"Filtro : {filter_name}")
             filter_value = params_dict_clear[filter_name]
+            # print(f"valor: {filter_value}")
             try:
                 filtered_data = filter_func(filtered_data, filter_value)
             except Exception as e:
@@ -155,6 +185,96 @@ def filterMainManage(request,dataStructure):
 
     return filtered_data
 
+
+class DetallesNegocioView(generic.View):
+    template_name = 'detalle_por_datos.html'
+
+    
+
+    def get(self, request, tipo_slug):
+        # Obtén los datos del modelo basado en el slug
+        sucursal = request.GET.get("agencia") if request.GET.get("agencia") else "Sucursal central"
+
+        MODELOS = {
+            'cannons': dataStructureCannons(sucursal),
+            'ventas': dataStructureVentas(sucursal),
+            'movimientos': dataStructureMovimientosExternos(sucursal),
+            'clientes': dataStructureClientes(sucursal),
+        }
+
+        datos = MODELOS.get(tipo_slug)
+        print(sucursal)
+        # Definir atributos a mostrar según el modelo
+        if tipo_slug == "ventas":
+            attrs = ["nro_operacion", "fecha", "nro_cliente", "nombre_de_cliente", "agencia", "nro_cuotas","campania","importe", "interes_generado","total_a_pagar","dinero_entregado","dinero_restante","cuota_comercial",'producto', 'paquete', 'vendedor', 'supervisor']
+
+        elif tipo_slug == "movimientos":
+            attrs = ["nroComprobante", "fecha", "nroIdentificacion", "tipoComprobante", "metodoPago","monto","tipoMoneda", "agencia", "tipo_mov",  "denominacion", "estado", "dias_de_mora", "ente", "campania","concepto"]
+            
+        elif tipo_slug == "clientes":
+            attrs = ["nro_cliente", "nombre", "dnio", "domic", "loc","prov","cod_postal", "tel", "fec_nacimiento",  "agencia", "estado_civil", "ocupacion"]
+
+        elif tipo_slug == "cannons":
+            attrs = ["cuota", "fecha", "nro_operacion", "monto", "metodoPago","nro_del_cliente","nombre_del_cliente", "agencia", "tipo_mov",  "fecha_de_vencimiento", "estado", "dias_de_mora", "interes_por_mora", "total_final","cobrador"]
+
+        else:
+            attrs = []  # Por defecto no mostrar atributos si no se definen
+
+        # Filtrar los datos según los atributos definidos
+        datos_filtrados = [
+            {attr: obj[attr] for attr in attrs if attr in obj}
+            for obj in datos
+        ]
+
+        request.session['datos'] = {'data': datos_filtrados, 'tipo': tipo_slug}
+
+
+        # Paginación
+        page = request.GET.get('page', 1)
+        paginator = Paginator(datos_filtrados, 20)  # 20 elementos por página
+
+        try:
+            data_paginated = paginator.page(page)
+        except PageNotAnInteger:
+            data_paginated = paginator.page(1)
+        except EmptyPage:
+            data_paginated = paginator.page(paginator.num_pages)
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'data': list(data_paginated),  # Serializa la página actual
+                'has_next': data_paginated.has_next(),
+                'has_previous': data_paginated.has_previous(),
+                'next_page': data_paginated.next_page_number() if data_paginated.has_next() else None,
+                'previous_page': data_paginated.previous_page_number() if data_paginated.has_previous() else None,
+                'page': data_paginated.number,
+                'total_pages': paginator.num_pages,
+            })
+
+        # Renderizar la plantilla con los datos y atributos
+        return render(
+            request, 
+            self.template_name, 
+            {
+                'tipo': tipo_slug,
+                'data': data_paginated,
+                'sucursales': Sucursal.objects.all(),
+                'sucursalDefault': Sucursal.objects.get(pseudonimo="Sucursal central"),
+            }
+        )
+    
+
+
+class ExportarExcelView(generic.View):
+    def get(self, request, *args, **kwargs):
+        # Obtener los datos filtrados de la sesión
+        datos = request.session.get('datos', [])
+        print(datos)
+        if not datos:
+            return HttpResponse("No hay datos para exportar.", status=400)
+
+        # Llamar a la función `exportar_excel` con los datos filtrados
+        return exportar_excel(datos)
 
 
 #region MANEJO DE FILTROS ------------------------------------------------------------------
@@ -166,7 +286,8 @@ def filterMainManage(request,dataStructure):
 def filterDataBy_date(data_structure, fecha):
     # Verificamos el formato de la fecha y lo dividimos en fechaInicio y fechaFinal
     try:
-        fechas = fecha.split("—")
+        fechas = fecha[0].split("—")
+        # print(f"La fecha es {fechas}")
         fecha_inicio_str = fechas[0].strip() + " 00:00"
         fecha_final_str = fechas[1].strip() + " 00:00" if len(fechas) > 1 else None
         # print(f'- - - - - - -Fecha final: {fecha_final_str}')
@@ -178,7 +299,7 @@ def filterDataBy_date(data_structure, fecha):
     data_filtered = []
     
     for item in data_structure:
-        fecha_str = item.get("fecha", None)
+        fecha_str = item.get("fecha", None).get("data",None)
         if not fecha_str:
             continue
 
@@ -195,20 +316,29 @@ def filterDataBy_date(data_structure, fecha):
 
 
 def filterDataBy_typePayments(dataStructure, typePayment):
-    return list(filter(lambda item:item["tipo_pago"] == typePayment,dataStructure))
+    return list(filter(lambda item:item["metodoPago"]["data"] in typePayment,dataStructure))
 
 
 def filterDataBy_typeMovements(dataStructure, typeMovement):
-    return list(filter(lambda item:item["tipo_mov"] == typeMovement, dataStructure))
+    return list(filter(lambda item:item["tipo_mov"]["data"] in typeMovement, dataStructure))
+
+def filterDataBy_campaniaPago(dataStructure, campania):
+    return list(filter(lambda item:item["campaniaPago"]["data"] in campania, dataStructure))
+
+def filterDataBy_campania(dataStructure, campania):
+    return list(filter(lambda item:item["campania"]["data"] in campania, dataStructure))
 
 
-
-# def filterDataBy_agency(dataStructure, agency):
-#     pass
+def filterDataBy_enteRecaudadores(dataStructure, typeEnteRecaudador):
+    return list(filter(
+        lambda item: (item.get("cobrador", {}).get("data") in typeEnteRecaudador) or 
+                     (item.get("ente", {}).get("data") in typeEnteRecaudador),
+        dataStructure
+    ))
 
 
 def filterDataBy_cannonsMora(dataStructure, *args):
-    return list(filter(lambda item:item["status"] == "Atrasado",dataStructure))
+    return list(filter(lambda item:item["estado"] == "Atrasado",dataStructure))
 
 
 def filterDataBy_seller(dataStructure, seller):

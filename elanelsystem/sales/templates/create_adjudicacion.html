@@ -42,13 +42,18 @@
             </div>
         </div>
 
-        <div id="wrapperNroSolicitud">
-            <label for="">Nro contrato</label>
-            <input type="text" value="{{venta.nro_solicitud}}" class="not_ed input-read-write-default" name="nro_contrato" maxlength="10" required id="id_nro_contrato">
+        <div id="wrapperNroSolicitud" class="inputWrapper">
+            <label class="labelInput">Contrato</label>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="text" readonly class="input-select-custom onlySelect" autocomplete="off" name="nro_contrato" maxlength="10" required id="id_nro_contrato">
+                <ul class="list-select-custom options">
+                    {% for contrato in venta.cantidadContratos %}
+                        <li data-value="{{contrato.nro_contrato}}">{{contrato.nro_contrato}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-
-
-        
 
         <div id="wrapperFecha">
             <label for="">Fecha</label>
@@ -73,7 +78,8 @@
         <div id="wrapperImporte">
             <label for="">Importe</label>
             <div>
-                <input type="number" name="importe" class="input-read-write-default eventInput {% if  'sorteo' in request.path %}not_ed{% endif %}" required id="id_importe">
+                {% comment %} <p name="importe" class="textInputP">{{venta.importe|floatformat:0}}</p> {% endcomment %}
+                <input type="number" class="input-read-write-default not_ed" name="importe" required id="id_importe">
                 <p class="iconValueInput">$</p>
             </div>
         </div>
@@ -172,7 +178,7 @@
 
     </form>
     <div class="wrapperButtons">
-        <button type="button" class="add-button-default" form="form_create_sale" id="enviar">Terminar</button>
+        <button type="button" class="add-button-default" disabled form="form_create_sale" id="enviar">Terminar</button>
         <a id ="cancelar" class="delete-button-default" href="{% url 'sales:detail_sale' venta.id%}"> Cancelar </a>
     </div> 
 
@@ -187,6 +193,7 @@
         var val = input.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,2})(\d{0,4})/);
         input.value = !val[2] ? val[1] : val[1] + '/' + val[2] + (val[3] ? '/' + val[3] : '');
         });
+        var cantidadChances = {{venta.cantidadContratos|length}};
         var urlRequestProductos = "{% url 'products:get_products' %}";
     </script>
 

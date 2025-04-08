@@ -1,0 +1,327 @@
+@page {
+    margin: 10mm 20mm;
+}
+
+html {
+    box-sizing: border-box;
+    font-size: 62.5%;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    font-feature-settings: "pnum" on, "lnum" on;
+    color: #383838;
+    font-family: Arial;
+}
+
+
+.recibo-container {
+    border: 1px solid #000;
+    padding: 1rem 1rem;
+    height: 60rem;
+}
+
+/* #region Header */
+.recibo-header {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.recibo-header-image {
+    width: 30rem;
+}
+
+.recibo-header-image>img {
+    width: 100%;
+}
+
+.recibo-header-numero {
+    padding: 0 3rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.recibo-container>.recibo-header-numero>h1 {
+    font-family: Arial, sans-serif;
+    font-size: 50px;
+    white-space: nowrap;
+    color: #383838;
+}
+
+/* #endregion */
+
+/* #region Sub Header */
+.recibo-sub_header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+    align-items: center;
+
+}
+
+.recibo-sub_header>div {
+    flex: 1 1 30%;
+}
+
+
+.recibo-sub_header-type_receipt {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.recibo-sub_header-type_receipt>h1 {
+    background-color: #383838;
+    color: #fff;
+    margin-bottom: 1rem;
+    /* width: 3rem; */
+    /* text-align: center; */
+    padding: 1rem;
+    font-size: 30px;
+}
+
+.recibo-sub_header-type_receipt>h6 {
+    white-space: nowrap;
+    font-size: 11px;
+
+}
+
+.recibo-sub_header-date_cuit {
+    display: flex;
+    align-items: center;
+}
+
+.recibo-sub_header-date_cuit>h4 {
+    margin-right: 1rem;
+    color: #383838;
+}
+
+.recibo-sub_header-date_cuit-date_wrapper {
+    text-align: center;
+}
+
+/* #endregion */
+
+/* #region Info Cliente */
+.recibo-info_cliente {
+    width: 100%;
+}
+
+.recibo-info_cliente>div {
+    width: 100%;
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.recibo-info_cliente>div>h3 {
+    width: fit-content;
+    color: #383838;
+}
+
+.recibo-info_cliente>div>p {
+    border-bottom: 1px solid #383838;
+    width: 85%;
+    color: #383838;
+    font-size: 12px;
+    padding-left: .5rem;
+}
+
+/* #endregion */
+
+/* #region Mas Info Cliente */
+.recibo-categoria_fiscal-cuit_wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+.recibo-categoria_fiscal {
+    border: 2px solid #383838;
+    width: 37.5rem;
+    padding: 1rem;
+}
+
+.recibo-categoria_fiscal-type {
+    width: 40rem;
+    display: flex;
+    align-items: center;
+}
+
+.recibo-categoria_fiscal-type-item {
+    margin-left: 1rem;
+    display: flex;
+    justify-content: center;
+    width: 15%;
+    align-items: center;
+}
+
+.recibo-categoria_fiscal-type-item:first-child() {
+    margin-left: 0;
+}
+
+
+.recibo-categoria_fiscal-type-item>div {
+    width: 1.2rem;
+    height: 1rem;
+    background-color: #0000002f;
+    border: 1px solid #383838;
+    margin-left: .3rem;
+}
+
+.recibo-categoria_fiscal-type-item>h6 {
+    white-space: nowrap;
+    color: #383838;
+}
+
+.recibo-cuit_wrapper {
+    border: 2px solid #383838;
+    width: 15rem;
+    padding: 1rem;
+}
+
+/* #endregion */
+
+/* #region Info dinero */
+.recibo-info_dinero {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.recibo-info_dinero>p {
+    flex: 1 1 20%;
+    padding-left: .5rem;
+    color: #383838;
+    font-size: 12px;
+}
+
+.recibo-info_dinero>h5 {
+    font-size: 12px;
+}
+
+.recibo-info_dinero>p {
+    border-bottom: 1px solid #383838;
+    /* width: 100%; */
+    margin-bottom: 1rem;
+    color: #383838;
+    flex: 3 1 80%;
+}
+
+.recibo-info_dinero>div {
+    border-bottom: 1px solid #383838;
+    width: 100%;
+    margin-bottom: 1.3rem;
+}
+
+
+/* #endregion */
+
+/* #region Info concepto */
+.recibo-info_concepto {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.recibo-info_concepto>p {
+    flex: 1 1 20%;
+    padding-left: .5rem;
+    color: #383838;
+    font-size: 12px;
+}
+
+.recibo-info_concepto>h5 {
+    font-size: 12px;
+}
+
+.recibo-info_concepto>p {
+    border-bottom: 1px solid #383838;
+    /* width: 100%; */
+    margin-bottom: 1rem;
+    flex: 3 1 80%;
+    color: #383838;
+}
+
+.recibo-info_concepto>div {
+    border-bottom: 1px solid #383838;
+    width: 100%;
+    margin-bottom: 1.3rem;
+}
+
+/* #endregion */
+
+/* #region Forma de pago */
+.recibo-forma_de_pago {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 1rem;
+    border: 1px solid #383838;
+    margin-top: 1rem;
+}
+
+.recibo-forma_de_pago>div.recibo-forma_de_pago-item {
+    flex: 1 1 15%;
+    display: flex;
+    align-items: center;
+}
+
+.recibo-forma_de_pago>div.recibo-forma_de_pago-item>div.checkbox {
+    width: 1.2rem;
+    height: 1rem;
+    background-color: #0000002f;
+    border: 1px solid #383838;
+    margin-left: .3rem;
+}
+
+.recibo-forma_de_pago>div.recibo-forma_de_pago-item.cheque {
+    flex: 3 1 35%;
+}
+
+.recibo-forma_de_pago>div.recibo-forma_de_pago-item.cheque>div {
+    border-bottom: 1px solid #383838;
+    margin-left: .3rem;
+    width: 70%;
+    height: 1rem;
+}
+
+
+/* #region Forma de pago y firma */
+.recibo-total-firma {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.recibo-total {
+    display: flex;
+    width: 50%;
+    align-items: center;
+}
+
+.recibo-total>h1 {
+    margin-left: 1rem;
+    border: 1px solid #383838;
+    padding: 1rem;
+}
+
+.recibo-firma {
+    width: 50%;
+}
+
+.recibo-firma>h3 {
+    text-align: center;
+    white-space: nowrap;
+
+}
+
+.recibo-firma>div {
+    /* width: 100%; */
+    border-bottom: 1px solid #383838;
+    margin-top: 5rem;
+}
+
+/* #endregion */

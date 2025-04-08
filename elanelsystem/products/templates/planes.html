@@ -1,91 +1,74 @@
 {% extends 'molde.html' %}
 {% load static %}
-{% load humanize %}
-{% load i18n %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/planes.css' %}">
+<link rel="stylesheet" href="{% static 'css/panel_planes.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+
 {% endblock css %}
 
 {% block content %}
-<div class="information">
-    <div class="informationWrapperPlan">
-        <div class="tittlesWrapper">
-            <ul class="tittles">
-                <li>Valor Nominal</li>
-                <li>Susc. y Cuota 1</li>
-                <li>24 Cuotas</li>
-                <li>30 Cuotas</li>
-                <li>48 Cuotas</li>
-                <li>60 Cuotas</li>
-            </ul>   
-        </div>
-        <div class="valuesWrapper">
-            <ul class="values">
-                {% for p in planes %}
-                    <li {% if p.tipodePlan == "basico" %} class="basico"{% endif %}>
-                        {% language 'de' %}
-                        <div><p>${{p.valor_nominal}}</p></div>
-                        <div><p>${{p.suscripcion}}</p></div>
-                        <div><p>${{p.c24}}</p></div>
-                        <div><p>${{p.c30}}</p></div>
-                        <div><p>${{p.c48}}</p></div>
-                        <div><p>${{p.c60}}</p></div>
-
-                        {% endlanguage %}
-                    </li>
-                {% endfor %} 
-            </ul>  
-            
-            
-        </div>
-        <div class="createInstanceWrapper">
-            <h3>Rellene los campos</h3>
-            <div class="buttonClose">
-                <img src="{% static 'images/icons/eliminar.svg' %}" id="closeFormCreateInstance"alt="">
-            </div>
-            <form id="formCreateInstance" method="POST">
-                {% csrf_token %}
-                <div class="inputsWrapper">
-                    <input type="text" name="valorNominal" id="valorNominal" value="$">
-                </div>
-                <div class="inputsWrapper">
-                    <input type="text" name="suscripcion" id="suscripcion" value="$">
-                    <input type="hidden" name="cuota1" id="cuota1" value="">
-
-                </div>
-                <div class="inputsWrapper">
-                    <input type="text" name="c24" id="c24" value="$">
-                </div>
-                <div class="inputsWrapper">
-                    <input type="text" name="c30" id="c30" value="$">
-                </div>
-                <div class="inputsWrapper">
-                    <input type="text" name="c48" id="c48" value="$">
-                </div>
-                <div class="inputsWrapper">
-                    <input type="text" name="c60" id="c60" value="$">
-                </div>
-            </form>
-        </div>
-        <div class="buttonCreate"><img src="{% static 'images/icons/mas.png' %}" alt=""></div>
-    </div>
+<div id="wrapperLoader">
+    <span id="loader"></span>
 </div>
 
-<div class="selectMenu">
-    <div>
-        <div class="selectInformationButtons">
-            <button type="button" id="planesUrl">Planes</button>
-            <button type="button">Motos</button>
-            <button type="button">Combos</button>
+<div class="panel-container">
+    <form method="POST" id="formNewPlan">
+        {% csrf_token %}
+        <div id="panel" class="panel">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Valor nominal</th>
+                        <th>Tipo de paquete</th>
+                        <th>Suscripcion</th>
+                        <th>Primer cuota</th>
+                        <th>% 24 Cuotas</th>
+                        <th>% 30 Cuotas</th>
+                        <th>% 48 Cuotas</th>
+                        <th>% 60 Cuotas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in planes %}
+                    <tr>
+                        <td class="valorPlan">${{ plan.valor_nominal }}</td>
+                        <td>{{ plan.tipodePlan }}</td>
+                        <td>{{ plan.suscripcion }}</td>
+                        <td>{{ plan.primer_cuota }}</td>
+                        <td>{{ plan.c24_porcentage }}</td>
+                        <td>{{ plan.c30_porcentage }}</td>
+                        <td>{{ plan.c48_porcentage }}</td>
+                        <td>{{ plan.c60_porcentage }}</td>
+                        <td class="button_cell">
+                            <button class="buttonDeleteItem" type="button">   
+                                <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>            
+            </table>
+            
         </div>
-        <div class="editPlan">
-            <button type="button">Editar Planes</button>
-        </div>
+    </form>
+    <div class="buttonsActions">
+        <button class="add-button-default" id="agregarNuevoPlanButton" type="button" onclick="modalNewPlan()">Agregar plan</button>
     </div>
+
 </div>
+    
 {% endblock content %}
-
 {% block js %}
-<script src="{% static 'js/modalCreateInstance.js' %}"></script>
-{% endblock js %}
+<script>
+    var CSRF_TOKEN = '{% csrf_token %}'
+    var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
+    var urlDeleteP = "{% url 'products:delete_plan' %}"
+    var iconDelete = "{% static 'images/icons/eliminar.svg' %}";
+</script>
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+<script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+<script src="{% static 'js/fetch_upload_planes.js' %}"></script>
+
+{% endblock js %} 
