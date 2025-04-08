@@ -48,39 +48,12 @@
                 </div>
             </div>
         </div>
-        {% comment %} <div class="wrapperButtonsActions blocked" id="wrapperButtonsActions">
-            <a href="{% url 'liquidacion:preViewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
-            <button type="button" id="liquidarButton" onclick="newModalLiquidacion()">Liquidar</button>
-        </div> {% endcomment %}
     </div>
 
     <div class="wrapperManageLiquidacion">
         <div class="colaboradoresWrapper">
-                <div class="selectTipoColaborador">
-                    <div>
-                        <input type="radio" name="tipoColaborador" id="todos" value="todos" class="inputSelectTipoColaborador" checked>
-                        <label for="todos">Todos</label>
-                    </div>
-                    <div>
-                        <input type="radio" name="tipoColaborador" id="vendedores" value="Vendedor" class="inputSelectTipoColaborador">
-                        <label for="vendedores">Vendedores</label>
-                    </div>
-                    <div>
-                        <input type="radio" name="tipoColaborador" id="supervisores" value="Supervisor" class="inputSelectTipoColaborador">
-                        <label for="supervisores">Supervisores</label>
-                    </div>
-                    <div>
-                        <input type="radio" name="tipoColaborador" id="gerente_sucursal" value="Gerente sucursal" class="inputSelectTipoColaborador">
-                        <label for="gerente_sucursal">Gerentes de sucursal</label>
-                    </div>
-                </div>
 
-                
                 <div class="colaboradores">
-                    {% comment %} <div class="searchFilter">
-                        <input type="text" class="operation" id="operation" placeholder="Buscar">
-                    </div> {% endcomment %}
-
                     <div class="listColaboradoresWrapper">
                         <div class="tittlesWrapper">
                             <ul class="tittles">
@@ -91,27 +64,38 @@
                 
                         <div class="valuesWrapper">
                             <ul class="values">
-                                {% comment %} {% for colaborador in colaboradores %}
-                                    <li>
-                                        <div>
-                                            <p>{{colaborador.nombre}}</p>
-                                        </div>
-                                        <div>
-                                            <p>$ {{colaborador.comisionTotal}}</p>
-                                        </div>
-                                    </li>
-                                {% endfor %} {% endcomment %}
                             </ul>       
+                        </div>
+                    </div>
+
+                    <div class="selectTipoColaborador">
+                        <div>
+                            <input type="radio" name="tipoColaborador" id="todos" value="todos" class="inputSelectTipoColaborador" checked>
+                            <label for="todos">Todos</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="tipoColaborador" id="vendedores" value="Vendedor" class="inputSelectTipoColaborador">
+                            <label for="vendedores">Vendedores</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="tipoColaborador" id="supervisores" value="Supervisor" class="inputSelectTipoColaborador">
+                            <label for="supervisores">Supervisores</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="tipoColaborador" id="gerente_sucursal" value="Gerente sucursal" class="inputSelectTipoColaborador">
+                            <label for="gerente_sucursal">Gerentes de sucursal</label>
                         </div>
                     </div>
                 </div>
 
-                
-                <div class="resumenWrapper">
-                    <div>
-                        <h3>Total</h3>
-                        <h3 id="totalComisionesTextColaboradores">$0</h3>
+                <div class="resumen_actions_wrapper">
+                    <div id="totalComisionesTextColaboradores_wrapper">
+                        <h3>Total $0</h3>
                     </div>
+                    <div class="wrapperButtonsActions blocked" id="wrapperButtonsActions">
+                        <a href="{% url 'liquidacion:preViewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
+                        <button type="button" id="liquidarButton" onclick="newModalLiquidacion()">Liquidar</button>
+                    </div> 
                 </div>
             </div>
     </div>
