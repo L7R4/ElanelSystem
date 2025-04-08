@@ -1,0 +1,217 @@
+.wrapper_content {
+    padding: 5rem;
+}
+
+.panel-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#formNewPlan {
+    display: flex;
+    justify-content: center;
+    height: 90%;
+}
+
+#formNewPlan>.panel {
+    width: 100%;
+    padding-top: 0;
+    overflow: auto;
+}
+
+.buttonsActions {
+    margin-top: auto;
+}
+
+#formNewPlan>.panel>.buttonsActions {
+    display: flex;
+    gap: 1rem;
+}
+
+#formNewPlan>.panel>table {
+    width: 100%;
+    margin-bottom: 2rem;
+
+}
+
+#formNewPlan>.panel>table>thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-width: 18rem;
+    background-color: var(--fourth-color);
+    border-radius: .6rem;
+}
+
+#formNewPlan>.panel>table>thead tr>* {
+    padding: 1rem;
+    text-align: center;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    color: var(--third-color);
+    font-family: raleway-semibold;
+}
+
+#formNewPlan>.panel>table tr>*:last-child {
+    border-top-right-radius: .8rem;
+    border-bottom-right-radius: .8rem;
+}
+
+#formNewPlan>.panel>table tr>*:first-child {
+    border-top-left-radius: .8rem;
+    border-bottom-left-radius: .8rem;
+}
+
+#formNewPlan>.panel>table>tbody>tr>td {
+    padding: 1rem;
+    color: var(--third-color);
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+    text-align: center;
+}
+
+#formNewPlan>.panel>table>tbody>tr>td input {
+    padding: .6rem;
+    color: var(--third-color);
+    font-family: raleway-semibold;
+    background-color: var(--background-color);
+}
+
+
+#rowNewFormPlan .containerInputAndOptions>.iconDesplegar {
+    filter: invert(1);
+    z-index: 4;
+}
+
+#rowNewFormPlan .containerInputAndOptions>input {
+    z-index: 3;
+}
+
+#rowNewFormPlan.containerInputAndOptions>ul.options {
+    z-index: 2;
+}
+
+#rowNewFormPlan input[type="number"]::-webkit-inner-spin-button,
+#rowNewFormPlan input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.button_cell {
+    width: 0;
+    position: relative;
+    left: -98%;
+}
+
+.buttonDeleteItem {
+    width: 1.4vw;
+    height: 1.4vw;
+    border-radius: 50%;
+    outline: none;
+    padding: .3rem;
+    border: 1px solid var(--third-color);
+    background-color: transparent;
+    overflow: hidden;
+    display: none;
+    cursor: pointer;
+    transform: translateY(-50%);
+    position: absolute;
+    z-index: 3;
+    left: 0;
+}
+
+.buttonDeleteItem>img {
+    width: 100%;
+}
+
+#addPlanForm>.containerInputs {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+#addPlanForm .wrapperInput {
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    min-width: 18rem;
+
+}
+
+#addPlanForm .wrapperInput>label {
+    color: var(--background-color);
+    font-family: raleway-semibold;
+    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+}
+
+#addPlanForm .wrapperInput>input {
+    border-radius: .6rem;
+}
+
+#addPlanForm .wrapperInput>input[type=number]::-webkit-outer-spin-button,
+#addPlanForm .wrapperInput>input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+#addPlanForm #selectWrapperSelectPaquete img.iconDesplegar {
+    z-index: 21;
+}
+
+#addPlanForm #selectWrapperSelectPaquete .pseudo-input-select-wrapper {
+    position: relative;
+    z-index: 20;
+    background-color: var(--third-color);
+
+}
+
+#addPlanForm #selectWrapperSelectPaquete ul.options {
+    z-index: 19;
+}
+
+.tittleWrapper {
+    margin-bottom: 1rem;
+}
+
+.tittleWrapper>h2 {
+    color: var(--secundary-color);
+    font-family: raleway-semibold;
+    font-size: clamp(1.7rem, 1.5vw, 2.5rem);
+}
+
+.modalConfirmacion .tingle-modal-box__content>h2 {
+    font-family: raleway-semibold;
+    font-size: clamp(1.4rem, 1.3vw, 1.8rem);
+}
+
+.tingle-modal-box__footer>button {
+    font-family: raleway-semibold;
+    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+}
+
+.tingle-modal-box__footer {
+    display: flex;
+    align-items: center;
+}
+
+.tingle-modal-box__footer>button.button-default-style {
+    color: var(--background-color);
+}
+
+.modalResponse .messageReponseModal {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    font-family: raleway-semibold;
+    font-size: clamp(1.4rem, 1.3vw, 1.8rem);
+}
+
+.modalResponse .messageReponseModal>img {
+    width: 3vw;
+    min-width: 4rem;
+    max-width: 6rem;
+
+}

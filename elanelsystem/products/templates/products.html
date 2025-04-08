@@ -3,53 +3,131 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/panel_products.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 {% endblock css %}
 
 {% block content %}
-    <div class="wrapperListSucursales" id="wrapperListSucursales">
-        <h1>{{latest_sucursal}}</h1>
-        {% for product in productos %}
-            <div class="sucursalItem">
-                <h2>{{product.tipo_de_producto}} - {{product.nombre}}</h2>
-                <form method="POST" class="formSucursal">
-                    {% csrf_token %}
-                    <input type="hidden" id="inputID" name="inputID" value="{{product.pk}}">
-                    <div class="containerInputs">
-                        <div class="wrapperInput">
-                            <label for="">Paquete</label>
-                            <input type="text" class="" id="inputDireccion" name="inputDireccion" value="{{product.paquete}}">
-                        </div>
-                        <div class="wrapperInput">
-                            <label for="">Importe</label>
-                            <input type="text" class="" id="inputHora" name="inputHora" value="{{product.importe}}">
-                        </div>
-                    </div>
-                    
-                    <div class="buttonsActions">
-                        <button type="button" class="uploadForm add-button-default">Confirmar</button>
-                        <button type="button" class="desableForm button-default-style">Cancelar</button>
-                        <button type="button" class="enableForm add-button-default">Editar</button>
-                        <button type="button" class="deleteSucursal delete-button-default" >Eliminar</button>
-                    </div>
-                </form>
-            
-            </div>
-        {% endfor %}
-    
+{% comment %} <div id="wrapperLoader">
+    <span id="loader"></span>
+</div> {% endcomment %}
+<div class="headersPanelsWrapper">
+
+    <div class="headerPanel active" id="hmoto"><h2>Motos</h2></div>
+    <div class="headerPanel" id="hcombo"><h2>Combos</h2></div>
+    <div class="headerPanel" id="hsolucion"><h2>Soluciones</h2></div>
+
+</div>
+<div class="panel-container">
+    <form method="POST" id="formNewProuducto">
+        {% csrf_token %}
+    <!-- Panel de Motos -->
+    <div id="panel-moto" class="panel active">
+        <div class="tableContainer">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Paquete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for moto in motos %}
+                    <tr>
+                        <td class="nombreProduct">{{ moto.nombre }}</td>
+                        <td class="valorProduct">${{ moto.plan.valor_nominal }}</td>
+                        <td class="paqueteProduct">{{ moto.plan.tipodePlan }}</td>
+                        <td class="button_cell">
+                            <button class="buttonDeleteItem" type="button">   
+                                <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>            
+            </table>
+        </div>
+        <div class="buttonsActions">
+            <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">Agregar producto</button>
+        </div>
     </div>
-    <button type="button" class="add-button-default" id="buttonAddSucursal">Agregar producto</button>
+
+    <!-- Panel de Soluciones Dinerarias -->
+    <div id="panel-solucion" class="panel">
+        <table>
+            <thead>
+                <tr>
+                    <th>Precio</th>
+                    <th>Paquete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prestamo in prestamos %}
+                <tr>
+                    <td class="valorProduct">${{ prestamo.plan.valor_nominal }}</td>
+                    <td class="paqueteProduct">{{ prestamo.plan.tipodePlan }}</td>
+                    <td class="button_cell">
+                        <button class="buttonDeleteItem" type="button">   
+                            <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>    
+        </table>
+        <div class="buttonsActions">
+            <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">Agregar producto</button>
+        </div>
+    </div>
+
+    <!-- Panel de Combos -->
+    <div id="panel-combo" class="panel">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Paquete</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for combo in combos %}
+                <tr>
+                    <td class="nombreProduct">{{ combo.nombre }}</td>
+                    <td class="valorProduct">${{ combo.plan.valor_nominal }}</td>
+                    <td class="paqueteProduct">{{ combo.plan.tipodePlan }}</td>
+                    <td class="button_cell">
+                        <button class="buttonDeleteItem" type="button">   
+                            <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>    
+
+            
+        </table>
+        <div class="buttonsActions">
+            <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">Agregar producto</button>
+        </div>
+    </div>
+    </form>
+
+</div>
     
 {% endblock content %}
 {% block js %}
 <script>
-    var CSRF_TOKEN = '{% csrf_token %}'
-    // URLs - - - - - - - -
-    var urlUpdateS = "{% url 'users:updateSucursal' %}"
-    var urlAddS = "{% url 'users:addSucursal' %}"
-    var urlRemoveS = "{% url 'users:removeSucursal' %}"
-    // - - - - - - - -
+    var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
+    var iconDelete = "{% static 'images/icons/eliminar.svg' %}";
+    var urlDeleteP = "{% url 'products:delete_product' %}"
+    var planes = {{ planes|safe }};
+    
 
 </script>
-<script src="{% static 'js/fetch_upload_sucursal.js' %}"></script>
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/fetch_upload_products.js' %}"></script>
 
-{% endblock js %}
+{% endblock js %} 

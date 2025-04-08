@@ -4,7 +4,9 @@ from django.urls import reverse
 from users.models import Usuario
 from django.db.models import Max
 from sales.models import Ventas
-from sales.utils import obtener_ultima_campania
+from sales.utils import obtener_ultima_campania, formatear_moneda_sin_centavos
+from elanelsystem.utils import formatear_dd_mm_yyyy
+
 register = template.Library()
 
 @register.filter
@@ -54,11 +56,13 @@ def organizarPorFecha(valor):
 
 @register.filter(name='format_dd_mm_yyyy')
 def format_dd_mm_yyyy(valor):
-    fechaRequest= datetime.datetime.strptime(valor, '%d/%m/%Y %H:%M')
-    fechaFormated = fechaRequest.strftime('%d/%m/%Y')
+    return formatear_dd_mm_yyyy(valor)
 
-    return fechaFormated
 
+
+@register.filter(name='cuotas_pagadas_len')
+def cuotas_pagadas_len(venta):
+    return len(venta.cuotas_pagadas())
 
 @register.simple_tag
 def obtener_ultima_campania():
@@ -78,9 +82,9 @@ def seccionesPorPermisos(context):
         # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
         "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
         "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
-        "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
-        "Post Venta": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList",args=[obtener_ultima_campania()])},
-        "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
+        "Exportar datos": {"permisos": ["sales.my_ver_reportes"], "url": reverse("detallesNegocio")},
+        "Auditorias": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList")},
+        "Usuarios": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
         "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
         "Administracion": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},
     }
@@ -90,3 +94,12 @@ def seccionesPorPermisos(context):
         if any(user.has_perm(perm) for perm in v['permisos']):
             secciones_permitidas[k] = v
     return secciones_permitidas
+
+
+
+@register.filter
+def formato_moneda(valor):
+    """
+    Filtro de template para formatear números en formato moneda.
+    """
+    return formatear_moneda_sin_centavos(valor)

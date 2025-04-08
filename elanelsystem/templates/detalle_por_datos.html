@@ -1,0 +1,114 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/detallesDatosDeNegocio.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+
+{% endblock css %}
+
+{% block content %}
+<div id="wrapperLoader">
+  <span id="loader"></span>
+</div>
+
+<div class="filters">
+  
+  <form method="POST" id="formFilter">
+    {% csrf_token %}
+    <div class="filtersActionWrapper">
+
+      {% comment %} Validar por permiso {% endcomment %}
+      <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
+          <label class="labelInput">Sucursal</label>
+          <div class="containerInputAndOptions">
+              <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+              <input
+                  type="text"
+                  name="sucursal"
+                  class="onlySelect input-select-custom"
+                  id="inputSucursal"
+                  autocomplete="off"
+                  readonly=""
+                  value="{{sucursalDefault.pseudonimo}}"
+              />
+              <ul class="list-select-custom options">
+                  {% for sucursal in sucursales %}
+                  <li data-value="{{sucursal.pseudonimo}}">{{sucursal.pseudonimo}}</li>
+                  {% endfor %}
+              </ul>
+          </div>
+      </div>
+
+    </div>
+    
+  </form>   
+  <div class="buttonsActionsWrapper">
+    {% comment %} <button type="button" id="showModalFiltro" class="button-default-style" onclick="newModalIFiltro()">Exportar</button> {% endcomment %}
+    <a href="{% url 'exportExcel' %}" id="buttonExport" class="add-button-default" >Exportar a Excel</a>
+  </div>
+</div>
+
+
+
+<div class="informationWrapper">
+  <a href="{% url 'users:list_customers'%}" id="buttonCleanFilter">Limpiar filtros</a>
+  <div class="tableWrapper">
+    <table class="informationTable">
+      <thead>
+          <tr>
+              {% for key, value  in data.0.items %}
+                <th>{{ value.verbose_name }}</th>
+              {% endfor %}
+            
+          </tr>
+      </thead>
+      <tbody>
+          {% for d in data %}
+              <tr>
+                {% for key, value  in d.items %}
+                  <td>{{ value.data }}</td>
+                {% endfor %}
+              </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div> 
+
+<div class="paginationWrapper">
+  {% if data.has_previous %}
+      <button class="buttonsPagesManage" id="previouPageButton" value="{{ data.previous_page_number }}">Anterior</button>
+  {%else%}
+      <button class="buttonsPagesManage" id="previouPageButton" value="1" disabled>Anterior</button>
+  {% endif %}
+
+  <span id="textPaginator">Página {{ data.number }} de {{ data.paginator.num_pages }}</span>
+
+   {% if data.has_next %} 
+      <button class="buttonsPagesManage" id="nextPageButton" value="{{ data.next_page_number }}">Siguiente</button>
+   {%else%}
+      <button class="buttonsPagesManage" id="nextPageButton" value="{{ data.paginator.num_pages }}" disabled>Siguiente</button>
+    {% endif %} 
+</div>
+
+{% endblock content %}
+{% block js %}
+<script>
+  var csrf_token = '{%csrf_token%}'
+  var urlImportData = "{% url 'users:importClientes' %}"
+  {% comment %} var sucursalesDisponibles = {{ sucursalesDisponiblesJSON|safe }}; {% endcomment %}
+  var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
+  var tipoSlug = "{{ tipo }}";
+</script>
+
+
+
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+{% comment %} <script src="{% static 'js/importDataCliente.js' %}"></script> {% endcomment %}
+<script src="{% static 'js/paginatorDetalles.js' %}"></script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+
+
+{% endblock js %}

@@ -8,8 +8,6 @@ from dateutil.relativedelta import relativedelta
 
 
 class Sucursal(models.Model):
-    fecha_innaguracion = models.CharField("Fecha de innaguración",max_length =10,default="")
-    campania = models.IntegerField("Campaña",default=0)
     direccion = models.CharField("Direccion",max_length =100)
     hora_apertura = models.CharField("Hora de apertura",max_length =5)
     provincia = models.CharField("Provincia",max_length =80)
@@ -17,57 +15,41 @@ class Sucursal(models.Model):
     sucursal_central = models.BooleanField(default=False)
     pseudonimo = models.CharField("Pseudonimo", max_length=100, default="")
     gerente = models.ForeignKey('users.Usuario',on_delete=models.SET_NULL,related_name="gerente",blank=True,null=True)
-
+    tel_ref = models.CharField("Telefono de referencia",max_length =15, blank=True, null=True)
+    email_ref = models.CharField("Email de referencia",max_length =60, blank=True, null=True)
 
     def __str__(self):
         return self.pseudonimo
 
     def save(self, *args, **kwargs):
-        self.calcularCampania()
+        self.direccion = self.direccion.capitalize()
+        self.provincia = self.provincia.title()
+        self.localidad = self.localidad.title()
+
         if((self.localidad).lower() in "resistencia"):
             self.pseudonimo = "Sucursal central"
         else:    
             self.pseudonimo = (f'{self.localidad}, {self.provincia}')
         super(Sucursal, self).save(*args, **kwargs)
 
-    def calcularCampania(self):
-        if self.fecha_innaguracion:
-            fecha_innaguracion = datetime.datetime.strptime(self.fecha_innaguracion, '%d/%m/%Y')
-            fecha_actual = datetime.datetime.now()
-            meses = relativedelta(fecha_actual, fecha_innaguracion)
-            meses_totales = meses.years * 12 + meses.months
-            self.campania = meses_totales
 
     #region Validaciones
-    def clean(self):
-        errors = {}
-        validation_methods = [
-            self.validation_fecha_innaguracion,
-            # self.validation_campania,
-        ]
+    # def clean(self):
+    #     errors = {}
+    #     validation_methods = [
+    #         self.validation_fecha_innaguracion,
+    #         # self.validation_campania,
+    #     ]
 
-        for method in validation_methods:
-            try:
-                method()
-            except ValidationError as e:
-                errors.update(e.message_dict)
+    #     for method in validation_methods:
+    #         try:
+    #             method()
+    #         except ValidationError as e:
+    #             errors.update(e.message_dict)
 
-        if errors:
-            raise ValidationError(errors)
+    #     if errors:
+    #         raise ValidationError(errors)
 
-    def validation_fecha_innaguracion(self):
-        if self.fecha_innaguracion:
-            if self.fecha_innaguracion and not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fecha_innaguracion):
-                raise ValidationError({'fecha_innaguracion': 'Debe estar en el formato DD/MM/AAAA.'})
-
-            try:
-                fecha_innaguracion = datetime.datetime.strptime(self.fecha_innaguracion, '%d/%m/%Y')
-            except ValueError:
-                raise ValidationError({'fecha_innaguracion': 'Fecha inválida.'})
-
-            fecha_innaguracion = datetime.datetime.strptime(self.fecha_innaguracion, '%d/%m/%Y')
-            if fecha_innaguracion > datetime.datetime.now():
-                raise ValidationError({'fecha_innaguracion': 'Fecha inválida.'})
     #endregion
 
 
@@ -103,13 +85,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         ('Dueños', 'Dueños'), 
     )
     nombre = models.CharField("Nombre Completo",max_length=100)
-    sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios',blank=True,null = True)
-    # sucursal = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
+    sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios',blank=True)
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
     rango = models.CharField("Rango:",max_length=40)
     dni = models.CharField("DNI",max_length=9, blank = True, null = True)
     tel = models.CharField("Telefono",max_length=11, blank = True, null = True)
-    
     c = models.CharField("Contraseña_depuracion:",max_length=250)
     fec_ingreso = models.CharField("Fecha de ingreso", max_length = 10, default ="")
     domic = models.CharField("Domicilio",max_length=200, default="")
@@ -120,22 +100,55 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     fec_nacimiento = models.CharField("Fecha de nacimiento", max_length = 10, default ="")
     estado_civil = models.CharField("Estado civil", max_length =30,default ="")
     xp_laboral = models.TextField("Experiencia laboral", blank=True,null=True, default="")
+    
+    descuentos = models.JSONField("Descuentos", default=list,blank=True,null=True)
+    premios = models.JSONField("Premios", default=list,blank=True,null=True)
+
     datos_familiares = models.JSONField("Datos familiares", default=list,blank=True,null=True)
     vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
     faltas_tardanzas = models.JSONField("Faltas o tardanzas", default=list,blank=True,null=True)
+    additional_passwords = models.JSONField("Contraseñas adicionales",default=dict,blank=True,null=True)
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     accesosTodasSucursales = models.BooleanField(default=False)
+    generico_user = models.BooleanField(default=False)
     objects = UserManager()
-
-
+    
     def __str__(self):
         return self.nombre
     
+    def save(self, *args, **kwargs):
+
+        # Capitalizar campos seleccionados
+        self.nombre = str(self.nombre.title())
+        self.domic = str(self.domic.capitalize())
+        self.prov = str(self.prov.title())
+        self.loc = str(self.loc.title())
+        self.lugar_nacimiento = str(self.lugar_nacimiento.title())
+        self.estado_civil = str(self.estado_civil.capitalize())
+        self.xp_laboral = str(self.xp_laboral.capitalize())
+        self.email = str(self.email.lower())
+
+
+        super(Usuario, self).save(*args, **kwargs)
 
     USERNAME_FIELD ="email"
     REQUIRED_FIELDS= ["nombre","dni"]
     
+    def setAdditionalPasswords(self):
+        permisos = list(self.get_all_permissions())
+        permisos = [permiso.split(".")[1] for permiso in permisos]
+        
+        if('my_anular_cuotas' in permisos):
+            self.additional_passwords["anular_cuotas"] = {"password":self.c, "descripcion": "Contraseña para anular cuotas"} #Seteamos por default la contraseña con la de la cuenta incialmente.
+
+        # Agregar mas condicionales si se quiere agregar alguna contraseña adicional . . . . .
+        # if('my_anular_cuotas' in permisos):
+        #     self.additional_passwords["anular_cuotas"] = self.c
+
+
+
     def clean(self):
         errors = {}
         validation_methods = [
@@ -156,7 +169,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
         if errors:
             raise ValidationError(errors)
-        
+    
+
 
     #region Clean area de los campos
     def validation_nombre(self):
@@ -247,24 +261,38 @@ class Cliente(models.Model):
         
     nro_cliente = models.CharField(max_length=15,default=returNro_Cliente)
     nombre = models.CharField(max_length=100)
-    dni = models.CharField(max_length=9)
-    agencia_registrada = models.CharField(max_length=30,default="")
-    domic = models.CharField(max_length=100)
-    loc = models.CharField(max_length=40)
-    prov = models.CharField(max_length=40)
-    cod_postal = models.CharField(max_length=7)
-    tel = models.CharField(max_length=11)
+    dni = models.CharField(max_length=9,default="")
+    # agencia_registrada = models.CharField(max_length=30,default="")
+    agencia_registrada = models.ForeignKey(Sucursal, on_delete=models.PROTECT, related_name="cliente_sucursal")
+
+    domic = models.CharField(max_length=100,default="")
+    loc = models.CharField(max_length=40,default="")
+    prov = models.CharField(max_length=40,default="")
+    cod_postal = models.CharField(max_length=7,default="")
+    tel = models.CharField(max_length=11,default="")
     fec_nacimiento = models.CharField(max_length=10, default="")
-    estado_civil = models.CharField(max_length=20)
-    ocupacion = models.CharField(max_length=50)
+    estado_civil = models.CharField(max_length=20, blank=True, null=True)
+    ocupacion = models.CharField(max_length=50, blank=True, null=True)
     
     def __str__(self):
         return f'{self.nro_cliente}: {self.nombre} - {self.dni}'
+    
+    def save(self, *args, **kwargs):
+        # Convertir a string y luego capitalizar los campos que puedan tener valores nulos o numéricos
+        self.nombre = str(self.nombre).title()
+        self.domic = str(self.domic).capitalize()
+        self.prov = str(self.prov).title()
+        self.loc = str(self.loc).title()
+        self.estado_civil = str(self.estado_civil).capitalize() if self.estado_civil else None
+        self.ocupacion = str(self.ocupacion).capitalize() if self.ocupacion else None
+        
+        super(Cliente, self).save(*args, **kwargs)
+
 
     def clean(self):
         errors = {}
         validation_methods = [
-            self.clean_nro_cliente,
+            # self.clean_nro_cliente,
             self.validation_nombre,
             self.validation_estado_civil,
             self.validation_dni,

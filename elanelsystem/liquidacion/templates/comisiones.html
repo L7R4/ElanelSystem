@@ -3,35 +3,59 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/comisiones.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+
 {% endblock css %}
 
 {% block content %}
+    <div id="wrapperLoader">
+        <span id="loader"></span>
+    </div>
+
     <div class="wrapperHeader">
+        
         <div class="wrapperInputsSearchs">
-            <div id="sucursalWrapper">
-                <h5>Elige la sucursal</h5>
-                <input type="text" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" value ="{{sucursal}}" form="formArqueoCaja" class="selectInput">
-                <ul id="contenedorAgencia" class="select">
-                    {% for agencia in sucursales %}
-                        <li>{{agencia.localidad}}, {{agencia.provincia}}</li>
+            <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+                <h3 class="labelInput">Sucursal</h3>
+                <div class="containerInputAndOptions">
+                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                  <input type="hidden" class="filterInput" name="sucursal" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                  </div>
+                  <ul id="contenedorSucursal" class="list-select-custom options">
+                    {% for sucursal in sucursales %}
+                        <li>{{sucursal}}</li>
                     {% endfor %}
                 </ul>
+                </div>
             </div>
-            <div id="camapañaFilterWrapper">
-                <h5>Campaña</h5>
-                <input type="number" class="inputCampania" id="inputCampania" value="0" min="0" max="0">
+            
+            <div id="campaniaWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+                <h3 class="labelInput">Campaña</h3>
+                <div class="containerInputAndOptions">
+                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                  <input type="hidden" class="filterInput" name="campania" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                  </div>
+                  <ul id="contenedorSucursal" class="list-select-custom options">
+                    {% for campania in campanias %}
+                            <li>{{campania}}</li>
+                        {% endfor %}
+                </ul>
+                </div>
             </div>
         </div>
-        <div class="wrapperButtonsActions blocked" id="wrapperButtonsActions">
-            <a href="{% url 'liquidacion:viewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
-            <a href="{% url 'liquidacion:viewPDFLiquidacion' %}" id="liquidarButton"target="_blank">Liquidar</a>
-        </div>
+        {% comment %} <div class="wrapperButtonsActions blocked" id="wrapperButtonsActions">
+            <a href="{% url 'liquidacion:preViewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
+            <button type="button" id="liquidarButton" onclick="newModalLiquidacion()">Liquidar</button>
+        </div> {% endcomment %}
     </div>
+
     <div class="wrapperManageLiquidacion">
-        <div class="blocked" id="backgroundLiquidacion"></div>
         <div class="colaboradoresWrapper">
-            <h3>Elige los colaboradores</h3>
-            <div>
                 <div class="selectTipoColaborador">
                     <div>
                         <input type="radio" name="tipoColaborador" id="todos" value="todos" class="inputSelectTipoColaborador" checked>
@@ -51,6 +75,7 @@
                     </div>
                 </div>
 
+                
                 <div class="colaboradores">
                     {% comment %} <div class="searchFilter">
                         <input type="text" class="operation" id="operation" placeholder="Buscar">
@@ -79,58 +104,30 @@
                             </ul>       
                         </div>
                     </div>
-                    <div class="resumenWrapper">
-                        <div>
-                            <h3>Total</h3>
-                            <h3 id="totalComisionesTextColaboradores">$ 0</h3>
-                        </div>
-                    </div>
                 </div>
 
                 
-            </div>
-        </div>
-
-        <div class="administradoresWrapper">
-            <h3>Coloque la comision para los administradores/as</h3>
-            <div>
-                <div class="colaboradoresWrapper">
-                    <h4>Seleccione a uno/a e ingrese su comision</h4>
-                    <div class="listAdmins">
-                        <div class="tittlesWrapper">
-                            <ul class="tittles">
-                                <li>Nombre</li>
-                                <li>Haberes</li>
-                                <li>Honorarios</li>
-                            </ul>   
-                        </div>
-                
-                        <div class="valuesWrapper">
-                            <ul class="values">
-                            </ul>       
-                        </div>
-                    </div>
-                </div>
-
                 <div class="resumenWrapper">
                     <div>
                         <h3>Total</h3>
-                        <div>
-                            <p>$</p>
-                            <h3 id="totalAdminText">0</h3>
-                        </div>
+                        <h3 id="totalComisionesTextColaboradores">$0</h3>
                     </div>
                 </div>
             </div>
-        </div>
     </div>
    
 {% endblock content %}
 {% block js %}
     <script> 
-        const urlRequestColaboradores = "{{urlRequestColaboradores}}?"
+        const urlRequestColaboradores = "{{urlRequestColaboradores}}"
     </script>
+    <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+
     <script src="{% static 'js/input_select_create_user.js' %}"></script>
     <script src="{% static 'js/filters_liquidacion.js' %}"></script>
+    <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
+    <script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
 
+    <script src="{% static 'js/redirectToPDFNewLiquidacion.js' %}"></script>
+    
 {% endblock js %}

@@ -3,9 +3,14 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/panel_admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/loader.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 {% endblock css %}
 
 {% block content %}
+<div id="wrapperLoader">
+    <span id="loader"></span>
+  </div>
     <div class="wrapperSections">
         <div class ="tittleWrapper">
             <h4>Permisos</h4>
@@ -23,10 +28,10 @@
     
     <div class="wrapperSections">
         <div class ="tittleWrapper">
-            <h4>Tabla de coeficientes <h4>
+            <h4>Planes<h4>
         </div>
         <div class="buttonWrapper">
-            <a href="#" class="buttonMore">
+            <a href="{% url 'products:planes' %}" class="buttonMore">
                 <div>
                     <h3>Editar</h3>
                     <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
@@ -36,7 +41,7 @@
                
     </div>
         
-    <div class="wrapperSections">
+    {% comment %} <div class="wrapperSections">
         <div class ="tittleWrapper">
             <h4>Contraseñas de logistica<h4>
         </div>
@@ -49,7 +54,7 @@
             </a>
         </div>
         
-    </div>
+    </div> {% endcomment %}
 
     <div class="wrapperSections">
         <div class ="tittleWrapper">
@@ -95,7 +100,31 @@
         </div>
         
     </div>
+
+    <div class="wrapperSections">
+        <div class ="tittleWrapper">
+            <h4>Importar ventas<h4>
+        </div>
+        <div class="buttonWrapper">
+            <button type="button" id="showModalImport" class="buttonMore" onclick="newModalImport()">
+                <div>
+                    <h3>Importar</h3>
+                    <img src="{% static 'images/icons/nextSinBackground.png' %}" alt="">
+                </div>
+            </button>
+        </div>
+        
+    </div>
 {% endblock content %}
 {% block js %}
-    
+<script>
+    var csrf_token = '{%csrf_token%}'
+    var urlImportData = "{% url 'sales:importVentas' %}"
+    var sucursalesDisponibles = {{ sucursalesDisponibles|safe }}
+    var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}"      
+</script>
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/importDataVentas.js' %}"></script>
+
 {% endblock js %}

@@ -46,6 +46,7 @@ async function fetchFunction(body, url) {
 let productoHandled; // Variable para guardar el producto seleccionado
 let productos; // Variable para guardar los productos
 
+
 async function requestProductos() {
 
     let body = {
@@ -57,6 +58,7 @@ async function requestProductos() {
 
     return data["productos"];
 }
+
 
 // Cuando se selecciona un tipo de producto se filtran los productos
 inputTipoDeProducto.addEventListener("input", async () => {
@@ -75,17 +77,18 @@ inputTipoDeProducto.addEventListener("input", async () => {
     } else {
         inputProducto.parentElement.parentElement.classList.add("desactive") // Bloquea el input de producto
     }
-
 });
 
 
 // Cuando se selecciona un producto se guarda en la variable productoHandled
 inputProducto.addEventListener("input", async () => {
-    productoHandled = productos.filter((item) => item["nombre"] == inputProducto.value)[0];
-
-    if (window.location.href.includes("sorteo")) {
-        id_importe.value = productoHandled["importe"];
+    if (productos != null) {
+        productoHandled = productos.filter((item) => item["nombre"] == inputProducto.value)[0];
     }
+    if (window.location.href.includes("sorteo")) {
+        id_importe.value = productoHandled ? productoHandled["importe"] * cantidadChances : "";
+    }
+    rellenarCamposDeVenta();
 });
 
 
@@ -95,6 +98,7 @@ inputsWithEventInput.forEach(input => {
         rellenarCamposDeVenta();
     });
 });
+
 
 function rellenarCamposDeVenta() {
     try {
@@ -106,11 +110,13 @@ function rellenarCamposDeVenta() {
             id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
             id_importe_x_cuota.value = parseInt(parseInt(id_total_a_pagar.value) / parseInt(id_nro_cuotas.value))
         } else {
-            let subTotalSinIntereses = parseInt(id_importe.value) - dineroDeCuotas
-            id_intereses_generados.value = parseInt((subTotalSinIntereses * id_tasa_interes.value) / 100)
+            // let importeAFinanciar = parseInt(document.querySelector("#wrapperImporte .textInputP").textContent)
 
-            id_total_a_pagar.value = subTotalSinIntereses + parseInt(id_intereses_generados.value)
-            id_importe_x_cuota.value = id_nro_cuotas.value <= 0 ? 0 : parseInt(id_total_a_pagar.value / id_nro_cuotas.value);
+            id_intereses_generados.value = parseInt((parseInt(id_importe.value) * id_tasa_interes.value) / 100)
+
+            id_total_a_pagar.value = (parseInt(id_importe.value) + parseInt(id_intereses_generados.value)) - parseInt(dineroDeCuotas)
+            id_importe_x_cuota.value = parseInt((parseInt(id_importe.value) / parseInt(id_nro_cuotas.value)) + (parseInt(id_intereses_generados.value) / parseInt(id_nro_cuotas.value)))
+
         }
 
     } catch (error) {
@@ -141,14 +147,15 @@ submitAdjudicacionButton.addEventListener("click", async () => {
     body = {}
     let inputs = form_create_sale.querySelectorAll("input")
     let textareas = form_create_sale.querySelectorAll("textarea")
+    let inputsAsP_tag = form_create_sale.querySelectorAll(".textInputP")
 
-    inputs = [...inputs, ...textareas]
+    inputs = [...inputs, ...textareas, ...inputsAsP_tag]
 
     inputs.forEach(element => {
         body[element.name] = element.value
     });
-    
-    document.getElementById('loader').style.display = 'block';
+
+    // document.getElementById('loader').style.display = 'block';
     let response = await fetchFunction(body, window.location.pathname)
 
     if (!response["success"]) {
@@ -157,7 +164,30 @@ submitAdjudicacionButton.addEventListener("click", async () => {
         window.location.href = response["urlRedirect"];
     }
 
-    document.getElementById('loader').style.display = 'none';
+    // document.getElementById('loader').style.display = 'none';
 
 })
 
+
+function checkInputs() {
+    const requiredInputs = form_create_sale.querySelectorAll('input[required]');
+    let allInputsCompleted = true;
+
+    requiredInputs.forEach(input => {
+        if (input.value.trim() === '') {
+            allInputsCompleted = false;
+        }
+    });
+
+    if (allInputsCompleted) {
+        submitAdjudicacionButton.disabled = false;
+    } else {
+        submitAdjudicacionButton.disabled = true;
+    }
+}
+
+// Agregar evento de input a los inputs requeridos
+const requiredInputs = form_create_sale.querySelectorAll('input[required]');
+requiredInputs.forEach(input => {
+    input.addEventListener('input', checkInputs);
+});

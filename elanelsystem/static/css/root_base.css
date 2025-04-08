@@ -44,6 +44,14 @@ html {
    font-size: 62.5%;
 }
 
+
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+   -webkit-appearance: none;
+   appearance: none;
+   margin: 0;
+}
+
 /* --------------------------------------------------
    > Estilos para el context menu al hacer click derecho
    --------------------------------------------------*/
@@ -152,7 +160,7 @@ html {
    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
    background-color: #deddf3;
    position: relative;
-   border-radius: 1rem;
+   border-radius: .6rem;
    outline: none;
    text-indent: 1.2rem;
    width: 100%;
@@ -163,12 +171,12 @@ html {
 input.input-read-write-default,
 textarea.input-read-write-default {
    max-height: 3.5rem;
-   min-height: 2.8rem;
+   min-height: 3rem;
    border: 2px solid var(--secundary-color);
    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
    background-color: transparent;
    position: relative;
-   border-radius: 1rem;
+   border-radius: .6rem;
    outline: none;
    text-indent: 1.2rem;
    width: 100%;
@@ -187,7 +195,7 @@ textarea.input-read-write-default {
    border: 2px solid var(--secundary-color);
    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
    position: relative;
-   border-radius: 1rem;
+   border-radius: .6rem;
    outline: none;
    text-indent: 1.2rem;
    width: 100%;
@@ -196,12 +204,45 @@ textarea.input-read-write-default {
 
 }
 
+.pseudo-input-select-wrapper {
+   max-height: 3.5rem;
+   min-height: 3rem;
+   border: 2px solid var(--secundary-color);
+   font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
+   position: relative;
+   outline: none;
+   padding: 0 1rem;
+   width: 100%;
+   height: 100%;
+   font-feature-settings: "pnum" on, "lnum" on;
+   border-radius: .6rem;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+}
+
+.pseudo-input-select-wrapper>h3 {
+   font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+   white-space: nowrap;
+   overflow-x: auto;
+   -ms-overflow-style: none;
+   /* Oculta la barra de scroll en Internet Explorer y Edge */
+}
+
+.pseudo-input-select-wrapper>h3::-webkit-scrollbar {
+   display: none;
+}
+
+.pseudo-input-select-wrapper>h3.placeholder {
+   opacity: .5;
+}
+
 ul.list-select-custom {
    list-style: none;
    background-color: var(--background-color);
    border: 2px solid var(--secundary-color);
    font: clamp(1rem, 1vw, 1.3rem) 'raleway-semibold';
-   border-radius: .7rem;
+   border-radius: .6rem;
    color: var(--third-color);
    box-sizing: border-box;
    width: 100%;
@@ -241,7 +282,7 @@ div.containerInputAndOptions {
    flex-direction: column;
    align-items: center;
    justify-content: center;
-   height: 100%;
+   /* height: 100%; */
    width: 100%;
 }
 
@@ -259,3 +300,198 @@ ul.list-select-custom.open {
 }
 
 /* #endregion  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+
+
+/* #region loader */
+#wrapperLoader {
+   position: fixed;
+   display: none;
+   width: 100vw;
+   left: 0;
+   top: 0;
+   height: 100vh;
+   justify-content: center;
+   align-items: center;
+   z-index: 1001;
+   background-color: #1b1a276b;
+}
+
+#loader {
+   border: 1.6rem solid #f3f3f3;
+   border-radius: 50%;
+   border-top: 1.6rem solid #3498db;
+   width: 13vw;
+   height: 13vw;
+   animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+   0% {
+      transform: rotate(0deg);
+   }
+
+   100% {
+      transform: rotate(360deg);
+   }
+}
+
+/* #endregion */
+
+
+/* #region Scroller */
+
+*::-webkit-scrollbar {
+   width: 4px;
+   border-radius: 5px;
+}
+
+*::-webkit-scrollbar-thumb {
+   background: #ffffff58;
+   border-radius: 1rem;
+}
+
+/* #endregion */
+
+
+/*#region inconInput */
+.filter-iconWrapper {
+   position: relative;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.filter-iconWrapper>img {
+   min-width: 1.6rem;
+   max-width: 3rem;
+   width: 1.5vw;
+   cursor: pointer;
+}
+
+.filter-select {
+   position: absolute;
+   right: 1rem;
+   top: 100%;
+   cursor: pointer;
+   display: none;
+   list-style: none;
+   padding: .7rem;
+   background-color: var(--background-color);
+   border: 2px solid var(--secundary-color);
+   flex-direction: column;
+   height: fit-content;
+   gap: 1rem;
+   border-radius: .6rem;
+}
+
+.filter-select.open {
+   display: flex;
+}
+
+.filter-select>li.filter-option {
+   padding: 1rem;
+   font: clamp(1rem, 1vw, 1.3rem) 'raleway-semibold';
+   color: var(--third-color);
+   cursor: pointer;
+   white-space: nowrap;
+   border-radius: .6rem;
+}
+
+.filter-select>li.filter-option:hover {
+   background-color: #1754ed8f;
+}
+
+.filter-select>li.filter-option.selected {
+   background-color: #1754ed8f;
+}
+
+/*#endregion */
+
+
+/* #region Modificaciones de la libreria para seleccionar hora */
+
+.vc_onlyHora {
+   background-color: var(--background-color);
+   min-width: fit-content !important;
+
+}
+
+.vc_onlyHora>.vc-time>.vc-time__content {
+   display: flex;
+   align-items: center;
+}
+
+.vc_onlyHora>.vc-time>.vc-time__content label {
+   width: 1.3vw;
+   max-width: 3.2rem;
+   display: flex;
+   align-items: center;
+}
+
+.vc_onlyHora>.vc-time input {
+   font-size: clamp(1.3rem, 1.3vw, 1.7rem) !important;
+}
+
+.vc_onlyHora>.vc-time>.vc-time__content label::after {
+   top: 0 !important;
+   margin-top: 0;
+   font-size: clamp(1.3rem, 1.3vw, 1.7rem) !important;
+
+}
+
+.vc_onlyHora>.vc-time {
+   display: flex !important;
+   justify-content: center !important;
+   padding: .6rem !important;
+   border: none !important;
+   margin: 0 !important;
+}
+
+/* #endregion */
+
+
+/* #region Modificaciones de la libreria para seleccionar la fecha */
+
+.vc_multipleRango,
+.vc_singleCalendar {
+   background-color: var(--background-color);
+   z-index: 10000;
+}
+
+.vc_multipleRango .vc-content>.vc-week>.vc-week__day,
+.vc_multipleRango .vc-content>.vc-dates>.vc-date>button,
+.vc_singleCalendar .vc-content>.vc-week>.vc-week__day,
+.vc_singleCalendar .vc-content>.vc-dates>.vc-date>button {
+   font-size: clamp(1rem, 1.1vw, 1.3rem) !important;
+   font-family: raleway !important;
+}
+
+.vc_multipleRango .vc-content>.vc-dates>.vc-date>button,
+.vc_singleCalendar .vc-content>.vc-dates>.vc-date>button {
+   padding: 1rem;
+}
+
+.vc_multipleRango .vc-header__content>button,
+.vc_singleCalendar .vc-header__content>button {
+   font-size: clamp(1.2rem, 1.2vw, 1.5rem) !important;
+   font-family: raleway-semibold !important;
+   padding: 1rem;
+}
+
+.vc_multipleRango #btn-clear,
+.vc_singleCalendar #btn-clear {
+   outline: none;
+   background-color: transparent;
+   font-size: clamp(1rem, 1.1vw, 1.3rem) !important;
+   font-family: raleway !important;
+   color: var(--third-color);
+   opacity: .8;
+   text-decoration: underline;
+   border: none;
+   width: fit-content;
+   align-self: center;
+   margin-top: .5rem;
+   cursor: pointer;
+}
+
+/* #endregion */
