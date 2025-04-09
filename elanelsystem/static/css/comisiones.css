@@ -161,10 +161,10 @@
     cursor: pointer;
 }
 
-.selectTipoColaborador>div>input:checked {
-    background-color: #fff;
+.selectTipoColaborador>div>input:checked+label{
+    color: var(--third-color);
+    background-color: var(--primary-color);
 }
-
 
 .colaboradores {
     width: 80%;
@@ -436,4 +436,114 @@
 
 .administradoresWrapper>div>.resumenWrapper>div {
     width: 40%;
+}
+#formNewAjuste > .wrapperTittle{
+    margin-bottom: 1rem;
+}
+#formNewAjuste > .wrapperTittle > h3{
+    font-size: clamp(1.5rem, 1.4vw, 2rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+    border-bottom: 1px solid #30436159;
+    width: 100%;
+    padding: .5rem 0;
+}
+
+#formNewAjuste > .wrapperTittle > h3 > span{
+    color: var(--primary-color);
+}
+
+#formNewAjuste > .wrapperButtonsSelectTipoAjuste{
+    display: flex;
+    width: 50%;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+#formNewAjuste > .wrapperButtonsSelectTipoAjuste > div{
+    width: 48%;
+    min-width: 10rem;
+    text-align: center;
+    border-radius: .6rem;
+    border: 1px solid var(--primary-color);
+}
+
+#formNewAjuste>.wrapperButtonsSelectTipoAjuste>div>label {
+    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+    font-family: raleway-semibold;
+    background-color: var(--third-color);
+    color: var(--primary-color);
+    padding: .8rem 1.2rem;
+    cursor: pointer;
+    border-radius: .6rem;
+    width: 100%;
+    display: block;
+}
+#formNewAjuste>.wrapperButtonsSelectTipoAjuste>div>label:hover{
+    color: var(--third-color);
+    background-color: var(--primary-color);
+}
+
+#formNewAjuste>.wrapperButtonsSelectTipoAjuste>div>input {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    display: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+}
+
+#formNewAjuste>.wrapperButtonsSelectTipoAjuste>div>input:checked+label {
+    color: var(--third-color);
+    background-color: var(--primary-color);
+}
+
+/* .selectTipoColaborador>div>input:checked {
+    background-color: #fff;
+} */
+#formNewAjuste > .wrapperInputDinero{
+    width: 50%;
+    display: flex;
+    gap: .3rem;
+    flex-direction: column;
+    margin-top: 1rem;
+
+}
+#formNewAjuste > .wrapperInputDinero>h3{
+    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+}
+
+#formNewAjuste > .wrapperInputObservaciones{
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+#formNewAjuste > .wrapperInputObservaciones>h3{
+    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: var(--background-color);
+}
+#formNewAjuste > .wrapperInputObservaciones>textarea{
+    border: 2px solid var(--secundary-color);
+    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
+    background-color: transparent;
+    border-radius: .6rem;
+    outline: none;
+    padding: 1rem;
+    width: 100%;
+    height: 100%;
+}
+
+.tingle-btn{
+    font-size: clamp(1.2rem, 1.1vw, 1.5rem)!important;
+    font-family: raleway-semibold !important;
 }
