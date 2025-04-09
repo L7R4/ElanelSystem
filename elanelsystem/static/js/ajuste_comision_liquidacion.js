@@ -59,13 +59,14 @@ function modal_ajuste_comision(id_usuario, nombre_usuario,comision){
             campania: document.querySelector("#campaniaInput").value,
             agencia: document.querySelector("#sucursalInput").value,
         };
-
+        
         console.log(body)
         showLoader('.moda_container_ajusteComision')
         let response = await fetchFunction(body, '/ventas/liquidaciones/comisiones/nuevo_ajuste/')
-
+        
         if (response.status) {
             console.log("Salio todo bien");
+            // update_comision_colaborador(user_id, )
         }else{
             console.log("Salio mal")
             // hiddenLoader()
@@ -83,11 +84,13 @@ function modal_ajuste_comision(id_usuario, nombre_usuario,comision){
 
     modal.open();
 }
-function update_comision_colaborador(colaborador){
+function update_comision_colaborador(colaborador_id, new_comision){
+    let comisionColaborador = c.querySelector(".wrapperComisionColaborador > p")
+
     itemsColaboradores.forEach(c => {
-        if(c.id == colaborador.id){
+        if(c.id == colaborador_id){
             let comisionColaborador = c.querySelector(".wrapperComisionColaborador > p")
-            comisionColaborador.textContent = `$ ${colaborador.new_comision}`
+            comisionColaborador.textContent = `$ ${new_comision}`
             return
         }
     });

@@ -115,6 +115,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=True)
     accesosTodasSucursales = models.BooleanField(default=False)
     generico_user = models.BooleanField(default=False)
+    suspendido = models.BooleanField(default=False)
     objects = UserManager()
     
     def __str__(self):
