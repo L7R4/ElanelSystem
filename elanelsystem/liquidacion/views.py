@@ -33,12 +33,34 @@ class LiquidacionesPanel(TestLogin,generic.View):
         context = {}
         return render(request, self.template_name, context)
     
-    
+
+
+def insertar_ajustes_en_detalle(detalle_actual, ajustes, user_id):
+    """
+    Inserta los ajustes en el dict del detalle y devuelve también el total ajustado (positivo o negativo).
+    """
+    ajustes_usuario = [a for a in ajustes if int(a["user_id"]) == int(user_id)]
+    total_ajuste = 0
+
+    for ajuste in ajustes_usuario:
+        if ajuste["ajuste_tipo"] == "positivo":
+            total_ajuste += ajuste["dinero"]
+        elif ajuste["ajuste_tipo"] == "negativo":
+            total_ajuste -= ajuste["dinero"]
+
+    if ajustes_usuario:
+        detalle_actual["ajustes_comision"] = ajustes_usuario
+        detalle_actual["total_ajuste_comision"] = total_ajuste
+
+    return detalle_actual, total_ajuste
+
+
 class LiquidacionesComisiones(TestLogin,generic.View):
     template_name = 'comisiones.html'
     def get(self,request,*args,**kwargs):
         # try:
             context = {}
+            request.session["ajustes_comisiones"] = [] # Reiniciar posibles ajustes de la comisiones que existan
             context["urlPDFLiquidacion"] = reverse_lazy("liquidacion:viewPDFLiquidacion")
             lastCampania = obtener_ultima_campania()
             context["defaultSucursal"] = Sucursal.objects.first()
@@ -50,7 +72,6 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             # context["colaboradores"] = [{"nombre": user.nombre, "comisionTotal":getComisionTotal(user,lastCampania,request.user.sucursal)["total_comisionado"]} for user in usuarios]
             context["admins"] = admins
             # context["totalDeComisiones"] = sum([user["comisionTotal"] for user in context["colaboradores"]])
-        
             return render(request, self.template_name, context)
         # except:
         #     context = {}
@@ -80,40 +101,48 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             supervisores = []
             gerentes = []
             for item in datos:
+                user_id = item["id"]
+                detalle_sin_ajuste = item["info_total_de_comision"]["detalle"]
+                detalle_con_ajustes, total_ajuste = insertar_ajustes_en_detalle(detalle_sin_ajuste, ajustes_sesion, user_id)
 
-                if(item["tipo_colaborador"] == "Vendedor"):
-                    newLiquidacion = LiquidacionVendedor()
-                    newLiquidacion.usuario = Usuario.objects.get(pk=item["id"])
-                    newLiquidacion.campania = campania
-                    newLiquidacion.sucursal = sucursalObject
-                    newLiquidacion.cant_ventas = item["info_total_de_comision"]["cant_ventas_propia"]
-                    newLiquidacion.productividad = item["info_total_de_comision"]["productividad_propia"]
-                    newLiquidacion.total_comisionado = item["comisionTotal"]
-                    newLiquidacion.detalle = item["info_total_de_comision"]["detalle"]
-                    newLiquidacion.save()
-                    vendedores.append(newLiquidacion)
+                total_comision_ajustada = item["comisionTotal"] + total_ajuste
 
-                elif(item["tipo_colaborador"] == "Supervisor"):
-                    newLiquidacion = LiquidacionSupervisor()
-                    newLiquidacion.usuario = Usuario.objects.get(pk=item["id"])
-                    newLiquidacion.campania = campania
-                    newLiquidacion.sucursal = sucursalObject
-                    newLiquidacion.cant_ventas = item["info_total_de_comision"]["cant_ventas_fromRol"]
-                    newLiquidacion.productividad = item["info_total_de_comision"]["productividad_fromRol"]
-                    newLiquidacion.total_comisionado = item["comisionTotal"]
-                    newLiquidacion.detalle = item["info_total_de_comision"]["detalle"]
-                    newLiquidacion.save()
-                    supervisores.append(newLiquidacion)
+                if item["tipo_colaborador"] == "Vendedor":
+                    new = LiquidacionVendedor(
+                        usuario=Usuario.objects.get(pk=user_id),
+                        campania=campania,
+                        sucursal=sucursalObject,
+                        cant_ventas=item["info_total_de_comision"]["cant_ventas_propia"],
+                        productividad=item["info_total_de_comision"]["productividad_propia"],
+                        total_comisionado=total_comision_ajustada,
+                        detalle=detalle_con_ajustes
+                    )
+                    new.save()
+                    vendedores.append(new)
 
-                elif(item["tipo_colaborador"] == "Gerente sucursal"):
-                    newLiquidacion = LiquidacionGerenteSucursal()
-                    newLiquidacion.usuario = Usuario.objects.get(pk=item["id"])
-                    newLiquidacion.sucursal = sucursalObject
-                    newLiquidacion.campania = campania
-                    newLiquidacion.total_comisionado = item["comisionTotal"]
-                    newLiquidacion.detalle = item["info_total_de_comision"]["detalle"]
-                    newLiquidacion.save()
-                    gerentes.append(newLiquidacion)
+                elif item["tipo_colaborador"] == "Supervisor":
+                    new = LiquidacionSupervisor(
+                        usuario=Usuario.objects.get(pk=user_id),
+                        campania=campania,
+                        sucursal=sucursalObject,
+                        cant_ventas=item["info_total_de_comision"]["cant_ventas_fromRol"],
+                        productividad=item["info_total_de_comision"]["productividad_fromRol"],
+                        total_comisionado=total_comision_ajustada,
+                        detalle=detalle_con_ajustes
+                    )
+                    new.save()
+                    supervisores.append(new)
+
+                elif item["tipo_colaborador"] == "Gerente sucursal":
+                    new = LiquidacionGerenteSucursal(
+                        usuario=Usuario.objects.get(pk=user_id),
+                        campania=campania,
+                        sucursal=sucursalObject,
+                        total_comisionado=total_comision_ajustada,
+                        detalle=detalle_con_ajustes
+                    )
+                    new.save()
+                    gerentes.append(new)
 
             #endregion  
 
@@ -151,9 +180,9 @@ class LiquidacionesComisiones(TestLogin,generic.View):
 def requestColaboradoresWithComisiones(request):
     form =json.loads(request.body)
     
-    sucursalObject = Sucursal.objects.get(pseudonimo = form["sucursal"])
+    sucursalObject = Sucursal.objects.get(id = int(form["sucursal"]))
     campania = form["campania"]
-    print(form)
+    
     tipo_colaborador = form["tipoColaborador"]
     colaboradores = Usuario.objects.filter(sucursales__in=[sucursalObject])
 
@@ -177,6 +206,78 @@ def requestColaboradoresWithComisiones(request):
     request.session["liquidacion_data"] = colaboradores_list
 
     return JsonResponse({"colaboradores_data": colaboradores_list, "totalDeComisiones": totalDeComisiones} , safe=False)
+
+
+def crearAjusteComision(request):
+    """
+    Crear un ajuste de comisión para un colaborador y almacenarlo en la sesión.
+    Estructura de cada ajuste (ejemplo):
+    {
+      "user_id": <int>,
+      "ajuste_tipo": "positivo" o "negativo",
+      "dinero": <float>,
+      "observaciones": <str>,
+      "campania": <str>,
+      "agencia": <str>
+    }
+    """
+
+    if request.method == "POST":
+        try:
+            # Intentamos parsear el cuerpo como JSON.
+            body = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"status": False, "message": "JSON mal formado"}, status=400)
+        
+        # Ejemplo de datos que recibes:
+        user_id = body.get("user_id")
+        ajuste_tipo = body.get("ajuste")
+        dinero = body.get("dinero")
+        observaciones = body.get("observaciones", "")
+        campania = body.get("campania")
+        agencia = body.get("agencia")
+
+        print("[DEBUG] crearAjusteComision => Datos recibidos:")
+        print("   user_id:", user_id)
+        print("   ajuste_tipo:", ajuste_tipo)
+        print("   dinero:", dinero)
+        print("   observaciones:", observaciones)
+        print("   campania:", campania)
+        print("   agencia:", agencia)
+
+        # Validamos algo básico
+        if not user_id or not campania or not agencia:
+            return JsonResponse({"status": False, "message": "Faltan datos obligatorios"}, status=400)
+
+        # Creamos el dict del ajuste
+        ajuste = {
+            "user_id": user_id,
+            "ajuste_tipo": ajuste_tipo,
+            "dinero": float(dinero) if dinero else 0.0,
+            "observaciones": observaciones,
+            "campania": campania,
+            "agencia": agencia
+        }
+
+        # Recuperamos la lista de ajustes en sesión (o creamos si no existe)
+        ajustes_sesion = request.session.get("ajustes_comisiones", [])
+        
+        # Agregamos este nuevo ajuste a la lista
+        ajustes_sesion.append(ajuste)
+
+        # Guardamos de nuevo en la sesión
+        request.session["ajustes_comisiones"] = ajustes_sesion
+
+        # Marcamos la sesión como modificada para asegurar que se guarde
+        request.session.modified = True
+
+        print("[DEBUG] crearAjusteComision => Ajuste guardado en sesión. Ajustes totales ahora:")
+        print(request.session["ajustes_comisiones"])
+
+        return JsonResponse({"status": True, "message": "Ajuste de comisión creado en sesión."})
+    
+    else:
+        return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
 
 
 def preViewPDFLiquidacion(request):

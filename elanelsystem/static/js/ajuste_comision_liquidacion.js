@@ -1,23 +1,33 @@
-function render_form_ajuse_comision(nombre_usuario) {
-    return `<form method="POST" class="modal_form" id="formNewMov">
+function render_form_ajuse_comision(nombre_usuario, comision) {
+    return `<form method="POST" class="modal_form" id="formNewAjuste">
 
             <div class="wrapperTittle">
-                <h3 class="labelInput">Ajustar comisiones a ${nombre_usuario}</h3>
+                <h3 class="labelInput">Ajustar comisiones a <span>${nombre_usuario} ($${comision})</span></h3>
+            </div>
+
+            <div class="wrapperButtonsSelectTipoAjuste">
+                <div>
+                    <input type="radio" name="ajuste" id="ajustePositivoInput" value="positivo" class="inputSelectTipoColaborador">
+                    <label for="ajustePositivoInput">Ajuste positivo</label>
+                </div>
+                <div>
+                    <input type="radio" name="ajuste" id="ajusteNegativoInput" value="negativo" class="inputSelectTipoColaborador">
+                    <label for="ajusteNegativoInput">Ajuste negativo</label>
+                </div>
             </div>
             ${CSRF_TOKEN}
-
-            <div class="wrapperInput">
+            <div class="wrapperInputDinero">
                 <h3 class="labelInput">Dinero</h3>
                 <input type="number" name="dinero" id="dineroAjusteInput" class="input-read-write-default">
             </div>
             <div class="wrapperInputObservaciones">
-                <label for="observacionesInput">Observaciones</label>
-                <textarea name="observaciones" id="observacionesInput" cols="30" rows="10"></textarea>
+                <h3>Observaciones</h3>
+                <textarea name="observaciones" id="observacionesInput" rows="10"></textarea>
             </div>
         </form>`
 }
 
-function modal_ajuste_comision(id_usuario, nombre_usuario){
+function modal_ajuste_comision(id_usuario, nombre_usuario,comision){
     let modal = new tingle.modal({
         footer: true,
         closeMethods: [''],
@@ -35,41 +45,44 @@ function modal_ajuste_comision(id_usuario, nombre_usuario){
 
 
     // set content
-    modal.setContent(render_form_ajuse_comision(nombre_usuario));
+    modal.setContent(render_form_ajuse_comision(nombre_usuario, comision));
 
 
     // add a button
-    modal.addFooterBtn('Guardar', 'tingle-btn tingle-btn--primary', async function () {
+    modal.addFooterBtn('Guardar', 'tingle-btn tingle-btn--primary add-button-default', async function () {
 
-        body = {
-            "campania": document.querySelector("#campaniaInput").value,
-            "agencia": document.querySelector("#sucursalInput").value,
-        }
+        const body = {
+            user_id: id_usuario,
+            ajuste: document.querySelector('input[name="ajuste"]:checked').value,
+            dinero: document.getElementById("dineroAjusteInput").value,
+            observaciones: document.getElementById("observacionesInput").value,
+            campania: document.querySelector("#campaniaInput").value,
+            agencia: document.querySelector("#sucursalInput").value,
+        };
+
         console.log(body)
-        // showLoader()
-        // let response = await fetchCRUD(body, urlLiquidacion)
+        showLoader('.moda_container_ajusteComision')
+        let response = await fetchFunction(body, '/ventas/liquidaciones/comisiones/nuevo_ajuste/')
 
-        // if (response.status) {
-        //     console.log("Salio todo bien");
-        //     hiddenLoader();
-        //     modal.close();
-        //     modal.destroy();
-        // }else{
-        //     console.log("Salio mal")
-        //     hiddenLoader()
-        //     modal.close();
-        //     modal.destroy();
-        // }
+        if (response.status) {
+            console.log("Salio todo bien");
+        }else{
+            console.log("Salio mal")
+            // hiddenLoader()
+        }
+        
+        hiddenLoader();
+        modal.close();
+        modal.destroy();
     });
 
-    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default', function () {
+    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default button-default-style', function () {
         modal.close();
         modal.destroy();
     });
 
     modal.open();
 }
-
 function update_comision_colaborador(colaborador){
     itemsColaboradores.forEach(c => {
         if(c.id == colaborador.id){

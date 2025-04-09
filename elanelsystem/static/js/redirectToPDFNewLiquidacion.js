@@ -61,7 +61,7 @@ function newModalLiquidacion() {
             "agencia": document.querySelector("#sucursalInput").value,
         }
 
-        showLoader()
+        showLoader('.modalContainerMsj')
         console.log("asdadadadada")
         let response = await fetchCRUD(body, urlLiquidacion)
 
@@ -96,8 +96,8 @@ function newModalLiquidacion() {
 }
 
 //#region Manejar el display del loader
-function showLoader() {
-    document.querySelector('.modalContainerMsj').children[0].style.display = "none";
+function showLoader(container) {
+    document.querySelector(container).children[0].style.display = "none";
     document.getElementById('wrapperLoader').style.display = 'flex';
 }
 

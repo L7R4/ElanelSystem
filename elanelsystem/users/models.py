@@ -92,6 +92,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     tel = models.CharField("Telefono",max_length=11, blank = True, null = True)
     c = models.CharField("Contraseña_depuracion:",max_length=250)
     fec_ingreso = models.CharField("Fecha de ingreso", max_length = 10, default ="")
+    fec_egreso = models.CharField("Fecha de egreso", max_length = 10, default ="", blank="")
+
     domic = models.CharField("Domicilio",max_length=200, default="")
     prov = models.CharField("Provincia",max_length=40, default="")
     cp = models.CharField("Codigo postal",max_length=5, default="")
@@ -108,7 +110,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
     faltas_tardanzas = models.JSONField("Faltas o tardanzas", default=list,blank=True,null=True)
     additional_passwords = models.JSONField("Contraseñas adicionales",default=dict,blank=True,null=True)
-
+    
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     accesosTodasSucursales = models.BooleanField(default=False)
