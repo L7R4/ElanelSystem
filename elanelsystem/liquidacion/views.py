@@ -274,7 +274,18 @@ def crearAjusteComision(request):
         print("[DEBUG] crearAjusteComision => Ajuste guardado en sesión. Ajustes totales ahora:")
         print(request.session["ajustes_comisiones"])
 
-        return JsonResponse({"status": True, "message": "Ajuste de comisión creado en sesión."})
+        sucursalObject = Sucursal.objects.get(pseudonimo=agencia)
+        usuario = Usuario.objects.get(pk=user_id)
+        datos_comision = get_comision_total(usuario, campania, sucursalObject)
+
+        nueva_comision_total = datos_comision["comision_total"]
+
+        return JsonResponse({
+            "status": True,
+            "message": "Ajuste de comisión creado en sesión.",
+            "user_id": user_id,
+            "new_comision": nueva_comision_total
+        })
     
     else:
         return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)

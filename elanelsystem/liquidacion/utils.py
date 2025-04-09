@@ -482,53 +482,57 @@ def get_premio_x_cantidad_ventas_sucursal(campania, agencia,objetivo_gerente=0):
 
 def get_asegurado(usuario):
     dineroAsegurado = 0
-    if(usuario.rango.lower() in "vendedor"):
+
+    rango = usuario.rango.lower()
+    if rango == "vendedor":
         asegurado = Asegurado.objects.get(dirigido="Vendedor")
         dineroAsegurado = asegurado.dinero
-        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario.fec_ingreso)
+        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario)
 
-    
-    elif(usuario.rango.lower() in "supervisor"):
+    elif rango == "supervisor":
         asegurado = Asegurado.objects.get(dirigido="Supervisor")
         dineroAsegurado = asegurado.dinero
-        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario.fec_ingreso)
+        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario)
 
-        
-    elif(usuario.rango.lower() in "gerente de sucursal"):
+    elif rango == "gerente de sucursal":
         asegurado = Asegurado.objects.get(dirigido="Gerente sucursal")
-        dineroAsegurado = asegurado.dinero
-        return dineroAsegurado
+        return asegurado.dinero
+
     else:
-        raise ValueError("Error al obtener el asegurado, ya que el rango de usuario no existe")
+        raise ValueError("Error al obtener el asegurado: rango de usuario no reconocido.")
 
 
-def calcular_asegurado_segun_dias_trabajados(dinero, fecha_ingreso):
+
+def calcular_asegurado_segun_dias_trabajados(dinero, usuario):
     """
-    Si el colaborador no estuvo todo el mes, se paga proporcional a días trabajados (excluyendo domingos).
+    Calcula cuánto asegurado le corresponde a un colaborador según sus días trabajados.
+    Si trabajó 26 días o más (sin contar domingos), cobra el asegurado completo.
+    Si trabajó menos, cobra proporcional.
     """
-    from datetime import datetime
+    # Parseamos fecha_ingreso si viene como string
+    fecha_ingreso = usuario.fec_ingreso
+    if isinstance(fecha_ingreso, str):
+        fecha_ingreso = datetime.strptime(fecha_ingreso, "%d/%m/%Y")
 
-    fecha_actual = datetime.now()
-    # último día del mes
-    ultimo_dia_mes = (fecha_actual.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-    print(f"Ultimo dia del mes: {ultimo_dia_mes}")
-    fecha_iter = datetime.strptime(fecha_ingreso, '%d/%m/%Y')
-    print(f"Dinero {dinero}, Fecha de ingreso: {fecha_ingreso}")
+    fecha_egreso = usuario.fec_egreso if usuario.fec_egreso else datetime.now()
+    
+    print(f"[DEBUG] Fechas parsed: ingreso={fecha_ingreso}, egreso={fecha_egreso}")
 
-    dias_habiles = 0
-    while fecha_iter <= ultimo_dia_mes:
-        if fecha_iter.weekday() != 6:
-            dias_habiles += 1
-        fecha_iter += timedelta(days=1)
+    dias_trabajados = 0
+    fecha_actual = fecha_ingreso
 
-    total_dias_mes = ultimo_dia_mes.day
-    print(f"Total de dias en el mes: {total_dias_mes}")
-    if dias_habiles < total_dias_mes:
-        # proporción
-        return (dinero / total_dias_mes) * dias_habiles
-    return dinero
+    while fecha_actual <= fecha_egreso:
+        if fecha_actual.weekday() != 6:  # 6 = domingo
+            dias_trabajados += 1
+        fecha_actual += timedelta(days=1)
 
+    print(f"[DEBUG] {usuario.nombre} trabajó {dias_trabajados} días hábiles entre {fecha_ingreso.date()} y {fecha_egreso.date()}")
 
+    if dias_trabajados >= 30:
+        return dinero
+    else:
+        proporcional = (dinero / 30) * dias_trabajados
+        return int(proporcional)
 #endregion
 
 

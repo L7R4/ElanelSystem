@@ -676,7 +676,7 @@ def importar_usuarios(request):
                         rango=row['Rango'],
                         password=str(row['DNI']) + '_elanel'
                     )
-                
+                 
                     # Asignar campos adicionales
                     usuario.tel = handle_nan(row['Telefono'])
                     usuario.domic = handle_nan(row['Domicilio'])
@@ -686,6 +686,7 @@ def importar_usuarios(request):
                     usuario.lugar_nacimiento = handle_nan(row['Lugar de nacimiento'])
                     usuario.fec_nacimiento = format_date(handle_nan(row['Fec-Nacimiento']))
                     usuario.fec_ingreso = format_date(handle_nan(row['Fecha ingreso']))
+                    usuario.fec_egreso = format_date(handle_nan(row['Fecha egreso']))
                     usuario.estado_civil = handle_nan(row['Estado civil'])
                     usuario.xp_laboral = handle_nan(row['XP Laboral'])
                     usuario.c = str(row['DNI']) + '_elanel'
