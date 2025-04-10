@@ -495,7 +495,7 @@ def get_asegurado(usuario):
         return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario)
 
     elif rango == "gerente de sucursal":
-        asegurado = Asegurado.objects.get(dirigido="Gerente sucursal")
+        asegurado = Asegurado.objects.get(dirigido="Gerente de sucursal")
         return asegurado.dinero
 
     else:
@@ -518,13 +518,7 @@ def calcular_asegurado_segun_dias_trabajados(dinero, usuario):
     
     print(f"[DEBUG] Fechas parsed: ingreso={fecha_ingreso}, egreso={fecha_egreso}")
 
-    dias_trabajados = 0
-    fecha_actual = fecha_ingreso
-
-    while fecha_actual <= fecha_egreso:
-        if fecha_actual.weekday() != 6:  # 6 = domingo
-            dias_trabajados += 1
-        fecha_actual += timedelta(days=1)
+    dias_trabajados = (fecha_egreso - fecha_ingreso).days + 1  # +1 para incluir el día de ingreso
 
     print(f"[DEBUG] {usuario.nombre} trabajó {dias_trabajados} días hábiles entre {fecha_ingreso.date()} y {fecha_egreso.date()}")
 
