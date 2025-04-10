@@ -57,7 +57,9 @@ function modal_ajuste_comision(id_usuario, nombre_usuario, comision) {
             dinero: document.getElementById("dineroAjusteInput").value,
             observaciones: document.getElementById("observacionesInput").value,
             campania: document.querySelector("#campaniaInput").value,
+            tipoColaborador: colaboradoresAFiltrar,
             agencia: document.querySelector("#sucursalInput").value,
+            total_comisiones: document.querySelector("#totalComisionesInput").value,
         };
 
         console.log(body)
@@ -66,10 +68,10 @@ function modal_ajuste_comision(id_usuario, nombre_usuario, comision) {
 
         if (response.status) {
             console.log("Salio todo bien");
-            update_comision_colaborador(response.user_id, response.new_comision)
+            update_colaborador(response.user_id, response.user_name, response.new_comision, response.ajuste_sesion)
+            update_total_comisiones(response.nuevo_total_comisiones)
         } else {
             console.log("Salio mal")
-            // hiddenLoader()
         }
 
         hiddenLoader();
@@ -84,7 +86,10 @@ function modal_ajuste_comision(id_usuario, nombre_usuario, comision) {
 
     modal.open();
 }
-function update_comision_colaborador(colaborador_id, new_comision) {
+
+
+function update_colaborador(colaborador_id, colaborador_nombre, new_comision, nuevos_ajustes) {
+    // #1 Cambiamos el valor de la comision en el DOM
     const li = document.querySelector(`ul.values li#idColaborador_${colaborador_id}`);
     if (li) {
         const p = li.querySelector(".wrapperComisionColaborador > p");
@@ -92,4 +97,27 @@ function update_comision_colaborador(colaborador_id, new_comision) {
             p.textContent = `$ ${new_comision}`;
         }
     }
+
+    // #2 Cambiamos el boton para ajustar comision del usuario en el DOM
+    const button = document.querySelector(`ul.values li#idColaborador_${colaborador_id} button.ajusteComisionButton`);
+    if (button) {
+        button.setAttribute("onclick", `modal_ajuste_comision(${colaborador_id}, '${colaborador_nombre}', ${new_comision})`);
+    }
+
+    // #3 Actualizar los datos del colaborador en itemsColaboradores
+    const index = itemsColaboradores.findIndex(c => c.id == colaborador_id);
+    if (index !== -1) {
+        itemsColaboradores[index].comisionTotal = new_comision;
+        itemsColaboradores[index].ajustes_comision = nuevos_ajustes;
+    }
+}
+
+function update_total_comisiones(new_total) {
+    const textTotal = document.querySelector("#dineroTotalComisiones")
+    let inputDinero = document.querySelector("#totalComisionesInput");
+
+    
+    const dineroFormateado = new Intl.NumberFormat("es-AR").format(new_total);
+    textTotal.textContent = dineroFormateado
+    inputDinero.value = new_total
 }
