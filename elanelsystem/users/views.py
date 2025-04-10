@@ -673,7 +673,7 @@ def importar_usuarios(request):
                         email=row['Email'],
                         nombre=row['Nombre'],
                         dni=row['DNI'],
-                        rango=row['Rango'],
+                        rango=row['Rango'].capitalize(),
                         password=str(row['DNI']) + '_elanel'
                     )
                  
@@ -690,7 +690,7 @@ def importar_usuarios(request):
                     usuario.estado_civil = handle_nan(row['Estado civil'])
                     usuario.xp_laboral = handle_nan(row['XP Laboral'])
                     usuario.c = str(row['DNI']) + '_elanel'
-                    usuario.groups.add(Group.objects.filter(name=row["Rango"]).first())
+                    usuario.groups.add(Group.objects.filter(name=row["Rango"].capitalize()).first())
                     sucursal_object = Sucursal.objects.get(id=agencia)
                     usuario.sucursales.add(sucursal_object)
                     usuario.save()

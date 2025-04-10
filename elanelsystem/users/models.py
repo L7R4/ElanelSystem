@@ -92,7 +92,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     tel = models.CharField("Telefono",max_length=11, blank = True, null = True)
     c = models.CharField("Contraseña_depuracion:",max_length=250)
     fec_ingreso = models.CharField("Fecha de ingreso", max_length = 10, default ="")
-    fec_egreso = models.CharField("Fecha de egreso", max_length = 10, default ="", blank="")
+    fec_egreso = models.CharField("Fecha de egreso", max_length = 10, default ="", blank=True, null=True)
 
     domic = models.CharField("Domicilio",max_length=200, default="")
     prov = models.CharField("Provincia",max_length=40, default="")

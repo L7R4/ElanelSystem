@@ -170,18 +170,18 @@ class Ventas(models.Model):
     def clean(self):
         errors = {}
         validation_methods = [
-            self.validation_modalidad,
-            self.validation_total_a_pagar,
-            self.validation_importe,
-            self.validation_importe_x_cuota,
-            self.validation_tasa_interes,
-            self.validation_intereses_generados,
-            self.validation_anticipo,
-            self.validation_primer_cuota,
-            # self.validation_fecha,
-            self.validation_paquete,
-            self.validation_campania,
-            # self.validation_nro_operacion   
+            # self.validation_modalidad,
+            # self.validation_total_a_pagar,
+            # self.validation_importe,
+            # self.validation_importe_x_cuota,
+            # self.validation_tasa_interes,
+            # self.validation_intereses_generados,
+            # self.validation_anticipo,
+            # self.validation_primer_cuota,
+            # # self.validation_fecha,
+            # # self.validation_paquete,
+            # self.validation_campania,
+            # # self.validation_nro_operacion   
         ]
 
         for method in validation_methods:

@@ -92,7 +92,8 @@
 
                 <div class="resumen_actions_wrapper">
                     <div id="totalComisionesTextColaboradores_wrapper">
-                        <h3>Total $0</h3>
+                        <input type="hidden" id="totalComisionesInput" value="0">
+                        <h3>Total $<span id="dineroTotalComisiones">0</span></h3>
                     </div>
                     <div class="wrapperButtonsActions hidden" id="wrapperButtonsActions">
                         <a href="{% url 'liquidacion:preViewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
@@ -107,7 +108,7 @@
     <script> 
         var CSRF_TOKEN = '{% csrf_token %}';
         const urlRequestColaboradores = "{{urlRequestColaboradores}}"
-
+        var info_icon = "{% static 'images/icons/info_icon.svg' %}"
     </script>
     <script src="{% static 'js/redirectToPDFNewLiquidacion.js' %}"></script>
     <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>

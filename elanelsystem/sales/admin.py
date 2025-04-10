@@ -24,7 +24,7 @@ class VentasAdmin(admin.ModelAdmin):
     search_fields = ('nro_cliente__nombre', 'producto__nombre', 'fecha',"campania","nro_cuotas",)
     
     # Agregar filtros
-    list_filter = ('supervisor',)
+    list_filter = ('supervisor', "vendedor")
     
     # Mostrar más información en la vista de detalle
     # readonly_fields = ('nro_operacion', 'cuotas', 'adjudicado', 'deBaja', 'auditoria')
