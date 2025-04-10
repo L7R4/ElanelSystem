@@ -16,6 +16,10 @@ import datetime
 import json
 from elanelsystem.utils import printPDF
 from .utils import (
+    calcular_cantidad_ventasPropias,
+    calcular_productividad_supervisor,
+    calcular_ventas_supervisor,
+    get_detalle_cuotas1,
     liquidaciones_countFaltas,
     liquidaciones_countTardanzas,
     obtener_ultima_campania,
@@ -58,9 +62,10 @@ def insertar_ajustes_en_detalle(detalle_actual, ajustes, user_id):
 class LiquidacionesComisiones(TestLogin,generic.View):
     template_name = 'comisiones.html'
     def get(self,request,*args,**kwargs):
-        # try:
             context = {}
+            print("WTFFFFFF")
             request.session["ajustes_comisiones"] = [] # Reiniciar posibles ajustes de la comisiones que existan
+
             context["urlPDFLiquidacion"] = reverse_lazy("liquidacion:viewPDFLiquidacion")
             lastCampania = obtener_ultima_campania()
             context["defaultSucursal"] = Sucursal.objects.first()
@@ -68,168 +73,192 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             context["campanias"] = getTodasCampaniasDesdeInicio()
             context["urlRequestColaboradores"] = reverse_lazy('liquidacion:requestColaboradoresWithComisiones')
             usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor","Gerente sucursal"])
-            admins = Usuario.objects.filter(rango = "Admin")
-            # context["colaboradores"] = [{"nombre": user.nombre, "comisionTotal":getComisionTotal(user,lastCampania,request.user.sucursal)["total_comisionado"]} for user in usuarios]
-            context["admins"] = admins
-            # context["totalDeComisiones"] = sum([user["comisionTotal"] for user in context["colaboradores"]])
             return render(request, self.template_name, context)
-        # except:
-        #     context = {}
-        #     return render(request, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
         try:
             form = json.loads(request.body)
 
-            campania=form["campania"]
-            sucursal=form["agencia"]
+            campania = form["campania"]
+            sucursal = form["agencia"]
             sucursalObject = Sucursal.objects.get(pseudonimo=sucursal)
+
             ventas = Ventas.objects.filter(campania=campania, agencia=sucursalObject)
             ventas = [
-                venta for venta in ventas
-                if len(venta.auditoria) > 0 and venta.auditoria[-1].get("grade") is True
+                v for v in ventas
+                if v.auditoria and len(v.auditoria) > 0 and v.auditoria[-1].get("grade") is True
             ]
-            datos = request.session.get('liquidacion_data', {})
 
+            datos = request.session.get('liquidacion_data', [])
+            ajustes_sesion = request.session.get('ajustes_comisiones', [])
+
+            # Borramos liquidaciones previas
             LiquidacionVendedor.objects.filter(campania=campania, sucursal=sucursalObject).delete()
             LiquidacionSupervisor.objects.filter(campania=campania, sucursal=sucursalObject).delete()
             LiquidacionGerenteSucursal.objects.filter(campania=campania, sucursal=sucursalObject).delete()
             LiquidacionCompleta.objects.filter(campania=campania, sucursal=sucursalObject).delete()
 
-            #region Liquidacion por tipo de colaborador 
             vendedores = []
             supervisores = []
             gerentes = []
+
+            total_liquidado_final = 0
+
             for item in datos:
                 user_id = item["id"]
                 detalle_sin_ajuste = item["info_total_de_comision"]["detalle"]
-                detalle_con_ajustes, total_ajuste = insertar_ajustes_en_detalle(detalle_sin_ajuste, ajustes_sesion, user_id)
+                comision_base = item["comisionTotal"]
 
-                total_comision_ajustada = item["comisionTotal"] + total_ajuste
+                # ✅ Insertar ajustes al detalle y calcular total ajustado
+                detalle_con_ajustes, total_ajuste = insertar_ajustes_en_detalle(detalle_sin_ajuste, ajustes_sesion, user_id)
+                comision_total_ajustada = comision_base + total_ajuste
+                total_liquidado_final += comision_total_ajustada
+
+                user_obj = Usuario.objects.get(pk=user_id)
 
                 if item["tipo_colaborador"] == "Vendedor":
-                    new = LiquidacionVendedor(
-                        usuario=Usuario.objects.get(pk=user_id),
+                    liquidacion = LiquidacionVendedor(
+                        usuario=user_obj,
                         campania=campania,
                         sucursal=sucursalObject,
                         cant_ventas=item["info_total_de_comision"]["cant_ventas_propia"],
                         productividad=item["info_total_de_comision"]["productividad_propia"],
-                        total_comisionado=total_comision_ajustada,
+                        total_comisionado=comision_total_ajustada,
                         detalle=detalle_con_ajustes
                     )
-                    new.save()
-                    vendedores.append(new)
+                    liquidacion.save()
+                    vendedores.append(liquidacion)
 
                 elif item["tipo_colaborador"] == "Supervisor":
-                    new = LiquidacionSupervisor(
-                        usuario=Usuario.objects.get(pk=user_id),
+                    liquidacion = LiquidacionSupervisor(
+                        usuario=user_obj,
                         campania=campania,
                         sucursal=sucursalObject,
                         cant_ventas=item["info_total_de_comision"]["cant_ventas_fromRol"],
                         productividad=item["info_total_de_comision"]["productividad_fromRol"],
-                        total_comisionado=total_comision_ajustada,
+                        total_comisionado=comision_total_ajustada,
                         detalle=detalle_con_ajustes
                     )
-                    new.save()
-                    supervisores.append(new)
+                    liquidacion.save()
+                    supervisores.append(liquidacion)
 
                 elif item["tipo_colaborador"] == "Gerente sucursal":
-                    new = LiquidacionGerenteSucursal(
-                        usuario=Usuario.objects.get(pk=user_id),
+                    liquidacion = LiquidacionGerenteSucursal(
+                        usuario=user_obj,
                         campania=campania,
                         sucursal=sucursalObject,
-                        total_comisionado=total_comision_ajustada,
+                        total_comisionado=comision_total_ajustada,
                         detalle=detalle_con_ajustes
                     )
-                    new.save()
-                    gerentes.append(new)
+                    liquidacion.save()
+                    gerentes.append(liquidacion)
 
-            #endregion  
+            # ✅ Liquidación completa
+            liquidacion_completa = LiquidacionCompleta(
+                fecha=datetime.date.today().strftime("%d/%m/%Y"),
+                campania=campania,
+                sucursal=sucursalObject,
+                total_liquidado=total_liquidado_final,
+                total_proyectado=sum([venta.importe for venta in ventas]),
+                total_recaudado=0,  # Se puede recalcular luego
+                cant_ventas=len(ventas)
+            )
+            liquidacion_completa.total_recaudado = liquidacion_completa.total_proyectado - total_liquidado_final
+            liquidacion_completa.save()
+            liquidacion_completa.detalle_vendedores.add(*vendedores)
+            liquidacion_completa.detalle_supervisores.add(*supervisores)
+            liquidacion_completa.detalle_gerentes.add(*gerentes)
+            liquidacion_completa.save()
 
-            # #region Liquidacion completa
-            new_liquidacionCompleta = LiquidacionCompleta()
-            new_liquidacionCompleta.fecha = datetime.date.today().strftime("%d/%m/%Y")
-            new_liquidacionCompleta.campania = campania
-            new_liquidacionCompleta.sucursal = sucursalObject
-            new_liquidacionCompleta.total_liquidado = sum([item["comisionTotal"] for item in datos])
-            new_liquidacionCompleta.total_proyectado = sum([venta.importe for venta in ventas])
-            new_liquidacionCompleta.total_recaudado = new_liquidacionCompleta.total_proyectado - new_liquidacionCompleta.total_liquidado
-            new_liquidacionCompleta.cant_ventas = len(ventas)
-            new_liquidacionCompleta.save()
-            new_liquidacionCompleta.detalle_vendedores.add(*vendedores)
-            new_liquidacionCompleta.detalle_supervisores.add(*supervisores)
-            new_liquidacionCompleta.detalle_gerentes.add(*gerentes)
-            new_liquidacionCompleta.save()
-            #endregion
-            
+            # ✅ Limpiar la sesión de ajustes y liquidación
+            request.session["ajustes_comisiones"] = []
+            # request.session["liquidacion_data"] = []
 
-                
-            response_data = {
-                "urlPDF": reverse_lazy('liquidacion:viewPDFLiquidacion', kwargs={"id": new_liquidacionCompleta.id}),
-                "urlRedirect": reverse_lazy('liquidacion:liquidacionesPanel'),
-                "status": True
-            }
-            
-            return JsonResponse(response_data, safe=False)  
-             
+            return JsonResponse({
+                "status": True,
+                "urlPDF": reverse_lazy('liquidacion:viewPDFLiquidacion', kwargs={"id": liquidacion_completa.id}),
+                "urlRedirect": reverse_lazy('liquidacion:liquidacionesPanel')
+            })
+
         except Exception as e:
-            print(e)
-            return JsonResponse({"status": False, "message": f"Hubo un error al liquidar"}, safe=False)  
+            print("[ERROR]", e)
+            return JsonResponse({"status": False, "message": "Hubo un error al liquidar"}, safe=False)
 
 
 def requestColaboradoresWithComisiones(request):
-    form =json.loads(request.body)
+    form = json.loads(request.body)
     
-    sucursalObject = Sucursal.objects.get(id = int(form["sucursal"]))
+    sucursalObject = Sucursal.objects.get(id=int(form["sucursal"]))
     campania = form["campania"]
-    
     tipo_colaborador = form["tipoColaborador"]
-    colaboradores = Usuario.objects.filter(sucursales__in=[sucursalObject])
-
-    rangos = [item.name for item in Group.objects.all()]
-
-    if(tipo_colaborador and tipo_colaborador in rangos):
-        colaboradores = colaboradores.filter(rango = tipo_colaborador)
-
-    colaboradores_list = [{
-        "tipo_colaborador":item.rango, 
-        "nombre": item.nombre, "id": item.pk, 
-        "dni":item.dni,
-        "sucursal": form["sucursal"],
-        "campania": campania,
-        "comisionTotal": get_comision_total(item,campania,sucursalObject)["comision_total"],
-        "info_total_de_comision": get_comision_total(item,campania,sucursalObject)
-        } 
-        for item in colaboradores if item.rango != "Admin"]
     
+    colaboradores = Usuario.objects.filter(sucursales__in=[sucursalObject])
+    rangos = [item.name for item in Group.objects.all()]
+    if tipo_colaborador and tipo_colaborador in rangos:
+        colaboradores = colaboradores.filter(rango=tipo_colaborador)
+
+    ajustes_sesion = request.session.get("ajustes_comisiones", [])
+    
+    colaboradores_list = []
+    
+    for item in colaboradores:
+        if item.rango in ["Admin","Administrativa","Administrativo"]:
+            continue
+        
+        comision_data = get_comision_total(item, campania, sucursalObject)
+        comision_total = comision_data["comision_total"]
+
+        # Buscar ajustes específicos para este colaborador, campaña y agencia
+        ajustes_usuario = [
+            a for a in ajustes_sesion
+            if int(a["user_id"]) == item.pk
+            and a["campania"] == campania
+            and a["agencia"] == sucursalObject.pseudonimo
+        ]
+
+        # Calcular ajuste total
+        ajuste_total = 0
+        for ajuste in ajustes_usuario:
+            if ajuste["ajuste_tipo"] == "positivo":
+                ajuste_total += ajuste["dinero"]
+            elif ajuste["ajuste_tipo"] == "negativo":
+                ajuste_total -= ajuste["dinero"]
+
+        comision_total_ajustada = comision_total + ajuste_total
+
+        colaboradores_list.append({
+            "tipo_colaborador": item.rango,
+            "nombre": item.nombre,
+            "id": item.pk,
+            "dni": item.dni,
+            "sucursal": form["sucursal"],
+            "campania": campania,
+            "ajustes_comision": ajustes_usuario,
+            "comisionTotal": comision_total_ajustada,
+            "info_total_de_comision": comision_data
+        })
+
     totalDeComisiones = sum([user["comisionTotal"] for user in colaboradores_list])
     request.session["liquidacion_data"] = colaboradores_list
 
-    return JsonResponse({"colaboradores_data": colaboradores_list, "totalDeComisiones": totalDeComisiones} , safe=False)
+    return JsonResponse({
+        "colaboradores_data": colaboradores_list,
+        "totalDeComisiones": totalDeComisiones
+    }, safe=False)
 
 
 def crearAjusteComision(request):
     """
     Crear un ajuste de comisión para un colaborador y almacenarlo en la sesión.
-    Estructura de cada ajuste (ejemplo):
-    {
-      "user_id": <int>,
-      "ajuste_tipo": "positivo" o "negativo",
-      "dinero": <float>,
-      "observaciones": <str>,
-      "campania": <str>,
-      "agencia": <str>
-    }
+    También devuelve la comisión total actualizada con el ajuste incluido.
     """
 
     if request.method == "POST":
         try:
-            # Intentamos parsear el cuerpo como JSON.
             body = json.loads(request.body)
         except json.JSONDecodeError:
             return JsonResponse({"status": False, "message": "JSON mal formado"}, status=400)
-        
-        # Ejemplo de datos que recibes:
+
         user_id = body.get("user_id")
         ajuste_tipo = body.get("ajuste")
         dinero = body.get("dinero")
@@ -237,59 +266,53 @@ def crearAjusteComision(request):
         campania = body.get("campania")
         agencia = body.get("agencia")
 
-        print("[DEBUG] crearAjusteComision => Datos recibidos:")
-        print("   user_id:", user_id)
-        print("   ajuste_tipo:", ajuste_tipo)
-        print("   dinero:", dinero)
-        print("   observaciones:", observaciones)
-        print("   campania:", campania)
-        print("   agencia:", agencia)
-
-        # Validamos algo básico
         if not user_id or not campania or not agencia:
             return JsonResponse({"status": False, "message": "Faltan datos obligatorios"}, status=400)
 
-        # Creamos el dict del ajuste
+        # Armamos el ajuste
         ajuste = {
             "user_id": user_id,
             "ajuste_tipo": ajuste_tipo,
-            "dinero": float(dinero) if dinero else 0.0,
+            "dinero": int(dinero) if dinero else 0,
             "observaciones": observaciones,
             "campania": campania,
             "agencia": agencia
         }
 
-        # Recuperamos la lista de ajustes en sesión (o creamos si no existe)
+        # Guardar en sesión
         ajustes_sesion = request.session.get("ajustes_comisiones", [])
-        
-        # Agregamos este nuevo ajuste a la lista
         ajustes_sesion.append(ajuste)
-
-        # Guardamos de nuevo en la sesión
+        print(f"[DEUBG] Nuevo ajuste de sesion --> {ajustes_sesion}")
         request.session["ajustes_comisiones"] = ajustes_sesion
-
-        # Marcamos la sesión como modificada para asegurar que se guarde
         request.session.modified = True
 
-        print("[DEBUG] crearAjusteComision => Ajuste guardado en sesión. Ajustes totales ahora:")
-        print(request.session["ajustes_comisiones"])
-
-        sucursalObject = Sucursal.objects.get(pseudonimo=agencia)
+        # Calcular nueva comisión total
+        sucursalObject = Sucursal.objects.get(id=agencia)
         usuario = Usuario.objects.get(pk=user_id)
         datos_comision = get_comision_total(usuario, campania, sucursalObject)
+        comision_base = datos_comision["comision_total"]
 
-        nueva_comision_total = datos_comision["comision_total"]
+        # Aplicar los ajustes del usuario actual
+        total_ajuste_usuario = 0
+        for a in ajustes_sesion:
+            if int(a["user_id"]) == int(user_id):
+                if a["ajuste_tipo"] == "positivo":
+                    total_ajuste_usuario += int(a["dinero"])
+                elif a["ajuste_tipo"] == "negativo":
+                    total_ajuste_usuario -= int(a["dinero"])
+
+        comision_total_ajustada = comision_base + total_ajuste_usuario
+        print(f"[DEUBG] Nuevo ajuste de comision --> {comision_total_ajustada}")
 
         return JsonResponse({
             "status": True,
             "message": "Ajuste de comisión creado en sesión.",
             "user_id": user_id,
-            "new_comision": nueva_comision_total
+            "new_comision": comision_total_ajustada
         })
-    
+
     else:
         return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
-
 
 def preViewPDFLiquidacion(request):
     datos = request.session.get('liquidacion_data', {})
@@ -337,8 +360,8 @@ def viewPDFLiquidacion(request, id):
         "dni":item.usuario.dni,
         "sucursal": liquidacion.sucursal.pseudonimo,
         "campania": liquidacion.campania,
-        "comisionTotal": getComisionTotal(item.usuario,liquidacion.campania,liquidacion.sucursal)["total_comisionado"],
-        "info_total_de_comision": getComisionTotal(item.usuario,liquidacion.campania,liquidacion.sucursal)
+        "comisionTotal": get_comision_total(item.usuario,liquidacion.campania,liquidacion.sucursal)["total_comisionado"],
+        "info_total_de_comision": get_comision_total(item.usuario,liquidacion.campania,liquidacion.sucursal)
         } 
         for item in colaboradores]
 
@@ -402,9 +425,9 @@ class LiquidacionesRanking(TestLogin,generic.View):
 
         # Calcular ventas y productividad de vendedores
         for usuario in Usuario.objects.filter(sucursales__in=[sucursalObject]):
-            ventasPropias = calcular_ventas_vendedor(usuario,campania,sucursalObject)
+            ventasPropias = calcular_cantidad_ventasPropias(usuario,campania,sucursalObject)
             # productividadPropia = calcular_productividad_vendedor(usuario,campania,sucursalObject)
-            cuotas1Adelantadas = getCuotas1(usuario,campania,sucursalObject)
+            cuotas1Adelantadas = get_detalle_cuotas1(usuario,campania,sucursalObject)
 
             vendedores.append({
                 'email_usuario':usuario.email,
@@ -586,7 +609,8 @@ class HistorialLiquidaciones(generic.ListView):
                 },safe=False)
         
         return render(request, self.template_name, context)
-    
+
+
 class DetallesComisionesView(generic.View):
     template_name = 'detalle_comisiones.html'
 

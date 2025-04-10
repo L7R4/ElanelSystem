@@ -72,9 +72,7 @@ function clearInputs(inputs) {
     });
 
     inputs.forEach(element => {
-        console.log(element)
         let options = element.parentElement.parentElement.querySelector(".options");
-        console.log(options)
         options.querySelectorAll("li.selected").forEach(el => el.classList.remove("selected"));
     });
 

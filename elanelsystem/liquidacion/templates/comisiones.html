@@ -40,10 +40,10 @@
                   <div class="onlySelect pseudo-input-select-wrapper">
                         <h3></h3>
                   </div>
-                  <ul id="contenedorSucursal" class="list-select-custom options">
+                  <ul id="contenedorCampania" class="list-select-custom options">
                     {% for campania in campanias %}
-                            <li>{{campania}}</li>
-                        {% endfor %}
+                            <li data-value="{{campania}}">{{campania}}</li>
+                    {% endfor %}
                 </ul>
                 </div>
             </div>
@@ -112,7 +112,7 @@
     <script src="{% static 'js/redirectToPDFNewLiquidacion.js' %}"></script>
     <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 
-    <script src="{% static 'js/input_select_create_user.js' %}"></script>
+    {% comment %} <script src="{% static 'js/input_select_create_user.js' %}"></script> {% endcomment %}
     <script src="{% static 'js/filters_liquidacion.js' %}"></script>
     <script src="{% static 'js/ajuste_comision_liquidacion.js' %}"></script> 
     <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
