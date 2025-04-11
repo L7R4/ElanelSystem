@@ -25,11 +25,7 @@ class Sucursal(models.Model):
         self.direccion = self.direccion.capitalize()
         self.provincia = self.provincia.title()
         self.localidad = self.localidad.title()
-
-        if((self.localidad).lower() in "resistencia"):
-            self.pseudonimo = "Sucursal central"
-        else:    
-            self.pseudonimo = (f'{self.localidad}, {self.provincia}')
+        self.pseudonimo = (f'{self.localidad}, {self.provincia}')
         super(Sucursal, self).save(*args, **kwargs)
 
 

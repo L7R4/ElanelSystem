@@ -186,9 +186,11 @@ function update_textPreValues_to_values() {
 
 // #region Obtener mas info sobre la liquidacion
 function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_ajustes, detalle) {
-    const ventas = detalle.ventasPropias?.detalle || {};
-    const premios = detalle.premios?.detalle || {};
-    const rol = detalle.rol?.detalle || {};
+   
+
+    const ventas = detalle.info_total_de_comision.detalle.ventasPropias?.detalle || {};
+    const premios = detalle.info_total_de_comision.detalle.premios?.detalle || {};
+    const rol = detalle.info_total_de_comision.detalle.rol?.detalle || {};
     const ajustes = otros_ajustes || [];
 
     let total_ajuste = 0;
@@ -202,8 +204,9 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
     const premio_productividad_propia = premios.premio_x_productividad_ventas_propias || 0;
     const premio_ventas_equipo = premios.premio_x_cantidad_ventas_equipo || 0;
     const premio_productividad_equipo = premios.premio_x_productividad_ventas_equipo || 0;
-    const comision_ventas_equipo = detalle.rol.comision_subtotal || 0;
-    const comision_total = comision_ventas_equipo + comision_ventas + comision_cuotas + premio_productividad_propia + premio_ventas_equipo + premio_productividad_equipo + total_ajuste;
+    const comision_ventas_equipo = detalle.info_total_de_comision.detalle.rol.comision_subtotal || 0;
+    const comision_total = detalle.comisionTotal
+    const asegurado = detalle.info_total_de_comision.asegurado
 
     let html = `<div class="wrapperDetalleLiquidacion">
         <h2>Detalle de ${user_name}</h2>`;
@@ -252,6 +255,10 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
     }
 
     html += `</div>
+        <div class="subDetalleGroup asegurado">
+            <h3>Asegurado:</h3>
+            <p><strong>$${asegurado}</strong></p>
+        </div>
         <div class="subDetalleGroup resumenTotalComision">
             <h3>Total final de comisión:</h3>
             <p><strong>$${comision_total}</strong></p>
@@ -265,13 +272,12 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
 function modal_more_info_comision_by_id(user_id) {
     const colaborador = itemsColaboradores.find(item => item.id === user_id);
     if (!colaborador) return;
-
     modal_more_info_comision(
         colaborador.id,
         colaborador.nombre,
         colaborador.tipo_colaborador,
         colaborador.ajustes_comision,
-        colaborador.info_total_de_comision?.detalle || {}
+        colaborador || {}
     );
 }
 
