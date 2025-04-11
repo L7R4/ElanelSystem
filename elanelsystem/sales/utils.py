@@ -349,7 +349,7 @@ def convertir_moneda_a_texto(cantidad):
 #region Data Structures ----------------------------------------------------------
 
 def getInfoBaseCannon(venta, cuota):
-    cliente = Cliente.objects.get(nro_cliente=venta.nro_cliente.nro_cliente)
+    cliente = Cliente.objects.get(id=venta.nro_cliente.id)
     return {
         'cuota': {'data': cuota["cuota"], 'verbose_name': 'Cuota'},
         'nro_operacion': {'data': cuota["nro_operacion"], 'verbose_name': 'N° Operación'},

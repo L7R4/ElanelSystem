@@ -11,7 +11,7 @@ class ClienteAdmin(admin.ModelAdmin):
 class UsuarioAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'rango', 'dni', 'domic', 'prov', 'tel', 'fec_nacimiento')
 
-
+    list_filter = ("sucursales",)
 admin.site.register(Key)
 admin.site.register(Sucursal)
 admin.site.register(Permission)

@@ -373,7 +373,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                         cuota = filaEstado["cuotas"].replace(" ","").split("-")[1]
 
                         total_a_pagar += int(filaEstado["importe_cuotas"])
-
+                        print("aaaaaaaaaaaaaa")
                         statusCuota = str(filaEstado["estado"]).title() if filaEstado["estado"] not in ["Vencido", "BAJA","vencido","baja"] else "vencido"
 
                         # print(f"ESTADO DE CUOTA {statusCuota}")
@@ -460,7 +460,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                                 "descuento": {'autorizado': "", 'monto': 0},
                                 "bloqueada": False,
                                 "fechaDeVencimiento":format_date(filaEstado["fecha_venc"]) + " 00:00", 
-                                "diasRetraso": int(float(str(filaEstado["dias_de_mora"]).replace("-",""))),
+                                "diasRetraso": int(float(str(filaEstado["dias_de_mora"]).replace("-",""))) if handle_nan(filaEstado["dias_de_mora"]) != "" else 0 ,
                                 "interesPorMora": 0,
                                 "totalFinal": 0,
                                 "autorizada_para_anular": False
@@ -537,7 +537,8 @@ def importVentas(request):
 
                 # 2) Si el cliente no existe, saltamos pero actualizamos i
                 nro_cliente = row_actual["cod_cli"]
-                if not Cliente.objects.filter(nro_cliente=nro_cliente).exists():
+                agenciaObject = Sucursal.objects.get(pseudonimo=agencia)
+                if not Cliente.objects.filter(nro_cliente=nro_cliente, agencia=agenciaObject).exists():
                     print(f"Fila {i}: Cliente {nro_cliente} no existe. Se omite esta fila.")
                     i += 1
                     continue
