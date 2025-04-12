@@ -358,18 +358,23 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                 #     print(f"\n\n WTFFF TE PASASTE \n\n")
                 #     break
                 filaEstado = sheetEstados.iloc[i]
-
+                print(f"ID venta: {type(rowVenta['id_venta'])}")
+                print(f"ID venta EStados: {type(filaEstado['id_venta'])}")
+                
                 if int(rowVenta["id_venta"]) != int(filaEstado["id_venta"]):
+                    # print("WEpssss???????????????")
+
                     # print(f"Los IDs no son iguales, continuamos con la siguiente fila ({i}) de la hoja estados")  
                     continue
                 # print(f"filaEstado: {filaEstado}")
-                # print("WEpssss???????????????")
 
                 # print(f"Procesando fila {i} del contrato {nro_orden}")
                 # print(filaEstado)
 
                 try:
                     if(int(filaEstado["id_venta"]) == int(rowVenta['id_venta'])):
+                        # print("WEpssss222222???????????????")
+
                         cuota = filaEstado["cuotas"].replace(" ","").split("-")[1]
 
                         total_a_pagar += int(filaEstado["importe_cuotas"])
@@ -416,7 +421,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                                 "autorizada_para_anular": False
 
                             }
-                        
+
                         elif(filaEstado["cuotas"] == "cuota -  1"):
                             # Valor oficial
                             valor_oficial_cuota1 = newVenta.primer_cuota * cantidadContratos
@@ -482,12 +487,13 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                     else:
                         
                         break
+                    
                 except Exception as e:
                     print(f"Error en la hoja de cuotas, en la fila {filaEstado}\n\n ------------------------------- \n\n")
                     print(f"Error: {e}")
                     raise
                     
-
+                
             print("Hasta parece que llega bom")
             cuotas.reverse()
             newVenta.total_a_pagar = float(total_a_pagar * cantidadContratos)
@@ -538,6 +544,7 @@ def importVentas(request):
                 # 2) Si el cliente no existe, saltamos pero actualizamos i
                 nro_cliente = row_actual["cod_cli"]
                 agenciaObject = Sucursal.objects.get(pseudonimo=agencia)
+                print(f"{agenciaObject.pseudonimo} -------<><>>><<<<<>><>>>>>")
                 if not Cliente.objects.filter(nro_cliente=nro_cliente, agencia_registrada=agenciaObject).exists():
                     print(f"Fila {i}: Cliente {nro_cliente} no existe. Se omite esta fila.")
                     i += 1

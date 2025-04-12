@@ -6,9 +6,48 @@ from django.template.loader import get_template
 import os
 from django.template.loader import get_template
 from weasyprint import HTML,CSS
+import numpy as np
 
 
-
+def safe_to_int(value):
+    """
+    Convierte 'value' a int de forma segura, manejando varios tipos:
+    - np.float64, np.int64
+    - float, int
+    - str que contenga un número válido
+    - y por defecto, intenta convertir a float primero.
+    
+    Si no logra convertir, lanza ValueError.
+    """
+    if value is None:
+        raise ValueError("No se puede convertir None a entero.")
+    
+    # Caso numpy integer (np.int32, np.int64, etc.)
+    if isinstance(value, np.integer):
+        return int(value)
+    
+    # Caso numpy float (np.float64, etc.)
+    if isinstance(value, np.floating):
+        return int(value)
+    
+    # Caso float, int nativo de Python
+    if isinstance(value, (float, int)):
+        return int(value)
+    
+    # Caso string: intentar convertirlo a float y luego int
+    if isinstance(value, str):
+        # Verificar que sea realmente un número
+        try:
+            return int(float(value))
+        except ValueError:
+            raise ValueError(f"No se pudo convertir la cadena '{value}' a entero.")
+    
+    # Si no entra en ninguno de los casos anteriores, 
+    # hacer un intento genérico
+    try:
+        return int(float(value))
+    except Exception as e:
+        raise ValueError(f"No se pudo convertir {value} a entero. Error: {e}")
 
 # Funcion para manejar valores NaN desde JS
 def handle_nan(value):
