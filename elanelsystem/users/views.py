@@ -836,7 +836,7 @@ def importar_clientes(request):
                         prov = handle_nan(row["prov"]) ,
                         cod_postal = str(int(float(row["cod_pos"]))) if handle_nan(row["cod_pos"]) != "" else "",
                         tel= str(int(float(row['tel_1']))) if handle_nan(row['tel_1']) != "" else "" ,
-                        fec_nacimiento = format_date(handle_nan(row["fecha_de_nac"])),
+                        # fec_nacimiento = format_date(handle_nan(row["fecha_de_nac"])),
                         estado_civil = handle_nan(row["estado_civil"]) ,
                         ocupacion = handle_nan(row["ocupacion"]) 
                     )

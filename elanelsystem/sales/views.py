@@ -538,7 +538,7 @@ def importVentas(request):
                 # 2) Si el cliente no existe, saltamos pero actualizamos i
                 nro_cliente = row_actual["cod_cli"]
                 agenciaObject = Sucursal.objects.get(pseudonimo=agencia)
-                if not Cliente.objects.filter(nro_cliente=nro_cliente, agencia=agenciaObject).exists():
+                if not Cliente.objects.filter(nro_cliente=nro_cliente, agencia_registrada=agenciaObject).exists():
                     print(f"Fila {i}: Cliente {nro_cliente} no existe. Se omite esta fila.")
                     i += 1
                     continue

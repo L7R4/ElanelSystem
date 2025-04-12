@@ -269,7 +269,7 @@ class Cliente(models.Model):
     prov = models.CharField(max_length=40,default="")
     cod_postal = models.CharField(max_length=7,default="")
     tel = models.CharField(max_length=11,default="")
-    fec_nacimiento = models.CharField(max_length=10, default="")
+    fec_nacimiento = models.CharField(max_length=10, default="",blank=True,null=True)
     estado_civil = models.CharField(max_length=20, blank=True, null=True)
     ocupacion = models.CharField(max_length=50, blank=True, null=True)
     
@@ -296,7 +296,7 @@ class Cliente(models.Model):
             self.validation_estado_civil,
             self.validation_dni,
             self.validation_tel,
-            self.validation_fec_nacimiento,
+            # self.validation_fec_nacimiento,
             self.validation_cod_postal,
         ]
 
