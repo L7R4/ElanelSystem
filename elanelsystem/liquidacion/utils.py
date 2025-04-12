@@ -102,14 +102,14 @@ def get_detalle_comision_x_cantidad_ventasPropias(usuario, campania, agencia):
     ]
 
     cantVentas2 = sum(len(v.cantidadContratos) for v in ventas_auditadas2)
-
+    coeficienteSelected = 0
     for venta in ventas_auditadas2:
         if (venta.nro_cuotas in [24, 30] and venta.producto.tipo_de_producto == "Moto"):
             typePlan = "com_24_30_motos"
             bandas = [
                 (0, 9, 0.0240),
-                (9, 20, 0.0250),
-                (20, 30, 0.0260),
+                (10, 19, 0.0250),
+                (20, 29, 0.0260),
                 (30, float("inf"), 0.0270),
             ]
         elif (venta.nro_cuotas in [24, 30] and 
@@ -117,24 +117,23 @@ def get_detalle_comision_x_cantidad_ventasPropias(usuario, campania, agencia):
             typePlan = "com_24_30_prestamo_combo"
             bandas = [
                 (0, 9, 0.0270),
-                (9, 20, 0.0280),
-                (20, 30, 0.0290),
+                (10, 19, 0.0280),
+                (20, 29, 0.0290),
                 (30, float("inf"), 0.0310),
             ]
         elif (venta.nro_cuotas in [48, 60]):
             typePlan = "com_48_60"
             bandas = [
                 (0, 9, 0.0135),
-                (9, 20, 0.0140),
-                (20, 30, 0.0145),
+                (10, 19, 0.0140),
+                (20, 29, 0.0145),
                 (30, float("inf"), 0.0155),
             ]
         else:
             continue
 
-        coeficienteSelected = 0
         for (low, high, coef) in bandas:
-            if low <= cantVentas2 < high:
+            if low <= cantVentas2 <= high:
                 coeficienteSelected = coef
                 break
 
@@ -161,6 +160,8 @@ def get_detalle_comision_x_cantidad_ventasPropias(usuario, campania, agencia):
         comisionTotal += detalleDict["planes"][keyPlan]["comision"]
 
     detalleDict["comision"] = math.ceil(comisionTotal)  # redondeamos total final
+    detalleDict["coeficienteSelected"] = coeficienteSelected  # redondeamos total final
+
     return detalleDict
 
 def get_premio_x_productividad_ventasPropias(usuario, campania, agencia):
@@ -623,6 +624,8 @@ def detalle_liquidado_ventasPropias(usuario, campania, agencia):
     dict_comision_cant_ventas = get_detalle_comision_x_cantidad_ventasPropias(usuario, campania, agencia)
     comision_x_cantidad_ventas_propias = dict_comision_cant_ventas["comision"]
     detalle_ventas_propias = dict_comision_cant_ventas["planes"]
+    coeficienteSelected = dict_comision_cant_ventas["coeficienteSelected"]
+
 
     dict_cuotas1 = get_detalle_cuotas1(usuario, campania, agencia)
     comision_x_cuotas1 = dict_cuotas1["comision_total"]
@@ -634,6 +637,7 @@ def detalle_liquidado_ventasPropias(usuario, campania, agencia):
 
     resultado = {
         "comision_subtotal": subtotal,
+        "coeficienteSelected": coeficienteSelected,
         "detalle": {
             "cantidadVentas": cantidad_ventas,  # entero
             "productividadXVentasPropias": productividad_x_ventas_propias,  # ceil
