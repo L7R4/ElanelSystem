@@ -176,8 +176,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         if not self.nombre:
             raise ValidationError({'nombre': 'No puede estar vacío.'})
         
-        if not re.match(r'^[a-zA-Z\s]*$', self.nombre):
-            raise ValidationError({'nombre': 'Solo puede contener letras.'})
+        patron = r'^[a-zA-ZÁÉÍÓÚáéíóúñÑ\s]*$'
+        if not re.match(patron, self.nombre):
+            raise ValidationError({'nombre': 'Solo puede contener letras (incluyendo tildes y ñ) y espacios.'})
 
     # Validar el cp es decir el codigo postal, solamente puede contener numeros
     def validation_cp(self):
@@ -322,8 +323,9 @@ class Cliente(models.Model):
         if not self.nombre:
             raise ValidationError({'nombre': 'No puede estar vacío.'})
         
-        if not re.match(r'^[a-zA-Z\s]*$', self.nombre):
-            raise ValidationError({'nombre': 'Solo puede contener letras.'})
+        patron = r'^[a-zA-ZÁÉÍÓÚáéíóúñÑ\s]*$'
+        if not re.match(patron, self.nombre):
+            raise ValidationError({'nombre': 'Solo puede contener letras (incluyendo tildes y ñ) y espacios.'})
 
 
     def validation_estado_civil(self):

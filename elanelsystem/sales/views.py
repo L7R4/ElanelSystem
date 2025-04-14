@@ -353,28 +353,22 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
             
             last_used_index_estados = nextIndiceBusquedaCuotas # Variable que controla la última fila de sheetEstados realmente procesada
             for i in range(nextIndiceBusquedaCuotas, len(sheetEstados)):
-                # print(f"Imprimiendo i : {i} de la hoja estados")
-                # if i >= len(sheetEstados):
-                #     print(f"\n\n WTFFF TE PASASTE \n\n")
-                #     break
                 filaEstado = sheetEstados.iloc[i]
-                print(f"ID venta: {type(rowVenta['id_venta'])}")
-                print(f"ID venta EStados: {type(filaEstado['id_venta'])}")
-                
-                if int(rowVenta["id_venta"]) != int(filaEstado["id_venta"]):
-                    # print("WEpssss???????????????")
+                id_venta_resumen = safe_to_int(rowVenta["id_venta"])
+                id_venta_estado = safe_to_int(filaEstado["id_venta"])
+                print(f"ID venta: {id_venta_resumen}")
+                print(f"ID venta EStados: {id_venta_estado}")
 
-                    # print(f"Los IDs no son iguales, continuamos con la siguiente fila ({i}) de la hoja estados")  
+                if id_venta_estado > id_venta_resumen:
                     continue
-                # print(f"filaEstado: {filaEstado}")
 
-                # print(f"Procesando fila {i} del contrato {nro_orden}")
-                # print(filaEstado)
+                if id_venta_estado < id_venta_resumen:
+                    print(f"CORTO EN EL ID VENTA DE RESUMEN: {id_venta_resumen}")
+                    print(f"CORTO EN EL ID VENTA DE ESTADOS: {id_venta_estado}")
+                    break
 
                 try:
-                    if(int(filaEstado["id_venta"]) == int(rowVenta['id_venta'])):
-                        # print("WEpssss222222???????????????")
-
+                    if(id_venta_resumen == id_venta_estado):
                         cuota = filaEstado["cuotas"].replace(" ","").split("-")[1]
 
                         total_a_pagar += int(filaEstado["importe_cuotas"])
@@ -435,7 +429,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
 
                             info = {
                                 "cuota" :f'Cuota {cuota}',
-                                "nro_operacion": str(int(rowVenta['id_venta'])),
+                                "nro_operacion": str(id_venta_resumen),
                                 "status": statusCuota,
                                 "total": valor_oficial_cuota1,
                                 "descuento": {'autorizado': f"{'Gerente de la sucursal' if statusCuota == 'Pagado' else ''}", 'monto': descuento},
@@ -459,7 +453,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
                         else:
                             info = {
                                 "cuota" :f'Cuota {cuota}',
-                                "nro_operacion": str(int(rowVenta['id_venta'])),
+                                "nro_operacion": str(id_venta_resumen),
                                 "status": statusCuota,
                                 "total": int(filaEstado["importe_cuotas"]) * cantidadContratos,
                                 "descuento": {'autorizado': "", 'monto': 0},
@@ -544,7 +538,7 @@ def importVentas(request):
                 # 2) Si el cliente no existe, saltamos pero actualizamos i
                 nro_cliente = row_actual["cod_cli"]
                 agenciaObject = Sucursal.objects.get(pseudonimo=agencia)
-                print(f"{agenciaObject.pseudonimo} -------<><>>><<<<<>><>>>>>")
+
                 if not Cliente.objects.filter(nro_cliente=nro_cliente, agencia_registrada=agenciaObject).exists():
                     print(f"Fila {i}: Cliente {nro_cliente} no existe. Se omite esta fila.")
                     i += 1
@@ -594,74 +588,6 @@ def importVentas(request):
             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
 
     return render(request, 'importar_cuotas.html')
-
-# def importVentas(request):
-#     if request.method == "POST":
-#         # Obtener el archivo subido
-#         archivo_excel = request.FILES['file']
-#         agencia = request.POST.get('agencia')
-
-#         # Guardar temporalmente el archivo
-#         fs = FileSystemStorage()
-#         filename = fs.save(archivo_excel.name, archivo_excel)
-#         file_path = fs.path(filename)
-#         cantidad_nuevas_ventas = 0
-
-#         todosLosContratosDict = obtener_todos_los_contratos()
-#         set_contratos = {contrato['nro_contrato'] for contrato in todosLosContratosDict}
-#         print(f"Todos los contratos \n\n {set_contratos} \n\n")
-
-#         try:
-#             # Leer la hoja "Cuotas" del archivo Excel
-#             sheetResumen = formatear_columnas(file_path, sheet_name="RESUMEN")
-
-#             index_pivot,row_pivot = next(sheetResumen.iterrows())
-#             print(f"HOJA RESUMEN: \n Indece pivote: {index_pivot}\n Datos del pivote -->  {row_pivot} \n\n")
-
-#             i= 0
-
-#             nextIndiceBusquedaCuotas = 0 # Almacena la fila de la hoja de ESTADOs para continuar buscando las cuotas y no comenzar de 0
-#             while i < len(sheetResumen):
-#                 print(f"\n-------------------------\nContando i {i}\n-------------------------\n")
-#                 if str(sheetResumen.iloc[i]["contrato"]) not in set_contratos:
-#                     print(f"Procesando fila {i} --- Contrato: {sheetResumen.iloc[i]['contrato']}")
-#                     print(f"Cliente del contrato {sheetResumen.iloc[i]['contrato']} --> {sheetResumen.iloc[i]['cod_cli']}")
-#                     print(f"Mi indice pivote es: {index_pivot}")
-#                     print(f"Mi proximo indice de busqueda es: {nextIndiceBusquedaCuotas}")
-
-#                     if(Cliente.objects.filter(nro_cliente = sheetResumen.iloc[i]["cod_cli"]).exists()):
-#                         if(row_pivot["cod_cli"] != sheetResumen.iloc[i]["cod_cli"] or row_pivot["fecha_incripcion"] != sheetResumen.iloc[i]["fecha_incripcion"] or row_pivot["producto"] != sheetResumen.iloc[i]["producto"]):
-#                             cantidad_nuevas_ventas +=1
-#                             print(f"\n\n Termino de contar una venta donde la cantidad de chances son: {i - index_pivot }\n Teniendo en cuenta que el indice final es {i} y el indice inicial es {index_pivot} \n\n")
-#                             nextIndiceBusquedaCuotas = generarContratoParaImportar(index_pivot, i, file_path, agencia,nextIndiceBusquedaCuotas)
-#                             row_pivot = sheetResumen.iloc[i]
-#                             index_pivot = i
-#                         else:
-#                             pass
-#                     else:
-#                         pass
-                
-#                 i += 1
-#                 if(i == len(sheetResumen)):
-#                     if str(sheetResumen.iloc[i-1]["contrato"]) not in set_contratos:
-#                         cantidad_nuevas_ventas +=1
-#                         nextIndiceBusquedaCuotas = generarContratoParaImportar(index_pivot, i, file_path, agencia,nextIndiceBusquedaCuotas)
-
-#             # Eliminar el archivo después de procesarlo
-#             fs.delete(filename)
-            
-#             iconMessage = "/static/images/icons/checkMark.svg"
-#             message = f"Datos importados correctamente. Se agregaron {cantidad_nuevas_ventas} nuevas ventas"
-#             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": True})
-
-#         except Exception as e:
-#             print(f"Error al importar: {e}")
-
-#             iconMessage = "/static/images/icons/error_icon.svg"
-#             message = "Error al procesar el archivo"
-#             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
-
-#     return render(request, 'importar_cuotas.html')
 
 
 def requestVendedores_Supervisores(request):
