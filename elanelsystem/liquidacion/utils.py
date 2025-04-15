@@ -537,6 +537,7 @@ def calcular_asegurado_segun_dias_trabajados(dinero, usuario, campania_str):
     else:
         dias_trabajados_campania = (fecha_fin_real - fecha_inicio_real).days + 1
 
+    print(f"Dias trabajados {dias_trabajados_campania}")
     if dias_trabajados_campania >= 30:
         return math.ceil(dinero)
     else:
@@ -807,6 +808,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
     # 5) Asegurado
     try:
         asegurado_completo = get_asegurado(usuario, campania)
+        print(f"\n ASEGURADO DE {usuario.nombre} -> {asegurado_completo}\n")
     except ValueError:
         asegurado_completo = 0
 
