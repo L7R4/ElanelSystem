@@ -519,8 +519,8 @@ def importVentas(request):
         cantidad_nuevas_ventas = 0
 
         todosLosContratosDict = obtener_todos_los_contratos()
-        set_contratos = {contrato['nro_contrato'] for contrato in todosLosContratosDict}
-
+        set_contratos = {str(contrato['nro_contrato']) for contrato in todosLosContratosDict}
+        print(set_contratos)
         try:
             sheetResumen = formatear_columnas(file_path, sheet_name="RESUMEN")
             # Variables para recorrer
@@ -529,9 +529,8 @@ def importVentas(request):
 
             while i < len(sheetResumen):
                 row_actual = sheetResumen.iloc[i]
-
                 # 1) Si ya existe en set_contratos, saltamos
-                if str(row_actual["contrato"]) in set_contratos:
+                if str(safe_to_int(row_actual["contrato"])) in set_contratos:
                     i += 1
                     continue
 
