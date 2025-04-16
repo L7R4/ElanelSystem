@@ -840,10 +840,6 @@ def importar_clientes(request):
                         estado_civil = handle_nan(row["estado_civil"]) ,
                         ocupacion = handle_nan(row["ocupacion"]) 
                     )
-                else:
-                    if(str(cliente_existente.dni) == "33073339"):
-                        print(cliente_existente.nombre)
-                        print("WEPSSSSSSS")
                 
 
             # Eliminar el archivo después de procesar
