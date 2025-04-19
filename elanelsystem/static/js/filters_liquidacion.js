@@ -211,18 +211,16 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
     let html = `<div class="wrapperDetalleLiquidacion">
         <h2>Detalle de ${user_name}</h2>`;
 
-    if (tipo_colaborador.toLowerCase() === "vendedor" || tipo_colaborador.toLowerCase() === "supervisor") {
-        html += `
-        <div class="subDetalleGroup">
-            <h3>Ventas propias</h3>
-            <p><strong>Cantidad de ventas:</strong> ${ventas.cantidadVentas || 0}</p>
-            <p><strong>Productividad propia:</strong> $${ventas.productividadXVentasPropias || 0}</p>
-            <p><strong>Cuotas 1 pagadas:</strong> ${ventas.cantidadCuotas1 || 0}</p>
-            <p><strong>Comisión por ventas:</strong> $${comision_ventas}</p>
-            <p><strong>Comisión por cuotas 1:</strong> $${comision_cuotas}</p>
-            <p><strong>Premio por productividad propia:</strong> $${premio_productividad_propia}</p>
-        </div>`;
-    }
+    html += `
+    <div class="subDetalleGroup">
+        <h3>Ventas propias</h3>
+        <p><strong>Cantidad de ventas:</strong> ${ventas.cantidadVentas || 0}</p>
+        <p><strong>Productividad propia:</strong> $${ventas.productividadXVentasPropias || 0}</p>
+        <p><strong>Cuotas 1 pagadas:</strong> ${ventas.cantidadCuotas1 || 0}</p>
+        <p><strong>Comisión por ventas:</strong> $${comision_ventas}</p>
+        <p><strong>Comisión por cuotas 1:</strong> $${comision_cuotas}</p>
+        <p><strong>Premio por productividad propia:</strong> $${premio_productividad_propia}</p>
+    </div>`;
 
     if (tipo_colaborador.toLowerCase() === "supervisor") {
         html += `
@@ -236,7 +234,7 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
         </div>`;
     }
 
-    if (tipo_colaborador.toLowerCase() === "gerente de sucursal") {
+    if (tipo_colaborador.toLowerCase() === "gerente sucursal") {
         html += `<h3 class="textCenter">Sin información</h3>`;
     }
 

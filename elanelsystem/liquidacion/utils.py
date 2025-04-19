@@ -150,6 +150,7 @@ def get_detalle_comision_x_cantidad_ventasPropias(usuario, campania, agencia):
             "nombre_cliente": venta.nro_cliente.nombre
         })
 
+        detalleDict["planes"][typePlan]["coeficiente_correspondiente"] = coeficienteSelected 
         detalleDict["planes"][typePlan]["comision"] += comision_venta
         detalleDict["planes"][typePlan]["cantidad_ventas"] += len(venta.cantidadContratos)
 
@@ -393,7 +394,6 @@ def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota=0):
 
     ventas_qs = Ventas.objects.filter(
         agencia=agencia,
-        campania=campania,
         adjudicado__status=False,
         deBaja__status=False
     )
@@ -407,9 +407,9 @@ def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota=0):
         cnt = 0
         dineroTotalX = 0
         for vent in ventas_auditadas:
-            if vent.cuotas[int(number)]["status"] == "Pagado":
+            if vent.cuotas[int(number)]["status"] == "Pagado" and vent.cuotas[int(number)]["pagos"][0]["campaniaPago"] == campania:
                 cnt += len(vent.cantidadContratos)
-                dineroTotalX += vent.cuotas[int(number)]["total"]
+                dineroTotalX += vent.cuotas[3]["total"]
 
         comisionX = dineroTotalX * porcetage_x_cuota
         cantidadTotalCuotas += cnt
@@ -554,9 +554,9 @@ def get_asegurado(usuario, campania_str):
         asegurado_obj = Asegurado.objects.get(dirigido="Supervisor")
         dineroAsegurado = asegurado_obj.dinero
         return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario, campania_str)
-    elif rango == "gerente de sucursal":
+    elif rango == "gerente sucursal":
         # Podrías hacer math.ceil si quieres 
-        asegurado_obj = Asegurado.objects.get(dirigido="Gerente de sucursal")
+        asegurado_obj = Asegurado.objects.get(dirigido="Gerente sucursal")
         return math.ceil(asegurado_obj.dinero)
     else:
         raise ValueError("Error al obtener el asegurado: rango no reconocido.")
@@ -692,7 +692,7 @@ def detalle_premios_x_objetivo(usuario, campania, agencia, objetivo_gerente=0):
             "premio_x_productividad_ventas_equipo": premio_x_productividad_ventas_equipo
         }
         premio_subtotal += (premio_x_cantidad_ventas_equipo + premio_x_productividad_ventas_equipo)
-    elif rango_lower == "gerente de sucursal":
+    elif rango_lower == "gerente sucursal":
         premio_x_cantidad_ventas_agencia = get_premio_x_cantidad_ventas_sucursal(campania, agencia, objetivo_gerente)
         detalle = {
             "premio_x_cantidad_ventas_agencia": premio_x_cantidad_ventas_agencia,
@@ -732,7 +732,7 @@ def detalle_liquidado_x_rol(usuario, campania, agencia, porcentage_x_cuota_geren
         }
         return resultado
 
-    elif rango_lower == "gerente de sucursal":
+    elif rango_lower == "gerente sucursal":
         dict_cuotas_0 = get_detalle_cuotas_0(campania, agencia)
         dict_cuotas_x = get_detalle_cuotas_x(campania, agencia, porcentage_x_cuota_gerente)
 
@@ -800,8 +800,9 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
             premios_dict["detalle"]["premio_x_productividad_ventas_equipo"] +
             premios_dict["detalle"]["premio_x_cantidad_ventas_equipo"]
         )
-    elif rango_lower == "gerente de sucursal":
-        pass  # Ajusta según tu necesidad
+    elif rango_lower == "gerente sucursal":
+        comision_rol = rol_dict["comision_subtotal"]
+        premios_segun_rol += premios_dict["detalle"]["premio_x_cantidad_ventas_agencia"]
 
     sum_rol_premios = comision_rol + premios_segun_rol
 
