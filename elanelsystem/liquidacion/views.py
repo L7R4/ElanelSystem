@@ -330,6 +330,83 @@ def crearAjusteComision(request):
     else:
         return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
 
+
+def ajustesCoeficiente_gerente_sucursal(request):
+    if request.method == "POST":
+        body = json.loads(request.body)
+        user_id = body.get("user_id")
+        ajuste_tipo = body.get("ajuste")
+        dinero = body.get("dinero")
+        observaciones = body.get("observaciones", "")
+        campania = body.get("campania")
+        agencia = body.get("agencia")
+        tipo_colaborador = body.get("tipoColaborador")
+
+        total_comisiones = int(body.get("total_comisiones", 0))
+
+        if not user_id or not campania or not agencia:
+            return JsonResponse({"status": False, "message": "Faltan datos obligatorios"}, status=400)
+
+        # Se arma el ajuste y se guarda en sesión
+        ajuste = {
+            "user_id": user_id,
+            "ajuste_tipo": ajuste_tipo,
+            "dinero": int(dinero) if dinero else 0,
+            "observaciones": observaciones,
+            "campania": campania,
+            "agencia": agencia
+        }
+        ajustes_sesion = request.session.get("ajustes_comisiones", [])
+        ajustes_sesion.append(ajuste)
+        request.session["ajustes_comisiones"] = ajustes_sesion
+        request.session.modified = True
+        print(f"[DEBUG] Ajustes totales en sesión --> {ajustes_sesion}")
+
+        # -- OPCIONAL: recalculamos la liquidación entera para 
+        # actualizar 'liquidacion_data' en la misma sesión --
+        # (Si tu interfaz llama a requestColaboradoresWithComisiones luego,
+        #  puedes omitir esto. Pero si quieres reflejarlo de inmediato en
+        #  'liquidacion_data', se hace así:)
+        colaboradores_list, totalDeComisionesRecalc = recalcular_liquidacion_data(
+            request=request,
+            campania=campania,
+            sucursal_id=agencia,
+            tipo_colaborador=tipo_colaborador  # O define si usas uno en particular
+        )
+        request.session["liquidacion_data"] = colaboradores_list
+        request.session.modified = True
+
+        # Cálculo de comisión final del usuario con esos nuevos ajustes
+        # (si deseas devolverlo inmediatamente al front)
+        sucursalObject = Sucursal.objects.get(id=agencia)
+        usuario = Usuario.objects.get(pk=user_id)
+        datos_comision = get_comision_total(
+            usuario, 
+            campania, 
+            sucursalObject, 
+            [ a for a in ajustes_sesion
+              if int(a["user_id"]) == int(user_id)
+              and a["campania"] == campania
+              and a["agencia"] == agencia
+            ]
+        )
+        comision_base = datos_comision["comision_total"]
+
+        return JsonResponse({
+            "status": True,
+            "message": "Ajuste de comisión creado en sesión.",
+            "user_id": user_id,
+            "user_name": usuario.nombre,
+            "new_comision": comision_base,
+            "nuevo_total_comisiones": str(int(totalDeComisionesRecalc)),
+            "ajuste_sesion": ajustes_sesion
+        })
+
+    else:
+        return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
+
+
+
 def preViewPDFLiquidacion(request):
     datos = request.session.get('liquidacion_data', {})
     print(f"\n\n [DEBUG] Datos de liquidación: \n")
