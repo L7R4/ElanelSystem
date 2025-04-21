@@ -406,11 +406,15 @@ def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota=0):
     for number in cuotasToFilter:
         cnt = 0
         dineroTotalX = 0
+        cuotas_x_list = []
         for vent in ventas_auditadas:
             if vent.cuotas[int(number)]["status"] == "Pagado" and vent.cuotas[int(number)]["pagos"][0]["campaniaPago"] == campania:
                 cnt += len(vent.cantidadContratos)
-                dineroTotalX += vent.cuotas[3]["total"]
-
+                # if(str(vent.nro_operacion) == "1801"):
+                #     print(f"ID de Venta: {vent.nro_cliente.nombre} - Cuota: {number} - Dinero: {vent.cuotas[10]['total']}")
+                #     return
+                dineroTotalX += vent.cuotas[10]["total"]
+                cuotas_x_list.append(vent.cuotas[10]["total"])
         comisionX = dineroTotalX * porcetage_x_cuota
         cantidadTotalCuotas += cnt
         dineroTotalCuotas += dineroTotalX
@@ -419,7 +423,8 @@ def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota=0):
         cuotasDict["detalleCuota"][f"cuotas{number}"] = {
             "cantidad": cnt,
             "dinero_x_cuota": math.ceil(dineroTotalX),
-            "comision": math.ceil(comisionX)
+            "comision": math.ceil(comisionX),
+            "detalle": cuotas_x_list
         }
 
     cuotasDict["cantidad_total_cuotas"] = cantidadTotalCuotas
