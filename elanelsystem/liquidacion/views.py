@@ -410,7 +410,8 @@ def ajustesCoeficiente_gerente_sucursal(request):
 def preViewPDFLiquidacion(request):
     datos = request.session.get('liquidacion_data', {})
     print(f"\n\n [DEBUG] Datos de liquidación: \n")
-    print(datos)
+    gerente = [item for item in datos if item["tipo_colaborador"] == "Gerente sucursal"]
+    print(gerente)
 
     # Para pasar el detalles de los movs
     contexto = []

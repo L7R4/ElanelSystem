@@ -613,6 +613,7 @@ def get_ausencias_tardanzas(usuario, campania):
         }
     }
 
+
 #endregion
 
 # Las funciones detalle_liquidado_ventasPropias, detalle_descuestos, etc.
