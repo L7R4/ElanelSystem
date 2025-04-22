@@ -49,7 +49,7 @@
                         <tbody>
                             <tr>
                                 <td>Ventas del equipo</td>
-                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.cantidadVentasXEquipo|currency_ar}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.cantidadVentasXEquipo}}</td>
                                 <td> - - - </td>
                             </tr>
                             <tr>
@@ -291,41 +291,41 @@
                         <tbody>
                             <tr>
                                 <td>Cuotas 0</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas0.cantCuotas}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas0.dineroComisionado}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.cantidad_cuotas_0}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.premios.detalle.premio_x_cantidad_ventas_agencia|currency_ar}}</td>
                             </tr>
                             <tr>
                                 <td>Cuotas 1</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas1.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas1.dineroComisionado}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas1.cantidad}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas1.comision|currency_ar}}</td>
                             </tr>
                             <tr>
                                 <td>Cuotas 2</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas2.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas2.dineroComisionado}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas2.cantidad}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas2.comision|currency_ar}}</td>
                             </tr>
                             <tr>
                                 <td>Cuotas 3</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas3.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas3.dineroComisionado}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas3.cantidad}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas3.comision|currency_ar}}</td>
                             </tr>
                             <tr>
                                 <td>Cuotas 4</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas4.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas4.dineroComisionado}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas4.cantidad}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas4.comision|currency_ar}}</td>
                             </tr>
 
 
                             <tr>
-                                <td>Premio</td>
+                                <td>Asegurado</td>
                                 <td> - - - </td>
-                                <td>${{recibo.info_total_de_comision.asegurado}}</td>      
+                                <td>{{recibo.info_total_de_comision.asegurado|currency_ar}}</td>      
                             </tr>
 
-                            <tr class="subTotalWrapper">
+                            {% comment %} <tr class="subTotalWrapper">
                                 <td colspan="2">Sub-total</td> 
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.comisionTotal_Cuotas}}</td>
-                            </tr>
+                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.comisionTotal_Cuotas}}</td>
+                            </tr> {% endcomment %}
                         </tbody>
                     </table>
 
@@ -345,34 +345,48 @@
                         <tbody>
                             <tr>
                                 <td>Motos (24/30 Cuotas)</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_motos.cantidad_ventas}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_motos.comision}}</td>
-
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
+    
                             </tr>
                             <tr>
                                 <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_elec_soluc.cantidad_ventas}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_elec_soluc.comision}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
                             </tr>
                             <tr>
                                 <td>Ventas (48/60 Cuotas)</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_48_60.cantidad_ventas}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_48_60.comision}}</td>      
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
                             </tr>
                             <tr>
                                 <td>Premio por productividad</td>
                                 <td> - - - </td>
-                                <td>${{recibo.info_total_de_comision.detalle.productividad_ventasPropias_comision}}</td>      
+                                <td>{{recibo.info_total_de_comision.detalle.premios.detalle.premio_x_productividad_ventas_propias|currency_ar}} </td>
+                            
                             </tr>
+                            <tr>
+                                <td>Otros premios</td>
+                                <td>- - -</td>
+                                <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
+                            </tr>                              
                             
                             <tr>
                                 <td>Cuotas 1</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotas1.cantidadCuotas1}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotas1.totalDinero}}</td>      
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.cantidadCuotas1}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.comisionXCuotas1|currency_ar}}</td>
                             </tr>
+                            
+                            {% if recibo.tipo_colaborador == "Vendedor" %}
+                            <tr>
+                                <td>Asegurado</td>
+                                <td> - - - </td>
+                                <td>{{recibo.info_total_de_comision.asegurado|currency_ar}}</td>      
+                            </tr>
+                            {% endif %}
                             <tr class="subTotalWrapper">
                                 <td colspan="2">Sub-total</td> 
-                                <td>${{recibo.info_total_de_comision.comisionado_sin_descuento}}</td>
+                                <td>{{recibo.info_total_de_comision.comision_bruta|currency_ar}}</td>
                             </tr>
 
                             <tr class ="divider"><td colspan="3"></td></tr>
@@ -380,31 +394,37 @@
                                 <td class="titleDescuento" colspan="3">Descuentos</td>   
                             </tr>
                             <tr>
-                                <td>Tardanzas</td>
-                                <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.dinero}}</td>      
+                                <td>Ausencias</td>
+                                <td> - - - </td>
+                                <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.dinero|currency_ar}}</td>      
                             </tr>
                             <tr>
-                                <td>Faltas</td>
+                                <td>Compras</td>
                                 <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.dinero}}</td>      
+                                <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.dinero|currency_ar}}</td>      
                             </tr>
 
                             <tr>
-                                <td>Adelantos o descuentos</td>
+                                <td>Adelantos/Descuestos</td>
                                 <td> - - - </td>
-                                <td>${{recibo.info_total_de_comision.detalle.adelantos.dineroTotal}}</td>      
+                                <td>{{recibo.info_total_de_comision.detalle.adelantos.dineroTotal|currency_ar}}</td>      
+                            </tr>
+                            <tr>
+                                <td>Otros</td>
+                                <td>- - -</td>
+                                <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
                             </tr>
                             <tr class="subTotalWrapper">
                                 <td colspan="2">Sub-total de descuentos</td> 
-                                <td>${{recibo.info_total_de_comision.descuentoTotal}}</td>
+                                <td>{{recibo.info_total_de_comision.descuentoTotal|currency_ar}}</td>
                             </tr>
 
                         </tbody>
                     </table>
+                    
                     <div class="totalComisionadoWrapper">
                         <p>TOTAL COMISIONADO</p>
-                        <p>${{recibo.info_total_de_comision.total_comisionado}}</p>
+                        <p>{{recibo.info_total_de_comision.comision_total|currency_ar}}</p>
                     </div>
 
                     <div class="notaImportanteWrapper">
@@ -465,7 +485,7 @@
                         <tbody>
                             <tr>
                                 <td>Ventas del equipo</td>
-                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.cantidadVentasXEquipo|currency_ar}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.cantidadVentasXEquipo}}</td>
                                 <td> - - - </td>
                             </tr>
                             <tr>
@@ -692,6 +712,8 @@
                         </div>
                     </div>
                 
+                
+
                 {% elif recibo.tipo_colaborador == "Gerente sucursal" %}
                     <div class="tittleConceptoWrapper">
                         <p>Conceptos por sucursal</p>
@@ -707,41 +729,41 @@
                         <tbody>
                             <tr>
                                 <td>Cuotas 0</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas0.cantCuotas}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas0.dineroComisionado}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.cantidad_cuotas_0}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.premios.detalle.premio_x_cantidad_ventas_agencia|currency_ar}}</td>
                             </tr>
                             <tr>
                                 <td>Cuotas 1</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas1.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas1.dineroComisionado}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas1.cantidad}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas1.comision|currency_ar}}</td>
                             </tr>
                             <tr>
                                 <td>Cuotas 2</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas2.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas2.dineroComisionado}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas2.cantidad}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas2.comision|currency_ar}}</td>
                             </tr>
                             <tr>
                                 <td>Cuotas 3</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas3.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas3.dineroComisionado}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas3.cantidad}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas3.comision|currency_ar}}</td>
                             </tr>
                             <tr>
                                 <td>Cuotas 4</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas4.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.detalleCuota.cuotas4.dineroComisionado}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas4.cantidad}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.rol.detalle.detalle_x_cuotas.cuotas4.comision|currency_ar}}</td>
                             </tr>
 
 
                             <tr>
-                                <td>Premio</td>
+                                <td>Asegurado</td>
                                 <td> - - - </td>
-                                <td>${{recibo.info_total_de_comision.asegurado}}</td>      
+                                <td>{{recibo.info_total_de_comision.asegurado|currency_ar}}</td>      
                             </tr>
 
-                            <tr class="subTotalWrapper">
+                            {% comment %} <tr class="subTotalWrapper">
                                 <td colspan="2">Sub-total</td> 
-                                <td>${{recibo.info_total_de_comision.detalle.cuotasX.comisionTotal_Cuotas}}</td>
-                            </tr>
+                                <td>{{recibo.info_total_de_comision.detalle.cuotasX.comisionTotal_Cuotas}}</td>
+                            </tr> {% endcomment %}
                         </tbody>
                     </table>
 
@@ -761,34 +783,48 @@
                         <tbody>
                             <tr>
                                 <td>Motos (24/30 Cuotas)</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_motos.cantidad_ventas}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_motos.comision}}</td>
-
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
+    
                             </tr>
                             <tr>
                                 <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_elec_soluc.cantidad_ventas}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_24_30_elec_soluc.comision}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
                             </tr>
                             <tr>
                                 <td>Ventas (48/60 Cuotas)</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_48_60.cantidad_ventas}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cantidad_ventasPropias_comision.planes.com_48_60.comision}}</td>      
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
                             </tr>
                             <tr>
                                 <td>Premio por productividad</td>
                                 <td> - - - </td>
-                                <td>${{recibo.info_total_de_comision.detalle.productividad_ventasPropias_comision}}</td>      
+                                <td>{{recibo.info_total_de_comision.detalle.premios.detalle.premio_x_productividad_ventas_propias|currency_ar}} </td>
+                            
                             </tr>
+                            <tr>
+                                <td>Otros premios</td>
+                                <td>- - -</td>
+                                <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
+                            </tr>                              
                             
                             <tr>
                                 <td>Cuotas 1</td>
-                                <td>{{recibo.info_total_de_comision.detalle.cuotas1.cantidadCuotas1}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.cuotas1.totalDinero}}</td>      
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.cantidadCuotas1}}</td>
+                                <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.comisionXCuotas1|currency_ar}}</td>
                             </tr>
+                            
+                            {% if recibo.tipo_colaborador == "Vendedor" %}
+                            <tr>
+                                <td>Asegurado</td>
+                                <td> - - - </td>
+                                <td>{{recibo.info_total_de_comision.asegurado|currency_ar}}</td>      
+                            </tr>
+                            {% endif %}
                             <tr class="subTotalWrapper">
                                 <td colspan="2">Sub-total</td> 
-                                <td>${{recibo.info_total_de_comision.comisionado_sin_descuento}}</td>
+                                <td>{{recibo.info_total_de_comision.comision_bruta|currency_ar}}</td>
                             </tr>
 
                             <tr class ="divider"><td colspan="3"></td></tr>
@@ -796,31 +832,37 @@
                                 <td class="titleDescuento" colspan="3">Descuentos</td>   
                             </tr>
                             <tr>
-                                <td>Tardanzas</td>
-                                <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.dinero}}</td>      
+                                <td>Ausencias</td>
+                                <td> - - - </td>
+                                <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.dinero|currency_ar}}</td>      
                             </tr>
                             <tr>
-                                <td>Faltas</td>
+                                <td>Compras</td>
                                 <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.cantidad}}</td>
-                                <td>${{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.dinero}}</td>      
+                                <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.dinero|currency_ar}}</td>      
                             </tr>
 
                             <tr>
-                                <td>Adelantos o descuentos</td>
+                                <td>Adelantos/Descuestos</td>
                                 <td> - - - </td>
-                                <td>${{recibo.info_total_de_comision.detalle.adelantos.dineroTotal}}</td>      
+                                <td>{{recibo.info_total_de_comision.detalle.adelantos.dineroTotal|currency_ar}}</td>      
+                            </tr>
+                            <tr>
+                                <td>Otros</td>
+                                <td>- - -</td>
+                                <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
                             </tr>
                             <tr class="subTotalWrapper">
                                 <td colspan="2">Sub-total de descuentos</td> 
-                                <td>${{recibo.info_total_de_comision.descuentoTotal}}</td>
+                                <td>{{recibo.info_total_de_comision.descuentoTotal|currency_ar}}</td>
                             </tr>
 
                         </tbody>
                     </table>
+                    
                     <div class="totalComisionadoWrapper">
                         <p>TOTAL COMISIONADO</p>
-                        <p>${{recibo.info_total_de_comision.total_comisionado}}</p>
+                        <p>{{recibo.info_total_de_comision.comision_total|currency_ar}}</p>
                     </div>
 
                     <div class="notaImportanteWrapper">
@@ -828,7 +870,6 @@
                     </div>
 
                 {% endif %}
-
             </div>
         
             <div id="firmas">

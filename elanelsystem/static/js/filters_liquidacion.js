@@ -235,8 +235,33 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
     }
 
     if (tipo_colaborador.toLowerCase() === "gerente sucursal") {
-        html += `<h3 class="textCenter">Sin información</h3>`;
+        html += `
+        <div class="subDetalleGroup">
+            <h3>Sucursal</h3>
+            <p><strong>Cantidad de cuotas 0:</strong> ${rol.cantidad_cuotas_0 || 0}</p>
+            <p><strong>Premio por cuotas 0:</strong> $${premios.premio_x_cantidad_ventas_agencia || 0}</p>
+
+            <p><strong>Cantidad de cuotas 1:</strong> ${rol.detalle_x_cuotas.cuotas1.cantidad || 0}</p>
+            <p><strong>Comision por cuotas 1:</strong> $${rol.detalle_x_cuotas.cuotas1.comision || 0}</p>
+
+            <p><strong>Cantidad de cuotas 2:</strong> ${rol.detalle_x_cuotas.cuotas2.cantidad || 0}</p>
+            <p><strong>Comision por cuotas 2:</strong> $${rol.detalle_x_cuotas.cuotas2.comision || 0}</p>
+
+            <p><strong>Cantidad de cuotas 3:</strong> ${rol.detalle_x_cuotas.cuotas3.cantidad || 0}</p>
+            <p><strong>Comision por cuotas 3:</strong> $${rol.detalle_x_cuotas.cuotas3.comision || 0}</p>
+            
+            <p><strong>Cantidad de cuotas 4:</strong> ${rol.detalle_x_cuotas.cuotas4.cantidad || 0}</p>
+            <p><strong>Comision por cuotas 4:</strong> $${rol.detalle_x_cuotas.cuotas4.comision || 0}</p>
+
+            <p><strong>Comision por cartera:</strong> ${detalle.info_total_de_comision.detalle.rol.comision_subtotal || 0}</p>
+
+        </div>`
+        ;
     }
+    html += `
+        <div class="subDetalleGroup asegurado">
+            <p><strong>Asegurado:</strong> $${asegurado}</p>
+        </div>`;
 
     html += `
         <div class="subDetalleGroup">
@@ -253,10 +278,6 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
     }
 
     html += `</div>
-        <div class="subDetalleGroup asegurado">
-            <h3>Asegurado:</h3>
-            <p><strong>$${asegurado}</strong></p>
-        </div>
         <div class="subDetalleGroup resumenTotalComision">
             <h3>Total final de comisión:</h3>
             <p><strong>$${comision_total}</strong></p>
