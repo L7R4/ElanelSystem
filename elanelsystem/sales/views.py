@@ -5,6 +5,7 @@ from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.db import transaction
 
 from .mixins import TestLogin
 from .models import ArqueoCaja, MetodoPago, Ventas,CoeficientesListadePrecios,MovimientoExterno,CuentaCobranza
@@ -597,10 +598,15 @@ def importVentas(request):
         cantidad_nuevas_ventas = 0
 
         try:
-            # sheetResumen = formatear_columnas(file_path, sheet_name="RESUMEN")
             df_res, df_est = preprocesar_excel_ventas(file_path)
 
             sucursal_obj = Sucursal.objects.get(pseudonimo=agencia)
+
+             # 1) Preparo el set de contratos ya importados
+            todosLosContratosDict = obtener_todos_los_contratos()
+            set_contratos = {
+                str(ct['nro_contrato']) for ct in todosLosContratosDict
+            }
 
             clientes = {
                 c.nro_cliente: c
@@ -612,19 +618,108 @@ def importVentas(request):
                 for p in Products.objects.annotate(nombre_norm=Replace('nombre', Value(' '), Value('')))
             }
 
-            ventas_agg = (
-            df_res.groupby(['cod_cli','fecha_incripcion','producto','paq','vendedor','superv'],as_index=False)
-            .agg(
-                cantidad_chances = ('id_venta', 'count'),
-                importe_suma = ('importe', 'sum'),
-                tasa_prom = ('tasa_de_inte', 'sum'),
-                obs = ('comentarios__observaciones', 'first'),
-            ))
-            print(f"\n\n VENTAS AGG\n")
-            print(ventas_agg)
+            ventas_to_create = []
+            grupos = df_res.groupby(
+                ['cod_cli','fecha_incripcion','producto','paq','vendedor','superv']
+            )
 
-            print(f"\n\n ESTADOS\n")
-            print(df_est)
+            print(f"\n\n VENTAS AGG\n")
+            print(grupos)
+
+            for keys, group in grupos:
+                cod_cli, fecha_incripcion, producto, paq, vendedor, superv = keys
+
+                # Si el cliente no existe → saltamos
+                if cod_cli not in clientes:
+                    continue
+
+                cantidad_chances   = len(group)
+                importe_sum= int(group['importe'].sum())
+                tasa_int_sum  = float(group['tasa_de_inte'].sum())
+
+                # Lista de contratos / órdenes
+                contratos = group[['contrato','nro_de_orden']]\
+                    .apply(lambda r: {
+                        'nro_contrato': str(int(r['contrato'])),
+                        'nro_orden'   : str(int(r['nro_de_orden']))
+                    }, axis=1)\
+                    .tolist()
+                
+
+                #Si ALGUNO de estos contratos ya existe, salto esta venta
+                contratos_nros = {c['nro_contrato'] for c in contratos}
+                if contratos_nros & set_contratos:
+                    # Ya importado al menos un contrato de este grupo
+                    continue
+
+                id_venta_unica = int(group['id_venta'].iloc[0])
+
+                # Resolver vendedor / supervisor
+                vendedor = (
+                    Usuario.objects.annotate(
+                        nombre_norm=Replace('nombre', Value(' '), Value(''))
+                    ).filter(nombre_norm=vendedor).first()
+                )
+                supervisor = (
+                    Usuario.objects.annotate(
+                        nombre_norm=Replace('nombre', Value(' '), Value(''))
+                    ).filter(nombre_norm=superv).first()
+                )
+
+               # obtén el producto y su plan
+                producto_obj = prods.get(producto)
+                plan = producto_obj.plan if producto_obj else None
+                # ------------------------------------------------------------------
+                # aquí construimos las cuotas AGREGADAS de todas las chances
+                cuotas_agg = build_aggregated_cuotas(
+                    id_venta = id_venta_unica,
+                    df_est    = df_est,
+                    n_chances = cantidad_chances,
+                    plan = plan
+                )
+                print(f"\n Cuotas agg\n {cuotas_agg}")
+                # ------------------------------------------------------------------
+                
+                ventas_to_create.append(Ventas(
+                nro_cliente        = clientes[cod_cli],
+                agencia            = sucursal_obj,
+                modalidad          = 'Mensual',
+                nro_cuotas         = len(cuotas_agg)-1,
+                nro_operacion      = id_venta_unica,
+                campania           = obtenerCampaña_atraves_fecha(formatar_fecha(fecha_incripcion)),
+                suspendida         = False,
+                importe            = importe_sum,
+                tasa_interes       = round(tasa_int_sum, 2),
+                primer_cuota       = cuotas_agg[1]['total'] if len(cuotas_agg)>1 else 0,
+                anticipo           = cuotas_agg[0]['total'],
+                intereses_generados= sum(q['total'] for q in cuotas_agg[1:]) - importe_sum,
+                importe_x_cuota    = cuotas_agg[2]['total'] if len(cuotas_agg)>2 else 0,
+                total_a_pagar      = sum(q['total'] for q in cuotas_agg),
+                fecha              = formatar_fecha(fecha_incripcion, with_time=True),
+                producto           = prods.get(producto),
+                paquete            = paq,
+                vendedor           = vendedor,
+                supervisor         = supervisor,
+                observaciones      = group['comentarios__observaciones'].iloc[0],
+                cantidadContratos  = contratos,
+                cuotas             = cuotas_agg,
+            ))
+                
+            with transaction.atomic():
+                created = Ventas.objects.bulk_create(ventas_to_create)
+
+            cantidad_nuevas_ventas = len(created)
+            # Ahora aplicamos bloqueos, defaults y señales a cada venta recién creada
+            for venta in created:
+                venta.cuotas = bloquer_desbloquear_cuotas(venta.cuotas)
+                venta.setDefaultFields()
+                # guardamos SOLO estos campos (o usa v.save() sin update_fields)
+                venta.save(update_fields=['adjudicado','suspendida','darBaja','cuotas', 'primer_cuota', 'anticipo', 'total_a_pagar', 'importe_x_cuota'])
+
+
+            print(f"\n\n Puede ser?\n")
+            
+
             
             fs.delete(filename)
             iconMessage = "/static/images/icons/checkMark.svg"
@@ -638,6 +733,89 @@ def importVentas(request):
             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
 
     return render(request, 'importar_cuotas.html')
+
+def build_aggregated_cuotas(id_venta,df_est,n_chances,plan):
+    """
+    Para la venta identificada por id_venta (una sola chance),
+    agrupa sus filas de ESTADOS en cuotas 0..max, y multiplica
+    los importes por n_chances.
+
+    - id_venta: el entero de una sola chance
+    - df_est: DataFrame preprocesado de ESTADOS
+    - n_chances: cuántas chances totales tiene la venta
+
+    Devuelve lista de dicts [{'cuota','status','total','pagos',...}, ...]
+    """
+    # Filtramos SOLO la chance que nos interesa
+    sub = df_est[df_est['id_venta'] == id_venta]
+    if sub.empty:
+        return []
+    # print(f"Sub dataframe:\n{sub}")
+    
+
+    max_q = int(sub['cuota_num'].max())
+    # print(f"Max cuota: {max_q}")
+    cuotas = []
+
+    for q in range(max_q + 1):
+        grp = sub[sub['cuota_num'] == q]
+        if grp.empty:
+            continue
+
+        # Solo la primera fila de esa cuota
+        r = grp.iloc[0]
+
+         # Importe que llegó por fila en el Excel, multiplicado
+        excel_amount = int(r['importe_cuotas']) * n_chances
+
+        # Definir importe “oficial” según q
+        if q == 0:
+            official = plan.suscripcion * n_chances
+        elif q == 1:
+            official = plan.primer_cuota * n_chances
+        else:
+            official = excel_amount
+
+        # Descuento solo si excel < official
+        descuento_monto = max(0, official - excel_amount)
+
+        # Estado: 'Pagado' o 'Pendiente'
+        status = str(r["estado_norm"]).title() if r["estado_norm"] not in ["Vencido", "BAJA","vencido","baja"] else "Vencido"
+
+        # Total de la cuota: importe_cuotas * n_chances
+        # total_q = int(r['importe_cuotas']) * n_chances
+
+        # Fecha de vencimiento y de pago con hora forzada
+        fecha_venc = formatar_fecha(r['fecha_de_venc'], with_time=True)
+        fecha_pago = formatar_fecha(r['fecha_de_pago'], with_time=True)
+
+        # Construimos pagos: uno solo si está pagada
+        pagos = []
+        if status == 'Pagado':
+            pagos = [{
+                'monto': excel_amount,
+                'metodoPago': get_or_create_metodo_pago(r["medio_de_pago"].title()).id,
+                'fecha': fecha_pago,
+                'cobrador': get_or_create_cobrador(r["cobrador"].capitalize()).id,
+                'campaniaPago': r['campania_pago']
+            }]
+
+        cuotas.append({
+            'cuota': f'Cuota {q}',
+            'nro_operacion': id_venta,
+            'status': status,
+            'total': official,
+            'descuento': {'autorizado': f"{'Gerente de la sucursal' if status == 'Pagado' else ''}", 'monto': descuento_monto},
+            'bloqueada': False,
+            'fechaDeVencimiento': formatar_fecha(r['fecha_de_venc'], with_time=True),
+            'diasRetraso': 0,
+            "interesPorMora": 0,
+            "totalFinal": 0,
+            'pagos': pagos,
+            'autorizada_para_anular': False,
+        })
+
+    return cuotas
 
 
 def requestVendedores_Supervisores(request):

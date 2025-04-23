@@ -870,31 +870,6 @@ def preprocesar_excel_ventas(file_path):
     return df_res, df_est
 
 
-# def preprocesar_excel_ventasEstados(file_path):
-#     # Leer la hoja del archivo Excel
-#     df_res = pd.read_excel(file_path, sheet_name="RESUMEN")
-    
-#     # Renombrar las columnas
-#     df_res.columns = [
-#         col.strip().lower().replace(" ", "_").replace("-", "_").replace(".", "_").replace("/", "_")
-#         for col in df_res.columns
-#     ]
-
-#     df_res['id_venta'] = df_res['id_venta'].astype(str)
-#     df_res['cod_cli'] = df_res['cod_cli'].astype(str)
-#     df_res['importe'] = df_res['importe'].astype(int)
-#     df_res['modalidad'] = df_res['modalidad'].astype(str)
-#     df_res['tasa_de_inte'] = df_res['tasa_de_inte'].astype(float)
-#     df_res['fecha_incripcion'] = df_res['fecha_incripcion'].astype(str)
-
-#     df_res['producto'] = (df_res['producto'].fillna('').str.title().str.replace(r'\s+', '', regex=True))
-
-#     df_res['paq'] = df_res['paq'].fillna('').map(lambda x: 'Basico' if x=='BASE' else x.capitalize())
-#     valores_interes = df_res['producto'].tolist()
-    
-#     return df_res
-
-
 
 
 # # from sales.utils import *
