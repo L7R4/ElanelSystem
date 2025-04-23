@@ -68,6 +68,7 @@ def format_date(date_value):
     # Si es una cadena, convertirla a datetime y formatear
     elif isinstance(date_value, str):
         try:
+            print("wepweweas")
             return pd.to_datetime(date_value).strftime('%d/%m/%Y')
         except ValueError:
             return ""  # En caso de que la conversión falle, devolver cadena vacía
@@ -93,6 +94,10 @@ def formatear_columnas(file_path, sheet_name):
 #Funcion para obtener una campaña a traves de la fecha en tipo STR
 def obtenerCampaña_atraves_fecha(fecha_str):
     # Convertir la cadena de fecha en un objeto datetime
+    fecha = format_date(fecha_str)
+    if not fecha:
+        return ""
+    
     fecha = datetime.strptime(fecha_str, "%d/%m/%Y")
     
     # Diccionario para traducir el número del mes a nombre en español
@@ -177,3 +182,60 @@ def parse_fecha(fecha_str):
         except ValueError:
             continue
     raise ValueError(f"Formato de fecha no válido: {fecha_str}")
+
+
+def formatar_fecha(value, with_time: bool = False):
+    """
+    Normaliza cualquier fecha (“value”) a cadena en formato:
+      - '%d/%m/%Y'            si with_time=False
+      - '%d/%m/%Y 00:00'      si with_time=True
+
+    Acepta:
+      • strings en cualquiera de estos formatos:
+        - 'DD/MM/YYYY', 'YYYY/MM/DD'
+        - 'DD-MM-YYYY', 'YYYY-MM-DD'
+        - incluso con hora: 'YYYY-MM-DD HH:MM', etc.
+      • pandas.Timestamp o datetime.datetime
+      • NaN, None, ''  → devuelve ''
+
+    Ejemplos:
+      formatar_fecha('2025-3-5')             → '05/03/2025'
+      formatar_fecha('2025-03-25', True)     → '25/03/2025 00:00'
+      formatar_fecha(pd.NaT)                 → ''
+      formatar_fecha(datetime.now())         → '23/04/2025'
+    """
+    # 1) Manejo de valores nulos
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return ""
+    # 2) Si ya es Timestamp o datetime, lo tomamos directamente
+    if isinstance(value, (pd.Timestamp, datetime)):
+        dt = value.to_pydatetime() if hasattr(value, "to_pydatetime") else value
+    else:
+        # 3) Si es string, intentamos reconocerlo con pandas (flexible)
+        s = str(value).strip()
+        if not s:
+            return ""
+        # Quitar posibles sub-segundos o zona
+        # pd.to_datetime infiere la mayoría de formatos conocidos
+        dt = pd.to_datetime(s, dayfirst=False, errors='coerce')
+        if pd.isna(dt):
+            # Fallback manual con patrones concretos
+            patrones = [
+                "%d/%m/%Y", "%Y/%m/%d",
+                "%d-%m-%Y", "%Y-%m-%d",
+                "%d/%m/%Y %H:%M", "%Y/%m/%d %H:%M",
+                "%d-%m-%Y %H:%M", "%Y-%m-%d %H:%M",
+            ]
+            for fmt in patrones:
+                try:
+                    dt = datetime.strptime(s, fmt)
+                    break
+                except ValueError:
+                    dt = None
+            if dt is None:
+                return ""
+    # 4) Formatear según el flag
+    if with_time:
+        return dt.strftime("%d/%m/%Y 00:00")
+    else:
+        return dt.strftime("%d/%m/%Y")
