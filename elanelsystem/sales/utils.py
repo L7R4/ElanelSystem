@@ -2,6 +2,12 @@ from django.template.loader import get_template
 from weasyprint import HTML,CSS
 import elanelsystem.settings as settings
 import os
+import pandas as pd
+import logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
+
+
 import datetime
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
@@ -818,33 +824,106 @@ def send_html_email(subject, template, context, from_email, to_email):
 #endregion
 
 
-# from sales.utils import *
-def asignar_usuario_a_ventas():
-    import random
-    from sales.models import Ventas
-    from users.models import Usuario  # Ajusta esto al nombre de tu app de usuarios
 
-    # Obtiene todas las ventas que no tienen vendedor o supervisor
-    ventas_sin_vendedor_o_supervisor = Ventas.objects.filter(
-        vendedor__isnull=True
-    ) | Ventas.objects.filter(
-        supervisor__isnull=True
-    )
+def preprocesar_excel_ventas(file_path):
+    from elanelsystem.utils import obtenerCampaña_atraves_fecha,formatar_fecha
 
-    # Obtiene todos los usuarios del modelo Usuario
-    usuarios = list(Usuario.objects.all())
-    if not usuarios:
-        print("No hay usuarios disponibles para asignar.")
-        return
+    # Leer la hoja del archivo Excel
+    df_res = pd.read_excel(file_path, sheet_name="RESUMEN")
+    df_est = pd.read_excel(file_path, sheet_name="ESTADOS")
+    
+    # Renombrar las columnas
+    df_res.columns = [
+        col.strip().lower().replace(" ", "_").replace("-", "_").replace(".", "_").replace("/", "_")
+        for col in df_res.columns
+    ]
 
-    # Asigna un usuario aleatorio a cada venta
-    for venta in ventas_sin_vendedor_o_supervisor:
-        if not venta.vendedor:
-            venta.vendedor = random.choice(usuarios)  # Asigna un vendedor aleatorio
-        if not venta.supervisor:
-            venta.supervisor = random.choice(usuarios)  # Asigna un supervisor aleatorio
+    df_est.columns = [
+        col.strip().lower().replace(" ", "_").replace("-", "_").replace(".", "_").replace("/", "_")
+        for col in df_est.columns
+    ]
 
-        # Guarda los cambios en la base de datos
-        venta.save()
+    df_res['id_venta'] = df_res['id_venta'].astype(str)
+    df_res['cod_cli'] = df_res['cod_cli'].astype(str)
+    df_res['importe'] = df_res['importe'].astype(int)
+    df_res['modalidad'] = df_res['modalidad'].astype(str)
+    df_res['tasa_de_inte'] = df_res['tasa_de_inte'].astype(float)
+    df_res['fecha_incripcion'] = df_res['fecha_incripcion'].astype(str)
+    df_res['producto'] = (df_res['producto'].fillna('').str.title().str.replace(r'\s+', '', regex=True))
+    df_res['paq'] = df_res['paq'].fillna('').map(lambda x: 'Basico' if x=='BASE' else x.capitalize())
+    df_res['vendedor'] = df_res['vendedor'].fillna('').str.title().str.replace(r'\s+', '', regex=True)
+    df_res['superv']  = df_res['superv'].fillna('').str.title().str.replace(r'\s+', '', regex=True)
+    df_res['comentarios__observaciones'] = df_res['comentarios__observaciones'].fillna('')
+    
+    
+    # Preparamos ESTADOS
+    df_est['id_venta']     = df_est['id_venta'].astype(int)
+    df_est['importe_cuotas']= df_est['importe_cuotas']\
+        .replace('[\$,]', '', regex=True).astype(int)
+    df_est['cuota_num']    = df_est['cuotas']\
+        .str.extract(r'(\d+)').astype(int)
+    df_est['estado_norm']  = df_est['estado'].str.title()
+    df_est['fecha_de_venc']= df_est['fecha_venc'].astype(str).apply(lambda d: formatar_fecha(d))
+    df_est['fecha_de_pago']= df_est['fecha_de_pago'].astype(str).apply(lambda d: formatar_fecha(d))
+    df_est['campania_pago']= df_est['fecha_de_pago'].apply(lambda d: obtenerCampaña_atraves_fecha(formatar_fecha(d)) if formatar_fecha(d) else "")
+    
+    return df_res, df_est
 
-    print(f"Se han actualizado {ventas_sin_vendedor_o_supervisor.count()} ventas.")
+
+# def preprocesar_excel_ventasEstados(file_path):
+#     # Leer la hoja del archivo Excel
+#     df_res = pd.read_excel(file_path, sheet_name="RESUMEN")
+    
+#     # Renombrar las columnas
+#     df_res.columns = [
+#         col.strip().lower().replace(" ", "_").replace("-", "_").replace(".", "_").replace("/", "_")
+#         for col in df_res.columns
+#     ]
+
+#     df_res['id_venta'] = df_res['id_venta'].astype(str)
+#     df_res['cod_cli'] = df_res['cod_cli'].astype(str)
+#     df_res['importe'] = df_res['importe'].astype(int)
+#     df_res['modalidad'] = df_res['modalidad'].astype(str)
+#     df_res['tasa_de_inte'] = df_res['tasa_de_inte'].astype(float)
+#     df_res['fecha_incripcion'] = df_res['fecha_incripcion'].astype(str)
+
+#     df_res['producto'] = (df_res['producto'].fillna('').str.title().str.replace(r'\s+', '', regex=True))
+
+#     df_res['paq'] = df_res['paq'].fillna('').map(lambda x: 'Basico' if x=='BASE' else x.capitalize())
+#     valores_interes = df_res['producto'].tolist()
+    
+#     return df_res
+
+
+
+
+# # from sales.utils import *
+# def asignar_usuario_a_ventas():
+#     import random
+#     from sales.models import Ventas
+#     from users.models import Usuario  # Ajusta esto al nombre de tu app de usuarios
+
+#     # Obtiene todas las ventas que no tienen vendedor o supervisor
+#     ventas_sin_vendedor_o_supervisor = Ventas.objects.filter(
+#         vendedor__isnull=True
+#     ) | Ventas.objects.filter(
+#         supervisor__isnull=True
+#     )
+
+#     # Obtiene todos los usuarios del modelo Usuario
+#     usuarios = list(Usuario.objects.all())
+#     if not usuarios:
+#         print("No hay usuarios disponibles para asignar.")
+#         return
+
+#     # Asigna un usuario aleatorio a cada venta
+#     for venta in ventas_sin_vendedor_o_supervisor:
+#         if not venta.vendedor:
+#             venta.vendedor = random.choice(usuarios)  # Asigna un vendedor aleatorio
+#         if not venta.supervisor:
+#             venta.supervisor = random.choice(usuarios)  # Asigna un supervisor aleatorio
+
+#         # Guarda los cambios en la base de datos
+#         venta.save()
+
+#     print(f"Se han actualizado {ventas_sin_vendedor_o_supervisor.count()} ventas.")

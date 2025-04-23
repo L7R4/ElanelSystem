@@ -292,7 +292,6 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
             newVenta.importe = float(rowVenta["importe"]) * cantidadContratos
             newVenta.agencia = Sucursal.objects.get(pseudonimo = agencia)
             newVenta.tasa_interes = round((float(rowVenta["tasa_de_inte"]) * cantidadContratos) * 100,2)
-            a = Products.objects.annotate(nombre_normalizado=Replace("nombre",Value(" "), Value("")))
 
             newVenta.producto = Products.objects.annotate(
                 nombre_normalizado=Replace("nombre",Value(" "), Value(""))
@@ -509,6 +508,85 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
             print(f"Error {e}")
             raise
 
+# def importVentas(request):
+#     if request.method == "POST":
+#         archivo_excel = request.FILES['file']
+#         agencia = request.POST.get('agencia')
+#         fs = FileSystemStorage()
+#         filename = fs.save(archivo_excel.name, archivo_excel)
+#         file_path = fs.path(filename)
+#         cantidad_nuevas_ventas = 0
+
+#         todosLosContratosDict = obtener_todos_los_contratos()
+#         set_contratos = {str(contrato['nro_contrato']) for contrato in todosLosContratosDict}
+#         print(set_contratos)
+#         try:
+#             sheetResumen = formatear_columnas(file_path, sheet_name="RESUMEN")
+#             # Variables para recorrer
+#             i = 0
+#             nextIndiceBusquedaCuotas = 0
+
+#             while i < len(sheetResumen):
+#                 row_actual = sheetResumen.iloc[i]
+#                 # 1) Si ya existe en set_contratos, saltamos
+#                 if str(safe_to_int(row_actual["contrato"])) in set_contratos:
+#                     i += 1
+#                     continue
+
+#                 # 2) Si el cliente no existe, saltamos pero actualizamos i
+#                 nro_cliente = row_actual["cod_cli"]
+#                 agenciaObject = Sucursal.objects.get(pseudonimo=agencia)
+
+#                 if not Cliente.objects.filter(nro_cliente=nro_cliente, agencia_registrada=agenciaObject).exists():
+#                     print(f"Fila {i}: Cliente {nro_cliente} no existe. Se omite esta fila.")
+#                     i += 1
+#                     continue
+
+#                 # 3) Este 'bloque' abarca todas las filas consecutivas que comparten
+#                 #    cod_cli, fecha_incripcion y producto con la fila i
+#                 cod_cli_base = row_actual["cod_cli"]
+#                 fecha_incripcion_base = row_actual["fecha_incripcion"]
+#                 producto_base = row_actual["producto"]
+
+#                 # Guardar el inicio del bloque
+#                 start = i
+#                 i += 1  # avanzamos para buscar el final del bloque
+#                 # 4) Recorrer las filas siguientes que siguen siendo la MISMA venta
+#                 while i < len(sheetResumen):
+#                     print(f"Fila {i}\n Datos de fila {sheetResumen.iloc[i]}\n")
+#                     row_siguiente = sheetResumen.iloc[i]
+#                     if (str(row_siguiente["contrato"]) in set_contratos or
+#                        row_siguiente["cod_cli"] != cod_cli_base or
+#                        row_siguiente["fecha_incripcion"] != fecha_incripcion_base or
+#                        row_siguiente["producto"] != producto_base):
+#                         # Se cortó el bloque
+#                         break
+#                     i += 1
+
+#                 # Aquí, las filas de [start, i) representan UNA venta
+#                 # Llamamos a generarContratoParaImportar con (start, i)
+#                 cantidad_nuevas_ventas += 1
+#                 nextIndiceBusquedaCuotas = generarContratoParaImportar(
+#                     start, 
+#                     i, 
+#                     file_path, 
+#                     agencia, 
+#                     nextIndiceBusquedaCuotas
+#                 )
+
+#             fs.delete(filename)
+#             iconMessage = "/static/images/icons/checkMark.svg"
+#             message = f"Datos importados correctamente. Se agregaron {cantidad_nuevas_ventas} nuevas ventas"
+#             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": True})
+
+#         except Exception as e:
+#             print(f"Error al importar: {e}")
+#             iconMessage = "/static/images/icons/error_icon.svg"
+#             message = "Error al procesar el archivo"
+#             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
+
+#     return render(request, 'importar_cuotas.html')
+
 def importVentas(request):
     if request.method == "POST":
         archivo_excel = request.FILES['file']
@@ -518,63 +596,36 @@ def importVentas(request):
         file_path = fs.path(filename)
         cantidad_nuevas_ventas = 0
 
-        todosLosContratosDict = obtener_todos_los_contratos()
-        set_contratos = {str(contrato['nro_contrato']) for contrato in todosLosContratosDict}
-        print(set_contratos)
         try:
-            sheetResumen = formatear_columnas(file_path, sheet_name="RESUMEN")
-            # Variables para recorrer
-            i = 0
-            nextIndiceBusquedaCuotas = 0
+            # sheetResumen = formatear_columnas(file_path, sheet_name="RESUMEN")
+            df_res, df_est = preprocesar_excel_ventas(file_path)
 
-            while i < len(sheetResumen):
-                row_actual = sheetResumen.iloc[i]
-                # 1) Si ya existe en set_contratos, saltamos
-                if str(safe_to_int(row_actual["contrato"])) in set_contratos:
-                    i += 1
-                    continue
+            sucursal_obj = Sucursal.objects.get(pseudonimo=agencia)
 
-                # 2) Si el cliente no existe, saltamos pero actualizamos i
-                nro_cliente = row_actual["cod_cli"]
-                agenciaObject = Sucursal.objects.get(pseudonimo=agencia)
+            clientes = {
+                c.nro_cliente: c
+                for c in Cliente.objects.filter(agencia_registrada=sucursal_obj)
+            }
 
-                if not Cliente.objects.filter(nro_cliente=nro_cliente, agencia_registrada=agenciaObject).exists():
-                    print(f"Fila {i}: Cliente {nro_cliente} no existe. Se omite esta fila.")
-                    i += 1
-                    continue
+            prods = {
+                p.nombre.replace(' ', ''): p
+                for p in Products.objects.annotate(nombre_norm=Replace('nombre', Value(' '), Value('')))
+            }
 
-                # 3) Este 'bloque' abarca todas las filas consecutivas que comparten
-                #    cod_cli, fecha_incripcion y producto con la fila i
-                cod_cli_base = row_actual["cod_cli"]
-                fecha_incripcion_base = row_actual["fecha_incripcion"]
-                producto_base = row_actual["producto"]
+            ventas_agg = (
+            df_res.groupby(['cod_cli','fecha_incripcion','producto','paq','vendedor','superv'],as_index=False)
+            .agg(
+                cantidad_chances = ('id_venta', 'count'),
+                importe_suma = ('importe', 'sum'),
+                tasa_prom = ('tasa_de_inte', 'sum'),
+                obs = ('comentarios__observaciones', 'first'),
+            ))
+            print(f"\n\n VENTAS AGG\n")
+            print(ventas_agg)
 
-                # Guardar el inicio del bloque
-                start = i
-                i += 1  # avanzamos para buscar el final del bloque
-                # 4) Recorrer las filas siguientes que siguen siendo la MISMA venta
-                while i < len(sheetResumen):
-                    print(f"Fila {i}\n Datos de fila {sheetResumen.iloc[i]}\n")
-                    row_siguiente = sheetResumen.iloc[i]
-                    if (str(row_siguiente["contrato"]) in set_contratos or
-                       row_siguiente["cod_cli"] != cod_cli_base or
-                       row_siguiente["fecha_incripcion"] != fecha_incripcion_base or
-                       row_siguiente["producto"] != producto_base):
-                        # Se cortó el bloque
-                        break
-                    i += 1
-
-                # Aquí, las filas de [start, i) representan UNA venta
-                # Llamamos a generarContratoParaImportar con (start, i)
-                cantidad_nuevas_ventas += 1
-                nextIndiceBusquedaCuotas = generarContratoParaImportar(
-                    start, 
-                    i, 
-                    file_path, 
-                    agencia, 
-                    nextIndiceBusquedaCuotas
-                )
-
+            print(f"\n\n ESTADOS\n")
+            print(df_est)
+            
             fs.delete(filename)
             iconMessage = "/static/images/icons/checkMark.svg"
             message = f"Datos importados correctamente. Se agregaron {cantidad_nuevas_ventas} nuevas ventas"
@@ -2121,28 +2172,6 @@ def requestMovimientos(request):
         
 
         movs = filterMainManage(response_data["request"], response_data["movs"])
-        # print(f"MOvimientos - - - - - \n {movs}")
-        #endregion
-        
-        # #region Logica para pasar al template los filtros aplicados a los movimientos
-        # paramsDict = (request.GET).dict()
-        # FILTROS_EXISTENTES = (
-        #     ("tipo_mov","Tipo de movimiento"),
-        #     ("campania","Campaña"),
-        #     ("metodoPago", "Metodo de pago"),
-        #     ("fecha", "Fecha"),
-        #     ("cobrador","Cobrador"),
-        #     ("agencia","Agencia"),
-        # )
-        # clearContext = {key: value for key, value in paramsDict.items() if value != '' and key != 'page'}
-
-        # # Extrae las tuplas segun los querys filtrados en clearContext
-        # filtros_activados = list(filter(lambda x: x[0] in clearContext, FILTROS_EXISTENTES))
-        # # print(f'Filtros: {filtros_activados}')
-        # # Por cada tupla se coloca de llave el valor 1 y se extrae el valor mediante su key de clearContext ( Por eso es [x[0]] )
-        # # Es lo mismo que decir clearContext["metodoPago"], etc, etc
-        # filtros = list(map(lambda x: {x[1]: clearContext[x[0]]}, filtros_activados))
-        # #endregion
         
         request.session["informe_data"] = movs # Por si se quiere imprimir el informe
 
