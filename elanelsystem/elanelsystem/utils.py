@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 import pandas as pd
 from sales.models import Ventas
 import elanelsystem.settings as settings
@@ -94,10 +95,10 @@ def formatear_columnas(file_path, sheet_name):
 #Funcion para obtener una campaña a traves de la fecha en tipo STR
 def obtenerCampaña_atraves_fecha(fecha_str):
     # Convertir la cadena de fecha en un objeto datetime
-    fecha = format_date(fecha_str)
-    if not fecha:
-        return ""
-    
+    # fecha = format_date(fecha_str)
+    # if not fecha:
+    #     return ""
+    print(fecha_str)
     fecha = datetime.strptime(fecha_str, "%d/%m/%Y")
     
     # Diccionario para traducir el número del mes a nombre en español
@@ -184,7 +185,7 @@ def parse_fecha(fecha_str):
     raise ValueError(f"Formato de fecha no válido: {fecha_str}")
 
 
-def formatar_fecha(value, with_time: bool = False):
+def formatar_fecha(value, with_time = False):
     """
     Normaliza cualquier fecha (“value”) a cadena en formato:
       - '%d/%m/%Y'            si with_time=False
@@ -217,7 +218,8 @@ def formatar_fecha(value, with_time: bool = False):
             return ""
         # Quitar posibles sub-segundos o zona
         # pd.to_datetime infiere la mayoría de formatos conocidos
-        dt = pd.to_datetime(s, dayfirst=False, errors='coerce')
+        dayfirst = bool(re.match(r'\d{1,2}/\d{1,2}/\d{4}', s))
+        dt = pd.to_datetime(s, dayfirst=dayfirst, errors='coerce')
         if pd.isna(dt):
             # Fallback manual con patrones concretos
             patrones = [
