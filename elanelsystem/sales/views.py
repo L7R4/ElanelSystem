@@ -612,7 +612,6 @@ def importVentas(request):
                 c.nro_cliente: c
                 for c in Cliente.objects.filter(agencia_registrada=sucursal_obj)
             }
-
             prods = {
                 p.nombre.replace(' ', ''): p
                 for p in Products.objects.annotate(nombre_norm=Replace('nombre', Value(' '), Value('')))
@@ -622,15 +621,14 @@ def importVentas(request):
             grupos = df_res.groupby(
                 ['cod_cli','fecha_incripcion','producto','paq','vendedor','superv']
             )
-
-            print(f"\n\n VENTAS AGG\n")
-            print(grupos)
+            print("🔎 Grupos totales detectados:", grupos.ngroups)
 
             for keys, group in grupos:
                 cod_cli, fecha_incripcion, producto, paq, vendedor, superv = keys
-
+                
                 # Si el cliente no existe → saltamos
                 if cod_cli not in clientes:
+                    # print("No existe el cliente\n|\n|")
                     continue
 
                 cantidad_chances   = len(group)
@@ -645,14 +643,14 @@ def importVentas(request):
                     }, axis=1)\
                     .tolist()
                 
+                id_venta_unica = int(group['id_venta'].iloc[0])
 
-                #Si ALGUNO de estos contratos ya existe, salto esta venta
-                contratos_nros = {c['nro_contrato'] for c in contratos}
+                # — 4) Skip si YA existe cualquiera de esos contratos
+                contratos_nros = { c['nro_contrato'] for c in contratos }
                 if contratos_nros & set_contratos:
-                    # Ya importado al menos un contrato de este grupo
+                    # print("Saltando venta, contratos ya importados:", contratos_nros & set_contratos)
                     continue
 
-                id_venta_unica = int(group['id_venta'].iloc[0])
 
                 # Resolver vendedor / supervisor
                 vendedor = (
@@ -665,10 +663,14 @@ def importVentas(request):
                         nombre_norm=Replace('nombre', Value(' '), Value(''))
                     ).filter(nombre_norm=superv).first()
                 )
+                print(f"Procesando grupo de venta: \n\n {group}\n")
 
                # obtén el producto y su plan
-                producto_obj = prods.get(producto)
+                producto_obj = get_or_create_product_from_import(producto,group['importe'].iloc[0])
+                # print(f"Producto {producto}")
+                # print(producto_obj)
                 plan = producto_obj.plan if producto_obj else None
+
                 # ------------------------------------------------------------------
                 # aquí construimos las cuotas AGREGADAS de todas las chances
                 cuotas_agg = build_aggregated_cuotas(
@@ -677,7 +679,6 @@ def importVentas(request):
                     n_chances = cantidad_chances,
                     plan = plan
                 )
-                print(f"\n Cuotas agg\n {cuotas_agg}")
                 # ------------------------------------------------------------------
                 
                 ventas_to_create.append(Ventas(
@@ -696,7 +697,7 @@ def importVentas(request):
                 importe_x_cuota    = cuotas_agg[2]['total'] if len(cuotas_agg)>2 else 0,
                 total_a_pagar      = sum(q['total'] for q in cuotas_agg),
                 fecha              = formatar_fecha(fecha_incripcion, with_time=True),
-                producto           = prods.get(producto),
+                producto           = producto_obj,
                 paquete            = paq,
                 vendedor           = vendedor,
                 supervisor         = supervisor,
@@ -704,7 +705,6 @@ def importVentas(request):
                 cantidadContratos  = contratos,
                 cuotas             = cuotas_agg,
             ))
-                
             with transaction.atomic():
                 created = Ventas.objects.bulk_create(ventas_to_create)
 
@@ -714,10 +714,9 @@ def importVentas(request):
                 venta.cuotas = bloquer_desbloquear_cuotas(venta.cuotas)
                 venta.setDefaultFields()
                 # guardamos SOLO estos campos (o usa v.save() sin update_fields)
-                venta.save(update_fields=['adjudicado','suspendida','darBaja','cuotas', 'primer_cuota', 'anticipo', 'total_a_pagar', 'importe_x_cuota'])
+                venta.save(update_fields=['adjudicado','suspendida','deBaja','cuotas', 'primer_cuota', 'anticipo', 'total_a_pagar', 'importe_x_cuota'])
 
-
-            print(f"\n\n Puede ser?\n")
+            print(f"✅ {len(created)} VENTAS IMPORTADAS CON EXITO")
             
 
             
@@ -781,7 +780,6 @@ def build_aggregated_cuotas(id_venta,df_est,n_chances,plan):
 
         # Estado: 'Pagado' o 'Pendiente'
         status = str(r["estado_norm"]).title() if r["estado_norm"] not in ["Vencido", "BAJA","vencido","baja"] else "Vencido"
-
         # Total de la cuota: importe_cuotas * n_chances
         # total_q = int(r['importe_cuotas']) * n_chances
 
