@@ -98,7 +98,6 @@ def obtenerCampaña_atraves_fecha(fecha_str):
     # fecha = format_date(fecha_str)
     # if not fecha:
     #     return ""
-    print(fecha_str)
     fecha = datetime.strptime(fecha_str, "%d/%m/%Y")
     
     # Diccionario para traducir el número del mes a nombre en español

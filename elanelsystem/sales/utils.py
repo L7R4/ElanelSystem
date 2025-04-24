@@ -17,8 +17,11 @@ from openpyxl import Workbook
 from openpyxl.drawing.image import Image
 from django.http import HttpResponse, JsonResponse
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from django.db import transaction
 from users.models import Cliente
 from django.templatetags.static import static
+from django.db.models.functions import Replace, Lower
+from django.db.models import Value
 
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
@@ -26,7 +29,7 @@ from django.utils.html import strip_tags
 from dateutil.relativedelta import relativedelta
 from num2words import num2words
 from configuracion.models import Configuracion
-
+from products.models import Products, Plan
 
 #region Funciones para exportar PDFs
 def printPDFBaja(data,url,productoName):
@@ -686,14 +689,12 @@ def getCuotasPagadasSinCredito(cuotas):
 
 
 def bloquer_desbloquear_cuotas(cuotas):
-    print(cuotas)
     nuevas_cuotas = []
     for i in range(0,len(cuotas)):
         cuota = cuotas[i]
         if not (i == 0):
             pagos = cuota["pagos"]
             metodoDePagoDeCuota = [pago["metodoPago"] for pago in pagos] # Obtiene los metodos de pago de la cuota
-            print("Hasta aca esta todo bien")
             if(cuotas[i-1]["status"] == "Pagado"):
                 cuota["bloqueada"] = False
             elif("Credito" in metodoDePagoDeCuota):
@@ -823,7 +824,23 @@ def send_html_email(subject, template, context, from_email, to_email):
     email.send()
 #endregion
 
-
+def reportar_nans(df, cols, id_field = 'id_venta'):
+    """
+    Recorre las columnas `cols` de `df` y devuelve una lista de dicts
+    con {'index', 'id_venta', 'column'} para cada NaN.
+    """
+    errores = []
+    for col in cols:
+        # detectamos NaN reales o cadenas vacías tras strip()
+        mask = df[col].isna() | df[col].astype(str).str.strip().eq('')
+        for idx in df[mask].index:
+            errores.append({
+                'index': idx,
+                'id_venta': df.at[idx, id_field],
+                'column': col,
+                'valor': df.at[idx, col]
+            })
+    return errores
 
 def preprocesar_excel_ventas(file_path):
     from elanelsystem.utils import obtenerCampaña_atraves_fecha,formatar_fecha
@@ -843,6 +860,12 @@ def preprocesar_excel_ventas(file_path):
         for col in df_est.columns
     ]
 
+    campos_int_res = ['importe','tasa_de_inte','id_venta','cod_cli','producto','vendedor','superv']
+    errores_res = reportar_nans(df_res, campos_int_res, id_field='id_venta')
+    if errores_res:
+        # Aquí podrías loguearlo, devolverlo en la respuesta JSON, o lanzar excepción
+        raise ValueError(f"⁉️ Errores en RESUMEN antes de conversión ⁉️:\n{errores_res}")
+
     df_res['id_venta'] = df_res['id_venta'].astype(str)
     df_res['cod_cli'] = df_res['cod_cli'].astype(str)
     df_res['importe'] = df_res['importe'].astype(int)
@@ -856,6 +879,12 @@ def preprocesar_excel_ventas(file_path):
     df_res['comentarios__observaciones'] = df_res['comentarios__observaciones'].fillna('')
     
     
+
+    campos_int_est = ['importe_cuotas', 'cuotas','estado','fecha_venc']
+    errores_est = reportar_nans(df_est, campos_int_est, id_field='id_venta')
+    if errores_est:
+        raise ValueError(f"⁉️ Errores en ESTADOS antes de conversión ⁉️:\n{errores_est}")
+
     # Preparamos ESTADOS
     df_est['id_venta']     = df_est['id_venta'].astype(int)
     df_est['importe_cuotas']= df_est['importe_cuotas']\
@@ -869,7 +898,63 @@ def preprocesar_excel_ventas(file_path):
     
     return df_res, df_est
 
+def normalize_key(s):
+    """Minúsculas y sin espacios para comparar claves."""
+    return ''.join(s.lower().split())
 
+def get_or_create_product_from_import(raw_name, importe):
+    """
+    1) Normaliza raw_name (minúsculas, sin espacios) → norm_raw.
+    2) Busca un Products con nombre_norm = Lower(Replace(nombre, ' ', '')) == norm_raw.
+    3) Si no existe, maneja casos especiales o genéricos creando el producto asociado al Plan.
+    """
+    norm_raw = normalize_key(raw_name)
+    print(f"Producto a buscar: {raw_name} -> {norm_raw}")
+    # 1) Intento encontrar raw_name en BD (ignorando mayúsculas y espacios)
+    prod = Products.objects.annotate(
+        nombre_norm=Lower(Replace('nombre', Value(' '), Value('')))
+    ).filter(nombre_norm=norm_raw).first()
+    if prod:
+        return prod
+
+    # 2) Casos especiales: Solucion Dineraria / Valor nominal
+    if norm_raw in ('soluciondineraria', 'valornominal', 'valoresnominales','solucionesdinerarias', 'solucionesdineraria'):
+        price_name = f'${int(importe)}'
+        norm_price = normalize_key(price_name)
+
+        prod = Products.objects.annotate(
+            nombre_norm=Lower(Replace('nombre', Value(' '), Value('')))
+        ).filter(nombre_norm=norm_price).first()
+        if prod:
+            return prod
+
+        # Necesitamos un Plan existente con ese valor_nominal
+        plan = Plan.objects.filter(valor_nominal=int(importe)).first()
+        if not plan:
+            raise ValueError(f"No existe un Plan con valor_nominal={int(importe)}")
+
+        with transaction.atomic():
+            prod = Products.objects.create(
+                nombre           = price_name,
+                tipo_de_producto = 'Solucion',
+                tipodePlan       = 'Estandar',
+                plan             = plan
+            )
+        return prod
+
+    # 3) Caso genérico: crear con raw_name y Plan(valor_nominal=importe)
+    plan = Plan.objects.filter(valor_nominal=int(importe)).first()
+    if not plan:
+        raise ValueError(f"No existe un Plan con valor_nominal={int(importe)}")
+
+    with transaction.atomic():
+        prod = Products.objects.create(
+            nombre           = raw_name,
+            tipo_de_producto = 'Moto',
+            tipodePlan       = 'Estandar',
+            plan             = plan
+        )
+    return prod
 
 
 # # from sales.utils import *
