@@ -271,7 +271,7 @@ class Cliente(models.Model):
     cod_postal = models.CharField(max_length=7,default="")
     tel = models.CharField(max_length=11,default="")
     fec_nacimiento = models.CharField(max_length=10, default="",blank=True,null=True)
-    estado_civil = models.CharField(max_length=20, blank=True, null=True)
+    estado_civil = models.CharField(max_length=50, blank=True, null=True)
     ocupacion = models.CharField(max_length=50, blank=True, null=True)
     
     def __str__(self):
