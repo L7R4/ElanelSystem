@@ -1,3 +1,5 @@
+import random
+import string
 from django.template.loader import get_template
 from weasyprint import HTML,CSS
 import elanelsystem.settings as settings
@@ -9,6 +11,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 import datetime
+from django.contrib.auth.models import Group
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.db.models import Max
@@ -18,7 +21,7 @@ from openpyxl.drawing.image import Image
 from django.http import HttpResponse, JsonResponse
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from django.db import transaction
-from users.models import Cliente
+from users.models import Cliente, Usuario
 from django.templatetags.static import static
 from django.db.models.functions import Replace, Lower
 from django.db.models import Value
@@ -872,13 +875,17 @@ def preprocesar_excel_ventas(file_path):
     df_res['modalidad'] = df_res['modalidad'].astype(str)
     df_res['tasa_de_inte'] = df_res['tasa_de_inte'].astype(float)
     df_res['fecha_incripcion'] = df_res['fecha_incripcion'].astype(str)
-    df_res['producto'] = (df_res['producto'].fillna('').str.title().str.replace(r'\s+', '', regex=True))
     df_res['paq'] = df_res['paq'].fillna('').map(lambda x: 'Basico' if x=='BASE' else x.capitalize())
-    df_res['vendedor'] = df_res['vendedor'].fillna('').str.title().str.replace(r'\s+', '', regex=True)
-    df_res['superv']  = df_res['superv'].fillna('').str.title().str.replace(r'\s+', '', regex=True)
+    df_res['vendedor_raw'] = (df_res['vendedor'].fillna('').str.title().str.replace(r'\s+', ' ', regex=True).str.strip())
+    df_res['superv_raw'] = (df_res['superv'].fillna('').str.title().str.replace(r'\s+', ' ', regex=True).str.strip())
+    # Y para facilitar el *groupby* (que no admite raw con espacios):
+    df_res['vendedor_key'] = df_res['vendedor_raw'].str.lower().str.replace(' ', '')
+    df_res['superv_key']  = df_res['superv_raw'].str.lower().str.replace(' ', '')
+    
+    df_res['producto_raw'] = (df_res['producto'].fillna('').astype(str).str.strip().str.replace(r'\s+', ' ', regex=True).str.title())
+    df_res['producto_key'] = (df_res['producto_raw'].str.lower().str.replace(' ', '', regex=False))
+
     df_res['comentarios__observaciones'] = df_res['comentarios__observaciones'].fillna('')
-    
-    
 
     campos_int_est = ['importe_cuotas', 'cuotas','estado','fecha_venc']
     errores_est = reportar_nans(df_est, campos_int_est, id_field='id_venta')
@@ -909,7 +916,7 @@ def get_or_create_product_from_import(raw_name, importe):
     3) Si no existe, maneja casos especiales o genéricos creando el producto asociado al Plan.
     """
     norm_raw = normalize_key(raw_name)
-    print(f"Producto a buscar: {raw_name} -> {norm_raw}")
+
     # 1) Intento encontrar raw_name en BD (ignorando mayúsculas y espacios)
     prod = Products.objects.annotate(
         nombre_norm=Lower(Replace('nombre', Value(' '), Value('')))
@@ -956,6 +963,61 @@ def get_or_create_product_from_import(raw_name, importe):
         )
     return prod
 
+def get_or_create_usuario_from_import(raw_name, tipo, sucursal_obj):
+    """
+    1) Busca un Usuario por nombre (ignorando mayúsculas y espacios).
+    2) Si existe, se asegura de añadirlo a la sucursal y lo devuelve.
+    3) Si no existe, genera:
+       - un DNI aleatorio de 9 dígitos único,
+       - email = <nombre_normalizado>@gmail.com (añade sufijo si hace falta para ser único),
+       - password = ese DNI,
+       - rango = 'Vendedor' o 'Supervisor' según `tipo`,
+       - lo guarda y lo añade a sucursales.
+    """
+    norm = normalize_key(raw_name)
+
+    # 1) Intento encontrarlo en BD
+    user = Usuario.objects.annotate(
+        nombre_norm=Lower(Replace('nombre', Value(' '), Value('')))
+    ).filter(nombre_norm=norm,sucursales=sucursal_obj.pk).first()
+
+    if user:
+        if not user.sucursales.filter(pk=sucursal_obj.pk).exists():
+            user.sucursales.add(sucursal_obj)
+        return user
+
+    # 2) Generar un DNI aleatorio único de 9 dígitos
+    while True:
+        dni = ''.join(random.choices(string.digits, k=9))
+        if not Usuario.objects.filter(dni=dni).exists():
+            break
+
+    # 3) Email basado en nombre, garantizando unicidad
+    base = f"{norm}@gmail.com"
+    email = base
+    suffix = 1
+    while Usuario.objects.filter(email=email).exists():
+        email = f"{norm}{suffix}@gmail.com"
+        suffix += 1
+
+    # 4) Rango según tipo
+    rango = 'Vendedor' if tipo == 'vendedor' else 'Supervisor'
+
+    # 5) Crear el usuario
+    with transaction.atomic():
+        user = Usuario.objects.create_user(
+            email=email,
+            nombre=raw_name,
+            dni=dni,
+            rango=rango,
+            password=dni
+        )
+        # Añadir la sucursal
+        user.sucursales.add(sucursal_obj)
+        user.suspendido = True
+        user.groups.add(Group.objects.filter(name=rango.capitalize()).first())
+        user.save()
+    return user
 
 # # from sales.utils import *
 # def asignar_usuario_a_ventas():

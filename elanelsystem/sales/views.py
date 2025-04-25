@@ -1,4 +1,5 @@
 
+import time
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
@@ -590,6 +591,7 @@ def generarContratoParaImportar(index_start, index_end, file_path, agencia,nextI
 
 def importVentas(request):
     if request.method == "POST":
+        start_time = time.time()
         archivo_excel = request.FILES['file']
         agencia = request.POST.get('agencia')
         fs = FileSystemStorage()
@@ -619,10 +621,10 @@ def importVentas(request):
 
             ventas_to_create = []
             grupos = df_res.groupby(
-                ['cod_cli','fecha_incripcion','producto','paq','vendedor','superv']
+                ['cod_cli','fecha_incripcion','producto_key','paq','vendedor_key','superv_key']
             )
             print("🔎 Grupos totales detectados:", grupos.ngroups)
-
+            
             for keys, group in grupos:
                 cod_cli, fecha_incripcion, producto, paq, vendedor, superv = keys
                 
@@ -652,23 +654,28 @@ def importVentas(request):
                     continue
 
 
-                # Resolver vendedor / supervisor
-                vendedor = (
-                    Usuario.objects.annotate(
-                        nombre_norm=Replace('nombre', Value(' '), Value(''))
-                    ).filter(nombre_norm=vendedor).first()
+                raw_vendedor = group['vendedor_raw'].iloc[0]
+                vendedor_obj = get_or_create_usuario_from_import(
+                    raw_name    = raw_vendedor,
+                    tipo        = 'vendedor',
+                    sucursal_obj= sucursal_obj
                 )
-                supervisor = (
-                    Usuario.objects.annotate(
-                        nombre_norm=Replace('nombre', Value(' '), Value(''))
-                    ).filter(nombre_norm=superv).first()
+
+                raw_superv  = group['superv_raw'].iloc[0]
+                supervisor_obj = get_or_create_usuario_from_import(
+                    raw_name    = raw_superv,
+                    tipo        = 'supervisor',
+                    sucursal_obj= sucursal_obj
                 )
-                print(f"Procesando grupo de venta: \n\n {group}\n")
 
                # obtén el producto y su plan
-                producto_obj = get_or_create_product_from_import(producto,group['importe'].iloc[0])
-                # print(f"Producto {producto}")
-                # print(producto_obj)
+                try:
+                    producto_raw = group['producto_raw'].iloc[0]
+                    producto_obj = get_or_create_product_from_import(producto_raw,group['importe'].iloc[0])
+                except ValueError as e:
+                    print(f"Error al obtener el producto: {e}")
+                    continue
+                
                 plan = producto_obj.plan if producto_obj else None
 
                 # ------------------------------------------------------------------
@@ -699,8 +706,8 @@ def importVentas(request):
                 fecha              = formatar_fecha(fecha_incripcion, with_time=True),
                 producto           = producto_obj,
                 paquete            = paq,
-                vendedor           = vendedor,
-                supervisor         = supervisor,
+                vendedor           = vendedor_obj,
+                supervisor         = supervisor_obj,
                 observaciones      = group['comentarios__observaciones'].iloc[0],
                 cantidadContratos  = contratos,
                 cuotas             = cuotas_agg,
@@ -713,11 +720,14 @@ def importVentas(request):
             for venta in created:
                 venta.cuotas = bloquer_desbloquear_cuotas(venta.cuotas)
                 venta.setDefaultFields()
+                venta.testVencimientoCuotas()
+                venta.suspenderOperacion()
                 # guardamos SOLO estos campos (o usa v.save() sin update_fields)
                 venta.save(update_fields=['adjudicado','suspendida','deBaja','cuotas', 'primer_cuota', 'anticipo', 'total_a_pagar', 'importe_x_cuota'])
 
+            elapsed = time.time() - start_time
             print(f"✅ {len(created)} VENTAS IMPORTADAS CON EXITO")
-            
+            print(f"⏱️ Tiempo total de importación: {elapsed:.2f} segundos")
 
             
             fs.delete(filename)
@@ -805,7 +815,7 @@ def build_aggregated_cuotas(id_venta,df_est,n_chances,plan):
             'total': official,
             'descuento': {'autorizado': f"{'Gerente de la sucursal' if status == 'Pagado' else ''}", 'monto': descuento_monto},
             'bloqueada': False,
-            'fechaDeVencimiento': formatar_fecha(r['fecha_de_venc'], with_time=True),
+            'fechaDeVencimiento': fecha_venc,
             'diasRetraso': 0,
             "interesPorMora": 0,
             "totalFinal": 0,

@@ -14,31 +14,35 @@ from pathlib import Path
 import os
 from django.urls import reverse_lazy
 import environ
-env = environ.Env()
-environ.Env.read_env()
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env(
+    # puedes darle tipos y valores por defecto
+    DEBUG=(bool, False),
+)
+ENV_PATH = os.path.join(BASE_DIR, '.env')
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "0fvkobr34mhu5fc(im)3+#4pyu1p$jc*s5m^4!x@h44sp3gx_u"
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = "True"
-
-ALLOWED_HOSTS = ["192.168.1.107","192.168.1.104","*"]
+DEBUG = env('DEBUG')
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST= "c1611768.ferozo.com"
-EMAIL_USE_SSL = True
-EMAIL_PORT = 465
-# EMAIL_TIMEOUT = None
-EMAIL_HOST_USER="lautaror@elanelsys.com"
-EMAIL_HOST_PASSWORD="fb0zf5/2vN"
+EMAIL_HOST         = env('EMAIL_HOST')
+EMAIL_PORT         = env.int('EMAIL_PORT')
+EMAIL_USE_SSL      = env.bool('EMAIL_USE_SSL')
+EMAIL_HOST_USER    = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD= env('EMAIL_HOST_PASSWORD')
 
 
 # Application definition
@@ -93,10 +97,21 @@ WSGI_APPLICATION = 'elanelsystem.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE':   env('DB_ENGINE'),
+        'NAME':     env('DB_NAME'),
+        'USER':     env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST':     env('DB_HOST'),
+        'PORT':     env('DB_PORT'),
     }
 }
 
