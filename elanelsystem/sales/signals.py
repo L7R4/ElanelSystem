@@ -1,6 +1,6 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save,post_delete
 from django.dispatch import receiver
-from .models import Ventas
+from .models import Ventas, PagoCannon
 
 @receiver(post_save, sender=Ventas)
 def ejecutar_acciones_al_crear_venta(sender, instance, created, **kwargs):
@@ -18,3 +18,14 @@ def ejecutar_acciones_al_crear_venta(sender, instance, created, **kwargs):
         # enviar_notificacion(instance)
         # generarPDF(instance)
         # loguear_accion(instance)
+
+
+@receiver(post_save, sender=PagoCannon)
+@receiver(post_delete, sender=PagoCannon)
+def _on_pago_cannon_changed(sender, instance, **kwargs):
+    venta = instance.venta
+    # sincronizar todas las cuotas de la venta
+    venta.sync_estado_cuotas()
+    # guardamos sólo el JSON de cuotas y campo suspendida/deBaja
+    print("✅ Actualizando cuotas de la venta desde el signal")
+    venta.save(update_fields=['cuotas','suspendida','deBaja'])

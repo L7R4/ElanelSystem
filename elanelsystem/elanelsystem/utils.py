@@ -1,7 +1,6 @@
 from datetime import datetime
 import re
 import pandas as pd
-from sales.models import Ventas
 import elanelsystem.settings as settings
 from django.template.loader import get_template
 import os
@@ -69,7 +68,6 @@ def format_date(date_value):
     # Si es una cadena, convertirla a datetime y formatear
     elif isinstance(date_value, str):
         try:
-            print("wepweweas")
             return pd.to_datetime(date_value).strftime('%d/%m/%Y')
         except ValueError:
             return ""  # En caso de que la conversión falle, devolver cadena vacía
@@ -118,6 +116,8 @@ def obtenerCampaña_atraves_fecha(fecha_str):
 
 # Funcion para obtener todos los contratos existentes en la base de datos
 def obtener_todos_los_contratos():
+    from sales.models import Ventas
+
     todos_los_contratos = []
     
     ventas = Ventas.objects.all()

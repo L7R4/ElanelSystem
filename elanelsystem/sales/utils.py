@@ -733,88 +733,11 @@ def obtener_siguiente_numero_recibo():
     return nuevo_numero_formateado
 
 
-def get_or_create_metodo_pago(metodo_str):
-    """
-    Devuelve un objeto MetodoPago (creándolo si no existe).
-    metodo_str puede ser un ID (string con dígitos) o un alias (por ejemplo, "Efectivo").
-    Retorna un objeto MetodoPago válido.
-    """
-    from sales.models import MetodoPago
-
-    # 1) Intentar parsear como entero para usarlo como ID
-    try:
-        metodo_id = int(metodo_str)
-        # Buscar si existe
-        metodo_pago = MetodoPago.objects.get(id=metodo_id)
-        return metodo_pago
-    except ValueError:
-        # No es un entero, pasamos a buscarlo por alias
-        pass
-    except Exception:
-        pass
-
-    # 2) Buscarlo por alias (o nombre)
-    alias = metodo_str.strip().lower()  # " Efectivo "
-    metodo_pago_qs = MetodoPago.objects.filter(alias__iexact=alias)
-    if metodo_pago_qs.exists():
-        return metodo_pago_qs.first()
-
-    # 3) No existe => lo creamos
-    metodo_pago = MetodoPago.objects.create(
-        alias=alias,
-    )
-    return metodo_pago
-
-
-def get_or_create_cobrador(cobrador_str):
-    """
-    Recibe un string que puede ser un ID ('1', '3') o un alias (por ej. 'Juan').
-    Devuelve un objeto CuentaCobranza (creándolo si no existe).
-    """
-    from sales.models import CuentaCobranza
-
-    # 1) Intentar parsearlo como un entero para usarlo como ID
-    try:
-        cobrador_id = int(cobrador_str)
-        return CuentaCobranza.objects.get(id=cobrador_id)
-    except ValueError:
-        # No es un entero, será un alias
-        pass
-    except Exception:
-        pass
-
-    # 2) Buscarlo por alias (ignorando mayúsculas/minúsculas con __iexact)
-    alias = cobrador_str.strip().lower()
-    qs = CuentaCobranza.objects.filter(alias__iexact=alias)
-    if qs.exists():
-        return qs.first()
-
-    # 3) Si no existe, se crea
-    # Ajusta los campos según tu modelo (alias, nombre, etc.)
-    return CuentaCobranza.objects.create(
-        alias=alias
-    )
 #endregion
 
 
 #region Para enviar correos electrónicos
-# def send_html_email(subject, template, context, from_email, to_email):
-#     """
-#     Envía un correo electrónico HTML.
 
-#     :param subject: Asunto del correo electrónico.
-#     :param template: Ruta al template HTML.
-#     :param context: Contexto para renderizar el template.
-#     :param from_email: Dirección de correo del remitente.
-#     :param to_email: Dirección de correo del destinatario.
-    
-#     """
-#     html_message = render_to_string(template, context)
-#     plain_message = strip_tags(html_message)
-    
-#     email = EmailMessage(subject, plain_message, from_email, [to_email])
-#     email.content_subtype = 'html'  # Define que el contenido es HTML
-#     email.send()
 def send_html_email(subject, template, context, from_email, to_email):
     """
     Envía un correo electrónico en formato HTML.
@@ -827,6 +750,8 @@ def send_html_email(subject, template, context, from_email, to_email):
     email.send()
 #endregion
 
+
+#region Funciones para la importacion en excel
 def reportar_nans(df, cols, id_field = 'id_venta'):
     """
     Recorre las columnas `cols` de `df` y devuelve una lista de dicts
@@ -844,6 +769,7 @@ def reportar_nans(df, cols, id_field = 'id_venta'):
                 'valor': df.at[idx, col]
             })
     return errores
+
 
 def preprocesar_excel_ventas(file_path):
     from elanelsystem.utils import obtenerCampaña_atraves_fecha,formatar_fecha
@@ -905,9 +831,11 @@ def preprocesar_excel_ventas(file_path):
     
     return df_res, df_est
 
+
 def normalize_key(s):
     """Minúsculas y sin espacios para comparar claves."""
     return ''.join(s.lower().split())
+
 
 def get_or_create_product_from_import(raw_name, importe):
     """
@@ -962,6 +890,7 @@ def get_or_create_product_from_import(raw_name, importe):
             plan             = plan
         )
     return prod
+
 
 def get_or_create_usuario_from_import(raw_name, tipo, sucursal_obj):
     """
@@ -1019,33 +948,67 @@ def get_or_create_usuario_from_import(raw_name, tipo, sucursal_obj):
         user.save()
     return user
 
-# # from sales.utils import *
-# def asignar_usuario_a_ventas():
-#     import random
-#     from sales.models import Ventas
-#     from users.models import Usuario  # Ajusta esto al nombre de tu app de usuarios
 
-#     # Obtiene todas las ventas que no tienen vendedor o supervisor
-#     ventas_sin_vendedor_o_supervisor = Ventas.objects.filter(
-#         vendedor__isnull=True
-#     ) | Ventas.objects.filter(
-#         supervisor__isnull=True
-#     )
+def get_or_create_metodo_pago(metodo_str):
+    """
+    Devuelve un objeto MetodoPago (creándolo si no existe).
+    metodo_str puede ser un ID (string con dígitos) o un alias (por ejemplo, "Efectivo").
+    Retorna un objeto MetodoPago válido.
+    """
+    from sales.models import MetodoPago
 
-#     # Obtiene todos los usuarios del modelo Usuario
-#     usuarios = list(Usuario.objects.all())
-#     if not usuarios:
-#         print("No hay usuarios disponibles para asignar.")
-#         return
+    # 1) Intentar parsear como entero para usarlo como ID
+    try:
+        metodo_id = int(metodo_str)
+        # Buscar si existe
+        metodo_pago = MetodoPago.objects.get(id=metodo_id)
+        return metodo_pago
+    except ValueError:
+        # No es un entero, pasamos a buscarlo por alias
+        pass
+    except Exception:
+        pass
 
-#     # Asigna un usuario aleatorio a cada venta
-#     for venta in ventas_sin_vendedor_o_supervisor:
-#         if not venta.vendedor:
-#             venta.vendedor = random.choice(usuarios)  # Asigna un vendedor aleatorio
-#         if not venta.supervisor:
-#             venta.supervisor = random.choice(usuarios)  # Asigna un supervisor aleatorio
+    # 2) Buscarlo por alias (o nombre)
+    alias = metodo_str.strip().lower()  # " Efectivo "
+    metodo_pago_qs = MetodoPago.objects.filter(alias__iexact=alias)
+    if metodo_pago_qs.exists():
+        return metodo_pago_qs.first()
 
-#         # Guarda los cambios en la base de datos
-#         venta.save()
+    # 3) No existe => lo creamos
+    metodo_pago = MetodoPago.objects.create(
+        alias=alias,
+    )
+    return metodo_pago
 
-#     print(f"Se han actualizado {ventas_sin_vendedor_o_supervisor.count()} ventas.")
+
+def get_or_create_cobrador(cobrador_str):
+    """
+    Recibe un string que puede ser un ID ('1', '3') o un alias (por ej. 'Juan').
+    Devuelve un objeto CuentaCobranza (creándolo si no existe).
+    """
+    from sales.models import CuentaCobranza
+
+    # 1) Intentar parsearlo como un entero para usarlo como ID
+    try:
+        cobrador_id = int(cobrador_str)
+        return CuentaCobranza.objects.get(id=cobrador_id)
+    except ValueError:
+        # No es un entero, será un alias
+        pass
+    except Exception:
+        pass
+
+    # 2) Buscarlo por alias (ignorando mayúsculas/minúsculas con __iexact)
+    alias = cobrador_str.strip().lower()
+    qs = CuentaCobranza.objects.filter(alias__iexact=alias)
+    if qs.exists():
+        return qs.first()
+
+    # 3) Si no existe, se crea
+    # Ajusta los campos según tu modelo (alias, nombre, etc.)
+    return CuentaCobranza.objects.create(
+        alias=alias
+    )
+
+#endregion
