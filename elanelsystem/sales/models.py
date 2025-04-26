@@ -1,15 +1,22 @@
 import re
 from django.db import models
 from django.forms import ValidationError
+# from elanelsystem.utils import obtenerCampaña_atraves_fecha
 from users.models import Cliente,Usuario,Sucursal
 from products.models import Plan, Products
 from django.core.validators import RegexValidator
 import json
 import datetime
+from elanelsystem.utils import obtenerCampaña_atraves_fecha
+from django.db import models, connection
+from django.db.models import Max
+
+
 from dateutil.relativedelta import relativedelta
 from sales.utils import getAllCampaniaOfYear, getCampaniaActual, getCampaniaByFecha, obtener_ultima_campania
 from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
+from django.core.validators import MinValueValidator, RegexValidator
 
 #region C-LISTA-PRECIOS
 class CoeficientesListadePrecios(models.Model):
@@ -22,105 +29,65 @@ class CoeficientesListadePrecios(models.Model):
 class Ventas(models.Model):
 
     # Funcion para el siguiente numero de operacion automaticamente
-    def returnOperacion():      
-        if not Ventas.objects.last():
-            numOperacion = 1
+    
+    @classmethod
+    def returnOperacion(cls):
+        """
+        Opción B: busca el mayor nro_operacion en la tabla
+        y devuelve ese valor + 1 (o 1 si no hay registros).
+        """
+        resultado = cls.objects.aggregate(max_op=Max('nro_operacion'))
+        max_op = resultado['max_op'] or 0
+        return max_op + 1
+
+    def _siguiente_fecha_venc(self, fecha_base, index):
+        """Calcula la fecha de vencimiento para la cuota `index`."""
+        if self.modalidad == 'Mensual':
+            if index == 1:
+                dia = 15
+                meses = 1 if fecha_base.day <= 25 else 2
+                return fecha_base.replace(day=dia) + relativedelta(months=meses)
+            return fecha_base + relativedelta(months=1)
+        elif self.modalidad == 'Quincenal':
+            return fecha_base + relativedelta(days=15)
+        elif self.modalidad == 'Semanal':
+            return fecha_base + relativedelta(days=7)
+        elif self.modalidad == 'Diario':
+            return fecha_base + relativedelta(days=1)
         else:
-            lastOperacion = Ventas.objects.last()
-            numOperacion = int(lastOperacion.nro_operacion) + 1
-        return numOperacion
-    
-    # Funcion para crear las cuotas cuando se cree una venta 
+            raise ValueError(f"Modalidad desconocida: {self.modalidad}")
+                             
+    def _calcular_total_oficial(self, index):
+        """Devuelve el total oficial de la cuota `index`, incluyendo interés."""
+        if index == 0:
+            return int(self.anticipo)
+        if index == 1:
+            return int(self.primer_cuota)
+        # Cuotas 2+ con interés anualizado
+        years = (index - 1) // 12
+        base = self.importe_x_cuota
+        interes = base * (self.PORCENTAJE_ANUALIZADO * years) / 100
+        return int(base + interes)
+     
     def crearCuotas(self):
-        cuotas = self.cuotas
-        fechaDeAlta = None
-    
-        fechaDeAlta = datetime.datetime.strptime(self.fecha, '%d/%m/%Y %H:%M')
-            
-        # Setear la variable fechaDeVencimiento con un tipo fecha
-        fechaDeVencimiento = fechaDeAlta
-        contMeses = 0
-        contYear = 0
+        """Inicializa la lista `self.cuotas` con la cuota 0 y las siguientes."""
+        fecha_alta = datetime.datetime.strptime(self.fecha, '%d/%m/%Y %H:%M')
+        cuotas = []
 
-        # Cuota 0
-        cuotas.append({"cuota" :f'Cuota 0',
-                       "nro_operacion": self.nro_operacion,
-                       "status": "pendiente",
-                       "total": int(self.anticipo),
-                       "descuento": {'autorizado': "", 'monto': 0},
-                       "bloqueada": True,
-                       "fechaDeVencimiento":"", 
-                       "diasRetraso": 0,
-                       "pagos":[],
-                       "autorizada_para_anular": False
+        # Anticipo (Cuota 0)
+        cuota0 = self._armar_cuota(0, fecha_alta)
+        cuota0['bloqueada'] = False
+        cuotas.append(cuota0)
 
-                       })
-        
-        # Otras cuotas
-        for i in range(1,self.nro_cuotas+1):
-            contMeses += 1
-            
-            #region Bloque para asignar la fecha de vencimiento a la primera cuota (Si es antes o desp del dia 25 del mes) a las ventas con modalidad MENSUAL
-            if(self.modalidad == "Mensual"):
-                if(i == 1):
-                    if fechaDeAlta.day <= 25:
-                        # Fecha de vencimiento es el 15 del próximo mes
-                        fechaDeVencimiento = datetime.datetime(
-                            year=fechaDeAlta.year,
-                            month=fechaDeAlta.month,
-                            day=15
-                        ) + relativedelta(months=1)
-                    else:
-                        # Fecha de vencimiento es el 15 del siguiente mes después del próximo mes
-                        fechaDeVencimiento = datetime.datetime(
-                            year=fechaDeAlta.year,
-                            month=fechaDeAlta.month,
-                            day=15
-                        ) + relativedelta(months=2)
-                        
-                else:
-                    fechaDeVencimiento =  fechaDeVencimiento + self.contarDiasSegunModalidad(self.modalidad,fechaDeVencimiento)
-            #endregion
-
-
-            #region Bloque para asignar la fecha de vencimiento a otras MODALIDADES
-            if(self.modalidad != "Mensual"):
-                fechaDeVencimiento =  fechaDeVencimiento + self.contarDiasSegunModalidad(self.modalidad)
-            #endregion
-
-            cuotas.append({
-                    "cuota" :f'Cuota {i}',
-                    "nro_operacion": self.nro_operacion,
-                    "status": "pendiente",
-                    "bloqueada": True,
-                    "fechaDeVencimiento" : fechaDeVencimiento.strftime('%d/%m/%Y %H:%M'),
-                    "descuento": {'autorizado': "", 'monto': 0},
-                    "diasRetraso": 0,
-                    "interesPorMora": 0,
-                    "campaniaCuota":getCampaniaByFecha(fechaDeVencimiento),
-                    "totalFinal": 0,
-                    "pagos":[],
-                    "autorizada_para_anular": False
-                })
-            
-            if(cuotas[-1]["cuota"] == "Cuota 1"):
-               cuotas[-1]["total"]= int(self.primer_cuota)
-            else:
-               cuotas[-1]["total"]= int(self.importe_x_cuota + (self.importe_x_cuota * (self.PORCENTAJE_ANUALIZADO *contYear))/100)
-                
-
-
-            if(contMeses == 12):
-                contMeses = 0
-                contYear +=1
-
-
-        # Me aseguro de que no importa si es adjudicado o no la primera cuota a pagar este desbloqueada
-        cuotas[0]["bloqueada"] = False
+        # Cuotas 1..n
+        fecha_iter = fecha_alta
+        for i in range(1, self.nro_cuotas + 1):
+            fecha_iter = self._siguiente_fecha_venc(fecha_iter, i)
+            cuotas.append(self._armar_cuota(i, fecha_iter))
 
         self.cuotas = cuotas
-        # self.save()
-    
+        self.save()
+
     # Modalidades de tiempo de pago
     MODALIDADES = (
         ('Diario', 'Diario'),
@@ -130,7 +97,6 @@ class Ventas(models.Model):
     )
     
     PORCENTAJE_ANUALIZADO = 15
-    
     
     
     #region Campos
@@ -490,7 +456,6 @@ class Ventas(models.Model):
 
     #region CuotasManagement
     def desbloquearCuota(self,cuota):
-        print(f'Cantidad de cuotas desde la funcion desbloquearCuota {len(self.cuotas)}')
         for i in range(0,int(self.nro_cuotas)):
             if (cuota == self.cuotas[i]["cuota"]):
                 self.cuotas[i+1]["bloqueada"] = False
@@ -578,6 +543,61 @@ class Ventas(models.Model):
                     self.cuotas[i]["diasRetraso"] = diasDeRetraso
 
         self.save()
+    
+    def _get_cuota_dict(self, nro_cuota: int):
+        """
+        Devuelve la dict de la cuota con número `nro_cuota`
+        (donde c['cuota']=='Cuota {nro_cuota}'), o None.
+        """
+        for c in self.cuotas:
+            if int(c['cuota'].split()[-1]) == nro_cuota:
+                return c
+        return None
+
+    def actualizar_estado_cuota(self, nro_cuota: int):
+        """
+        Reconstruye el estado de la cuota nro_cuota a partir
+        de los registros de PagoCannon, guarda sólo IDs en
+        c['pagos'], y desbloquea la siguiente si corresponde.
+        """
+        from .models import PagoCannon
+
+        cuota = self._get_cuota_dict(nro_cuota)
+        if not cuota:
+            return
+
+        # 1) sumar todos los pagos de esa cuota
+        pagos_qs    = PagoCannon.objects.filter(venta=self, nro_cuota=nro_cuota)
+        total_pagos = pagos_qs.aggregate(total=models.Sum('monto'))['total'] or 0
+
+        # 2) actualizar lista de pagos (solo IDs)
+        cuota['pagos'] = list(pagos_qs.values_list('id', flat=True))
+
+        # 3) decidir estado según monto pagado vs objetivo
+        objetivo = cuota['total'] - cuota['descuento']['monto']
+        if total_pagos >= objetivo:
+            cuota['status'] = 'Pagado'
+            # desbloquear siguiente
+            self.desbloquearCuota(cuota['cuota'])
+        elif total_pagos > 0:
+            cuota['status'] = 'Parcial'
+        else:
+            cuota['status'] = 'Pendiente'
+
+    def sync_estado_cuotas(self):
+        """
+        Recorre todas las cuotas de self.cuotas y llama
+        a actualizar_estado_cuota() para cada una.
+        Luego aplica vencimientos y suspensión.
+        """
+        for c in self.cuotas:
+            nro = int(c['cuota'].split()[-1])
+            self.actualizar_estado_cuota(nro)
+
+        self.testVencimientoCuotas()
+        self.suspenderOperacion()
+    
+    
     #endregion
 
     def addPorcentajeAdjudicacion(self):
@@ -754,3 +774,113 @@ class MovimientoExterno(models.Model):
             if tipo_moneda and tipo_moneda.lower() not in tipo_monedas_permitidas:
                 raise ValidationError({'tipoMoneda': 'Tipo de moneda no válida'})
 #endregion
+
+
+class PagoCannon(models.Model):
+    
+    nro_recibo = models.CharField(
+        "N° de comprobante",
+        max_length=30,
+        unique=True,
+        help_text="Número de recibo o comprobante, debe ser único por pago."
+    )
+
+    venta = models.ForeignKey(
+        'Ventas',
+        on_delete=models.CASCADE,
+        related_name='pagos_cannon',
+        help_text="Venta a la que pertenece este pago."
+    )
+
+    nro_cuota = models.PositiveSmallIntegerField(
+        "N° de cuota",
+        validators=[MinValueValidator(0)],
+        help_text="Cuota a la que aplica este pago (0 = inscripción)."
+    )
+
+    fecha = models.CharField(
+        "Fecha de pago",
+        default=datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),
+        max_length=30,
+        help_text="Fecha y hora en que se registró el pago."
+    )
+
+    campana_de_pago = models.CharField(
+        "Campaña de pago",
+        max_length=30,
+        blank=True,
+        help_text="Ej. 'Marzo 2025'. Se calcula en el save()."
+    )
+
+    monto = models.PositiveIntegerField(
+        "Monto",
+        validators=[MinValueValidator(1)],
+        help_text="Importe entero del pago, mayor a cero."
+    )
+
+    metodo_pago = models.ForeignKey(
+        'MetodoPago',
+        on_delete=models.SET_NULL,
+        related_name='pagos_cannon',
+        null=True,
+        blank=True,
+        help_text="Método de pago utilizado."
+    )
+
+    cobrador = models.ForeignKey(
+        'CuentaCobranza',
+        on_delete=models.SET_NULL,
+        related_name='pagos_cannon',
+        null=True,
+        blank=True,
+        help_text="Cuenta o persona que cobra."
+    )
+
+    responsable_pago = models.ForeignKey(
+        'users.Usuario',
+        on_delete=models.SET_NULL,
+        related_name='pagos_realizados',
+        null=True,
+        blank=True,
+        help_text="Usuario interno responsable de la carga."
+    )
+
+    class Meta:
+        ordering = ['-fecha']
+        unique_together = [
+            ('venta', 'nro_cuota', 'nro_recibo')
+        ]
+        indexes = [
+            models.Index(fields=['venta', 'nro_cuota']),
+        ]
+        verbose_name = "Pago Cannon"
+        verbose_name_plural = "Pagos Cannon"
+
+    def clean(self):
+        # 1) Asegurarse de que la cuota exista en la venta
+        if self.nro_cuota > self.venta.nro_cuotas:
+            from django.core.exceptions import ValidationError
+            raise ValidationError({
+                'nro_cuota': f"Esta venta tiene solo {self.venta.nro_cuotas} cuotas."
+            })
+
+    def save(self, *args, **kwargs):
+        # si no vino explícito, lo genero aquí
+        if not self.campana_de_pago:
+            self.campana_de_pago = obtenerCampaña_atraves_fecha(self.fecha)
+
+
+        # PostgreSQL tiene un objeto nativo para esto: las sequences. Básicamente, un contador 
+        # independiente que puedes invocar con nextval() y que está diseñado para altos volúmenes 
+        # y concurrencia.
+        if not self.nro_recibo:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT nextval('recibo_seq')")
+                next_num = cursor.fetchone()[0]
+            # formatea a tu gusto, p.e. RC-000001
+            self.nro_recibo = f"RC-{next_num:06d}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.nro_recibo} – Venta {self.venta.nro_operacion} / Cuota {self.nro_cuota}"
+    
