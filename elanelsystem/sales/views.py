@@ -11,7 +11,7 @@ from django.db import transaction
 from .mixins import TestLogin
 from .models import ArqueoCaja, MetodoPago, Ventas,CoeficientesListadePrecios,MovimientoExterno,CuentaCobranza
 from users.models import Cliente, Sucursal,Usuario
-from .models import Ventas
+from .models import Ventas,PagoCannon
 from products.models import Products,Plan
 import datetime
 import os,re
@@ -361,20 +361,62 @@ def importVentas(request):
                 cuotas             = cuotas_agg,
             ))
             with transaction.atomic():
-                created = Ventas.objects.bulk_create(ventas_to_create)
+                ventas_created = Ventas.objects.bulk_create(ventas_to_create)
+                 # 1) Preparo lista de PagoCannon por crear
+                pagos_to_create = []
+                for venta in ventas_created:
+                    for cuota_dict in venta.cuotas:
+                        nro = int(cuota_dict['cuota'].split()[-1])
+                        for pago_data in cuota_dict.get('pagos', []):
+                            pagos_to_create.append(
+                                PagoCannon(
+                                    venta=venta,
+                                    nro_cuota = nro,
+                                    monto = pago_data['monto'],
+                                    metodo_pago_id = pago_data['metodoPago'],
+                                    cobrador_id = pago_data['cobrador'],
+                                    responsable_pago = None,
+                                    fecha = pago_data['fecha'],
+                                    campana_de_pago = pago_data['campaniaPago'],
+                                )
+                            )
+                # 2) Bulk create de todos los pagos
+                pagos_created = PagoCannon.objects.bulk_create(pagos_to_create)
 
-            cantidad_nuevas_ventas = len(created)
+                # 3) Reconstruyo en memoria cada .cuotas, actualizo estado, bloqueo, etc.
+
+                # 1) Agrupa los pagos recién creados por (venta_id, nro_cuota)
+                pagos_por_venta_cuota = defaultdict(list)
+                for pago in pagos_created:
+                    key = (pago.venta.id, pago.nro_cuota)
+                    pagos_por_venta_cuota[key].append(pago.id)
+
+
+                ventas_map = { v.id: v for v in ventas_created}
+                ventas_para_actualizar = []
+                # 3) Recorre cada grupo y actualiza la cuota correspondiente
+                for (venta_id, nro_cuota), pago_ids in pagos_por_venta_cuota.items():
+                    venta = ventas_map[venta_id]
+                    # como construiste la lista en orden, cuota = índice
+                    cuota_dict = venta.cuotas[nro_cuota]
+                    cuota_dict['pagos'] = pago_ids
+                    ventas_para_actualizar.append(venta)
+
+                for venta in ventas_para_actualizar:
+                    # recalculo vencimientos y suspensión (si hace falta)
+                    venta.testVencimientoCuotas()
+                    venta.suspenderOperacion()
+                    venta.cuotas = bloquer_desbloquear_cuotas(venta.cuotas)
+                    venta.setDefaultFields()
+
+                Ventas.objects.bulk_update(ventas_para_actualizar,['cuotas', 'adjudicado', 'suspendida', 'deBaja'])
+
+
+            cantidad_nuevas_ventas = len(ventas_created)
             # Ahora aplicamos bloqueos, defaults y señales a cada venta recién creada
-            for venta in created:
-                venta.cuotas = bloquer_desbloquear_cuotas(venta.cuotas)
-                venta.setDefaultFields()
-                venta.testVencimientoCuotas()
-                venta.suspenderOperacion()
-                # guardamos SOLO estos campos (o usa v.save() sin update_fields)
-                venta.save(update_fields=['adjudicado','suspendida','deBaja','cuotas', 'primer_cuota', 'anticipo', 'total_a_pagar', 'importe_x_cuota'])
 
             elapsed = time.time() - start_time
-            print(f"✅ {len(created)} VENTAS IMPORTADAS CON EXITO")
+            print(f"✅ {len(ventas_created)} VENTAS IMPORTADAS CON EXITO")
             print(f"⏱️ Tiempo total de importación: {elapsed:.2f} segundos")
 
             
