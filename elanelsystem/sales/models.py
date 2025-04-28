@@ -10,7 +10,8 @@ import datetime
 from elanelsystem.utils import obtenerCampaña_atraves_fecha
 from django.db import models, connection
 from django.db.models import Max
-
+from django.db import transaction
+from django.db.models import Sum
 
 from dateutil.relativedelta import relativedelta
 from sales.utils import getAllCampaniaOfYear, getCampaniaActual, getCampaniaByFecha, obtener_ultima_campania
@@ -30,15 +31,15 @@ class Ventas(models.Model):
 
     # Funcion para el siguiente numero de operacion automaticamente
     
-    @classmethod
-    def returnOperacion(cls):
+    def get_next_operacion():
         """
-        Opción B: busca el mayor nro_operacion en la tabla
-        y devuelve ese valor + 1 (o 1 si no hay registros).
+        Devuelve el siguiente nro_operacion como MAX(nro_operacion)+1,
+        o 1 si aún no hay ventas.
         """
-        resultado = cls.objects.aggregate(max_op=Max('nro_operacion'))
-        max_op = resultado['max_op'] or 0
-        return max_op + 1
+        max_n = Ventas.objects.aggregate(
+            max_op=Max('nro_operacion')
+        )['max_op'] or 0
+        return max_n + 1
 
     def _siguiente_fecha_venc(self, fecha_base, index):
         """Calcula la fecha de vencimiento para la cuota `index`."""
@@ -103,7 +104,7 @@ class Ventas(models.Model):
     nro_cliente = models.ForeignKey(Cliente,on_delete=models.CASCADE,related_name="ventas_nro_cliente")
     modalidad = models.CharField("Modalidad:",max_length=15, choices=MODALIDADES,default="")
     nro_cuotas = models.IntegerField()
-    nro_operacion = models.IntegerField(default=returnOperacion)
+    nro_operacion = models.IntegerField(default=get_next_operacion)
     agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING,blank = True, null = True)
     campania = models.CharField("Campaña:",max_length=50,default="")
     
@@ -462,61 +463,70 @@ class Ventas(models.Model):
                 break
         self.save()
         
+    def pagarCuota(self,nro_cuota,monto,metodoPago,cobrador,responsable_pago):
 
-    def pagarCuota(self,cuota,monto,metodoPago,cobrador,responsable_pago):
-        pago = {}
+        # 1) Obtener el dict de esa cuota en self.cuotas
+        cuota_label = f"Cuota {nro_cuota}"
+        cuota = next((c for c in self.cuotas if c["cuota"] == cuota_label), None)
 
-        cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))[0]
+        if not cuota:
+            raise ValueError(f"No existe {cuota_label} en esta venta.")
+        if cuota["status"].lower() == "pagado" or cuota["bloqueada"]:
+            raise ValueError("La cuota ya está pagada o bloqueada.")
+        
+        # 2) Crear el PagoCannon de forma atómica
+        with transaction.atomic():
+            pago = PagoCannon(
+                venta            = self,
+                nro_cuota        = nro_cuota,
+                monto            = monto,
+                metodo_pago      = metodoPago,
+                cobrador         = cobrador,
+                responsable_pago = responsable_pago,
+            )
+            pago.save()  # aquí se genera el nro_recibo y campana_de_pago
 
-        if(cuotaSeleccionada["status"].lower() != "pagado" and not cuotaSeleccionada["bloqueada"]):
-            pago = {
-                "monto": monto,
-                "metodoPago": metodoPago,
-                "fecha": datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),
-                "cobrador": cobrador,
-                "responsable_pago": responsable_pago,
-                "campaniaPago": getCampaniaActual()
-            }
-            cuotaSeleccionada["pagos"].append(pago)
-            lista_montoDePagos = [item["monto"] for item in cuotaSeleccionada["pagos"]]
+            # 3) Referenciar el pago en el JSON
+            cuota.setdefault("pagos", []).append(pago.id)
 
-            sumaPagos = sum(lista_montoDePagos)
-
-            if sumaPagos == (cuotaSeleccionada["total"] - cuotaSeleccionada["descuento"]["monto"]):
-                cuotaSeleccionada["status"] = "pagado"
-                self.desbloquearCuota(cuota)
-                self.suspenderOperacion()
-            else:
-                cuotaSeleccionada["status"] = "parcial"
-
-            self.save()
-
-        else:
-            raise ValueError("Esta cuota ya esta pagada o esta bloqueada")
-
-
-    def anularCuota(self,cuotaRequest):
-        for cuota in self.cuotas:
-            if cuota["cuota"] == cuotaRequest:
-                cuota["pagos"] = [pago for pago in cuota["pagos"] if pago["metodoPago"] == "Credito"] # Elimina los pagos realizados pero deja los saldo a favor en la cuota
-                
-                # Luego de limpiar unicamente los pagos que no son de credito se evalua que no haya ninguno pago por credito en la cuota, 
-                # entonces significara se podra colocar el estado de Pendiente, porque no se ha pagado ni parcial ni completamente,
-                # sino tendria que mantener su estado actual
-                if(len(cuota["pagos"]) == 0): 
-                    cuota["status"] = "pendiente"
-                    
-                cuota["pagos"] = []  # Agregar un flag en la cuota
-                cuota["status"] = "pendiente"
-                cuota["autorizada_para_anular"] = False
-
-                # Obtenemos la siguiente cuota y la bloqueamos
-                cuotaSiguiente = self.cuotas[self.cuotas.index(cuota)+1]
-                cuotaSiguiente["bloqueada"] = True
-                break
+        # 4) Recalcular total abonado y estado
+        total_pagado = (
+            PagoCannon.objects
+            .filter(venta=self, nro_cuota=nro_cuota)
+            .aggregate(total=Sum('monto'))['total'] or 0
+        )
+        objetivo = cuota['total'] - cuota['descuento']['monto']
+        if total_pagado >= objetivo:
+            cuota['status'] = 'Pagado'
+            self.desbloquearCuota(cuota_label)
+            self.suspenderOperacion()
+        elif total_pagado > 0:
+            cuota['status'] = 'Parcial'
 
         self.save()
 
+    def anularCuota(self, nro_cuota):
+        """
+        Elimina todos los pagos de la cuota indicada y resetea su estado.
+        """
+        cuota_label = f"Cuota {nro_cuota}"
+        cuota = next((c for c in self.cuotas if c["cuota"] == cuota_label), None)
+        if not cuota:
+            raise ValueError(f"No existe {cuota_label} en esta venta.")
+
+        # 1) Borrar de la base los PagoCannon asociados
+        PagoCannon.objects.filter(venta=self, nro_cuota=nro_cuota).delete()
+
+        # 2) Limpiar el JSON y bloquear la siguiente
+        cuota["pagos"] = []
+        cuota["status"] = "Pendiente"
+        cuota["autorizada_para_anular"] = False
+
+        idx = self.cuotas.index(cuota)
+        if idx + 1 < len(self.cuotas):
+            self.cuotas[idx+1]["bloqueada"] = True
+
+        self.save()
 
     def aplicarDescuento(self,cuota,dinero,autorizado):
         cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))[0]
@@ -526,7 +536,6 @@ class Ventas(models.Model):
         else:
             raise ValueError("Solo se puede aplicar descuento a la cuota 0 y 1. En otro caso, esta cuota está pagada")
         self.save()
-
 
     def testVencimientoCuotas(self):
 
@@ -596,7 +605,6 @@ class Ventas(models.Model):
 
         self.testVencimientoCuotas()
         self.suspenderOperacion()
-    
     
     #endregion
 

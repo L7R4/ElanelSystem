@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('modalidad', models.CharField(choices=[('Diario', 'Diario'), ('Semanal', 'Semanal'), ('Quincenal', 'Quincenal'), ('Mensual', 'Mensual')], default='', max_length=15, verbose_name='Modalidad:')),
                 ('nro_cuotas', models.IntegerField()),
-                ('nro_operacion', models.IntegerField(default=sales.models.Ventas.returnOperacion)),
+                ('nro_operacion', models.IntegerField(default=sales.models.Ventas.get_next_operacion)),
                 ('campania', models.CharField(default='', max_length=50, verbose_name='Campaña:')),
                 ('suspendida', models.BooleanField(default=False)),
                 ('importe', models.FloatField(default=0, verbose_name='Importe:')),
