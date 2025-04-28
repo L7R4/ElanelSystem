@@ -4,7 +4,7 @@ from django.urls import reverse
 from users.models import Usuario
 from django.db.models import Max
 from sales.models import Ventas
-from sales.utils import obtener_ultima_campania, formatear_moneda_sin_centavos
+from sales.utils import formatear_moneda_sin_centavos
 from elanelsystem.utils import formatear_dd_mm_yyyy
 
 register = template.Library()
@@ -63,15 +63,6 @@ def format_dd_mm_yyyy(valor):
 @register.filter(name='cuotas_pagadas_len')
 def cuotas_pagadas_len(venta):
     return len(venta.cuotas_pagadas())
-
-@register.simple_tag
-def obtener_ultima_campania():
-    # Obtener el número de campaña más alto
-    ultima_campania = Ventas.objects.aggregate(Max('campania'))['campania__max']
-    if(ultima_campania == None):
-        return 0
-    else:
-        return ultima_campania
     
 
 @register.simple_tag(takes_context=True)

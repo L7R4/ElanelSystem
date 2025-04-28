@@ -22,7 +22,6 @@ from .utils import (
     get_detalle_cuotas1,
     liquidaciones_countFaltas,
     liquidaciones_countTardanzas,
-    obtener_ultima_campania,
     get_comision_total,
     get_detalle_comision_x_cantidad_ventasPropias
 )
@@ -63,11 +62,9 @@ class LiquidacionesComisiones(TestLogin,generic.View):
     template_name = 'comisiones.html'
     def get(self,request,*args,**kwargs):
             context = {}
-            print("WTFFFFFF")
             request.session["ajustes_comisiones"] = [] # Reiniciar posibles ajustes de la comisiones que existan
 
             context["urlPDFLiquidacion"] = reverse_lazy("liquidacion:viewPDFLiquidacion")
-            lastCampania = obtener_ultima_campania()
             context["defaultSucursal"] = Sucursal.objects.first()
             context["sucursales"] = Sucursal.objects.all()
             context["campanias"] = getTodasCampaniasDesdeInicio()
@@ -630,38 +627,38 @@ def requestColaboradores_TardanzasAusencias(request):
     return JsonResponse({"colaboradores_data": colaboradoresDict} , safe=False)
 
 
-def newAusenciaTardanza(request):
-    form =json.loads(request.body)
-    try:
-        colaborador= form["colaborador"]
-        fecha= form["fecha"]
-        tipoEvento = form["tipoEvento"]
-        hora = form["hora"] if tipoEvento == "Tardanza" else ""
+# def newAusenciaTardanza(request):
+#     form =json.loads(request.body)
+#     try:
+#         colaborador= form["colaborador"]
+#         fecha= form["fecha"]
+#         tipoEvento = form["tipoEvento"]
+#         hora = form["hora"] if tipoEvento == "Tardanza" else ""
 
-        campania = obtener_ultima_campania()
-        colaboradorObject = Usuario.objects.get(email=colaborador)
+#         campania = obtener_ultima_campania()
+#         colaboradorObject = Usuario.objects.get(email=colaborador)
 
-        colaboradorObject.faltas_tardanzas.append({
-            "tipoEvento": tipoEvento, 
-            "fecha": fecha, 
-            "hora": hora, 
-            "campania": campania
-        })
-        colaboradorObject.save()
+#         colaboradorObject.faltas_tardanzas.append({
+#             "tipoEvento": tipoEvento, 
+#             "fecha": fecha, 
+#             "hora": hora, 
+#             "campania": campania
+#         })
+#         colaboradorObject.save()
 
-        response_data = {
-            "countFaltas": liquidaciones_countFaltas(colaboradorObject),
-            "countTardanzas": liquidaciones_countTardanzas(colaboradorObject),
-            "tipoEvento": tipoEvento,
-            "fecha": fecha,
-            "hora": hora,
-            "status": True
-        }
-        return JsonResponse(response_data, safe=False)
+#         response_data = {
+#             "countFaltas": liquidaciones_countFaltas(colaboradorObject),
+#             "countTardanzas": liquidaciones_countTardanzas(colaboradorObject),
+#             "tipoEvento": tipoEvento,
+#             "fecha": fecha,
+#             "hora": hora,
+#             "status": True
+#         }
+#         return JsonResponse(response_data, safe=False)
     
-    except Exception as e:
-        print(e)
-        return JsonResponse({"status": False, "errorMessage": "Ocurrio un error al guardar"},safe=False)
+#     except Exception as e:
+#         print(e)
+#         return JsonResponse({"status": False, "errorMessage": "Ocurrio un error al guardar"},safe=False)
     
 
 class HistorialLiquidaciones(generic.ListView):

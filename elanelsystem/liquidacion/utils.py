@@ -2,7 +2,6 @@ from datetime import timedelta
 from elanelsystem.utils import parse_fecha
 from sales.models import Ventas,MovimientoExterno
 from .models import *
-from sales.utils import searchSucursalFromStrings, obtener_ultima_campania
 from django.db.models import Q
 import datetime
 import calendar

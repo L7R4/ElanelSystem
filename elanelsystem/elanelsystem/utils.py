@@ -115,12 +115,15 @@ def obtenerCampaña_atraves_fecha(fecha_str):
 
 
 # Funcion para obtener todos los contratos existentes en la base de datos
-def obtener_todos_los_contratos():
+def obtener_todos_los_contratos(agencia = None):
     from sales.models import Ventas
 
     todos_los_contratos = []
-    
-    ventas = Ventas.objects.all()
+    if agencia:
+        # Filtrar las ventas por agencia
+        ventas = Ventas.objects.filter(agencia=agencia)
+    else:
+        ventas = Ventas.objects.all()
     
     # Iterar sobre cada venta y extraer los contratos
     for venta in ventas:
