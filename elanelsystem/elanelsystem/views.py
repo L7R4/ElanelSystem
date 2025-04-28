@@ -4,44 +4,12 @@ from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.views import LoginView
 from django.views import generic
-from django.urls import reverse, reverse_lazy
-from sales.models import MovimientoExterno, Ventas
-from users.forms import CustomLoginForm
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.cache import never_cache
+from django.urls import reverse 
 from sales.utils import dataStructureCannons, dataStructureClientes, dataStructureVentas, dataStructureMovimientosExternos,deleteFieldsInDataStructures
-from users.models import Cliente, Sucursal, Usuario
-from sales.utils import exportar_excel, obtener_ultima_campania
-from django.contrib.auth.models import Permission
+from users.models import Sucursal
+from sales.utils import exportar_excel
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-# class IndexLoginView(generic.FormView):
-#     form_class = CustomLoginForm
-#     template_name = "index.html"
-
-#     @method_decorator(csrf_protect)
-#     @method_decorator(never_cache)
-#     def dispatch(self, request, *args, **kwargs):
-#         if request.user.is_authenticated:
-#             print("-  - - - - - - - - - Dispatch")
-#             return redireccionar_por_permisos(request.user)
-#         else:
-#             print("Else del dispatch")
-#             return super(IndexLoginView, self).dispatch(request, *args, **kwargs)
-
-#     def form_valid(self, form):
-#         """
-#         Si el formulario es válido, inicia sesión en el usuario
-#         """
-#         username = form.cleaned_data.get('username')
-#         password = form.cleaned_data.get('password')
-#         user = authenticate(username=username, password=password)
-#         if user is not None:
-#             print("- - - - - - - -Form valid")
-#             login(self.request, user)
-#             return redireccionar_por_permisos(self.request.user)
-#         return super(IndexLoginView, self).form_invalid(form)
 
 class IndexLoginView(LoginView):
     template_name = "index.html"
@@ -58,7 +26,6 @@ def redireccionar_por_permisos(usuario):
         "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
         "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
         # "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
-        # "Post Venta": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList",args=[obtener_ultima_campania()])},
         "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
         "Liquidaciones": {"permisos": ["liquidacion.my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
         "Administracion": {"permisos": ["users.my_ver_administracion"], "url": reverse("users:panelAdmin")},

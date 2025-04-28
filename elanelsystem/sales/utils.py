@@ -187,43 +187,7 @@ def exportar_excel(data):
 #endregion 
 
 
-def filtroMovimientos_fecha(fechaInicio, context ,fechaFinal):
-        movimientosFiltrados=[]
-        if(fechaInicio != "" and fechaFinal != ""):
-            fechaInicio_strToDatetime = datetime.datetime.strptime(fechaInicio,"%d/%m/%Y %H:%M")
-            fechaFinal_strToDatetime = datetime.datetime.strptime(fechaFinal,"%d/%m/%Y %H:%M")
-            if(fechaInicio_strToDatetime == fechaFinal_strToDatetime):
-                for i in range(0,len(context)):
-                    x = context[i]["fecha_pago"]
-                    fecha_strToDatetime = datetime.datetime.strptime(x, "%d/%m/%Y %H:%M")
-                    if fechaInicio_strToDatetime.date() == fecha_strToDatetime.date():
-                        movimientosFiltrados.append(context[i])
-            else:
-                for i in range(0,len(context)):
-                    x = context[i]["fecha_pago"]
-                    fecha_strToDatetime = datetime.datetime.strptime(x, "%d/%m/%Y %H:%M")
-                    if fechaInicio_strToDatetime.date() <= fecha_strToDatetime.date() <= fechaFinal_strToDatetime.date():
-                        movimientosFiltrados.append(context[i])
-                    
-        elif(fechaInicio != "" and fechaFinal==""):
-            fechaInicio_strToDatetime = datetime.datetime.strptime(fechaInicio,"%d/%m/%Y %H:%M")
-            
-            for i in range(0,len(context)):
-                x = context[i]["fecha_pago"]
-                fecha_strToDatetime = datetime.datetime.strptime(x, "%d/%m/%Y %H:%M")
-                if fechaInicio_strToDatetime.date() <= fecha_strToDatetime.date():
-                    movimientosFiltrados.append(context[i])
-        elif(fechaInicio == "" and fechaFinal!=""):
-            fechaFinal_strToDatetime = datetime.datetime.strptime(fechaFinal,"%d/%m/%Y %H:%M")
-            
-            for i in range(0,len(context)):
-                x = context[i]["fecha_pago"]
-                fecha_strToDatetime = datetime.datetime.strptime(x, "%d/%m/%Y %H:%M")
-                if fechaFinal_strToDatetime.date() >= fecha_strToDatetime.date():
-                    movimientosFiltrados.append(context[i])
-        return movimientosFiltrados
-
-
+#region Funciones para obtener campañas
 def getCampaniaActual():
     list_mesesStr = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
     mes_actual = datetime.datetime.now().month
@@ -279,59 +243,10 @@ def getCampanasDisponibles():
     else:
         return [campaniaActual,campaniaAnterior]
 
-
-def obtener_ultima_campania():
-    # Lo importo aqui para evitar el error de dependencias circulares
-    from sales.models import Ventas
-
-    # Obtener el número de campaña más alto
-    ultima_campania = Ventas.objects.aggregate(Max('campania'))['campania__max']
-    if(ultima_campania == None):
-        return 0
-    else:
-        return ultima_campania
+#endregion
 
 
-def searchSucursalFromStrings(sucursal):
-    from users.models import Sucursal
-    sucursalObject = ""
-    
-    if(sucursal == "Sucursal central"):
-        sucursalObject = Sucursal.objects.get(pseudonimo="Sucursal central")  
-    else:  
-        localidad_buscada, provincia_buscada = map(str.strip, sucursal.split(","))
-        sucursalObject = Sucursal.objects.get(localidad = localidad_buscada, provincia = provincia_buscada)
-
-    return sucursalObject
-
-
-def get_ventasBySucursal(sucursal):
-    from sales.models import Ventas
-    from elanelsystem.views import convertirValoresALista
-
-    if sucursal == "":
-        return Ventas.objects.all()
-    else:
-        listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
-        return Ventas.objects.filter(agencia__id__in=listaAgencias)
-
-
-def obtenerStatusAuditoria(venta): # Devuelve el estado de la ultima auditoria
-
-    #Verifica si la lista de auditorías está vacía
-    if len(venta.auditoria) == 0:
-        return {"statusText": "Pendiente", "statusIcon": static(f"/images/icons/operationSuspendido.svg")}  # No auditada
-    
-    # Obtiene la última auditoría
-    ultima_auditoria = venta.auditoria[-1]
-    
-    # Verifica el estado de la última auditoría
-    if ultima_auditoria.get("grade") is True:
-        return {"statusText": "Aprobada", "statusIcon": static(f"images/icons/operationActivo.svg")}  # No auditada
-
-    elif ultima_auditoria.get("grade") is False:
-        return {"statusText": "Desaprobada", "statusIcon": static(f"images/icons/operationBaja.svg")}  # No auditada
-
+#region Funciones para formatear monedas
 def formatear_moneda_sin_centavos(valor):
     try:
         valor = float(valor)
@@ -346,8 +261,6 @@ def formatear_moneda_con_centavos(valor):
     except (ValueError, TypeError):
         return "-"
 
-
-
 def convertir_moneda_a_texto(cantidad):
     # Eliminar símbolos y puntos
     cantidad = str(cantidad)
@@ -358,6 +271,10 @@ def convertir_moneda_a_texto(cantidad):
     texto = num2words(numero, lang='es')
     # Retornar el texto con la palabra "pesos"
     return f"{texto} pesos".capitalize()
+
+# endregion
+
+
 #region Data Structures ----------------------------------------------------------
 
 def getInfoBaseCannon(venta, cuota):
@@ -463,7 +380,7 @@ def dataStructureVentas(sucursal=None):
     ventasList = []
     for i in range(int(ventas.count())):
         venta = ventas[i]
-        
+        dineroEntregado = getDineroEntregado(venta.cuotas)
         ventaDict = {
             'nro_operacion': {'data': venta.nro_operacion, 'verbose_name': 'N° ope'},
             'fecha': {'data': venta.fecha, 'verbose_name': 'Fecha de inscripción'},
@@ -494,11 +411,11 @@ def dataStructureVentas(sucursal=None):
             'total_a_pagar': {'data': venta.total_a_pagar, 'verbose_name': 'Total a pagar'},
             'total_a_pagar_formated': {'data': f"${formatear_moneda_sin_centavos(venta.total_a_pagar)}", 'verbose_name': 'Total a pagar'},
 
-            'dinero_entregado': {'data': getDineroEntregado(venta.cuotas), 'verbose_name': 'Dinero entregado'},
-            'dinero_entregado_formated': {'data': f"${formatear_moneda_sin_centavos(getDineroEntregado(venta.cuotas))}", 'verbose_name': 'Dinero entregado'},
+            'dinero_entregado': {'data': dineroEntregado, 'verbose_name': 'Dinero entregado'},
+            'dinero_entregado_formated': {'data': f"${formatear_moneda_sin_centavos(dineroEntregado)}", 'verbose_name': 'Dinero entregado'},
             
-            'dinero_restante': {'data': venta.total_a_pagar - getDineroEntregado(venta.cuotas), 'verbose_name': 'Dinero restante'},
-            'dinero_restante_formated': {'data': f"${formatear_moneda_sin_centavos(venta.total_a_pagar - getDineroEntregado(venta.cuotas))}", 'verbose_name': 'Dinero restante'},
+            'dinero_restante': {'data': venta.total_a_pagar - dineroEntregado, 'verbose_name': 'Dinero restante'},
+            'dinero_restante_formated': {'data': f"${formatear_moneda_sin_centavos(venta.total_a_pagar - dineroEntregado)}", 'verbose_name': 'Dinero restante'},
             
             "cantidad_chances":{'data': len(venta.cantidadContratos), 'verbose_name': 'Cantidad de chances'},
             "total_por_contrato":{'data': round(venta.importe / len(venta.cantidadContratos),0), 'verbose_name': 'Importe por contrato'},
@@ -632,6 +549,18 @@ def dataStructureClientes(sucursal=None):
 
 
 #region Other functions
+
+def get_ventasBySucursal(sucursal):
+    from sales.models import Ventas
+    from elanelsystem.views import convertirValoresALista
+
+    if sucursal == "":
+        return Ventas.objects.all()
+    else:
+        listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
+        return Ventas.objects.filter(agencia__id__in=listaAgencias)
+
+
 def deleteFieldsInDataStructures(lista_dicts, campos_a_eliminar):
     # Iterar sobre cada diccionario en la lista
     for item in lista_dicts:
@@ -640,30 +569,6 @@ def deleteFieldsInDataStructures(lista_dicts, campos_a_eliminar):
             if campo in item:
                 del item[campo]
     return lista_dicts
-
-
-def formatKeys(lista_dicts):
-    # Nueva lista de diccionarios con claves formateadas
-    lista_formateada = []
-
-    # Iterar sobre cada diccionario en la lista
-    for item in lista_dicts:
-        nuevo_dict = {}
-        for key, value in item.items():
-            # Separar la clave por "_" y capitalizar cada parte
-            partes = key.split("_")
-
-            # Unir las partes con espacios y crear la nueva clave
-            nueva_clave = " ".join(partes)
-            nueva_clave = nueva_clave.capitalize()
-
-            # Añadir al nuevo diccionario
-            nuevo_dict[nueva_clave] = value
-
-        # Añadir el nuevo diccionario a la lista formateada
-        lista_formateada.append(nuevo_dict)
-
-    return lista_formateada
 
 
 def getEstadoVenta(venta):
@@ -678,10 +583,12 @@ def getEstadoVenta(venta):
     
 
 def getCuotasPagadasSinCredito(cuotas):
+    from sales.models import PagoCannon
+
     cuotasPagadasSinCredito = []
     for cuota in cuotas:
         pagos = cuota["pagos"]
-        metodoDePagoDeCuota = [pago["metodoPago"] for pago in pagos] # Obtiene los metodos de pago de la cuota
+        metodoDePagoDeCuota = [PagoCannon.objects.get(id=pago).metodo_pago.alias for pago in pagos] # Obtiene los metodos de pago de la cuota
         # Me aseguro que si se aplico un credito a una cuota y no fue el unico metodo de pago, se tome como ultima cuota porque quiere decir que el cliente abono un monto de la cuota
         if("Credito" in metodoDePagoDeCuota and len(metodoDePagoDeCuota) != 1):
             cuotasPagadasSinCredito.append(cuota)
@@ -692,12 +599,14 @@ def getCuotasPagadasSinCredito(cuotas):
 
 
 def bloquer_desbloquear_cuotas(cuotas):
+    from sales.models import PagoCannon
+
     nuevas_cuotas = []
     for i in range(0,len(cuotas)):
         cuota = cuotas[i]
         if not (i == 0):
             pagos = cuota["pagos"]
-            metodoDePagoDeCuota = [pago["metodoPago"] for pago in pagos] # Obtiene los metodos de pago de la cuota
+            metodoDePagoDeCuota = [PagoCannon.objects.get(id=pago).metodo_pago.alias for pago in pagos] # Obtiene los metodos de pago de la cuota
             if(cuotas[i-1]["status"] == "Pagado"):
                 cuota["bloqueada"] = False
             elif("Credito" in metodoDePagoDeCuota):
@@ -718,20 +627,21 @@ def getDineroEntregado(cuotas):
     return dineroEntregado
 
 
-def obtener_siguiente_numero_recibo():
-    # Buscar el número en la configuración o crearlo si no existe
-    config, created = Configuracion.objects.get_or_create(clave="ultimo_numero_recibo", defaults={"valor": "0000"})
+def obtenerStatusAuditoria(venta): # Devuelve el estado de la ultima auditoria
 
-    # Convertir a entero, sumar uno y formatear
-    nuevo_numero = int(config.valor) + 1
-    nuevo_numero_formateado = f"{nuevo_numero:04d}"  # Genera "0001", "0002", etc.
+    #Verifica si la lista de auditorías está vacía
+    if len(venta.auditoria) == 0:
+        return {"statusText": "Pendiente", "statusIcon": static(f"/images/icons/operationSuspendido.svg")}  # No auditada
+    
+    # Obtiene la última auditoría
+    ultima_auditoria = venta.auditoria[-1]
+    
+    # Verifica el estado de la última auditoría
+    if ultima_auditoria.get("grade") is True:
+        return {"statusText": "Aprobada", "statusIcon": static(f"images/icons/operationActivo.svg")}  # No auditada
 
-    # Guardar el nuevo número
-    config.valor = nuevo_numero_formateado
-    config.save()
-
-    return nuevo_numero_formateado
-
+    elif ultima_auditoria.get("grade") is False:
+        return {"statusText": "Desaprobada", "statusIcon": static(f"images/icons/operationBaja.svg")}  # No auditada
 
 #endregion
 

@@ -6,7 +6,7 @@ from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.db import transaction
+from django.db import transaction,connection
 
 from .mixins import TestLogin
 from .models import ArqueoCaja, MetodoPago, Ventas,CoeficientesListadePrecios,MovimientoExterno,CuentaCobranza
@@ -253,7 +253,7 @@ def importVentas(request):
             sucursal_obj = Sucursal.objects.get(pseudonimo=agencia)
 
              # 1) Preparo el set de contratos ya importados
-            todosLosContratosDict = obtener_todos_los_contratos()
+            todosLosContratosDict = obtener_todos_los_contratos(sucursal_obj)
             set_contratos = {
                 str(ct['nro_contrato']) for ct in todosLosContratosDict
             }
@@ -261,10 +261,6 @@ def importVentas(request):
             clientes = {
                 c.nro_cliente: c
                 for c in Cliente.objects.filter(agencia_registrada=sucursal_obj)
-            }
-            prods = {
-                p.nombre.replace(' ', ''): p
-                for p in Products.objects.annotate(nombre_norm=Replace('nombre', Value(' '), Value('')))
             }
 
             ventas_to_create = []
@@ -360,9 +356,13 @@ def importVentas(request):
                 cantidadContratos  = contratos,
                 cuotas             = cuotas_agg,
             ))
+            
+            
             with transaction.atomic():
                 ventas_created = Ventas.objects.bulk_create(ventas_to_create)
                  # 1) Preparo lista de PagoCannon por crear
+                
+                print(f"✅ CONTINUANDO CON LA CREACION CUOTAS...")
                 pagos_to_create = []
                 for venta in ventas_created:
                     for cuota_dict in venta.cuotas:
@@ -373,17 +373,30 @@ def importVentas(request):
                                     venta=venta,
                                     nro_cuota = nro,
                                     monto = pago_data['monto'],
-                                    metodo_pago_id = pago_data['metodoPago'],
-                                    cobrador_id = pago_data['cobrador'],
+                                    metodo_pago= MetodoPago.objects.get(id=pago_data['metodoPago']),
+                                    cobrador = CuentaCobranza.objects.get(id=pago_data['cobrador']),
                                     responsable_pago = None,
                                     fecha = pago_data['fecha'],
                                     campana_de_pago = pago_data['campaniaPago'],
                                 )
                             )
-                # 2) Bulk create de todos los pagos
-                pagos_created = PagoCannon.objects.bulk_create(pagos_to_create)
+                
 
-                # 3) Reconstruyo en memoria cada .cuotas, actualizo estado, bloqueo, etc.
+                 # — Genero N recibos de golpe, empezando justo donde la seq quedó
+                count = len(pagos_to_create)
+                if count:
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "SELECT nextval('recibo_seq') FROM generate_series(1, %s)",
+                            [count]
+                        )
+                        seq_vals = [row[0] for row in cursor.fetchall()]
+
+                    # Asigno cada nro_recibo antes del bulk_create
+                    for pago_obj, seq in zip(pagos_to_create, seq_vals):
+                        pago_obj.nro_recibo = f"RC-{seq:06d}"
+
+                pagos_created = PagoCannon.objects.bulk_create(pagos_to_create)
 
                 # 1) Agrupa los pagos recién creados por (venta_id, nro_cuota)
                 pagos_por_venta_cuota = defaultdict(list)
@@ -410,13 +423,14 @@ def importVentas(request):
                     venta.setDefaultFields()
 
                 Ventas.objects.bulk_update(ventas_para_actualizar,['cuotas', 'adjudicado', 'suspendida', 'deBaja'])
+                print(f"✅  == CREACION DE CUOTAS Y PAGOS CON EXITO == ")
 
 
             cantidad_nuevas_ventas = len(ventas_created)
             # Ahora aplicamos bloqueos, defaults y señales a cada venta recién creada
 
             elapsed = time.time() - start_time
-            print(f"✅ {len(ventas_created)} VENTAS IMPORTADAS CON EXITO")
+            print(f"✅ == {len(ventas_created)} VENTAS IMPORTADAS CON EXITO ==")
             print(f"⏱️ Tiempo total de importación: {elapsed:.2f} segundos")
 
             
@@ -432,6 +446,7 @@ def importVentas(request):
             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
 
     return render(request, 'importar_cuotas.html')
+
 
 def build_aggregated_cuotas(id_venta,df_est,n_chances,plan):
     """
@@ -534,6 +549,7 @@ def requestVendedores_Supervisores(request):
 
     return JsonResponse({"vendedores":vendedores,"supervisores":supervisores}, safe=False)
 
+
 #region Detalle de ventas y funciones de ventas
 class DetailSale(TestLogin,generic.DetailView):
     model = Ventas
@@ -576,7 +592,6 @@ class DetailSale(TestLogin,generic.DetailView):
         
         
         return render(request,self.template_name,context)
-
 
 
 # Eliminar una venta
@@ -1835,7 +1850,7 @@ def viewPDFReciboCuota(request):
     print(cuotaData)
     urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "pdf_recibo_cuota.pdf")
     informeName = "Recibo"
-    numero_recibo = obtener_siguiente_numero_recibo()
+    numero_recibo = "00000"
     cliente_de_cuota = Ventas.objects.get(nro_operacion=int(cuotaData["nro_operacion"])).nro_cliente
     agencia = Ventas.objects.get(nro_operacion=int(cuotaData["nro_operacion"])).agencia
     context = {
@@ -1912,20 +1927,6 @@ class CierreCaja(TestLogin,generic.View):
         movsData = json.loads(json_data.content)
         
         today = datetime.today().strftime("%d/%m/%Y %H:%M")
-        # movimientosHoy = filtroMovimientos_fecha(str(today),movsData["data"],str(today))
-
-        # FILTRA LOS MOVIMIENTOS SEGUN SE TIPO DE MOVIMIENTO
-        # movimientos_Ingreso_Hoy = list(filter(lambda x: x["tipo_mov"] == "Ingreso" and x["tipo_pago"] == "Efectivo", movimientosHoy))
-        # movimientos_Egreso_Hoy = list(filter(lambda x:x["tipo_mov"] == "Egreso" and x["tipo_pago"] == "Efectivo", movimientosHoy))
-
-        # SUMA EL TOTAL DE SEGUN EL TIPO DE MOVIMIENTO
-        # montoTotal_Ingreso_Hoy = sum([item["pagado"] for item in movimientos_Ingreso_Hoy])
-        # montoTotal_Egreso_Hoy = sum([item["pagado"] for item in movimientos_Egreso_Hoy])
-
-        # if len(movimientosHoy) == 0:
-        #     context["movs"] = 0
-        # else:
-        #     context["movs"] = int(montoTotal_Ingreso_Hoy - montoTotal_Egreso_Hoy)
 
         context["sucursal"] = request.user.sucursales.all()[0]
         context["sucursales"] = Sucursal.objects.all()
@@ -2136,14 +2137,13 @@ def createNewMov(request):
 
     return JsonResponse({'status': False, 'message': ' Ha sucedido un error y no se pudo completar la operacion'})
 
+
 # Funcion para devolver las ventas (Utilizada en el sector de auditorias)
 def requestVentasAuditoria(request):
     if(request.method == "GET"):
         sucursal = request.GET.get('sucursal')
         campania = request.GET.get('campania')
         responseData = {"ventas": [],"resumenAuditorias":{"pendientes": 0, "realizadas":0, "aprobadas":0, "desaprobadas":0}}
-        print(request)
-        # sucursal = searchSucursalFromStrings(sucursal)
         allVentas = Ventas.objects.filter(campania=campania, agencia=sucursal)
 
         auditorias_realidas = allVentas.filter(auditoria__0__realizada=True)

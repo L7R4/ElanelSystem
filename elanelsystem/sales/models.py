@@ -14,7 +14,7 @@ from django.db import transaction
 from django.db.models import Sum
 
 from dateutil.relativedelta import relativedelta
-from sales.utils import getAllCampaniaOfYear, getCampaniaActual, getCampaniaByFecha, obtener_ultima_campania
+from sales.utils import getAllCampaniaOfYear, getCampaniaActual
 from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
 from django.core.validators import MinValueValidator, RegexValidator
@@ -131,6 +131,8 @@ class Ventas(models.Model):
     cuotas = models.JSONField(default=list,blank=True,null=True)
     #endregion
     
+    def __str__(self):
+        return f"Venta N° {self.nro_operacion}"
 
 
     #region Validaciones
@@ -359,7 +361,6 @@ class Ventas(models.Model):
         except IndexError as e:
             return []
     
-    
     def darBaja(self,motivo,porcentaje,detalleMotivo,observacion,responsable):
         self.deBaja["status"] = True
         self.deBaja["motivo"] = motivo
@@ -368,8 +369,7 @@ class Ventas(models.Model):
         self.deBaja["detalleMotivo"] = detalleMotivo
         self.deBaja["responsable"] = responsable
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-        # self.save()
-        
+        # self.save() 
 
     def planRecupero(self,motivo,responsable,observacion,nuevaVentaPK):
         self.deBaja["status"] = True
@@ -379,7 +379,6 @@ class Ventas(models.Model):
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         self.deBaja["nuevaVentaPK"] = nuevaVentaPK
     
-
     def porcentajeADevolver(self):
         porcentageValido = 0
         if len(self.cuotas_pagadas()) >= 6:
@@ -387,7 +386,6 @@ class Ventas(models.Model):
         else:
             porcentageValido = 0
         return porcentageValido
-
 
     def calcularDineroADevolver(self):
         dineroADevolver = 0
@@ -401,7 +399,6 @@ class Ventas(models.Model):
         elif(porcentage != 0 and cuotasPagadasCant < 6):
             dineroADevolver = sum(valores)*(porcentage/100)
         return dineroADevolver
-
 
     def suspenderOperacion(self):
 
@@ -422,10 +419,8 @@ class Ventas(models.Model):
             self.suspendida = False
             self.save()
     
-
     def acreditarCuotasPorAnticipo(self, dineroAFavor,responsable):
         cantidad_cuotas = len(self.cuotas) - 1
-        print(f'Cantidad de cuotas desde la funcion acreditar: {cantidad_cuotas}')
             # Un for que reccorra de la ultima cuota hasta la cuota 1
         for i in range(cantidad_cuotas,0,-1):
             cuota = self.cuotas[i]
@@ -440,8 +435,7 @@ class Ventas(models.Model):
                 dineroAFavor = 0
             else:
                 break
-
-        
+       
     def crearAdjudicacion(self,contratoAdjudicado,nroDeVenta,tipo):
         self.cuotas.pop(0) # Elimina la cuota 0
         self.cuotas[0]["status"] = "pendiente" # Cambia el status de la cuota 1 a Pendiente
@@ -463,6 +457,59 @@ class Ventas(models.Model):
                 break
         self.save()
         
+    def _get_cuota_dict(self, nro_cuota: int):
+        """
+        Devuelve la dict de la cuota con número `nro_cuota`
+        (donde c['cuota']=='Cuota {nro_cuota}'), o None.
+        """
+        for c in self.cuotas:
+            if int(c['cuota'].split()[-1]) == nro_cuota:
+                return c
+        return None
+
+    def actualizar_estado_cuota(self, nro_cuota: int):
+        """
+        Reconstruye el estado de la cuota nro_cuota a partir
+        de los registros de PagoCannon, guarda sólo IDs en
+        c['pagos'], y desbloquea la siguiente si corresponde.
+        """
+        from .models import PagoCannon
+
+        cuota = self._get_cuota_dict(nro_cuota)
+        if not cuota:
+            return
+
+        # 1) sumar todos los pagos de esa cuota
+        pagos_qs    = PagoCannon.objects.filter(venta=self, nro_cuota=nro_cuota)
+        total_pagos = pagos_qs.aggregate(total=models.Sum('monto'))['total'] or 0
+
+        # 2) actualizar lista de pagos (solo IDs)
+        cuota['pagos'] = list(pagos_qs.values_list('id', flat=True))
+
+        # 3) decidir estado según monto pagado vs objetivo
+        objetivo = cuota['total'] - cuota['descuento']['monto']
+        if total_pagos >= objetivo:
+            cuota['status'] = 'Pagado'
+            # desbloquear siguiente
+            self.desbloquearCuota(cuota['cuota'])
+        elif total_pagos > 0:
+            cuota['status'] = 'Parcial'
+        else:
+            cuota['status'] = 'Pendiente'
+
+    def sync_estado_cuotas(self):
+        """
+        Recorre todas las cuotas de self.cuotas y llama
+        a actualizar_estado_cuota() para cada una.
+        Luego aplica vencimientos y suspensión.
+        """
+        for c in self.cuotas:
+            nro = int(c['cuota'].split()[-1])
+            self.actualizar_estado_cuota(nro)
+
+        self.testVencimientoCuotas()
+        self.suspenderOperacion()
+    
     def pagarCuota(self,nro_cuota,monto,metodoPago,cobrador,responsable_pago):
 
         # 1) Obtener el dict de esa cuota en self.cuotas
@@ -548,63 +595,8 @@ class Ventas(models.Model):
                 if fechaActual > fechaVencimiento and not self.cuotas[i]['status'].lower() == "pagado":
                     self.cuotas[i]["status"] = "vencido"
                     diasDeRetraso = self.contarDias(fechaVencimiento)
-                    print(f'La cuota {self.cuotas[i]["cuota"]} esta vencida por {diasDeRetraso} dias')
                     self.cuotas[i]["diasRetraso"] = diasDeRetraso
-
         self.save()
-    
-    def _get_cuota_dict(self, nro_cuota: int):
-        """
-        Devuelve la dict de la cuota con número `nro_cuota`
-        (donde c['cuota']=='Cuota {nro_cuota}'), o None.
-        """
-        for c in self.cuotas:
-            if int(c['cuota'].split()[-1]) == nro_cuota:
-                return c
-        return None
-
-    def actualizar_estado_cuota(self, nro_cuota: int):
-        """
-        Reconstruye el estado de la cuota nro_cuota a partir
-        de los registros de PagoCannon, guarda sólo IDs en
-        c['pagos'], y desbloquea la siguiente si corresponde.
-        """
-        from .models import PagoCannon
-
-        cuota = self._get_cuota_dict(nro_cuota)
-        if not cuota:
-            return
-
-        # 1) sumar todos los pagos de esa cuota
-        pagos_qs    = PagoCannon.objects.filter(venta=self, nro_cuota=nro_cuota)
-        total_pagos = pagos_qs.aggregate(total=models.Sum('monto'))['total'] or 0
-
-        # 2) actualizar lista de pagos (solo IDs)
-        cuota['pagos'] = list(pagos_qs.values_list('id', flat=True))
-
-        # 3) decidir estado según monto pagado vs objetivo
-        objetivo = cuota['total'] - cuota['descuento']['monto']
-        if total_pagos >= objetivo:
-            cuota['status'] = 'Pagado'
-            # desbloquear siguiente
-            self.desbloquearCuota(cuota['cuota'])
-        elif total_pagos > 0:
-            cuota['status'] = 'Parcial'
-        else:
-            cuota['status'] = 'Pendiente'
-
-    def sync_estado_cuotas(self):
-        """
-        Recorre todas las cuotas de self.cuotas y llama
-        a actualizar_estado_cuota() para cada una.
-        Luego aplica vencimientos y suspensión.
-        """
-        for c in self.cuotas:
-            nro = int(c['cuota'].split()[-1])
-            self.actualizar_estado_cuota(nro)
-
-        self.testVencimientoCuotas()
-        self.suspenderOperacion()
     
     #endregion
 
@@ -666,6 +658,7 @@ class CuentaCobranza(models.Model):
         if CuentaCobranza.objects.filter(alias=self.alias).exists():
             raise ValidationError({'alias': "Ya existe una cuenta con ese alias."})
     #endregion       
+
 
 class MetodoPago(models.Model):
     alias = models.CharField("Alias:",max_length=50)

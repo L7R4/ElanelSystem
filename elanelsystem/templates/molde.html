@@ -81,16 +81,6 @@
                     </a>
                     <div class="check"></div>
                 </li> 
-                {% if perms.sales.my_ver_postventa%}
-                    {% obtener_ultima_campania as ultima_campania %}
-                    <li>
-                        <a href="{% url 'sales:postVentaList' ultima_campania %}" id="postVenta">
-                            <img src="{% static 'images/icons/postVenta.png' %}" alt="">
-                            <p>Post venta</p>
-                        </a>
-                        <div class="check"></div>
-                    </li>
-                {% endif %}
                 
                 {% if perms.users.my_ver_colaboradores %}
                     <li class="add_user">
