@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager, PermissionsMixin
 import re, datetime
 from dateutil.relativedelta import relativedelta
+from django.utils import timezone
 
 
 class Sucursal(models.Model):
@@ -75,11 +76,7 @@ class UserManager(BaseUserManager):
 
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
-    TIPOS_RANGOS_PARA_ACCESO_TODAS_SUCURSALES = (
-        ('Admin', 'Admin'),
-        ('Administracion', 'Administracion'), 
-        ('Dueños', 'Dueños'), 
-    )
+
     nombre = models.CharField("Nombre Completo",max_length=100)
     sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios',blank=True)
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
@@ -99,12 +96,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     estado_civil = models.CharField("Estado civil", max_length =30,default ="")
     xp_laboral = models.TextField("Experiencia laboral", blank=True,null=True, default="")
     
-    descuentos = models.JSONField("Descuentos", default=list,blank=True,null=True)
     premios = models.JSONField("Premios", default=list,blank=True,null=True)
 
     datos_familiares = models.JSONField("Datos familiares", default=list,blank=True,null=True)
     vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
-    faltas_tardanzas = models.JSONField("Faltas o tardanzas", default=list,blank=True,null=True)
     additional_passwords = models.JSONField("Contraseñas adicionales",default=dict,blank=True,null=True)
     
     is_active = models.BooleanField(default=True)
@@ -247,6 +242,56 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     # endregion 
 
 
+class Ausencia(models.Model):
+
+    def now_formatted():
+        return datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+
+
+    usuario   = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name="ausencias",
+        help_text="Usuario al que corresponde esta falta o tardanza"
+    )
+    fecha_de_carga = models.CharField(max_length = 20, help_text="Día de carga de falta/tardanza", default=now_formatted)
+    tipo = models.CharField(max_length=20,choices=[("Falta", "Falta"), ("Tardanza", "Tardanza")])
+    motivo = models.TextField(blank=True)
+    dia = models.CharField(max_length = 10, help_text="Día de falta/tardanza", default="")
+    hora = models.CharField(max_length = 5, help_text="Hora de falta/tardanza", default="")
+
+    class Meta:
+        ordering = ["-fecha_de_carga"]
+        verbose_name = "Ausencia/Tardanza"
+        verbose_name_plural = "Ausencias/Tardanzas"
+
+    def __str__(self):
+        return f"{self.usuario.nombre} – {self.tipo} el {self.fecha}"
+
+
+class Descuento(models.Model):
+    def now_formatted():
+        return datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+    
+    usuario   = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name="descuentos",
+        help_text="Usuario al que corresponde este descuento"
+    )
+    fecha = models.CharField(max_length = 20, help_text="Fecha de aplicación del descuento", default=now_formatted)
+    monto = models.IntegerField(default=0, help_text="Monto del descuento")
+    concepto = models.CharField(max_length=100, help_text="¿Por qué se aplica?")
+
+    class Meta:
+        ordering = ["-fecha"]
+        verbose_name = "Descuento"
+        verbose_name_plural = "Descuentos"
+
+    def __str__(self):
+        return f"{self.usuario.nombre} – ${self.monto} ({self.fecha})"
+
+
 class Cliente(models.Model):
     def returNro_Cliente(): 
         
@@ -379,7 +424,7 @@ class Cliente(models.Model):
 
     # endregion 
 
-    
+
 class Key(models.Model):
     motivo = models.CharField(max_length=20, default="")
     descripcion = models.CharField(max_length=255, default="")

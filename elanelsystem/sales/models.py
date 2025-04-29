@@ -18,6 +18,7 @@ from sales.utils import getAllCampaniaOfYear, getCampaniaActual
 from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
 from django.core.validators import MinValueValidator, RegexValidator
+from django.utils import timezone
 
 #region C-LISTA-PRECIOS
 class CoeficientesListadePrecios(models.Model):
@@ -125,7 +126,6 @@ class Ventas(models.Model):
     cantidadContratos = models.JSONField("Chances", default=list, blank=True, null=True)
 
     cambioTitularidadField = models.JSONField(default=list,blank=True,null=True)
-    auditoria = models.JSONField(default=list,blank=True,null=True)
     adjudicado = models.JSONField(default=dict,blank=True,null=True)
     deBaja = models.JSONField(default=dict,blank=True,null=True)
     cuotas = models.JSONField(default=list,blank=True,null=True)
@@ -779,6 +779,10 @@ class MovimientoExterno(models.Model):
 
 class PagoCannon(models.Model):
     
+
+    def now_formatted():
+        return timezone.now().strftime("%d/%m/%Y %H:%M")
+
     nro_recibo = models.CharField(
         "N° de comprobante",
         max_length=30,
@@ -801,7 +805,7 @@ class PagoCannon(models.Model):
 
     fecha = models.CharField(
         "Fecha de pago",
-        default=datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),
+        default=now_formatted,
         max_length=30,
         help_text="Fecha y hora en que se registró el pago."
     )
@@ -884,4 +888,74 @@ class PagoCannon(models.Model):
 
     def __str__(self):
         return f"{self.nro_recibo} – Venta {self.venta.nro_operacion} / Cuota {self.nro_cuota}"
+    
+
+class Auditoria(models.Model):
+    MOTIVO_CHOICES = (
+        ("Motivos personales", "Motivos personales"),
+        ("Arrepentimiento", "Arrepentimiento"),
+        ("Falta de conocimiento sobre el contrato", "Falta de conocimiento sobre el contrato"),
+    )
+
+    def now_formatted():
+        return timezone.now().strftime("%d/%m/%Y %H:%M")
+
+
+    venta = models.ForeignKey(
+        'Ventas',
+        on_delete=models.CASCADE,
+        related_name='auditorias',
+        help_text="Venta a la que corresponde este registro de auditoría."
+    )
+    
+    version = models.PositiveIntegerField(
+        default=1,
+        help_text="Número incremental de la auditoría."
+    )
+
+    grade = models.BooleanField(
+        default=False,
+        help_text="False: Si no aprobo | True: Si aprobo."
+    )
+
+    reintegro_dinero = models.BooleanField(
+        default=False,
+        help_text="Si se reintegro dinero."
+    )
+
+    motivo = models.CharField(
+        max_length=255,
+        choices=MOTIVO_CHOICES,
+        blank=True,
+        help_text="Motivo de la auditoría.",
+        null = True
+    )
+
+    comentarios = models.TextField(
+        blank=True,
+        help_text="Comentarios de la auditoría.",
+        null=True
+    )
+
+    fecha_hora = models.CharField(
+        max_length=20,
+        default=now_formatted,
+        help_text="Fecha y hora en que se creó este registro."
+    )
+
+    class Meta:
+        unique_together = [('venta', 'version')]
+        ordering = ['venta', 'version']
+
+    def clean(self):
+        super().clean()
+        # Si no aprobó la auditoría, motivo es obligatorio
+        if not self.graded and not self.motivo:
+            raise ValidationError({
+                'motivo': "Debe informar un motivo cuando la auditoría no ha sido aprobada."
+            })
+
+    def __str__(self):
+        status = "Aprobada" if self.graded else "Rechazada"
+        return f"Auditoría v{self.version} – Venta {self.venta.nro_operacion} ({status})"
     

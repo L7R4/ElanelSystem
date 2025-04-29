@@ -1,11 +1,22 @@
 from django.contrib import admin
-from .models import PagoCannon, Ventas, MetodoPago,CoeficientesListadePrecios, ArqueoCaja, MovimientoExterno, CuentaCobranza
+from .models import Auditoria, PagoCannon, Ventas, MetodoPago,CoeficientesListadePrecios, ArqueoCaja, MovimientoExterno, CuentaCobranza
 # admin.site.register(Ventas)
 admin.site.register(ArqueoCaja)
 admin.site.register(MovimientoExterno)
 admin.site.register(CuentaCobranza)
 admin.site.register(MetodoPago)
 # admin.site.register(PagoCannon)
+
+@admin.register(Auditoria)
+class AuditoriaAdmin(admin.ModelAdmin):
+    # Mostrar columnas específicas en el listado
+    list_display = ('venta','version', 'grade', 'fecha_hora', 'reintegro_dinero','motivo',"comentarios",)
+    
+    # Agregar opciones de búsqueda
+    search_fields = ('venta__nro_operacion', 'fecha_hora',"comentarios",)
+    
+    # Agregar filtros
+    list_filter = ('grade', 'reintegro_dinero','motivo',)
 
 
 @admin.register(PagoCannon)
