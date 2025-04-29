@@ -267,6 +267,7 @@ def importVentas(request):
             grupos = df_res.groupby(
                 ['cod_cli','fecha_incripcion','producto_key','paq','vendedor_key','superv_key']
             )
+            
             print("🔎 Grupos totales detectados:", grupos.ngroups)
             
             for keys, group in grupos:

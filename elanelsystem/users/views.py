@@ -660,12 +660,12 @@ def importar_usuarios(request):
 
         try:
             df = pd.read_excel(file_path, sheet_name="Colaboradores")
-                
+            agencia_object = Sucursal.objects.get(id=agencia)
             for i, row in df.iterrows():
                 dni = handle_nan(row['DNI'])
-                usuario_existente = Usuario.objects.filter(dni=str(dni)).first()
-
-                if not usuario_existente:
+                all_users_by_agency = Usuario.objects.filter(sucursales__id=agencia_object.id).values_list('dni', flat=True)
+                print(f"\nUsuarios de la agencia: {all_users_by_agency}\n")
+                if not str(dni) in all_users_by_agency:
                     new_number_rows_cont += 1                        
                     usuario = Usuario()
 
@@ -691,9 +691,11 @@ def importar_usuarios(request):
                     usuario.xp_laboral = handle_nan(row['XP Laboral'])
                     usuario.c = str(row['DNI']) + '_elanel'
                     usuario.groups.add(Group.objects.filter(name=row["Rango"].capitalize()).first())
-                    sucursal_object = Sucursal.objects.get(id=agencia)
+                    sucursal_object = agencia_object
                     usuario.sucursales.add(sucursal_object)
                     usuario.save()
+                else:
+                    continue
 
             # Segunda pasada para asignar los vendedores a los supervisores
             for _, row in df.iterrows():
@@ -736,6 +738,8 @@ def importar_usuarios(request):
             iconMessage = "/static/images/icons/error_icon.svg"
             message = "Error al procesar el archivo"
             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
+
+
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
 
@@ -837,7 +841,7 @@ def importar_clientes(request):
                         cod_postal = str(int(float(row["cod_pos"]))) if handle_nan(row["cod_pos"]) != "" else "",
                         tel= str(int(float(row['tel_1']))) if handle_nan(row['tel_1']) != "" else "" ,
                         # fec_nacimiento = format_date(handle_nan(row["fecha_de_nac"])),
-                        estado_civil = handle_nan(row["estado_civil"]) ,
+                        estado_civil = handle_nan(row["estado_civil"]),
                         ocupacion = handle_nan(row["ocupacion"]) 
                     )
                 
