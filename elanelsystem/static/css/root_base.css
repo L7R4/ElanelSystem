@@ -29,6 +29,28 @@
    --secundary-color: #105fa6;
    --third-color: #FAF8FF;
    --fourth-color: #546FFF;
+
+
+  --blue-900:   #0A2647;
+  --blue-900-50: rgba(10, 38,  71, 0.5);  /* 50% */
+  --blue-900-20: rgba(10, 38,  71, 0.2);  /* 20% */
+  
+  --blue-700:   #144272;
+  --blue-700-50: rgba(20, 66, 114, 0.5);
+  --blue-700-20: rgba(20, 66, 114, 0.2);
+  
+  --blue-500:   #205295;
+  --blue-500-50: rgba(32, 82, 149, 0.5);
+  --blue-500-20: rgba(32, 82, 149, 0.2);
+  
+  --blue-300:   #2C74B3;
+  --blue-300-50: rgba(44,116,179, 0.5);
+  --blue-300-20: rgba(44,116,179, 0.2);
+
+  /* Duraciones (igual que antes) */
+  --trans-fast:   150ms;
+  --trans-normal: 300ms;
+
 }
 
 
