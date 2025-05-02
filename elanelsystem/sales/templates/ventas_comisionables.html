@@ -1,0 +1,104 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/ventas_comisionables.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+{% endblock css %}
+
+{% block content %}
+<form method="POST" id="formVentasComisionables">
+    {% csrf_token %}
+    <h1 class="mb-4">Ventas involucradas</h1>
+    
+    {% if messageAlert %}
+      <div class="alert alert-warning">
+        {{ messageAlert }}
+      </div>
+    {% endif %}
+    
+    {% if ventas %}
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>Oper.</th>
+            <th>Cliente</th>
+            <th>De Baja</th>
+            <th>Motivo Baja</th>
+            <th>Suspendida</th>
+            <th>Auditada</th>
+            <th>Última Auditoría</th>
+            <th class="text-center">Comisionable</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for v in ventas %}
+          <tr id="row-{{ v.id }}">
+            <td>{{ v.nro_operacion }}</td>
+            <td>{{ v.nro_cliente }}</td>
+    
+            <td>
+              <span class="badge badge-{{ v.deBaja.status|yesno:'danger,success' }}">
+                {{ v.deBaja.status|yesno:'Sí,No' }}
+              </span>
+            </td>
+            <td>{{ v.deBaja.motivo }}</td>
+    
+            <td>
+              <span class="badge badge-{{ v.suspendida|yesno:'warning,secondary' }}">
+                {{ v.suspendida|yesno:'Sí,No' }}
+              </span>
+            </td>
+    
+            <td>
+              {% if v.auditorias.exists %}
+                <span class="badge badge-info">Sí</span>
+              {% else %}
+                <span class="badge badge-light">No</span>
+              {% endif %}
+            </td>
+    
+            <td>
+              {% with audit=v.auditorias.last %}
+                {% if audit %}
+                  <strong>v{{ audit.version }}</strong> – {{ audit.grade|yesno:"Aprobada,Rechazada" }}<br>
+                  {% if not audit.grade and audit.motivo %}
+                    <small class="text-danger">{{ audit.motivo }}</small><br>
+                  {% endif %}
+                  {% if audit.comentarios %}
+                    <small class="text-muted">{{ audit.comentarios }}</small>
+                  {% endif %}
+                {% else %}
+                  —
+                {% endif %}
+              {% endwith %}
+            </td>
+    
+            <td class="text-center">
+              <input type="checkbox"
+                     class="commission-checkbox"
+                     form="formVentasComisionables"
+                     data-id="{{ v.id }}"
+                     {% if v.is_commissionable %}checked{% endif %}>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p>No hay ventas para mostrar.</p>
+    {% endif %}
+</form>
+
+{% endblock content%}
+
+
+{% block js %}
+    <script>
+        const toggleUrl = "{% url 'sales:toggle_comisionable' %}";
+    </script>
+    <script src="{% static 'js/ventas_comisionables.js' %}"></script>
+{% endblock js %}

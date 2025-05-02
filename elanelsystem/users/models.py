@@ -7,6 +7,8 @@ import re, datetime
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 
+from elanelsystem.utils import obtenerCampaña_atraves_fecha
+
 
 class Sucursal(models.Model):
     direccion = models.CharField("Direccion",max_length =100)
@@ -257,6 +259,8 @@ class Ausencia(models.Model):
     fecha_de_carga = models.CharField(max_length = 20, help_text="Día de carga de falta/tardanza", default=now_formatted)
     tipo = models.CharField(max_length=20,choices=[("Falta", "Falta"), ("Tardanza", "Tardanza")])
     motivo = models.TextField(blank=True)
+    campania = models.CharField("Campaña",max_length=30,blank=True)
+    
     dia = models.CharField(max_length = 10, help_text="Día de falta/tardanza", default="")
     hora = models.CharField(max_length = 5, help_text="Hora de falta/tardanza", default="")
 
@@ -264,6 +268,11 @@ class Ausencia(models.Model):
         ordering = ["-fecha_de_carga"]
         verbose_name = "Ausencia/Tardanza"
         verbose_name_plural = "Ausencias/Tardanzas"
+
+    def save(self, *args, **kwargs):
+        # si no vino explícito, lo genero aquí
+        if not self.a:
+            self.a = obtenerCampaña_atraves_fecha(self.fecha)
 
     def __str__(self):
         return f"{self.usuario.nombre} – {self.tipo} el {self.fecha}"

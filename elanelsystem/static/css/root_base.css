@@ -47,12 +47,17 @@
   --blue-300-50: rgba(44,116,179, 0.5);
   --blue-300-20: rgba(44,116,179, 0.2);
 
+  --white-color-800: rgb(250, 248, 255);
+  --white-800-80: rgba(250, 248, 255, 0.8);
+  --white-800-50: rgba(250, 248, 255, 0.5);
+  --white-800-20: rgba(250, 248, 255, 0.2);
+
+
   /* Duraciones (igual que antes) */
   --trans-fast:   150ms;
   --trans-normal: 300ms;
 
 }
-
 
 * {
    margin: 0;

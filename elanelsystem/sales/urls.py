@@ -36,7 +36,9 @@ urlpatterns = [
     path('ventas/detalle_venta/pagina_confirmacion_baja_cuota/', pagina_confirmacion, name='pagina_confirmacion_baja_cuota'),
     path('ventas/detalle_venta/confirma-baja-cuota/', darBajaCuota, name='darBajaCuota'),
 
-    
+    path('ventas/comisionables/',VentasComisionables.as_view(),name='ventas_comisionables'),
+    # endpoint AJAX para toggle
+    path('ventas/comisionable-toggle/',toggle_comisionable,name='toggle_comisionable'),
     #endregion ----------------------------------------------------------
 
     #region URLs Caja -----------------------------------------------------

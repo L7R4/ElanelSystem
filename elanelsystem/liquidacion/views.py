@@ -170,6 +170,7 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             # ✅ Limpiar la sesión de ajustes y liquidación
             request.session["ajustes_comisiones"] = []
             # request.session["liquidacion_data"] = []
+            
 
             return JsonResponse({
                 "status": True,
@@ -231,6 +232,7 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
     totalDeComisiones = sum([user["comisionTotal"] for user in colaboradores_list])
     return (colaboradores_list, totalDeComisiones)
 
+
 def requestColaboradoresWithComisiones(request):
     form = json.loads(request.body)
     
@@ -244,13 +246,23 @@ def requestColaboradoresWithComisiones(request):
         sucursal_id=sucursalObject.id,
         tipo_colaborador=tipo_colaborador
     )
+
+    request.session["campania_notCommissionable"] = campania
+    request.session["sucursal_notCommissionable"] = sucursalObject.id
     request.session["liquidacion_data"] = colaboradores_list
     request.session.modified = True
+
+    context = {"colaboradores_data": colaboradores_list,
+        "totalDeComisiones": str(int(totalDeComisiones))}
+
+    ventas_no_aptas_comisionar = Ventas.objects.filter(campania=campania, agencia=sucursalObject, is_commissionable=False)
+    print(f"[DEBUG] Ventas no aptas para comisionar: {ventas_no_aptas_comisionar}")
     
-    return JsonResponse({
-        "colaboradores_data": colaboradores_list,
-        "totalDeComisiones": str(int(totalDeComisiones))
-    }, safe=False)
+    if(len(ventas_no_aptas_comisionar) != 0):
+        context["messageAlert"] = f"Tienes ventas {len(ventas_no_aptas_comisionar)} ventas no se estan comisionando"
+ 
+
+    return JsonResponse(context, safe=False)
 
 
 def crearAjusteComision(request):
@@ -401,7 +413,6 @@ def ajustesCoeficiente_gerente_sucursal(request):
 
     else:
         return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
-
 
 
 def preViewPDFLiquidacion(request):

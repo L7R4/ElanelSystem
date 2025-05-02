@@ -25,7 +25,11 @@ inputSucursal.addEventListener("input", async ()=>{
         console.log(response)   
         actualizarResultadosColaboradores(response["colaboradores_data"],contendorColaboradores)
         actualizarTotalComisionado(response["totalDeComisiones"])
-
+        
+        if(response["messageAlert"]){
+            let messageDOM = messageAlert(response["messageAlert"], "alert")
+            toggleMessage(document.querySelector(".wrapperHeader"), messageDOM)
+        }
 
     }else{
         contendorColaboradores.innerHTML = ""
@@ -51,6 +55,10 @@ inputCampania.addEventListener("input", async ()=>{
         actualizarResultadosColaboradores(response["colaboradores_data"],contendorColaboradores)
         actualizarTotalComisionado(response["totalDeComisiones"])
 
+        if(response["messageAlert"]){
+            let messageDOM = messageAlert(response["messageAlert"], "alert")
+            toggleMessage(document.querySelector(".wrapperHeader"), messageDOM)
+        }
 
     }
     else{
@@ -182,6 +190,25 @@ function update_textPreValues_to_values() {
 
 //#endregion  - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+
+//#region Manejo de posibles mensajes
+
+function messageAlert(messaje, type){
+    return`<a href="${urlVentasNoComisionables}" class="wrapperMessage ${type}">
+            <h3><strong>Alerta</strong> ${messaje} <span>(click para ver)</span></h3>
+        </a>`
+}
+
+function toggleMessage(container, messageDOM){
+    if (container.querySelector(".wrapperMessage")) {
+        let messageWrapper = container.querySelector(".wrapperMessage");
+        messageWrapper.remove();
+    }else{
+        container.insertAdjacentHTML("beforeend", messageDOM)
+    }
+}
+
+//#endregion
 
 
 // #region Obtener mas info sobre la liquidacion
