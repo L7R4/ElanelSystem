@@ -108,6 +108,8 @@
     <script> 
         var CSRF_TOKEN = '{% csrf_token %}';
         const urlRequestColaboradores = "{{urlRequestColaboradores}}"
+        const urlVentasNoComisionables = "{% url 'sales:ventas_comisionables' %}"
+
         var info_icon = "{% static 'images/icons/info_icon.svg' %}"
     </script>
     <script src="{% static 'js/redirectToPDFNewLiquidacion.js' %}"></script>

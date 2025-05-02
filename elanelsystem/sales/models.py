@@ -124,11 +124,19 @@ class Ventas(models.Model):
     supervisor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="venta_super_usuario",default="",blank=True,null=True)
     observaciones = models.CharField("Obeservaciones:",max_length=255,blank=True,null=True)
     cantidadContratos = models.JSONField("Chances", default=list, blank=True, null=True)
-
+    
     cambioTitularidadField = models.JSONField(default=list,blank=True,null=True)
     adjudicado = models.JSONField(default=dict,blank=True,null=True)
     deBaja = models.JSONField(default=dict,blank=True,null=True)
     cuotas = models.JSONField(default=list,blank=True,null=True)
+    is_commissionable = models.BooleanField(verbose_name="Venta apta para comisionar",default=False,help_text="Indica si esta venta debe generar comisión para el vendedor a cargo")
+
+    class Meta:
+        ordering = ['-fecha']
+        indexes = [
+            models.Index(fields=['agencia', 'campania']),
+        ]
+
     #endregion
     
     def __str__(self):

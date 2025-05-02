@@ -1,0 +1,105 @@
+  .wrapper_content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    /* ojo: quita height:100vh y overflow:hidden para dejar que el contenedor interno haga scroll */
+  }
+  
+  #formVentasComisionables {
+    width: 100%;
+  }
+  
+  /* Encabezado */
+  h1 {
+    color: var(--third-color);
+    font-size: clamp(1.8rem, 1.3vw, 2.5rem);
+    font-family: raleway-semibold;
+    margin-bottom: 1rem;
+  }
+  
+  /* Contenedor responsive con scroll vertical */
+  .table-responsive {
+    max-height: calc(100vh - 200px); /* ajústalo según otros elementos en pantalla */
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+  }
+  
+  /* Tabla */
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--background-color);
+    margin-bottom: 0;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    color: var(--third-color);
+    font-size: clamp(1.2rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+  }
+  
+  /* Sticky header */
+  .table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #27293d;
+    z-index: 2;
+    text-align: start;
+    font-size: clamp(1.3rem, 1.2vw, 1.8rem);
+
+
+  }
+  
+  /* Zebra stripes */
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255,255,255,0.025);
+  }
+  
+  /* Hover */
+  .table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Badges */
+  .badge {
+    color: var(--third-color);
+    font-size: clamp(1.2rem, 1vw, 1.5rem);
+    font-family: raleway-semibold;
+    padding: 0.35em 0.6em;
+    border-radius: 0.25rem;
+  }
+  
+  .badge-danger    { background-color: #e74c3c; color: #fff; }
+  .badge-success   { background-color: #2ecc71; color: #fff; }
+  .badge-warning   { background-color: #f39c12; color: #212529; }
+  .badge-secondary { background-color: #7f8c8d; color: #fff; }
+  .badge-info      { background-color: #3498db; color: #fff; }
+  .badge-light     { background-color: #ecf0f1; color: #2c3e50; }
+  
+  /* Checkbox centrado */
+  .text-center {
+    text-align: center !important;
+  }
+  .commission-checkbox {
+    width: 1.3em;
+    height: 1.3em;
+    transform: scale(1.2);
+    cursor: pointer;
+    margin: 0;
+  }
+  
+  @keyframes highlight {
+    from { background-color: #2ecc7140; }
+    to   { background-color: transparent; }
+  }
+  
+  .table tbody tr.table-success {
+    animation: highlight 1s ease-out;
+  }

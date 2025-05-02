@@ -1508,7 +1508,54 @@ class SimuladorPlanRecupero(TestLogin,generic.DetailView):
             'cantidad_cuotas_pagadas': len(cuotasPagadas),
         }
         return render(request, self.template_name, context)
-        
+
+
+class VentasComisionables(generic.View):
+    """
+    Muestra todas las Ventas de la sucursal y campaña de sesión, 
+    o con pagos en esa campaña, y permite toggle AJAX de is_commissionable.
+    """
+    def get(self, request, *args, **kwargs):
+        campania = request.session.get('campania_notCommissionable')
+        agencia_id = request.session.get('sucursal_notCommissionable')
+        agenciaObject = Sucursal.objects.get(id=agencia_id) if agencia_id else None
+        if not campania or not agencia_id:
+            return render(request, 'error.html', {
+                'msg': "Debes seleccionar antes campaña y sucursal."
+            })
+
+        qs = Ventas.objects.filter(
+            Q(agencia=agenciaObject, campania=campania) |
+            Q(pagos_cannon__campana_de_pago=campania)
+        ).distinct().select_related(
+            'nro_cliente', 'vendedor', 'supervisor'
+        ).prefetch_related('auditorias')
+
+        return render(request, 'ventas_comisionables.html', {
+            'ventas': qs,
+            'campania': campania,
+            'sucursal': request.session.get('sucursal_name_notCommissionable'),
+        })
+
+
+def toggle_comisionable(request):
+    """
+    Recibe JSON {"id": <venta_id>, "value": true|false}
+    y actualiza is_commissionable de esa venta.
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            vid = int(data['id'])
+            val = bool(data['value'])
+        except Exception as e:
+            print(e)
+            return JsonResponse({'status':False}, status=404)
+
+        updated = Ventas.objects.filter(pk=vid).update(is_commissionable=val)
+        if updated:
+            return JsonResponse({'status':True, 'id': vid, 'value': val})
+        return JsonResponse({'status':False}, status=404)
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 #region PDFs - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
