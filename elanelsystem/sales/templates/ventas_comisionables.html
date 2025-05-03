@@ -10,7 +10,7 @@
 {% block content %}
 <form method="POST" id="formVentasComisionables">
     {% csrf_token %}
-    <h1 class="mb-4">Ventas involucradas</h1>
+    <h1 class="mb-4">Ventas involucradas <span>({{cantidadVentas_involucradas}} ventas)</span></h1>
     
     {% if messageAlert %}
       <div class="alert alert-warning">
@@ -23,59 +23,18 @@
       <table class="table table-striped table-hover">
         <thead class="thead-light">
           <tr>
+            <th>Comisionable</th>
             <th>Oper.</th>
             <th>Cliente</th>
-            <th>De Baja</th>
-            <th>Motivo Baja</th>
-            <th>Suspendida</th>
-            <th>Auditada</th>
-            <th>Última Auditoría</th>
-            <th class="text-center">Comisionable</th>
+            <th>Estado</th>
+            <th>Motivo</th>
+            <th>Auditoria</th>
+            <th>Comentarios</th>
           </tr>
         </thead>
         <tbody>
         {% for v in ventas %}
           <tr id="row-{{ v.id }}">
-            <td>{{ v.nro_operacion }}</td>
-            <td>{{ v.nro_cliente }}</td>
-    
-            <td>
-              <span class="badge badge-{{ v.deBaja.status|yesno:'danger,success' }}">
-                {{ v.deBaja.status|yesno:'Sí,No' }}
-              </span>
-            </td>
-            <td>{{ v.deBaja.motivo }}</td>
-    
-            <td>
-              <span class="badge badge-{{ v.suspendida|yesno:'warning,secondary' }}">
-                {{ v.suspendida|yesno:'Sí,No' }}
-              </span>
-            </td>
-    
-            <td>
-              {% if v.auditorias.exists %}
-                <span class="badge badge-info">Sí</span>
-              {% else %}
-                <span class="badge badge-light">No</span>
-              {% endif %}
-            </td>
-    
-            <td>
-              {% with audit=v.auditorias.last %}
-                {% if audit %}
-                  <strong>v{{ audit.version }}</strong> – {{ audit.grade|yesno:"Aprobada,Rechazada" }}<br>
-                  {% if not audit.grade and audit.motivo %}
-                    <small class="text-danger">{{ audit.motivo }}</small><br>
-                  {% endif %}
-                  {% if audit.comentarios %}
-                    <small class="text-muted">{{ audit.comentarios }}</small>
-                  {% endif %}
-                {% else %}
-                  —
-                {% endif %}
-              {% endwith %}
-            </td>
-    
             <td class="text-center">
               <input type="checkbox"
                      class="commission-checkbox"
@@ -83,6 +42,40 @@
                      data-id="{{ v.id }}"
                      {% if v.is_commissionable %}checked{% endif %}>
             </td>
+
+            <td>{{ v.nro_operacion }}</td>
+            <td>{{ v.cliente }}</td>
+    
+            <td>
+              <span class="badge
+              {% if v.estado == 'Activa'%}
+                badge-success
+              {% elif v.estado == 'Baja' %}
+                badge-danger
+              {% elif v.estado == 'Suspendida' %}
+                badge-warning
+              {% else %}
+                badge-secondary
+              {% endif %}">
+                {{v.estado}}
+              </span>
+            </td>
+            <td>{{ v.motivo }}</td>
+    
+            <td>
+              <span class="badge 
+              {% if v.auditoria_grado == 'Aprobada' %}
+                badge-success
+              {% else %}
+                badge-warning
+              {% endif %}"
+              ">
+                {{v.auditoria_grado}}
+              </span>
+            </td>
+    
+            <td>{{ v.auditoria_comentarios }}</td>
+            
           </tr>
         {% endfor %}
         </tbody>

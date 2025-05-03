@@ -10,13 +10,13 @@ admin.site.register(MetodoPago)
 @admin.register(Auditoria)
 class AuditoriaAdmin(admin.ModelAdmin):
     # Mostrar columnas específicas en el listado
-    list_display = ('venta','version', 'grade', 'fecha_hora', 'reintegro_dinero','motivo',"comentarios",)
+    list_display = ('venta','version', 'grade', 'fecha_hora',"comentarios",)
     
     # Agregar opciones de búsqueda
     search_fields = ('venta__nro_operacion', 'fecha_hora',"comentarios",)
     
     # Agregar filtros
-    list_filter = ('grade', 'reintegro_dinero','motivo',)
+    list_filter = ('grade',)
 
 
 @admin.register(PagoCannon)

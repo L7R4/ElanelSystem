@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Todo bien")   
             const row = document.getElementById('row-' + ventaId);
             row.classList.add('table-success');
-            setTimeout(() => row.classList.remove('table-success'), 1000);
+            setTimeout(() => row.classList.remove('table-success'), 1300);
             
         }else{
             console.log("Error")   

@@ -926,19 +926,6 @@ class Auditoria(models.Model):
         help_text="False: Si no aprobo | True: Si aprobo."
     )
 
-    reintegro_dinero = models.BooleanField(
-        default=False,
-        help_text="Si se reintegro dinero."
-    )
-
-    motivo = models.CharField(
-        max_length=255,
-        choices=MOTIVO_CHOICES,
-        blank=True,
-        help_text="Motivo de la auditoría.",
-        null = True
-    )
-
     comentarios = models.TextField(
         blank=True,
         help_text="Comentarios de la auditoría.",
@@ -955,13 +942,6 @@ class Auditoria(models.Model):
         unique_together = [('venta', 'version')]
         ordering = ['venta', 'version']
 
-    def clean(self):
-        super().clean()
-        # Si no aprobó la auditoría, motivo es obligatorio
-        if not self.graded and not self.motivo:
-            raise ValidationError({
-                'motivo': "Debe informar un motivo cuando la auditoría no ha sido aprobada."
-            })
 
     def __str__(self):
         status = "Aprobada" if self.graded else "Rechazada"

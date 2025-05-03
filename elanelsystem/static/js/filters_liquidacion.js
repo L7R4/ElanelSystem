@@ -194,7 +194,7 @@ function update_textPreValues_to_values() {
 //#region Manejo de posibles mensajes
 
 function messageAlert(messaje, type){
-    return`<a href="${urlVentasNoComisionables}" class="wrapperMessage ${type}">
+    return`<a target="_blank" href="${urlVentasNoComisionables}" class="wrapperMessage ${type}">
             <h3><strong>Alerta</strong> ${messaje} <span>(click para ver)</span></h3>
         </a>`
 }
