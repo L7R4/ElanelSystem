@@ -582,6 +582,16 @@ def getEstadoVenta(venta):
         return "Activo"
     
 
+def getEstadoVenta2(venta):
+    if(venta.deBaja["status"]):
+        return {'status': 'Baja', 'motivo': venta.deBaja['motivo']}
+    elif(venta.suspendida):
+        return {'status': 'Suspendida', 'motivo': ""}
+    elif(venta.adjudicado["status"]):
+        return {'status': 'Adjudicada', 'motivo': ""}
+    else:
+        return {'status': 'Activa', 'motivo': ""}
+
 def getCuotasPagadasSinCredito(cuotas):
     from sales.models import PagoCannon
 

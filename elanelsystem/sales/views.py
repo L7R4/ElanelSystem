@@ -28,6 +28,7 @@ import elanelsystem.settings as settings
 from elanelsystem.views import filterMainManage, convertirValoresALista
 from django.forms.models import model_to_dict
 from django.templatetags.static import static
+from django.forms.models import model_to_dict
 
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
@@ -1523,18 +1524,45 @@ class VentasComisionables(generic.View):
             return render(request, 'error.html', {
                 'msg': "Debes seleccionar antes campaña y sucursal."
             })
+        print(f"Agencia: {agenciaObject.pseudonimo} - Campania: {campania}")
 
-        qs = Ventas.objects.filter(
-            Q(agencia=agenciaObject, campania=campania) |
-            Q(pagos_cannon__campana_de_pago=campania)
-        ).distinct().select_related(
+        qs = Ventas.objects.filter(agencia=agenciaObject).filter((
+                Q(campania=campania) |
+                Q(pagos_cannon__campana_de_pago=campania)
+            )).distinct().select_related(
             'nro_cliente', 'vendedor', 'supervisor'
-        ).prefetch_related('auditorias')
+        ).prefetch_related('auditorias').order_by('-nro_operacion')
+        
+        contextVentas = []
+        for venta in qs:
+            ventaStatus = getEstadoVenta2(venta)
+            auditoria = venta.auditorias.last()
+            grado_auditoria =""
+            comentario_auditoria=""
 
+            if (auditoria):
+                grado_auditoria =  "Aprobada" if auditoria.grade else "Desaprobada"
+                comentario_auditoria = auditoria.comentarios if auditoria.comentarios else "-"
+
+            contextVentas.append(
+                {
+                    'id': venta.id,
+                    'is_commissionable': venta.is_commissionable,
+                    'nro_operacion': venta.nro_operacion,
+                    'cliente': venta.nro_cliente,
+                    'agencia': venta.agencia.pseudonimo,
+                    'campania': venta.campania,
+                    'estado': ventaStatus["status"],
+                    'motivo': ventaStatus["motivo"] if ventaStatus["motivo"] else "-",
+                    'auditoria_grado': grado_auditoria,
+                    'auditoria_comentarios':comentario_auditoria,
+                }
+            )
         return render(request, 'ventas_comisionables.html', {
-            'ventas': qs,
+            'ventas': contextVentas,
+            'cantidadVentas_involucradas': len(contextVentas),
             'campania': campania,
-            'sucursal': request.session.get('sucursal_name_notCommissionable'),
+            'sucursal': agenciaObject.pseudonimo,
         })
 
 
