@@ -478,6 +478,15 @@ def get_premio_x_cantidad_ventas_sucursal(campania, agencia, objetivo_gerente=0)
         return math.ceil(1000 * cantidad_cuotas_0)
     return 0
 
+
+def get_detalle_sucursales_de_region(sucursal,campania):
+    clean_pseudonimo = sucursal.pseudonimo.replace(" ", "").lower()
+    dict_regiones = {
+        "corrientes,corrientes" : ["Paso de Los Libres, Corrientes", "Goya, Corrientes"],
+        "resistencia,chaco" : ["Saenz Peña, Chaco", "Goya, Corrientes"],
+
+    }
+    pass
 #endregion
 
 #region Funciones para obtener y calcular el asegurado de los usuarios

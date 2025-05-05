@@ -21,15 +21,25 @@ class IndexLoginView(LoginView):
     
 def redireccionar_por_permisos(usuario):
     
+    # secciones = {
+    #     # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
+    #     "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
+    #     "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
+    #     # "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
+    #     "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
+    #     "Liquidaciones": {"permisos": ["liquidacion.my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
+    #     "Administracion": {"permisos": ["users.my_ver_administracion"], "url": reverse("users:panelAdmin")},
+    #     "Planes suspendidos": {"permisos": ["sales.my_ver_planes_suspendidos"], "url": reverse("sales:ventasSuspendidas")},
+    # }
     secciones = {
         # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
         "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
         "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
-        # "Reportes": {"permisos": ["sales.my_ver_reportes"], "url": reverse("reporteView")},
+        # "Exportar datos": {"permisos": ["sales.my_ver_reportes"], "url": reverse("detallesNegocio")}, #Mover a a la vista de "Configuracion"
+        "Auditorías": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList")},
         "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
-        "Liquidaciones": {"permisos": ["liquidacion.my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
-        "Administracion": {"permisos": ["users.my_ver_administracion"], "url": reverse("users:panelAdmin")},
-        "Planes suspendidos": {"permisos": ["sales.my_ver_planes_suspendidos"], "url": reverse("sales:ventasSuspendidas")},
+        "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
+        "Configuración": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},
     }
     # allPermissions = [perm for perm in Permission.objects.all() if perm.codename.startswith('my_')]
     

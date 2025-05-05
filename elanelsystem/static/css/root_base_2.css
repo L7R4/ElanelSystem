@@ -1,0 +1,531 @@
+/*#region FONTS VARS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+@font-face {
+   font-family: babapro;
+   src: url("../fonts/Babapro-Ea4rr.otf");
+}
+
+@font-face {
+   font-family: raleway;
+   src: url("../fonts/Raleway-Regular.ttf");
+}
+
+@font-face {
+   font-family: raleway-bold;
+   src: url("../fonts/Raleway-Bold.ttf");
+}
+
+@font-face {
+   font-family: raleway-semibold;
+   src: url("../fonts/Raleway-SemiBold.ttf");
+}
+
+/* #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+
+:root {
+   --background-color: rgb(15, 23, 42);
+   --primary-color: rgb(33, 82, 149);
+   --secundary-color: rgb(45, 116, 180);
+   --third-color: rgb(253, 253, 255);
+
+
+  --blue-900:   rgb(15, 23, 42);
+  --blue-900-50: rgba(15, 23, 42, 0.5); 
+  --blue-900-20: rgba(15, 23, 42, 0.2); 
+  
+  --blue-700:   rgb(33, 82, 149);
+  --blue-700-50: rgba(33, 82, 149, 0.5);
+  --blue-700-20: rgba(33, 82, 149, 0.2);
+  
+  --blue-500:   rgb(45, 116, 180);
+  --blue-500-50: rgba(45, 116, 180, 0.5);
+  --blue-500-20: rgba(45, 116, 180, 0.2);
+
+  --white-color-800: rgb(253, 253, 255);
+  --white-800-80: rgba(253, 253, 255, 0.8);
+  --white-800-50: rgba(253, 253, 255, 0.5);
+  --white-800-10: rgba(253, 253, 255, 0.1);
+
+  --success-color: rgb(46, 204, 113);
+  --success-color-50: rgba(46, 204, 113, 0.5);
+  --success-color-20: rgba(46, 204, 113, 0.2); 
+
+  --danger-color: rgb(231, 76, 60);
+  --danger-color-50: rgba(231, 76, 60, 0.5); 
+  --danger-color-20: rgba(231, 76, 60, 0.2); 
+
+  --warning-color:rgb(243, 156, 18);
+  --warning-color-50: rgba(243, 156, 18, 0.5);
+  --warning-color-20: rgba(243, 156, 18, 0.2);
+
+  --info-color: rgb(127, 140, 141);
+  --info-color-50: rgba(127, 140, 141, 0.5);
+  --info-color-20: rgba(127, 140, 141, 0.2);
+
+}
+
+
+* {
+   margin: 0;
+   padding: 0;
+   font-feature-settings: "pnum" on, "lnum" on;
+   box-sizing: border-box;
+
+}
+
+html {
+   font-size: 62.5%;
+}
+
+
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+   -webkit-appearance: none;
+   appearance: none;
+   margin: 0;
+}
+
+/* --------------------------------------------------
+   > Estilos para el context menu al hacer click derecho
+   --------------------------------------------------*/
+.context-menu {
+   display: none;
+   position: absolute;
+   z-index: 1000;
+}
+
+
+/* #region SET DEFAULT BUTTONS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+/* --------------------------------------------------
+   > Botones para ACCIONES VARIAS
+   --------------------------------------------------*/
+.button-default-style {
+   font-family: raleway-semibold;
+   background-color: transparent;
+   color: var(--third-color);
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   cursor: pointer;
+   padding: 1rem 1.5rem;
+
+   outline: none;
+   border-radius: .6rem;
+   cursor: pointer;
+   width: fit-content;
+   border: 2px solid var(--primary-color);
+   max-height: 3.5rem;
+   min-height: 2.8rem;
+   max-width: 25rem;
+   min-width: fit-content;
+}
+
+/* --------------------------------------------------
+   > Botones para CANCELAR una operacion
+   --------------------------------------------------*/
+.cancel-icon-default {}
+
+.cancel-button-default {}
+
+
+/* --------------------------------------------------
+   > Botones para ELIMINAR un elemento
+   --------------------------------------------------*/
+.delete-icon-default {}
+
+.delete-button-default {
+   color: var(--third-color);
+   cursor: pointer;
+   font-family: raleway-semibold;
+   box-sizing: border-box;
+   padding: 1rem 1.5rem;
+   background-color: #ed1717;
+   text-decoration: none;
+   border-radius: .6rem;
+   letter-spacing: .04rem;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   outline: none;
+   border: none;
+   max-height: 3.5rem;
+   min-height: 2.8rem;
+   max-width: 25rem;
+   min-width: fit-content;
+}
+
+
+/* --------------------------------------------------
+   > Botones para AGREGAR O GUARDAR un elemento
+   --------------------------------------------------*/
+.add-icon-default {}
+
+.add-button-default {
+   color: var(--third-color);
+   cursor: pointer;
+   font-family: raleway-semibold;
+   box-sizing: border-box;
+   padding: 1rem 1.5rem;
+   background-color: var(--primary-color);
+   text-decoration: none;
+   border-radius: .6rem;
+   letter-spacing: .04rem;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   outline: none;
+   border: none;
+   max-height: 3.5rem;
+   min-height: 2.8rem;
+   max-width: 25rem;
+   min-width: fit-content;
+}
+
+
+/* --------------------------------------------------
+   > INPUTs para read-only o read-write
+   --------------------------------------------------*/
+.input-read-only-default {
+   max-height: 3.5rem;
+   min-height: 2.8rem;
+   border: 2px solid var(--secundary-colorr);
+   font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
+   background-color: #deddf3;
+   position: relative;
+   border-radius: .6rem;
+   outline: none;
+   text-indent: 1.2rem;
+   width: 100%;
+   font-feature-settings: "pnum" on, "lnum" on;
+   height: 100%;
+}
+
+input.input-read-write-default,
+textarea.input-read-write-default {
+   max-height: 3.5rem;
+   min-height: 3rem;
+   border: 2px solid var(--secundary-color);
+   font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
+   background-color: transparent;
+   position: relative;
+   border-radius: .6rem;
+   outline: none;
+   text-indent: 1.2rem;
+   width: 100%;
+   font-feature-settings: "pnum" on, "lnum" on;
+   height: 100%;
+   box-sizing: border-box;
+}
+
+
+/* --------------------------------------------------
+   > INPUTs selects customerize
+   --------------------------------------------------*/
+.input-select-custom {
+   max-height: 3.5rem;
+   min-height: 3rem;
+   border: 2px solid var(--secundary-color);
+   font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
+   position: relative;
+   border-radius: .6rem;
+   outline: none;
+   text-indent: 1.2rem;
+   width: 100%;
+   height: 100%;
+   font-feature-settings: "pnum" on, "lnum" on;
+
+}
+
+.pseudo-input-select-wrapper {
+   max-height: 3.5rem;
+   min-height: 3rem;
+   border: 2px solid var(--secundary-color);
+   font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
+   position: relative;
+   outline: none;
+   padding: 0 1rem;
+   width: 100%;
+   height: 100%;
+   font-feature-settings: "pnum" on, "lnum" on;
+   border-radius: .6rem;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+}
+
+.pseudo-input-select-wrapper>h3 {
+   font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+   white-space: nowrap;
+   overflow-x: auto;
+   -ms-overflow-style: none;
+   /* Oculta la barra de scroll en Internet Explorer y Edge */
+}
+
+.pseudo-input-select-wrapper>h3::-webkit-scrollbar {
+   display: none;
+}
+
+.pseudo-input-select-wrapper>h3.placeholder {
+   opacity: .5;
+}
+
+ul.list-select-custom {
+   list-style: none;
+   background-color: var(--background-color);
+   border: 2px solid var(--secundary-color);
+   font: clamp(1rem, 1vw, 1.3rem) 'raleway-semibold';
+   border-radius: .6rem;
+   color: var(--third-color);
+   box-sizing: border-box;
+   width: 100%;
+   position: absolute;
+   height: 0;
+   overflow-y: auto;
+   max-height: 16rem;
+   top: 60%;
+   transition: height 0.3s ease;
+}
+
+ul.list-select-custom>li {
+   padding: 1rem 2rem;
+   cursor: pointer;
+}
+
+ul.list-select-custom>li:first-child {
+   padding-top: 2rem;
+}
+
+ul.list-select-custom>li.selected {
+   background-color: #59585e50;
+}
+
+ul.list-select-custom>li:hover {
+   background-color: #59585e50;
+
+}
+
+div.containerInputAndOptions>.iconDesplegar.open {
+   transform: rotate(180deg);
+}
+
+div.containerInputAndOptions {
+   position: relative;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   /* height: 100%; */
+   width: 100%;
+}
+
+div.containerInputAndOptions>.iconDesplegar {
+   width: 1.6rem;
+   position: absolute;
+   align-self: flex-end;
+   margin-right: 1rem;
+   cursor: pointer;
+   transition: .2s ease all;
+}
+
+ul.list-select-custom.open {
+   height: auto;
+}
+
+/* #endregion  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+
+
+/* #region loader */
+#wrapperLoader {
+   position: fixed;
+   display: none;
+   width: 100vw;
+   left: 0;
+   top: 0;
+   height: 100vh;
+   justify-content: center;
+   align-items: center;
+   z-index: 1001;
+   background-color: #1b1a276b;
+}
+
+#loader {
+   border: 1.6rem solid #f3f3f3;
+   border-radius: 50%;
+   border-top: 1.6rem solid #3498db;
+   width: 13vw;
+   height: 13vw;
+   animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+   0% {
+      transform: rotate(0deg);
+   }
+
+   100% {
+      transform: rotate(360deg);
+   }
+}
+
+/* #endregion */
+
+
+/* #region Scroller */
+
+*::-webkit-scrollbar {
+   width: 4px;
+   border-radius: 5px;
+}
+
+*::-webkit-scrollbar-thumb {
+   background: #ffffff58;
+   border-radius: 1rem;
+}
+
+/* #endregion */
+
+
+/*#region inconInput */
+.filter-iconWrapper {
+   position: relative;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.filter-iconWrapper>img {
+   min-width: 1.6rem;
+   max-width: 3rem;
+   width: 1.5vw;
+   cursor: pointer;
+}
+
+.filter-select {
+   position: absolute;
+   right: 1rem;
+   top: 100%;
+   cursor: pointer;
+   display: none;
+   list-style: none;
+   padding: .7rem;
+   background-color: var(--background-color);
+   border: 2px solid var(--secundary-color);
+   flex-direction: column;
+   height: fit-content;
+   gap: 1rem;
+   border-radius: .6rem;
+}
+
+.filter-select.open {
+   display: flex;
+}
+
+.filter-select>li.filter-option {
+   padding: 1rem;
+   font: clamp(1rem, 1vw, 1.3rem) 'raleway-semibold';
+   color: var(--third-color);
+   cursor: pointer;
+   white-space: nowrap;
+   border-radius: .6rem;
+}
+
+.filter-select>li.filter-option:hover {
+   background-color: #1754ed8f;
+}
+
+.filter-select>li.filter-option.selected {
+   background-color: #1754ed8f;
+}
+
+/*#endregion */
+
+
+/* #region Modificaciones de la libreria para seleccionar hora */
+
+.vc_onlyHora {
+   background-color: var(--background-color);
+   min-width: fit-content !important;
+
+}
+
+.vc_onlyHora>.vc-time>.vc-time__content {
+   display: flex;
+   align-items: center;
+}
+
+.vc_onlyHora>.vc-time>.vc-time__content label {
+   width: 1.3vw;
+   max-width: 3.2rem;
+   display: flex;
+   align-items: center;
+}
+
+.vc_onlyHora>.vc-time input {
+   font-size: clamp(1.3rem, 1.3vw, 1.7rem) !important;
+}
+
+.vc_onlyHora>.vc-time>.vc-time__content label::after {
+   top: 0 !important;
+   margin-top: 0;
+   font-size: clamp(1.3rem, 1.3vw, 1.7rem) !important;
+
+}
+
+.vc_onlyHora>.vc-time {
+   display: flex !important;
+   justify-content: center !important;
+   padding: .6rem !important;
+   border: none !important;
+   margin: 0 !important;
+}
+
+/* #endregion */
+
+
+/* #region Modificaciones de la libreria para seleccionar la fecha */
+
+.vc_multipleRango,
+.vc_singleCalendar {
+   background-color: var(--background-color);
+   z-index: 10000;
+}
+
+.vc_multipleRango .vc-content>.vc-week>.vc-week__day,
+.vc_multipleRango .vc-content>.vc-dates>.vc-date>button,
+.vc_singleCalendar .vc-content>.vc-week>.vc-week__day,
+.vc_singleCalendar .vc-content>.vc-dates>.vc-date>button {
+   font-size: clamp(1rem, 1.1vw, 1.3rem) !important;
+   font-family: raleway !important;
+}
+
+.vc_multipleRango .vc-content>.vc-dates>.vc-date>button,
+.vc_singleCalendar .vc-content>.vc-dates>.vc-date>button {
+   padding: 1rem;
+}
+
+.vc_multipleRango .vc-header__content>button,
+.vc_singleCalendar .vc-header__content>button {
+   font-size: clamp(1.2rem, 1.2vw, 1.5rem) !important;
+   font-family: raleway-semibold !important;
+   padding: 1rem;
+}
+
+.vc_multipleRango #btn-clear,
+.vc_singleCalendar #btn-clear {
+   outline: none;
+   background-color: transparent;
+   font-size: clamp(1rem, 1.1vw, 1.3rem) !important;
+   font-family: raleway !important;
+   color: var(--third-color);
+   opacity: .8;
+   text-decoration: underline;
+   border: none;
+   width: fit-content;
+   align-self: center;
+   margin-top: .5rem;
+   cursor: pointer;
+}
+
+/* #endregion */

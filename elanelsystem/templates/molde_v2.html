@@ -1,0 +1,83 @@
+{% load static %}
+{% load util %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/molde.css' %}">
+    <link rel="stylesheet" href="{% static 'css/root_base_2.css' %}">
+    <link rel="shortcut icon" href="{% static 'images/icons/diamong.png' %}">
+
+    {% block css %}
+    {% endblock css %}
+    <title>ElanelSYS</title>
+</head>
+<body>
+    <div class="wrapper">
+
+        <aside class="menu active" id="menu">
+            <div class="tittleAsideWrapper">
+                <div class="logoWrapper">
+                    <img src="{% static 'images/icons/logo.png' %}" alt="">
+                </div>
+                <h3 class="tittleAside">Elanel Servicios SRL</h3>
+            </div>
+            
+            <ul class="list">
+                <li class="aside-item perfil">
+                {% iniciales_de_nombre_usuario as iniciales %}
+                    <div class="circleNombre">
+                        {{iniciales}}
+                    </div>
+                    <div class="nombreUsuarioWrapper">
+                    {% nombre_completo_usuario as nombre_completo %}
+                    {% rango_usuario as rango %}
+                        <h3>{{nombre_completo}}</h3>
+                        <h3>{{rango}}</h3>
+                    </div>  
+
+                </li>
+                {% seccionesPorPermisos as secciones %}
+                {% for seccion, data in secciones.items %}
+                    <li>
+                        <a href="{{data.url}}" id="{{seccion|lower}}">
+                            <p>{{seccion}}</p> 
+                        </a>
+                        <div class="check"></div>
+                    </li>
+                {% endfor %}
+
+                <li>
+                    <a href="{% url 'users:configurarPerfil'%}" id="close_session">
+                        <p>Configurar perfil</p> 
+                    </a>
+                    <div class="check"></div>
+                </li>
+
+                <li>
+                    <a href="{% url 'logout' %}" id="close_session">
+                        <img src="{% static 'images/icons/logout.png' %}" alt="">
+                        <p>Cerrar sesion</p> 
+                    </a>
+                    <div class="check"></div>
+                </li>
+            </ul>
+        </aside>
+
+        <div class="wrapper_content">
+            {% block content %}
+            {% endblock content %}
+        </div>
+
+    </div>
+    
+    <script src="{% static 'js/menu.js' %}"></script>
+
+    {% block js %}
+    {% endblock js %}
+
+</body>
+</html>

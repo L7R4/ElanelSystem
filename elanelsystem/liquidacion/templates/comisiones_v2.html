@@ -1,0 +1,124 @@
+{% extends 'molde_v2.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/comisiones_v2.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+
+{% endblock css %}
+
+{% block content %}
+    <div id="wrapperLoader">
+        <span id="loader"></span>
+    </div>
+
+    <div class="wrapperHeader">
+        
+        <div class="wrapperInputsSearchs">
+            <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+                <h3 class="labelInput">Sucursal</h3>
+                <div class="containerInputAndOptions">
+                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                  <input type="hidden" class="filterInput" name="sucursal" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                  </div>
+                  <ul id="contenedorSucursal" class="list-select-custom options">
+                    {% for sucursal in sucursales %}
+                        <li data-value={{sucursal.id}}>{{sucursal}}</li>
+                    {% endfor %}
+                </ul>
+                </div>
+            </div>
+            
+            <div id="campaniaWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+                <h3 class="labelInput">Campaña</h3>
+                <div class="containerInputAndOptions">
+                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                  <input type="hidden" class="filterInput" name="campania" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                  </div>
+                  <ul id="contenedorCampania" class="list-select-custom options">
+                    {% for campania in campanias %}
+                            <li data-value="{{campania}}">{{campania}}</li>
+                    {% endfor %}
+                </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="wrapperManageLiquidacion">
+        <div class="colaboradoresWrapper">
+
+                <div class="colaboradores">
+                    <div class="listColaboradoresWrapper">
+                        <div class="tittlesWrapper">
+                            <ul class="tittles">
+                                <li>Nombre</li>
+                                <li>Comisión</li>
+                            </ul>   
+                        </div>
+                
+                        <div class="valuesWrapper preValues">
+                            
+                            <h3 id="textPreValuesColaboradores">Seleccione la sucursal y campaña antes de comenzar</h3>
+                            <ul class="values">
+                            </ul>       
+                        </div>
+                    </div>
+
+                    <div class="selectTipoColaborador">
+                        <div>
+                            <input type="radio" name="tipoColaborador" id="todos" value="todos" class="inputSelectTipoColaborador" checked>
+                            <label for="todos">Todos</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="tipoColaborador" id="vendedores" value="Vendedor" class="inputSelectTipoColaborador">
+                            <label for="vendedores">Vendedores</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="tipoColaborador" id="supervisores" value="Supervisor" class="inputSelectTipoColaborador">
+                            <label for="supervisores">Supervisores</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="tipoColaborador" id="gerente_sucursal" value="Gerente sucursal" class="inputSelectTipoColaborador">
+                            <label for="gerente_sucursal">Gerentes de sucursal</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="resumen_actions_wrapper">
+                    <div id="totalComisionesTextColaboradores_wrapper">
+                        <input type="hidden" id="totalComisionesInput" value="0">
+                        <h3>Total $<span id="dineroTotalComisiones">0</span></h3>
+                    </div>
+                    <div class="wrapperButtonsActions hidden" id="wrapperButtonsActions">
+                        <a href="{% url 'liquidacion:preViewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
+                        <button type="button" id="liquidarButton" onclick="newModalLiquidacion()">Liquidar</button>
+                    </div> 
+                </div>
+            </div>
+    </div>
+   
+{% endblock content %}
+{% block js %}
+    <script> 
+        var CSRF_TOKEN = '{% csrf_token %}';
+        const urlRequestColaboradores = "{{urlRequestColaboradores}}"
+        const urlVentasNoComisionables = "{% url 'sales:ventas_comisionables' %}"
+
+        var info_icon = "{% static 'images/icons/info_icon.svg' %}"
+    </script>
+    <script src="{% static 'js/redirectToPDFNewLiquidacion.js' %}"></script>
+    <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+
+    {% comment %} <script src="{% static 'js/input_select_create_user.js' %}"></script> {% endcomment %}
+    <script src="{% static 'js/filters_liquidacion.js' %}"></script>
+    <script src="{% static 'js/ajuste_comision_liquidacion.js' %}"></script> 
+    <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
+    <script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+
+    
+{% endblock js %}
