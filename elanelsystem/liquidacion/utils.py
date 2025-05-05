@@ -361,7 +361,7 @@ def detalle_de_equipo_x_supervisor(usuario, campania, agencia):
 
 #region Funciones enfocadas a los gerentes de sucursal
 
-def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota=0.08):
+def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota):
     """
     Comision de cuotas 1,2,3,4 => math.ceil en comision_total_cuotas.
     Ahora usamos solo PagoCannon para extraer los pagos ya filtrados.
@@ -479,14 +479,47 @@ def get_premio_x_cantidad_ventas_sucursal(campania, agencia, objetivo_gerente=0)
     return 0
 
 
-def get_detalle_sucursales_de_region(sucursal,campania):
-    clean_pseudonimo = sucursal.pseudonimo.replace(" ", "").lower()
+def get_detalle_sucursales_de_region(agencia,campania):
+    clean_pseudonimo = agencia.pseudonimo.replace(" ", "").lower()
     dict_regiones = {
-        "corrientes,corrientes" : ["Paso de Los Libres, Corrientes", "Goya, Corrientes"],
-        "resistencia,chaco" : ["Saenz Peña, Chaco", "Goya, Corrientes"],
-
+        "corrientes,corrientes" : ["Paso de Los Libres, Corrientes", "Goya, Corrientes, Corrientes, Corrientes"],
+        # "resistencia,chaco" : ["Saenz Peña, Chaco", "Goya, Corrientes"],
     }
-    pass
+
+    result = {
+        "detalleRegion": {},
+        "porcetage_x_cuota": 0,
+        "cantidad_total_cuotas": 0,
+        "dinero_total_cuotas": 0,
+        "comision_total_cuotas": 0,
+        "cantidad_cuotas_0": 0,
+        "dinero_recadudado_cuotas_0": 0,
+    }
+
+    lista_sucursales = dict_regiones.get(clean_pseudonimo, [agencia.pseudonimo])
+    print(f"|\n|\n|\nAgencia: {agencia.pseudonimo} - Region: {lista_sucursales}\n|\n|\n|")
+    for suc in lista_sucursales:
+        sucObject = Sucursal.objects.filter(pseudonimo=suc).first()
+        porcentage_x_cuota = 0.03 if sucObject != agencia else 0.08
+        result["porcetage_x_cuota"] = porcentage_x_cuota
+
+        suc_clean = sucObject.pseudonimo.replace(" ", "").replace(",", "").lower()
+        
+        detalle_cuota_x = get_detalle_cuotas_x(campania,sucObject,porcentage_x_cuota)
+        detalle_cuota_0 = get_detalle_cuotas_0(campania,sucObject)
+
+        result["detalleRegion"][f"{suc_clean}"] = {
+            "suc_name": sucObject.pseudonimo,
+            "suc_info": detalle_cuota_x | detalle_cuota_0 
+        }
+
+        result["cantidad_total_cuotas"] += math.ceil(detalle_cuota_x["cantidad_total_cuotas"])
+        result["dinero_total_cuotas"] += math.ceil(detalle_cuota_x["dinero_total_cuotas"])
+        result["comision_total_cuotas"] += math.ceil(detalle_cuota_x["comision_total_cuotas"])
+        result["cantidad_cuotas_0"] += math.ceil(detalle_cuota_0["cantidad_cuotas_0"])
+        result["dinero_recadudado_cuotas_0"] += math.ceil(detalle_cuota_0["dinero_recadudado_cuotas_0"])
+        
+    return result
 #endregion
 
 #region Funciones para obtener y calcular el asegurado de los usuarios
@@ -763,16 +796,15 @@ def detalle_liquidado_x_rol(usuario, campania, agencia, porcentage_x_cuota_geren
         return resultado
 
     elif rango_lower == "gerente sucursal":
-        dict_cuotas_0 = get_detalle_cuotas_0(campania, agencia)
-        dict_cuotas_x = get_detalle_cuotas_x(campania, agencia, porcentage_x_cuota_gerente)
+        detalleRegion = get_detalle_sucursales_de_region(agencia, campania)
+        region = detalleRegion["detalleRegion"]
 
-        cantidad_total_de_cuotas_0 = dict_cuotas_0["cantidad_cuotas_0"]  # int
-        dinero_total_recaudado_cuotas_0 = dict_cuotas_0["dinero_recadudado_cuotas_0"]  # ceil
+        cantidad_total_de_cuotas_0 = detalleRegion["cantidad_cuotas_0"]  
+        dinero_total_recaudado_cuotas_0 = detalleRegion["dinero_recadudado_cuotas_0"]  
 
-        cantidad_total_de_cuotas_x = dict_cuotas_x["cantidad_total_cuotas"]  # int
-        dinero_total_recaudado_cuotas = dict_cuotas_x["dinero_total_cuotas"] # ceil
-        comision_x_cuotas = dict_cuotas_x["comision_total_cuotas"]           # ceil
-        detalle_x_cuotas = dict_cuotas_x["detalleCuota"]
+        cantidad_total_de_cuotas_x = detalleRegion["cantidad_total_cuotas"]  
+        dinero_total_recaudado_cuotas = detalleRegion["dinero_total_cuotas"] 
+        comision_x_cuotas = detalleRegion["comision_total_cuotas"]           
 
         resultado = {
             "comision_subtotal": comision_x_cuotas,
@@ -781,7 +813,7 @@ def detalle_liquidado_x_rol(usuario, campania, agencia, porcentage_x_cuota_geren
                 "dinero_recaudado_cuotas_0": dinero_total_recaudado_cuotas_0,
                 "cantidad_cuotas_1_4": cantidad_total_de_cuotas_x,
                 "dinero_recaudado_cuotas": dinero_total_recaudado_cuotas,
-                "detalle_x_cuotas": detalle_x_cuotas,
+                "info": region,
             }
         }
         return resultado

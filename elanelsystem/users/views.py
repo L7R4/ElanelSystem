@@ -668,12 +668,12 @@ def importar_usuarios(request):
                 if not str(dni) in all_users_by_agency:
                     new_number_rows_cont += 1                        
                     usuario = Usuario()
-
+                    rango_formated = row["Rango"].strip().capitalize()
                     usuario = Usuario.objects.create_user(
                         email=row['Email'],
                         nombre=row['Nombre'],
                         dni=row['DNI'],
-                        rango=row['Rango'].capitalize(),
+                        rango=rango_formated,
                         password=str(row['DNI']) + '_elanel'
                     )
                  
@@ -690,7 +690,7 @@ def importar_usuarios(request):
                     usuario.estado_civil = handle_nan(row['Estado civil'])
                     usuario.xp_laboral = handle_nan(row['XP Laboral'])
                     usuario.c = str(row['DNI']) + '_elanel'
-                    usuario.groups.add(Group.objects.filter(name=row["Rango"].capitalize()).first())
+                    usuario.groups.add(Group.objects.filter(name=rango_formated).first())
                     sucursal_object = agencia_object
                     usuario.sucursales.add(sucursal_object)
                     usuario.save()
