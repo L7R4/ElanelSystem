@@ -68,16 +68,15 @@ def cuotas_pagadas_len(venta):
 @register.simple_tag(takes_context=True)
 def seccionesPorPermisos(context):
     user = context['request'].user
-    # print(user)
     secciones = {
         # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
         "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
         "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
-        "Exportar datos": {"permisos": ["sales.my_ver_reportes"], "url": reverse("detallesNegocio")},
-        "Auditorias": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList")},
-        "Usuarios": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
+        # "Exportar datos": {"permisos": ["sales.my_ver_reportes"], "url": reverse("detallesNegocio")}, #Mover a a la vista de "Configuracion"
+        "Auditorías": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList")},
+        "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
         "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
-        "Administracion": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},
+        "Configuración": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},
     }
 
     secciones_permitidas = {}
@@ -86,6 +85,23 @@ def seccionesPorPermisos(context):
             secciones_permitidas[k] = v
     return secciones_permitidas
 
+
+@register.simple_tag(takes_context=True)
+def iniciales_de_nombre_usuario(context):
+    nombre = context['request'].user.nombre
+    return ''.join([n[0].upper() for n in nombre.split()][:2])
+
+
+@register.simple_tag(takes_context=True)
+def nombre_completo_usuario(context):
+    nombre = context['request'].user.nombre
+    return ''.join([n.capitalize() for n in nombre.split()][:2])
+
+
+@register.simple_tag(takes_context=True)
+def rango_usuario(context):
+    rango = context['request'].user.rango
+    return rango
 
 
 @register.filter
