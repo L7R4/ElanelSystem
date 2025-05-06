@@ -83,7 +83,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios',blank=True)
     email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
     rango = models.CharField("Rango:",max_length=40)
-    dni = models.CharField("DNI",max_length=9, blank = True, null = True)
+    dni = models.CharField("DNI",max_length=12, blank = True, null = True)
     tel = models.CharField("Telefono",max_length=15, blank = True, null = True)
     c = models.CharField("Contraseña_depuracion:",max_length=250)
     fec_ingreso = models.CharField("Fecha de ingreso", max_length = 10, default ="")
@@ -315,7 +315,7 @@ class Cliente(models.Model):
         
     nro_cliente = models.CharField(max_length=15,default=returNro_Cliente)
     nombre = models.CharField(max_length=100)
-    dni = models.CharField(max_length=9,default="")
+    dni = models.CharField(max_length=12,default="")
     # agencia_registrada = models.CharField(max_length=30,default="")
     agencia_registrada = models.ForeignKey(Sucursal, on_delete=models.PROTECT, related_name="cliente_sucursal")
 

@@ -14,7 +14,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 import datetime
 import json
-from elanelsystem.utils import printPDF
+from elanelsystem.utils import obtener_todos_los_contratos, printPDF
 from .utils import (
     calcular_cantidad_ventasPropias,
     calcular_productividad_supervisor,
@@ -63,7 +63,7 @@ class LiquidacionesComisiones(TestLogin,generic.View):
     def get(self,request,*args,**kwargs):
             context = {}
             request.session["ajustes_comisiones"] = [] # Reiniciar posibles ajustes de la comisiones que existan
-
+            print(len(Ventas.objects.all()))
             context["urlPDFLiquidacion"] = reverse_lazy("liquidacion:viewPDFLiquidacion")
             context["defaultSucursal"] = Sucursal.objects.first()
             context["sucursales"] = Sucursal.objects.all()

@@ -332,6 +332,7 @@ def importVentas(request):
                     n_chances = cantidad_chances,
                     plan = plan
                 )
+                print(f"Finalizando grupo de {group['cod_cli'].iloc[0]} - Contratos: {contratos}")
                 # ------------------------------------------------------------------
                 
                 ventas_to_create.append(Ventas(
