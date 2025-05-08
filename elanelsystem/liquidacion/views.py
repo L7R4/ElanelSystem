@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views import generic
 from elanelsystem import settings
+from users.utils import get_vendedores_a_cargo
 from elanelsystem.views import filterDataBy_campania
 from sales.mixins import TestLogin
 from users.models import Usuario,Sucursal
@@ -552,11 +553,11 @@ class LiquidacionesRanking(TestLogin,generic.View):
         for usuario in Usuario.objects.filter(rango="Supervisor",sucursales__in=[sucursalObject]):
                 ventasPorEquipo = calcular_ventas_supervisor(usuario,campania,sucursalObject)
                 productividadEquipo = calcular_productividad_supervisor(usuario,campania,sucursalObject)
-                vendedoresACargo = usuario.vendedores_a_cargo
+                vendedoresACargo = get_vendedores_a_cargo(usuario,campania,sucursalObject)
                 
                 # Filtrar y ordenar vendedores a cargo
                 # Extraer correos electrónicos de los vendedores a cargo
-                vendedoresACargo_emails = [vendedor['email'] for vendedor in usuario.vendedores_a_cargo]
+                vendedoresACargo_emails = [vendedor['email'] for vendedor in vendedoresACargo]
 
                 # Filtrar la lista de vendedores por los correos electrónicos
                 vendedoresACargo = [vendedor for vendedor in vendedores if vendedor['email_usuario'] in vendedoresACargo_emails and vendedor["rango_usuario"] == "Vendedor"]
@@ -626,7 +627,7 @@ def requestColaboradores_TardanzasAusencias(request):
         "nombre": colaborador.nombre,
         "rango": colaborador.rango,
         "email": colaborador.email,
-        "vendedoresACargo": colaborador.vendedores_a_cargo,
+        # "vendedoresACargo": get_vendedores_a_cargo(colaborador,),
         "tardanzasAusencias": colaborador.faltas_tardanzas,
         "horaSucursal": sucursalObject.hora_apertura,
         "countFaltas": liquidaciones_countFaltas(colaborador),

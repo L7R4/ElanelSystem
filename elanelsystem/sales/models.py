@@ -944,6 +944,6 @@ class Auditoria(models.Model):
 
 
     def __str__(self):
-        status = "Aprobada" if self.graded else "Rechazada"
+        status = "Aprobada" if self.grade else "Rechazada"
         return f"Auditoría v{self.version} – Venta {self.venta.nro_operacion} ({status})"
     
