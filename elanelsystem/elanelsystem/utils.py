@@ -120,6 +120,7 @@ def obtener_todos_los_contratos(agencia = None):
 
     todos_los_contratos = []
     if agencia:
+        print("\nFiltra por agencia los contratos\n")
         # Filtrar las ventas por agencia
         ventas = Ventas.objects.filter(agencia=agencia)
     else:
