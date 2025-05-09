@@ -276,7 +276,7 @@ def importVentas(request):
                 
                 # Si el cliente no existe → saltamos
                 if cod_cli not in clientes:
-                    # print("No existe el cliente\n|\n|")
+                    print(f"|\nNo existe el cliente{ group['cod_cli'].iloc[0]}\n|")
                     continue
 
                 cantidad_chances   = len(group)
@@ -295,8 +295,10 @@ def importVentas(request):
 
                 # — 4) Skip si YA existe cualquiera de esos contratos
                 contratos_nros = { c['nro_contrato'] for c in contratos }
-                if contratos_nros & set_contratos:
-                    # print("Saltando venta, contratos ya importados:", contratos_nros & set_contratos)
+                duplicados = contratos_nros & set_contratos
+                if duplicados:
+                    print(f"❌  Grupo con id_venta={int(group['id_venta'].iloc[0])} SE SALTA porque ya existe(n) contrato(s):"
+                          f" {duplicados}.  Grupo completo: {contratos_nros}")
                     continue
 
 
