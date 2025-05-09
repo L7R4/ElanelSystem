@@ -252,6 +252,7 @@ def importVentas(request):
             df_res, df_est = preprocesar_excel_ventas(file_path)
 
             sucursal_obj = Sucursal.objects.get(pseudonimo=agencia)
+            print("🔎 ???????????")
 
              # 1) Preparo el set de contratos ya importados
             todosLosContratosDict = obtener_todos_los_contratos(sucursal_obj)
@@ -276,7 +277,7 @@ def importVentas(request):
                 
                 # Si el cliente no existe → saltamos
                 if cod_cli not in clientes:
-                    # print("No existe el cliente\n|\n|")
+                    print(f"No existe el cliente {group['cod_cli'].iloc[0]} \n|\n|")
                     continue
 
                 cantidad_chances   = len(group)
@@ -296,7 +297,7 @@ def importVentas(request):
                 # — 4) Skip si YA existe cualquiera de esos contratos
                 contratos_nros = { c['nro_contrato'] for c in contratos }
                 if contratos_nros & set_contratos:
-                    # print("Saltando venta, contratos ya importados:", contratos_nros & set_contratos)
+                    print("Saltando venta, contratos ya importados:", contratos_nros)
                     continue
 
 
