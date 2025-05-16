@@ -12,6 +12,8 @@ from django.urls import reverse_lazy
 from django.contrib.auth.models import Group
 from sales.utils import formatear_moneda_sin_centavos, getAllCampaniaOfYear, getTodasCampaniasDesdeInicio, dataStructureCannons, dataStructureClientes, dataStructureVentas, dataStructureMovimientosExternos,deleteFieldsInDataStructures
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import pandas as pd
+from io import BytesIO
 
 import datetime
 import json
@@ -64,7 +66,7 @@ class LiquidacionesComisiones(TestLogin,generic.View):
     def get(self,request,*args,**kwargs):
             context = {}
             request.session["ajustes_comisiones"] = [] # Reiniciar posibles ajustes de la comisiones que existan
-            print(len(Ventas.objects.all()))
+            # print(len(Ventas.objects.all()))
             context["urlPDFLiquidacion"] = reverse_lazy("liquidacion:viewPDFLiquidacion")
             context["defaultSucursal"] = Sucursal.objects.first()
             context["sucursales"] = Sucursal.objects.all()
@@ -191,7 +193,12 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
     Devuelve: (colaboradores_list, totalDeComisiones)
     """
     sucursalObject = Sucursal.objects.get(id=int(sucursal_id))
-    colaboradores = Usuario.objects.filter(sucursales__in=[sucursalObject])
+    colaboradores = (
+        Usuario.objects
+               .filter(sucursales__in=[sucursalObject])
+               .order_by('suspendido')  
+    )
+    
     rangos = [item.name for item in Group.objects.all()]
 
     tipo_colaborador_formated = tipo_colaborador.capitalize() if tipo_colaborador else None
@@ -811,4 +818,77 @@ class DetallesComisionesView(generic.View):
                 # 'sucursalDefault': Sucursal.objects.first()
             }
         )
-  
+
+
+def export_excel_detalle_comisionado(request):
+    if request.method == "POST":
+        try:
+            body       = json.loads(request.body)
+            user       = Usuario.objects.get(pk=body["user_id"])
+            campania   = body["campania"]
+            agencia    = Sucursal.objects.get(pk=body["agencia_id"])
+        except Exception as e:
+            return JsonResponse({"error": "Parámetros inválidos"}, status=400)
+        # 1) Obtenemos el dict con toda la info
+        result = get_comision_total(user, campania, agencia)
+
+        # 3) Crear Excel en memoria
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            # 3.1 Hoja Resumen
+            resumen = {
+                "Usuario":        [user.nombre],
+                "Email":          [user.email],
+                "Campaña":        [campania],
+                "Sucursal":       [agencia.pseudonimo],
+                "Comisión neta":  [result["comision_total"]],
+                "Comisión bruta": [result["comision_bruta"]],
+                "Asegurado":      [result["asegurado"]],
+                "Descuentos":     [result["descuentoTotal"]],
+                "Premios":        [result["premiosTotal"]],
+            }
+            pd.DataFrame(resumen).to_excel(writer, sheet_name="Resumen", index=False)
+
+            # 3.2 Hoja Ventas propias (detalleVentasPropias)
+            ventas_propias = result["detalle"]["ventasPropias"]["detalle"] \
+                                       .get("detalleVentasPropias", [])
+            if ventas_propias:
+                df_vp = pd.DataFrame(ventas_propias)
+                df_vp.to_excel(writer, sheet_name="VentasPropias", index=False)
+
+            # 3.3 Hoja Cuotas 1 (detalleCuotas1)
+            cuotas1 = result["detalle"]["ventasPropias"]["detalle"] \
+                                .get("detalleCuotas1", [])
+            if cuotas1:
+                df_q1 = pd.DataFrame(cuotas1)
+                df_q1.to_excel(writer, sheet_name="Cuotas1", index=False)
+
+            # 3.4 Hoja Descuentos (faltas/tardanzas)
+            descuentos = result["detalle"]["descuentos"]["detalle"] \
+                               .get("tardanzas_faltas", [])
+            if descuentos:
+                df_desc = pd.DataFrame(descuentos)
+                df_desc.to_excel(writer, sheet_name="Descuentos", index=False)
+
+            # 3.5 Hoja Rol
+            rol = result["detalle"]["rol"]
+            if rol:
+                # Normalizamos anidamientos
+                df_rol = pd.json_normalize(rol)
+                df_rol.to_excel(writer, sheet_name="Rol", index=False)
+
+        # 4) Devolver el .xlsx como descarga
+        buffer.seek(0)
+        filename = f"liquidacion_{user.nombre.replace(' ', '_')}_{campania}.xlsx"
+        response = HttpResponse(
+            buffer.read(),
+            content_type=(
+              "application/vnd.openxmlformats-officedocument."
+              "spreadsheetml.sheet"
+            )
+        )
+        response["Content-Disposition"] = (
+            f'attachment; filename="{filename}"'
+        )
+        response["filename"] =  f"liquidacion_{user.nombre.replace(' ', '_')}_{campania}"
+        return response

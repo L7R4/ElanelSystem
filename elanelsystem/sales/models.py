@@ -895,7 +895,7 @@ class PagoCannon(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.nro_recibo} – Venta {self.venta.nro_operacion} / Cuota {self.nro_cuota}"
+        return f"{self.nro_recibo} – Venta {self.venta.nro_operacion} / Cuota {self.nro_cuota} / Campaña {self.campana_de_pago} / Monto: {self.monto}"
     
 
 class Auditoria(models.Model):

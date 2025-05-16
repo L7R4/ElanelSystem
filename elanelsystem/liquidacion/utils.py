@@ -402,7 +402,7 @@ def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota):
         venta = pago.venta
         idx = pago.nro_cuota
         cuota_info = venta.cuotas[idx]
-        total_cuota = cuota_info["total"]
+        total_cuota = venta.cuotas[5]["total"]
         n_contratos = len(venta.cantidadContratos)
 
         stats[idx]["cantidad"] += n_contratos
@@ -481,8 +481,11 @@ def get_premio_x_cantidad_ventas_sucursal(campania, agencia, objetivo_gerente=0)
 
 def get_detalle_sucursales_de_region(agencia,campania):
     clean_pseudonimo = agencia.pseudonimo.replace(" ", "").lower()
+    agencias_8_porc =["Corrientes, Corrientes", "Concordia, Entre Rios", "Resistencia, Chaco","Posadas, Misiones","Santiago Del Estero, Santiago Del Estero","Formosa, Formosa","Saenz Peña, Chaco"]
+    agencias_6_porc =["Paso De Los Libres, Corrientes", "Goya, Corrientes"]
+
     dict_regiones = {
-        "corrientes,corrientes" : ["Paso de Los Libres, Corrientes", "Goya, Corrientes, Corrientes, Corrientes"],
+        "corrientes,corrientes" : ["Paso De Los Libres, Corrientes", "Goya, Corrientes", "Corrientes, Corrientes"],
         # "resistencia,chaco" : ["Saenz Peña, Chaco", "Goya, Corrientes"],
     }
 
@@ -497,10 +500,14 @@ def get_detalle_sucursales_de_region(agencia,campania):
     }
 
     lista_sucursales = dict_regiones.get(clean_pseudonimo, [agencia.pseudonimo])
-    print(f"|\n|\n|\nAgencia: {agencia.pseudonimo} - Region: {lista_sucursales}\n|\n|\n|")
+
     for suc in lista_sucursales:
         sucObject = Sucursal.objects.filter(pseudonimo=suc).first()
-        porcentage_x_cuota = 0.03 if sucObject != agencia else 0.08
+        porcentage_x_cuota = 0
+        if(sucObject != agencia):
+            porcentage_x_cuota = 0.03
+        else:
+            porcentage_x_cuota = 0.08 if suc in agencias_8_porc else 0.06
         result["porcetage_x_cuota"] = porcentage_x_cuota
 
         suc_clean = sucObject.pseudonimo.replace(" ", "").replace(",", "").lower()
@@ -509,6 +516,7 @@ def get_detalle_sucursales_de_region(agencia,campania):
         detalle_cuota_0 = get_detalle_cuotas_0(campania,sucObject)
 
         result["detalleRegion"][f"{suc_clean}"] = {
+            "suc_id": sucObject.id,
             "suc_name": sucObject.pseudonimo,
             "suc_info": detalle_cuota_x | detalle_cuota_0 
         }
@@ -836,8 +844,8 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
     # 1) Comisiones de ventas propias
     ventas_propias_dict = detalle_liquidado_ventasPropias(usuario, campania, agencia)
     comision_ventas_propias = ventas_propias_dict["comision_subtotal"]
-    print(f"\n Detalle liquidado de -------- {usuario.nombre} --------:\n")
-    print(f"{ventas_propias_dict}")
+    # print(f"\n ✅ Detalle de ventas propias liquidadas de -------- {usuario.nombre} --------:\n")
+    # print(f"{ventas_propias_dict}")
     # 2) Descuentos
     descuentos_dict = detalle_descuestos(usuario, campania, agencia)
     total_descuentos = descuentos_dict["total_descuentos"]
@@ -848,7 +856,8 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
 
     # 4) Comisión / bonos de rol
     rol_dict = detalle_liquidado_x_rol(usuario, campania, agencia)
-    
+    print(f"\n ✅ Detalle de rol liquidadas de -------- {usuario.nombre} --------:\n")
+    print(f"{rol_dict}")
     comision_rol = 0
     premios_segun_rol = 0
 
@@ -872,7 +881,9 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
     try:
         asegurado_completo = get_asegurado(usuario, campania)
         print(f"\n ASEGURADO DE {usuario.nombre} -> {asegurado_completo}\n")
-    except ValueError:
+    except ValueError as e:
+        print("\nError en get_asegurado()\n")
+        print(e)
         asegurado_completo = 0
 
     # Comparamos con el asegurado
