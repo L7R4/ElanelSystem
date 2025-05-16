@@ -20,8 +20,9 @@ inputSucursal.addEventListener("input", async ()=>{
         body.sucursal = inputSucursal.value;
         body.campania = inputCampania.value;
         body.tipoColaborador = colaboradoresAFiltrar;
-        
+        showLoader()
         let response = await fetchFunction(body,urlRequestColaboradores)
+        hiddenLoader()
         console.log(response)   
         actualizarResultadosColaboradores(response["colaboradores_data"],contendorColaboradores)
         actualizarTotalComisionado(response["totalDeComisiones"])
@@ -49,8 +50,10 @@ inputCampania.addEventListener("input", async ()=>{
         body.sucursal = inputSucursal.value;
         body.campania = inputCampania.value;
         body.tipoColaborador = colaboradoresAFiltrar;
-
+        
+        showLoader()
         let response = await fetchFunction(body,urlRequestColaboradores)
+        hiddenLoader()
         console.log(response)
         actualizarResultadosColaboradores(response["colaboradores_data"],contendorColaboradores)
         actualizarTotalComisionado(response["totalDeComisiones"])
@@ -81,8 +84,9 @@ radioFiltros.forEach(radio => {
         body.sucursal = inputSucursal.value;
         body.campania = inputCampania.value;
         body.tipoColaborador = colaboradoresAFiltrar;
-
+        showLoader()
         let response = await fetchFunction(body, urlRequestColaboradores)
+        hiddenLoader()
         console.log(response)
         actualizarResultadosColaboradores(response["colaboradores_data"],contendorColaboradores)
         actualizarTotalComisionado(response["totalDeComisiones"])
@@ -150,10 +154,12 @@ function actualizarResultadosColaboradores(resultados, contenedor) {
         <div class="wrapperComisionColaborador">
             <p>$ ${item.comisionTotal}</p>
             <button type="button" class="iconInfoMore moreInfoComisionButton" onclick="modal_more_info_comision_by_id(${item.id})"><img src=${info_icon} alt=""></button>
+            <button type="button" class="iconInfoMore moreInfoComisionButton" onclick="create_excel_detail_info(${item.id},'${inputCampania.value}',${inputSucursal.value})"><img src=${export_icon} alt=""></button>
         </div>
         <div>
             <button type="button" class="button-default-style ajusteComisionButton" onclick="modal_ajuste_comision(${item.id}, '${item.nombre}', ${item.comisionTotal})">Ajustar comision</button>
         </div>
+        
     </li>`;
     contenedor.insertAdjacentHTML("beforeend",divs)
   
@@ -210,6 +216,20 @@ function toggleMessage(container, messageDOM){
 
 //#endregion
 
+//#region Manejar el display del loader
+function showLoader(container=false) {
+    if(container){
+        document.querySelector(container).children[0].style.display = "none";
+    }
+    
+    document.getElementById('wrapperLoader').style.display = 'flex';
+}
+
+function hiddenLoader() {
+    document.getElementById('wrapperLoader').style.display = 'none';
+}
+//#endregion
+
 
 // #region Obtener mas info sobre la liquidacion
 function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_ajustes, detalle) {
@@ -262,28 +282,39 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
     }
 
     if (tipo_colaborador.toLowerCase() === "gerente sucursal") {
-        html += `
-        <div class="subDetalleGroup">
-            <h3>Sucursal</h3>
-            <p><strong>Cantidad de cuotas 0:</strong> ${rol.cantidad_cuotas_0 || 0}</p>
-            <p><strong>Premio por cuotas 0:</strong> $${premios.premio_x_cantidad_ventas_agencia || 0}</p>
+        const region = rol.info 
+        Object.keys(region).forEach(clave => {
 
-            <p><strong>Cantidad de cuotas 1:</strong> ${rol.detalle_x_cuotas.cuotas1.cantidad || 0}</p>
-            <p><strong>Comision por cuotas 1:</strong> $${rol.detalle_x_cuotas.cuotas1.comision || 0}</p>
-
-            <p><strong>Cantidad de cuotas 2:</strong> ${rol.detalle_x_cuotas.cuotas2.cantidad || 0}</p>
-            <p><strong>Comision por cuotas 2:</strong> $${rol.detalle_x_cuotas.cuotas2.comision || 0}</p>
-
-            <p><strong>Cantidad de cuotas 3:</strong> ${rol.detalle_x_cuotas.cuotas3.cantidad || 0}</p>
-            <p><strong>Comision por cuotas 3:</strong> $${rol.detalle_x_cuotas.cuotas3.comision || 0}</p>
+            const agenciaId = region[clave]["suc_id"]
+            const agenciaName = region[clave]["suc_name"]
+            const agenciaInfo = region[clave]["suc_info"]
+            // <p><strong>Premio por cuotas 0:</strong> $${premios.premio_x_cantidad_ventas_agencia || 0}</p>
             
-            <p><strong>Cantidad de cuotas 4:</strong> ${rol.detalle_x_cuotas.cuotas4.cantidad || 0}</p>
-            <p><strong>Comision por cuotas 4:</strong> $${rol.detalle_x_cuotas.cuotas4.comision || 0}</p>
+            html += `
+                <div class="subDetalleGroup">
+                    <h3>Sucursal ${agenciaName}</h3>
+                    <p><strong>Cantidad de cuotas 0:</strong> ${agenciaInfo.cantidad_cuotas_0 || 0}</p>
+                    <p><strong>Premio por cuotas 0:</strong> $${agenciaId == inputSucursal.value ? premios.premio_x_cantidad_ventas_agencia : 0 }</p>
+                    
 
-            <p><strong>Comision por cartera:</strong> ${detalle.info_total_de_comision.detalle.rol.comision_subtotal || 0}</p>
+                    <p><strong>Cantidad de cuotas 1:</strong> ${agenciaInfo.detalleCuota.cuotas1.cantidad || 0}</p>
+                    <p><strong>Comision por cuotas 1:</strong> $${agenciaInfo.detalleCuota.cuotas1.comision || 0}</p>
 
-        </div>`
-        ;
+                    <p><strong>Cantidad de cuotas 2:</strong> ${agenciaInfo.detalleCuota.cuotas2.cantidad || 0}</p>
+                    <p><strong>Comision por cuotas 2:</strong> $${agenciaInfo.detalleCuota.cuotas2.comision || 0}</p>
+
+                    <p><strong>Cantidad de cuotas 3:</strong> ${agenciaInfo.detalleCuota.cuotas3.cantidad || 0}</p>
+                    <p><strong>Comision por cuotas 3:</strong> $${agenciaInfo.detalleCuota.cuotas3.comision || 0}</p>
+                    
+                    <p><strong>Cantidad de cuotas 4:</strong> ${agenciaInfo.detalleCuota.cuotas4.cantidad || 0}</p>
+                    <p><strong>Comision por cuotas 4:</strong> $${agenciaInfo.detalleCuota.cuotas4.comision || 0}</p>
+
+                    <p><strong>Comision por cartera:</strong> ${agenciaInfo.comision_total_cuotas || 0}</p>
+                </div>`
+                ;
+        });
+
+        
     }
     html += `
         <div class="subDetalleGroup asegurado">
@@ -344,5 +375,32 @@ function modal_more_info_comision(user_id, user_name, tipo_colaborador, otros_aj
     });
 
     modal.open();
+}
+// #endregion
+
+
+
+// #region Para exportar datos que se esta liquidando
+async function create_excel_detail_info(userId, campania, agenciaId) {
+    
+    const body = { user_id: userId, campania: campania, agencia_id: agenciaId };
+    const csrftoken = getCookie("csrftoken");
+
+    const resp = await fetch(urlExportDetallesComision, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrftoken,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+    });
+
+    if (!resp.ok) throw new Error("Error al generar Excel");
+    const blob = await resp.blob();
+    console.log(resp)
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${resp.headers.get("filename")}.xlsx`;
+    link.click();
 }
 // #endregion
