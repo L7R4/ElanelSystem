@@ -821,6 +821,7 @@ class DetallesComisionesView(generic.View):
 
 
 def export_excel_detalle_comisionado(request):
+    from sales.utils import exportar_excel2
     if request.method == "POST":
         try:
             body       = json.loads(request.body)
@@ -829,66 +830,93 @@ def export_excel_detalle_comisionado(request):
             agencia    = Sucursal.objects.get(pk=body["agencia_id"])
         except Exception as e:
             return JsonResponse({"error": "Parámetros inválidos"}, status=400)
+        
         # 1) Obtenemos el dict con toda la info
-        result = get_comision_total(user, campania, agencia)
+        resultado = get_comision_total(user, campania, agencia)
+        print("\n\n VENTAS PROPIAS DESDE EXPORT VENTAS \n\n")
+        print(resultado["detalle"]["ventasPropias"])
+        sheets = {}
 
-        # 3) Crear Excel en memoria
-        buffer = BytesIO()
-        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-            # 3.1 Hoja Resumen
-            resumen = {
-                "Usuario":        [user.nombre],
-                "Email":          [user.email],
-                "Campaña":        [campania],
-                "Sucursal":       [agencia.pseudonimo],
-                "Comisión neta":  [result["comision_total"]],
-                "Comisión bruta": [result["comision_bruta"]],
-                "Asegurado":      [result["asegurado"]],
-                "Descuentos":     [result["descuentoTotal"]],
-                "Premios":        [result["premiosTotal"]],
-            }
-            pd.DataFrame(resumen).to_excel(writer, sheet_name="Resumen", index=False)
+        # 1) Siempre: Ventas propias
+        ventas_propias = resultado["detalle"]["ventasPropias"]["detalle"]["detalleVentasPropias"]
+        todas_las_ventas = ventas_propias["com_24_30_motos"]["ventas"] + ventas_propias["com_24_30_prestamo_combo"]["ventas"] + ventas_propias["com_48_60"]["ventas"]
+        
+        for plan_key, info in todas_las_ventas.items():
+            sheets["Ventas propias"] = [
+                {
+                    "N° Cliente": info["nro_cliente"],
+                    "Nombre cliente": info["nombre_cliente"],
+                    "N° Operacion": info["nro_operacion"],
+                    "Contrato": c["nro_contrato"],
+                    "N° Cuotas": info["nro_cuotas"],
+                    "Importe": info["importe"],
+                    "Fecha de inscripcion": info["fecha"],
+                    "Producto": info["producto"]
+                }
+                for c in info["cantidadContratos"]
+            ]
 
-            # 3.2 Hoja Ventas propias (detalleVentasPropias)
-            ventas_propias = result["detalle"]["ventasPropias"]["detalle"] \
-                                       .get("detalleVentasPropias", [])
-            if ventas_propias:
-                df_vp = pd.DataFrame(ventas_propias)
-                df_vp.to_excel(writer, sheet_name="VentasPropias", index=False)
+        # 2) Siempre: Cuotas 1
+        cuotas1 = resultado["detalle"]["ventasPropias"]["detalleCuotas1"]
 
-            # 3.3 Hoja Cuotas 1 (detalleCuotas1)
-            cuotas1 = result["detalle"]["ventasPropias"]["detalle"] \
-                                .get("detalleCuotas1", [])
-            if cuotas1:
-                df_q1 = pd.DataFrame(cuotas1)
-                df_q1.to_excel(writer, sheet_name="Cuotas1", index=False)
+        for cuota in cuotas1:
+            sheets["Cuotas 1 adelantadas"] = [
+                {
+                    "N° Operacion": cuota["nro_operacion"],
+                    "Contrato": c["nro_contrato"],
+                    "Fecha inscripcion":cuota["fecha_incripcion_venta"],
+                    "Fecha de pago": cuota["fecha_pago"],
+                    "Importe": int(cuota["cuota_comercial"] / len(c["nro_contrato"])),
+                    "Comision": int(cuota["comision"] / len(c["nro_contrato"])),
+                }
+                for c in cuota["contratos_detalle"]
+            ]
 
-            # 3.4 Hoja Descuentos (faltas/tardanzas)
-            descuentos = result["detalle"]["descuentos"]["detalle"] \
-                               .get("tardanzas_faltas", [])
-            if descuentos:
-                df_desc = pd.DataFrame(descuentos)
-                df_desc.to_excel(writer, sheet_name="Descuentos", index=False)
+        rol = user.rango.lower()
 
-            # 3.5 Hoja Rol
-            rol = result["detalle"]["rol"]
-            if rol:
-                # Normalizamos anidamientos
-                df_rol = pd.json_normalize(rol)
-                df_rol.to_excel(writer, sheet_name="Rol", index=False)
+        # 4) Si es supervisor o superior: agrega Ventas del equipo
+        if rol == "supervisor":
+            equipo = resultado["detalle"]["rol"]["detalle"]["detalleVentasXEquipo"]
 
-        # 4) Devolver el .xlsx como descarga
-        buffer.seek(0)
-        filename = f"liquidacion_{user.nombre.replace(' ', '_')}_{campania}.xlsx"
-        response = HttpResponse(
-            buffer.read(),
-            content_type=(
-              "application/vnd.openxmlformats-officedocument."
-              "spreadsheetml.sheet"
-            )
-        )
-        response["Content-Disposition"] = (
-            f'attachment; filename="{filename}"'
-        )
-        response["filename"] =  f"liquidacion_{user.nombre.replace(' ', '_')}_{campania}"
-        return response
+            for vend in equipo:
+                for venta in vend["detalle"]:
+                    sheets["Ventas del equipo"] = [
+                        {
+                            "N° Cliente": venta["nro_cliente"],
+                            "Nombre cliente": venta["nombre_cliente"],
+                            # "N° Operacion": venta["nro_operacion"],
+                            "Contrato": c["nro_contrato"],
+                            "N° Cuotas": venta["nro_cuotas"],
+                            "Importe": venta["importe"],
+                            "Fecha de inscripcion": venta["fecha"],
+                            "Producto": venta["producto"]
+                        }
+                        for c in venta["cantidadContratos"]
+                    ]
+
+        # 5) Si es gerente sucursal: agrega dos hojas más
+        if rol == "gerente sucursal":
+
+            sucursales = resultado["detalle"]["rol"]["detalle"]["info"]
+            # for suc_key, info in sucursales.items():
+                
+            # Cuotas 0
+            c0 = resultado["detalle"]["rol"].get("detalle", {}).get("cantidad_cuotas_0", 0)
+            
+            sheets[f"C 0"] = [{"Cantidad recaudada": c0}]
+
+            # Cuotas 1 a 4
+            # asumimos que get_detalle_sucursales_de_region armó esta info:
+            region = resultado["detalle"]["rol"].get("info", {})
+            sheets[f"C 1-4"] = [
+                {
+                    "Sucursal": info["suc_name"],
+                    "Cant. cuotas": info["suc_info"]["cantidad_total_cuotas"],
+                    "Comisión": info["suc_info"]["comision_total_cuotas"]
+                }
+                for info in region.values()
+            ]
+
+        # llamo al formateador central
+        filename_prefix = f"{user.nombre}_{campania.replace(' ','')}"
+        return exportar_excel2(sheets, filename_prefix)

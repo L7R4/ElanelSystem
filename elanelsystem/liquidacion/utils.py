@@ -203,28 +203,46 @@ def get_detalle_cuotas1(usuario, campania, agencia):
     total_comision = 0
     detalle = []
     contratos_por_venta = {}   # cache cantidadContratos por venta.id
-    fecha_alta_cache = {}      # cache fecha de alta parseada por venta.id
+    fecha_alta_cache = {}      # cache fecha parseada de venta.fecha
 
     for pago in pagos_qs:
         venta = pago.venta
         vid = venta.id
 
-        # cacheamos parseo de venta.fecha
+        # 1) cache parseo de venta.fecha
         if vid not in fecha_alta_cache:
             fecha_alta_cache[vid] = parse_fecha(venta.fecha)
 
+        # 2) comprobar plazo de 15 días
         fecha_pago = parse_fecha(pago.fecha)
         dias = (fecha_pago - fecha_alta_cache[vid]).days
-        if dias <= 15:
-            # 2) cacheamos cantidad de contratos de la venta
-            if vid not in contratos_por_venta:
-                contratos_por_venta[vid] = len(venta.cantidadContratos)
+        if dias > 15:
+            continue
 
-            # 3) agregamos el dict de la cuota 1 al detalle
-            detalle.append(venta.cuotas[1])
+        # 3) cantidad de contratos de esa venta
+        contratos_detalle = {}
+        if vid not in contratos_por_venta:
+            contratos_por_venta[vid] = len(venta.cantidadContratos)
+            contratos_detalle[vid] = venta.cantidadContratos
+        cant_contratos = contratos_por_venta[vid]
+        contratos_detalle = contratos_detalle[vid]
+        # 4) calculamos la comisión de esta venta (10% de cuota 2)
+        cuota2_total = venta.cuotas[2]['total'] if len(venta.cuotas) > 2 else 0
+        comision_venta = math.ceil(cuota2_total * 0.10)
 
-            # 4) sumamos comisión: 10% de la cuota 2 (índice 2)
-            total_comision += venta.cuotas[2]['total'] * 0.10
+        # 5) armamos el dict de detalle para esta “cuota 1”
+        #    combinamos la dict original venta.cuotas[1] con los nuevos campos
+        cuota1_info = venta.cuotas[1].copy()
+        cuota1_info.update({
+            "fecha_incripcion_venta": pago.venta.fecha,
+            "fecha_pago": pago.fecha,
+            "contratos": contratos_detalle,
+            "comision": comision_venta,
+            "cuota_comercial": cuota2_total
+        })
+        detalle.append(cuota1_info)
+
+        total_comision += comision_venta
 
     return {
         "comision_total": math.ceil(total_comision),
@@ -349,10 +367,15 @@ def detalle_de_equipo_x_supervisor(usuario, campania, agencia):
     for venta in ventas_qs:
         print(f"ID de Venta: {venta.nro_cliente.nombre}")
         vend = venta.vendedor
+        detalle = get_detalle_comision_x_cantidad_ventasPropias(vend, campania, agencia)["planes"]
+        print("\naaaaaaaaaaa\n")
+        print(detalle)
+        # detalle = detalle["planes"]
         item = {
             "nombre": vend.nombre,
             "cantidad_ventas": calcular_cantidad_ventasPropias(vend, campania, agencia),
-            "productividad": calcular_productividad_ventasPropias(vend, campania, agencia)
+            "productividad": calcular_productividad_ventasPropias(vend, campania, agencia),
+            "detalle": detalle["com_24_30_motos"]["ventas"] + detalle["com_24_30_prestamo_combo"]["ventas"] + detalle["com_48_60"]["ventas"]
         }
         detalle_vendedores.append(item)
     return detalle_vendedores
@@ -381,7 +404,7 @@ def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota):
 
     # Inicializamos acumuladores por cuota
     stats = {
-        nro: {"cantidad": 0, "dinero": 0, "detalle": []}
+        nro: {"cantidad": 0, "dinero": 0, "detalle": [], "cuotas":[]}
         for nro in cuotas_numeros
     }
 
@@ -404,10 +427,16 @@ def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota):
         cuota_info = venta.cuotas[idx]
         total_cuota = venta.cuotas[5]["total"]
         n_contratos = len(venta.cantidadContratos)
+        
+        cuota_info.update({
+            "fecha_pago": pago.fecha,
+            "contratos": venta.cantidadContratos,
+        })
 
         stats[idx]["cantidad"] += n_contratos
         stats[idx]["dinero"]   += total_cuota
         stats[idx]["detalle"].append(total_cuota)
+        stats[idx]["cuotas"].append(cuota_info)
 
     # 3) Construimos el bloque de salida y acumulamos totales
     for nro in cuotas_numeros:
@@ -419,6 +448,7 @@ def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota):
             "dinero_x_cuota": math.ceil(dinero),
             "comision": math.ceil(comision),
             "detalle": stats[nro]["detalle"],
+            "cuotas":  stats[nro]["cuotas"]
         }
 
         result["cantidad_total_cuotas"]   += stats[nro]["cantidad"]
@@ -521,10 +551,36 @@ def get_detalle_sucursales_de_region(agencia,campania):
             "suc_info": detalle_cuota_x | detalle_cuota_0 
         }
 
+        ventas_qs = Ventas.objects.filter(
+            campania=campania,
+            agencia=sucObject,
+            is_commissionable=True,
+        )
+        ventas_list =[]
+        for venta in ventas_qs:
+            ventas_x_contrato = [
+                {
+                    "N° Cliente": venta.nro_cliente.nro_cliente,
+                    "Nombre cliente": venta.nro_cliente.nombre,
+                    # "N° Operacion": venta.nro_operacion,
+                    "Contrato": c["nro_contrato"],
+                    "N° Cuotas": venta.nro_cuotas,
+                    "Importe": venta.importe,
+                    "Fecha de inscripcion": venta.fecha,
+                    "Producto": venta.producto.nombre
+                }
+                for c in venta.cantidadContratos
+            ]
+            for v in ventas_x_contrato:
+                ventas_list.append(v)
+
+
         result["cantidad_total_cuotas"] += math.ceil(detalle_cuota_x["cantidad_total_cuotas"])
         result["dinero_total_cuotas"] += math.ceil(detalle_cuota_x["dinero_total_cuotas"])
         result["comision_total_cuotas"] += math.ceil(detalle_cuota_x["comision_total_cuotas"])
         result["cantidad_cuotas_0"] += math.ceil(detalle_cuota_0["cantidad_cuotas_0"])
+        result["detalle_ventas"] = ventas_list
+        result["detalle_cuotas_1_4"] = detalle_cuota_x["detalleCuota"]["cuotas1"]["cuotas"]+detalle_cuota_x["detalleCuota"]["cuotas2"]["cuotas"]+detalle_cuota_x["detalleCuota"]["cuotas3"]["cuotas"]+detalle_cuota_x["detalleCuota"]["cuotas4"]["cuotas"]
         result["dinero_recadudado_cuotas_0"] += math.ceil(detalle_cuota_0["dinero_recadudado_cuotas_0"])
         
     return result
@@ -806,7 +862,8 @@ def detalle_liquidado_x_rol(usuario, campania, agencia, porcentage_x_cuota_geren
     elif rango_lower == "gerente sucursal":
         detalleRegion = get_detalle_sucursales_de_region(agencia, campania)
         region = detalleRegion["detalleRegion"]
-
+        detalle_c1_c4 = get_detalle_sucursales_de_region(agencia, campania)["detalle_cuotas_1_4"]
+        detalle_ventas = get_detalle_sucursales_de_region(agencia, campania)["detalle_ventas"]
         cantidad_total_de_cuotas_0 = detalleRegion["cantidad_cuotas_0"]  
         dinero_total_recaudado_cuotas_0 = detalleRegion["dinero_recadudado_cuotas_0"]  
 
@@ -821,6 +878,8 @@ def detalle_liquidado_x_rol(usuario, campania, agencia, porcentage_x_cuota_geren
                 "dinero_recaudado_cuotas_0": dinero_total_recaudado_cuotas_0,
                 "cantidad_cuotas_1_4": cantidad_total_de_cuotas_x,
                 "dinero_recaudado_cuotas": dinero_total_recaudado_cuotas,
+                "detalle_c1_c4": detalle_c1_c4,
+                "detalle_ventas": detalle_ventas,
                 "info": region,
             }
         }
