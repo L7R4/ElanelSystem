@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-
+from io import BytesIO
 import datetime
 from django.contrib.auth.models import Group
 from django.core.mail import EmailMultiAlternatives
@@ -20,6 +20,8 @@ from openpyxl import Workbook
 from openpyxl.drawing.image import Image
 from django.http import HttpResponse, JsonResponse
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+
 from django.db import transaction
 from users.models import Cliente, Usuario
 from django.templatetags.static import static
@@ -137,15 +139,6 @@ def exportar_excel(data):
         bottom=Side(border_style="thin")
     )
 
-    # Insertar imagen antes de la fila 1
-    image_path = os.path.join(settings.BASE_DIR, "static/images/logoElanelPDF.png")
-    img = Image(image_path)  # Cargar la imagen desde la ruta proporcionada
-    img.width, img.height = 830, 90  # Ajustar tamaño de la imagen
-    ws.add_image(img, "A1")  # Insertar imagen en la celda A1
-
-    # Espaciar la primera fila para la imagen
-    ws.row_dimensions[1].height = 130
-
     # Iniciar los encabezados en la fila 3
     if information:
         encabezados = [v['verbose_name'] for v in information[0].values()]
@@ -184,6 +177,70 @@ def exportar_excel(data):
 
     return response
 
+
+def exportar_excel2(sheets_data, filename_prefix):
+    """
+    sheets_data: dict donde cada clave es el título de la hoja
+                 y cada valor es una lista de dicts {col1: val1, col2: val2, ...}
+    filename_prefix: string para el nombre del archivo, p.ej. "JuanPerez_Marzo2025"
+    """
+    wb = Workbook()
+    # quitar la hoja por defecto
+    wb.remove(wb.active)
+
+    # estilos
+    header_font = Font(color="FFFFFF", size=12, bold=True)
+    header_fill = PatternFill("solid", fgColor="4F81BD")
+    header_align = Alignment(horizontal="center", vertical="center")
+    thin = Side(style="thin", color="000000")
+    header_border = Border(top=thin, left=thin, right=thin, bottom=thin)
+    body_font = Font(size=11)
+
+    for sheet_name, rows in sheets_data.items():
+        ws = wb.create_sheet(title=sheet_name[:31])  # máximo 31 chars
+
+        if not rows:
+            continue
+
+        # Escribo cabeceras
+        headers = list(rows[0].keys())
+        ws.append(headers)
+        for col, header in enumerate(headers, start=1):
+            cell = ws.cell(row=1, column=col)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_align
+            cell.border = header_border
+
+        # Escribo datos
+        for row_dict in rows:
+            ws.append([ row_dict[h] for h in headers ])
+
+        # Estilo body y ajuste de ancho
+        for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+            for cell in row:
+                cell.font = body_font
+
+        for i, header in enumerate(headers, start=1):
+            max_length = max(
+                (len(str(ws.cell(row=r, column=i).value or "")) for r in range(1, ws.max_row+1)),
+                default=10
+            )
+            ws.column_dimensions[get_column_letter(i)].width = max_length + 2
+
+    # Generar el HttpResponse
+    stream = BytesIO()
+    wb.save(stream)
+    stream.seek(0)
+
+    fecha = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+    filename = f"{filename_prefix}_{fecha}.xlsx"
+    response = HttpResponse(
+        stream.read(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
 #endregion 
 
 
