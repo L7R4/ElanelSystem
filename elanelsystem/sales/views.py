@@ -296,15 +296,10 @@ def importVentas(request):
 
                 # — 4) Skip si YA existe cualquiera de esos contratos
                 contratos_nros = { c['nro_contrato'] for c in contratos }
-<<<<<<< HEAD
-                if contratos_nros & set_contratos:
-                    print("Saltando venta, contratos ya importados:", contratos_nros)
-=======
                 duplicados = contratos_nros & set_contratos
                 if duplicados:
                     print(f"❌  Grupo con id_venta={int(group['id_venta'].iloc[0])} SE SALTA porque ya existe(n) contrato(s):"
                           f" {duplicados}.  Grupo completo: {contratos_nros}")
->>>>>>> 30126923191d07cd09bc4c5e04b835c99040934e
                     continue
 
 
