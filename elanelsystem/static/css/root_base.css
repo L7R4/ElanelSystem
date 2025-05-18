@@ -340,7 +340,10 @@ ul.list-select-custom.open {
    justify-content: center;
    align-items: center;
    z-index: 1001;
-   background-color: #1b1a276b;
+   background-color: #0d0d11c7;
+   backdrop-filter: blur(10px);
+   /* agrega blur al fondo */
+
 }
 
 #loader {

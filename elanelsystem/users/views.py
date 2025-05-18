@@ -9,9 +9,9 @@ from django.db.utils import IntegrityError
 from django.shortcuts import redirect, render
 from django.views import generic
 
-from users.utils import printPDFNewUSer
+from users.utils import preprocesar_excel_clientes, printPDFNewUSer
 from sales.utils import getAllCampaniaOfYear, getCampanasDisponibles, getCampaniaActual
-
+from django.db import transaction
 from .models import Usuario,Cliente,Sucursal,Key
 from products.models import Products
 from sales.models import CuentaCobranza
@@ -806,59 +806,117 @@ class ListaClientes(TestLogin, generic.View):
         # Retornar los datos filtrados como JSON
         return JsonResponse({"customers": customer_data, "status": True})
 
-def importar_clientes(request):
-    if request.method == "POST":
+# def importar_clientes(request):
+#     if request.method == "POST":
 
-        # Recibir el archivo y el dato adicional 'agencia'
-        uploaded_file = request.FILES['file']
-        agencia = request.POST.get('agencia')
+#         # Recibir el archivo y el dato adicional 'agencia'
+#         uploaded_file = request.FILES['file']
+#         agencia = request.POST.get('agencia')
 
-        fs = FileSystemStorage()
-        filename = fs.save(uploaded_file.name, uploaded_file)
-        file_path = fs.path(filename)
-        new_number_rows_cont = 0
+#         fs = FileSystemStorage()
+#         filename = fs.save(uploaded_file.name, uploaded_file)
+#         file_path = fs.path(filename)
+#         new_number_rows_cont = 0
 
-        try:
-            # Leer y formatear la hoja "CLIENTES" del archivo Excel
-            df = formatear_columnas(file_path, sheet_name="CLIENTES")
+#         try:
+#             # Leer y formatear la hoja "CLIENTES" del archivo Excel
+#             df = formatear_columnas(file_path, sheet_name="CLIENTES")
             
-            # Procesar cada fila
+#             # Procesar cada fila
+#             for _, row in df.iterrows():
+
+#                 dni=handle_nan(row['dni'].astype(str))
+#                 cliente_existente = Cliente.objects.filter(dni=dni).first()
+                
+#                 if not cliente_existente:
+#                     new_number_rows_cont +=1
+#                     Cliente.objects.create(
+#                         nro_cliente = row['nro'],
+#                         nombre=handle_nan(row['cliente']),
+#                         dni= dni if handle_nan(row['dni']) != "" else "",
+#                         agencia_registrada = Sucursal.objects.get(pseudonimo = agencia),
+#                         domic=handle_nan(row['domic']) ,
+#                         loc = handle_nan(row["loc"]) ,
+#                         prov = handle_nan(row["prov"]) ,
+#                         cod_postal = str(int(float(row["cod_pos"]))) if handle_nan(row["cod_pos"]) != "" else "",
+#                         tel= str(int(float(row['tel_1']))) if handle_nan(row['tel_1']) != "" else "" ,
+#                         # fec_nacimiento = format_date(handle_nan(row["fecha_de_nac"])),
+#                         estado_civil = handle_nan(row["estado_civil"]),
+#                         ocupacion = handle_nan(row["ocupacion"]) 
+#                     )
+                
+
+#             # Eliminar el archivo después de procesar
+#             fs.delete(filename)
+
+#             iconMessage = "/static/images/icons/checkMark.svg"
+#             message= f"Datos importados correctamente. Se agregaron {new_number_rows_cont} clientes nuevos"
+#             return JsonResponse({"message": message,"iconMessage": iconMessage, "status": True})
+
+#         except Exception as e:
+#             print(f"Error al importar: {e}")
+
+#             iconMessage = "/static/images/icons/error_icon.svg"
+#             message= "Error al procesar el archivo"
+#             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
+
+
+def importar_clientes(request):
+    if request.method != "POST":
+        return render(request, 'importar_clientes.html')
+
+    archivo_excel = request.FILES.get('file')
+    agencia_key   = request.POST.get('agencia')
+    fs            = FileSystemStorage()
+    filename      = fs.save(archivo_excel.name, archivo_excel)
+    file_path     = fs.path(filename)
+
+    try:
+        df = preprocesar_excel_clientes(file_path)
+        sucursal = Sucursal.objects.get(pseudonimo=agencia_key)
+
+        nuevos = 0
+        with transaction.atomic():
             for _, row in df.iterrows():
+                dni = handle_nan(row['dni'])
+                # Saltar si ya existe DNI en cualquier cliente
+                if Cliente.objects.filter(dni=dni).exists():
+                    print(f"El cliente {dni} ya existe")
+                    continue
 
-                dni=handle_nan(row['dni'])
-                cliente_existente = Cliente.objects.filter(dni=dni).first()
-                
-                if not cliente_existente:
-                    new_number_rows_cont +=1
-                    Cliente.objects.create(
-                        nro_cliente = row['nro'],
-                        nombre=handle_nan(row['cliente']),
-                        dni= str(int(float(row['dni']))) if handle_nan(row['dni']) != "" else "",
-                        agencia_registrada = Sucursal.objects.get(pseudonimo = agencia),
-                        domic=handle_nan(row['domic']) ,
-                        loc = handle_nan(row["loc"]) ,
-                        prov = handle_nan(row["prov"]) ,
-                        cod_postal = str(int(float(row["cod_pos"]))) if handle_nan(row["cod_pos"]) != "" else "",
-                        tel= str(int(float(row['tel_1']))) if handle_nan(row['tel_1']) != "" else "" ,
-                        # fec_nacimiento = format_date(handle_nan(row["fecha_de_nac"])),
-                        estado_civil = handle_nan(row["estado_civil"]),
-                        ocupacion = handle_nan(row["ocupacion"]) 
-                    )
-                
+                Cliente.objects.create(
+                    nro_cliente         = row['nro'],
+                    nombre              = handle_nan(row['cliente']),
+                    dni                 = dni,
+                    agencia_registrada  = sucursal,
+                    domic               = handle_nan(row.get('domic', '')),
+                    loc                 = handle_nan(row.get('loc', '')),
+                    prov                = handle_nan(row.get('prov', '')),
+                    cod_postal          = row.get('cod_pos', ''),
+                    tel                 = row.get('tel_1', ''),
+                    estado_civil        = handle_nan(row.get('estado_civil', '')),
+                    ocupacion           = handle_nan(row.get('ocupacion', '')),
+                    # fec_nacimiento = format_date(row.get('fecha_de_nac', ''))  # si la incluyes
+                )
+                nuevos += 1
 
-            # Eliminar el archivo después de procesar
-            fs.delete(filename)
+        fs.delete(filename)
+        return JsonResponse({
+            "status": True,
+            "message": f"Se importaron {nuevos} clientes nuevos.",
+            "iconMessage": "/static/images/icons/checkMark.svg"
+        })
 
-            iconMessage = "/static/images/icons/checkMark.svg"
-            message= f"Datos importados correctamente. Se agregaron {new_number_rows_cont} clientes nuevos"
-            return JsonResponse({"message": message,"iconMessage": iconMessage, "status": True})
+    except Exception as e:
+        fs.delete(filename)
+        print("Error al importar clientes:", e)
+        return JsonResponse({
+            "status": False,
+            "message": "Error al procesar el archivo.",
+            "iconMessage": "/static/images/icons/error_icon.svg"
+        })
+    
 
-        except Exception as e:
-            print(f"Error al importar: {e}")
-
-            iconMessage = "/static/images/icons/error_icon.svg"
-            message= "Error al procesar el archivo"
-            return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
 
 class CrearCliente(TestLogin, generic.CreateView):
     model = Cliente
