@@ -51,7 +51,7 @@
     padding: 1rem 2rem;
     position: relative;
     flex: 1 1 auto; 
-    /* height: 88%; */
+    overflow-y: auto;
     transition: height 300ms ease;
 }
 

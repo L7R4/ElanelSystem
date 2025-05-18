@@ -1,39 +1,71 @@
 from django.core.management.base import BaseCommand, CommandError
-from sales.models import Ventas, Auditoria
 from django.db import transaction
+from sales.models import Ventas, Auditoria
 
 class Command(BaseCommand):
-    help = "Audita las ventas y asigna el valor 'auditoria' con el valor proporcionado."
+    help = "Audita las ventas (todas o de una sucursal) y marca is_commissionable=True."
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            'sucursal_id',
+            nargs='?',
+            type=int,
+            default=None,
+            help="(Opcional) ID de la sucursal cuyas ventas quieres auditar. Si no se pasa, se auditan todas."
+        )
 
     def handle(self, *args, **options):
-        # Definimos el valor que queremos asignar a 'auditoria'
+        sucursal_id = options['sucursal_id']
+
+        # 1) Construir el queryset de ventas a procesar
+        if sucursal_id is not None:
+            ventas_qs = Ventas.objects.filter(agencia_id=sucursal_id)
+            label = f"sucursal {sucursal_id}"
+        else:
+            ventas_qs = Ventas.objects.all()
+            label = "todas las sucursales"
+
+        if not ventas_qs.exists():
+            self.stdout.write(self.style.WARNING(
+                f"No se encontraron ventas para {label}."
+            ))
+            return
+
         try:
             with transaction.atomic():
-            # 1) Eliminar todas las auditorias existentes
-                Auditoria.objects.all().delete()
-                self.stdout.write(self.style.SUCCESS(f"✅ Se eliminaron todas las auditorias existentes"))
+                # 2) Borrar solo las auditorías de esas ventas
+                filtro_aud = {'venta__in': ventas_qs}
+                borradas, _ = Auditoria.objects.filter(**filtro_aud).delete()
+                self.stdout.write(self.style.SUCCESS(
+                    f"✅ Se eliminaron {borradas} auditorías antiguas de {label}."
+                ))
 
-                auditoria_to_create = []
-                ventas_para_actualizar = []
+                crear = []
+                actualizar = []
 
-                for venta in Ventas.objects.all():
-                    auditoria_to_create.append(
-                        Auditoria(
-                            venta = venta,
-                            version = 1,
-                            grade = True,
-                        )
-                    )
+                # 3) Preparar nuevas auditorías y marcar ventas
+                for venta in ventas_qs:
+                    crear.append(Auditoria(
+                        venta=venta,
+                        version=1,
+                        grade=True,
+                    ))
                     venta.is_commissionable = True
-                    ventas_para_actualizar.append(venta)
+                    actualizar.append(venta)
 
+                # 4) Bulk create y bulk update
+                Auditoria.objects.bulk_create(crear)
+                self.stdout.write(self.style.SUCCESS(
+                    f"✅ Se crearon {len(crear)} nuevas auditorías para {label}."
+                ))
 
-                Auditoria.objects.bulk_create(auditoria_to_create)
-                self.stdout.write(self.style.SUCCESS(f"✅ Se crearon {len(auditoria_to_create)} auditorías nuevas"))
-
-                Ventas.objects.bulk_update(ventas_para_actualizar, ["is_commissionable"])
-                self.stdout.write(self.style.SUCCESS(f"✅ Se marcaron {len(ventas_para_actualizar)} ventas como commissionable"))
+                Ventas.objects.bulk_update(actualizar, ['is_commissionable'])
+                self.stdout.write(self.style.SUCCESS(
+                    f"✅ Se marcaron {len(actualizar)} ventas como comisionables para {label}."
+                ))
 
         except Exception as e:
-            self.stdout.write(self.style.WARNING(f"❌ Hubo un error al actualizar los valores de auditorias"))
-            self.stdout.write(f"❌ Error: {str(e)}")
+            self.stdout.write(self.style.ERROR(
+                f"❌ Error al procesar auditoría para {label}: {e}"
+            ))
+            raise CommandError("No se completó la auditoría.") 

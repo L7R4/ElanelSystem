@@ -109,8 +109,11 @@
         var CSRF_TOKEN = '{% csrf_token %}';
         const urlRequestColaboradores = "{{urlRequestColaboradores}}"
         const urlVentasNoComisionables = "{% url 'sales:ventas_comisionables' %}"
+        const urlExportDetallesComision = "{% url 'liquidacion:export_comision_excel' %}";
 
         var info_icon = "{% static 'images/icons/info_icon.svg' %}"
+        var export_icon = "{% static 'images/icons/export_icon.svg' %}"
+
     </script>
     <script src="{% static 'js/redirectToPDFNewLiquidacion.js' %}"></script>
     <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>

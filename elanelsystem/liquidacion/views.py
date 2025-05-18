@@ -12,6 +12,8 @@ from django.urls import reverse_lazy
 from django.contrib.auth.models import Group
 from sales.utils import formatear_moneda_sin_centavos, getAllCampaniaOfYear, getTodasCampaniasDesdeInicio, dataStructureCannons, dataStructureClientes, dataStructureVentas, dataStructureMovimientosExternos,deleteFieldsInDataStructures
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import pandas as pd
+from io import BytesIO
 
 import datetime
 import json
@@ -64,7 +66,7 @@ class LiquidacionesComisiones(TestLogin,generic.View):
     def get(self,request,*args,**kwargs):
             context = {}
             request.session["ajustes_comisiones"] = [] # Reiniciar posibles ajustes de la comisiones que existan
-            print(len(Ventas.objects.all()))
+            # print(len(Ventas.objects.all()))
             context["urlPDFLiquidacion"] = reverse_lazy("liquidacion:viewPDFLiquidacion")
             context["defaultSucursal"] = Sucursal.objects.first()
             context["sucursales"] = Sucursal.objects.all()
@@ -191,7 +193,12 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
     Devuelve: (colaboradores_list, totalDeComisiones)
     """
     sucursalObject = Sucursal.objects.get(id=int(sucursal_id))
-    colaboradores = Usuario.objects.filter(sucursales__in=[sucursalObject])
+    colaboradores = (
+        Usuario.objects
+               .filter(sucursales__in=[sucursalObject])
+               .order_by('suspendido')  
+    )
+    
     rangos = [item.name for item in Group.objects.all()]
 
     tipo_colaborador_formated = tipo_colaborador.capitalize() if tipo_colaborador else None
@@ -811,4 +818,105 @@ class DetallesComisionesView(generic.View):
                 # 'sucursalDefault': Sucursal.objects.first()
             }
         )
-  
+
+
+def export_excel_detalle_comisionado(request):
+    from sales.utils import exportar_excel2
+    if request.method == "POST":
+        try:
+            body       = json.loads(request.body)
+            user       = Usuario.objects.get(pk=body["user_id"])
+            campania   = body["campania"]
+            agencia    = Sucursal.objects.get(pk=body["agencia_id"])
+        except Exception as e:
+            return JsonResponse({"error": "Parámetros inválidos"}, status=400)
+        
+        # 1) Obtenemos el dict con toda la info
+        resultado = get_comision_total(user, campania, agencia)
+        print("\n\n VENTAS PROPIAS DESDE EXPORT VENTAS \n\n")
+        print(resultado["detalle"]["ventasPropias"])
+        sheets = {}
+
+        # 1) Siempre: Ventas propias
+        ventas_propias = resultado["detalle"]["ventasPropias"]["detalle"]["detalleVentasPropias"]
+        todas_las_ventas = ventas_propias["com_24_30_motos"]["ventas"] + ventas_propias["com_24_30_prestamo_combo"]["ventas"] + ventas_propias["com_48_60"]["ventas"]
+        
+        for plan_key, info in todas_las_ventas.items():
+            sheets["Ventas propias"] = [
+                {
+                    "N° Cliente": info["nro_cliente"],
+                    "Nombre cliente": info["nombre_cliente"],
+                    "N° Operacion": info["nro_operacion"],
+                    "Contrato": c["nro_contrato"],
+                    "N° Cuotas": info["nro_cuotas"],
+                    "Importe": info["importe"],
+                    "Fecha de inscripcion": info["fecha"],
+                    "Producto": info["producto"]
+                }
+                for c in info["cantidadContratos"]
+            ]
+
+        # 2) Siempre: Cuotas 1
+        cuotas1 = resultado["detalle"]["ventasPropias"]["detalleCuotas1"]
+
+        for cuota in cuotas1:
+            sheets["Cuotas 1 adelantadas"] = [
+                {
+                    "N° Operacion": cuota["nro_operacion"],
+                    "Contrato": c["nro_contrato"],
+                    "Fecha inscripcion":cuota["fecha_incripcion_venta"],
+                    "Fecha de pago": cuota["fecha_pago"],
+                    "Importe": int(cuota["cuota_comercial"] / len(c["nro_contrato"])),
+                    "Comision": int(cuota["comision"] / len(c["nro_contrato"])),
+                }
+                for c in cuota["contratos_detalle"]
+            ]
+
+        rol = user.rango.lower()
+
+        # 4) Si es supervisor o superior: agrega Ventas del equipo
+        if rol == "supervisor":
+            equipo = resultado["detalle"]["rol"]["detalle"]["detalleVentasXEquipo"]
+
+            for vend in equipo:
+                for venta in vend["detalle"]:
+                    sheets["Ventas del equipo"] = [
+                        {
+                            "N° Cliente": venta["nro_cliente"],
+                            "Nombre cliente": venta["nombre_cliente"],
+                            # "N° Operacion": venta["nro_operacion"],
+                            "Contrato": c["nro_contrato"],
+                            "N° Cuotas": venta["nro_cuotas"],
+                            "Importe": venta["importe"],
+                            "Fecha de inscripcion": venta["fecha"],
+                            "Producto": venta["producto"]
+                        }
+                        for c in venta["cantidadContratos"]
+                    ]
+
+        # 5) Si es gerente sucursal: agrega dos hojas más
+        if rol == "gerente sucursal":
+
+            sucursales = resultado["detalle"]["rol"]["detalle"]["info"]
+            # for suc_key, info in sucursales.items():
+                
+            # Cuotas 0
+            c0 = resultado["detalle"]["rol"].get("detalle", {}).get("cantidad_cuotas_0", 0)
+            
+            sheets[f"C 0"] = [{"Cantidad recaudada": c0}]
+
+            # Cuotas 1 a 4
+            # asumimos que get_detalle_sucursales_de_region armó esta info:
+            region = resultado["detalle"]["rol"].get("info", {})
+            sheets[f"C 1-4"] = [
+                {
+                    "Sucursal": info["suc_name"],
+                    "Cant. cuotas": info["suc_info"]["cantidad_total_cuotas"],
+                    "Comisión": info["suc_info"]["comision_total_cuotas"]
+                }
+                for info in region.values()
+            ]
+
+        # llamo al formateador central
+        filename_prefix = f"{user.nombre}_{campania.replace(' ','')}"
+        return exportar_excel2(sheets, filename_prefix)

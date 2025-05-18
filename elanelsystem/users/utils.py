@@ -2,6 +2,7 @@ from django.template.loader import get_template
 from weasyprint import HTML,CSS
 import elanelsystem.settings as settings
 import os
+import pandas as pd
 import datetime
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
@@ -50,3 +51,59 @@ def get_vendedores_a_cargo(supervisor, campania, sucursal):
 
     # 3) Devolvemos la lista de dicts
     return list(qs.values('email', 'nombre'))
+
+
+
+def preprocesar_excel_clientes(file_path):
+    from sales.utils import reportar_nans
+
+    """
+    Lee la pestaña "CLIENTES" del Excel y:
+      - Normaliza nombres de columna a snake_case
+      - Comprueba que no falten dni o nro
+      - Convierte tipos (nro → int, dni → str, etc)
+      - Formatea cod_postal y teléfono como cadenas sin decimales
+    Devuelve un DataFrame listo para iterar.
+    """
+    # 1) Lee la hoja
+    df = pd.read_excel(file_path, sheet_name="CLIENTES")
+
+    # 2) Renombra columnas
+    df.columns = [
+        col.strip()
+           .lower()
+           .replace(" ", "_")
+           .replace("-", "_")
+           .replace(".", "")
+           .replace("/", "_")
+        for col in df.columns
+    ]
+
+    # 3) Campos que no pueden estar vacíos
+    required = ['nro', 'cliente', 'dni']
+    errores = reportar_nans(df, required, id_field='nro')
+    if errores:
+        raise ValueError(f"Errores en CLIENTES antes de conversión:\n{errores}")
+
+    # 4) Convierte tipos básicos
+    df['nro'] = df['nro'].astype(str)
+    df['cliente'] = df['cliente'].astype(str).str.strip()
+    df['dni'] = df['dni'].astype(str).str.strip()
+
+    # 5) Normaliza opcionales numéricos a string limpio
+    def clean_num(col):
+        return (
+            col.fillna("")
+               .map(lambda x: str(x) if str(x).strip() not in ["", "nan"] else "")
+        )
+    if 'cod_pos' in df.columns:
+        df['cod_pos'] = clean_num(df['cod_pos'])
+    if 'tel_1' in df.columns:
+        df['tel_1'] = clean_num(df['tel_1'])
+
+    # 6) Trim de textos adicionales
+    for text_col in ('domic', 'loc', 'prov', 'estado_civil', 'ocupacion'):
+        if text_col in df.columns:
+            df[text_col] = df[text_col].fillna("").astype(str).str.strip()
+
+    return df
