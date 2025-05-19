@@ -233,14 +233,15 @@ def exportar_excel2(sheets_data, filename_prefix):
     wb.save(stream)
     stream.seek(0)
 
-    fecha = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-    filename = f"{filename_prefix}_{fecha}.xlsx"
+    filename = f"{filename_prefix}.xlsx"
     response = HttpResponse(
         stream.read(),
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response["Content-Disposition"] = f'attachment; filename={filename}'
+    response["filename"] = filename
     return response
+
 #endregion 
 
 

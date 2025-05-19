@@ -400,7 +400,7 @@ async function create_excel_detail_info(userId, campania, agenciaId) {
     console.log(resp)
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `${resp.headers.get("filename")}.xlsx`;
+    link.download = resp.headers.get("filename");
     link.click();
 }
 // #endregion
