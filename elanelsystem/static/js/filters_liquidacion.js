@@ -235,9 +235,8 @@ function hiddenLoader() {
 function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_ajustes, detalle) {
    
 
-    const ventas = detalle.info_total_de_comision.detalle.ventasPropias?.detalle || {};
-    const premios = detalle.info_total_de_comision.detalle.premios?.detalle || {};
-    const rol = detalle.info_total_de_comision.detalle.rol?.detalle || {};
+    const ventas = detalle.info_total_de_comision.detalle.ventasPropias || {};
+    const rol = detalle.info_total_de_comision.detalle.rol || {};
     const ajustes = otros_ajustes || [];
 
     let total_ajuste = 0;
@@ -246,12 +245,14 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
         else if (aj.ajuste_tipo === "negativo") total_ajuste -= aj.dinero;
     });
 
-    const comision_ventas = ventas.comisionXCantidadVentasPropias || 0;
-    const comision_cuotas = ventas.comisionXCuotas1 || 0;
-    const premio_productividad_propia = premios.premio_x_productividad_ventas_propias || 0;
-    const premio_ventas_equipo = premios.premio_x_cantidad_ventas_equipo || 0;
-    const premio_productividad_equipo = premios.premio_x_productividad_ventas_equipo || 0;
-    const comision_ventas_equipo = detalle.info_total_de_comision.detalle.rol.comision_subtotal || 0;
+    const comision_ventas = ventas.comision_x_cantidad_ventas || 0;
+    const comision_cuotas = ventas.comision_x_cuotas1 || 0;
+    const premio_productividad_propia = ventas.premio_x_productividad_ventas_propias || 0;
+    
+    const premio_ventas_equipo = rol.comision_x_ventas_equipo || 0;
+    const premio_productividad_equipo = rol.comision_x_productividad || 0;
+    const comision_ventas_equipo = rol.comision_x_cantidad_ventas|| 0;
+
     const comision_total = detalle.comisionTotal
     const asegurado = detalle.info_total_de_comision.asegurado
 
@@ -282,19 +283,21 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
     }
 
     if (tipo_colaborador.toLowerCase() === "gerente sucursal") {
-        const region = rol.info 
-        Object.keys(region).forEach(clave => {
+       
+        Object.values(rol).forEach(valor => {
 
-            const agenciaId = region[clave]["suc_id"]
-            const agenciaName = region[clave]["suc_name"]
-            const agenciaInfo = region[clave]["suc_info"]
+            const agenciaId = valor["suc_id"]
+            const agenciaName = valor["suc_name"]
+            const agenciaInfo = valor["suc_info"]
+            const premios_x_venta = valor["premios_por_venta"]
+            const sub_total = valor["sub_total"]
             // <p><strong>Premio por cuotas 0:</strong> $${premios.premio_x_cantidad_ventas_agencia || 0}</p>
             
             html += `
                 <div class="subDetalleGroup">
                     <h3>Sucursal ${agenciaName}</h3>
                     <p><strong>Cantidad de cuotas 0:</strong> ${agenciaInfo.cantidad_cuotas_0 || 0}</p>
-                    <p><strong>Premio por cuotas 0:</strong> $${agenciaId == inputSucursal.value ? premios.premio_x_cantidad_ventas_agencia : 0 }</p>
+                    <p><strong>Premio por cuotas 0:</strong> $${premios_x_venta}</p>
                     
 
                     <p><strong>Cantidad de cuotas 1:</strong> ${agenciaInfo.detalleCuota.cuotas1.cantidad || 0}</p>
@@ -309,7 +312,7 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
                     <p><strong>Cantidad de cuotas 4:</strong> ${agenciaInfo.detalleCuota.cuotas4.cantidad || 0}</p>
                     <p><strong>Comision por cuotas 4:</strong> $${agenciaInfo.detalleCuota.cuotas4.comision || 0}</p>
 
-                    <p><strong>Comision por cartera:</strong> ${agenciaInfo.comision_total_cuotas || 0}</p>
+                    <p><strong>Comision por cartera:</strong> ${sub_total || 0}</p>
                 </div>`
                 ;
         });

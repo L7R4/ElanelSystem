@@ -234,7 +234,7 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
             "nombre": item.nombre,
             "id": item.pk,
             "dni": item.dni,
-            "sucursal": str(sucursalObject.id),
+            "sucursal": int(sucursalObject.id),
             "campania": campania,
             "ajustes_comision": ajustes_usuario,
             "comisionTotal": comision_data["comision_total"],
@@ -860,9 +860,10 @@ def export_excel_detalle_comisionado(request):
 
         # 2) Siempre: Cuotas 1
         cuotas1 = detalle_cuota_1_adelantadas(agencia,campania,user)
-       
-        sheets["Cuotas 1 adelantadas"] = [
-            {
+        sheets["Cuotas 1 adelantadas"] = []
+        for c in cuotas1: 
+            venta= Ventas.objects.filter(id=c["venta_id"]).first()
+            dict_data = {
                 "Agencia": c["agencia"],
                 "Contrato": c["contrato"],
                 "Cliente": c["nombre_cliente"],
@@ -870,14 +871,14 @@ def export_excel_detalle_comisionado(request):
                 "Fecha de pago": c["fecha_pago"],
                 "Dias de diferencia": c["dias_diff"],
                 "Nro cuota": c["nro_cuota"],
-                "Importe": c["monto"],
+                "Importe de pago": c["monto"],
+                "Importe cuota comercial": int(venta.cuotas[4]["total"] / len(venta.cantidadContratos)),
                 "Producto": c["producto"],
                 "Tipo de producto": c["tipo_producto"],
                 "Vendedor": c["vendedor"],
                 "Supervisor": c["supervisor"],
             }
-            for c in cuotas1
-        ]
+            sheets["Cuotas 1 adelantadas"].append(dict_data)
 
         rol = user.rango.lower()
 
@@ -925,23 +926,25 @@ def export_excel_detalle_comisionado(request):
 
 
             cuotas_1a4_x_region = detalles_cuotas_1_a_4(agencia,campania)
+            sheets["Cuotas 1 - 4"] = []
+            for c in cuotas_1a4_x_region:
+                venta = Ventas.objects.filter(id=c["venta_id"]).first()
+                dict_data = {
+                    "Agencia": c["agencia"],
+                    "Contrato": c["contrato"],
+                    "Cliente": c["nombre_cliente"],
+                    "Fecha inscripcion":c["fecha_inscripcion_venta"],
+                    "Fecha de pago": c["fecha_pago"],
+                    "Nro cuota": c["nro_cuota"],
+                    "Importe de pago": c["monto"],
+                    "Importe cuota comercial": int(venta.cuotas[4]["total"] / len(venta.cantidadContratos)),
+                    "Producto": c["producto"],
+                    "Tipo de producto": c["tipo_producto"],
+                    "Vendedor": c["vendedor"],
+                    "Supervisor": c["supervisor"],
+                }
 
-            sheets["Cuotas 1 - 4"] = [
-            {
-                "Agencia": c["agencia"],
-                "Contrato": c["contrato"],
-                "Cliente": c["nombre_cliente"],
-                "Fecha inscripcion":c["fecha_inscripcion_venta"],
-                "Fecha de pago": c["fecha_pago"],
-                "Nro cuota": c["nro_cuota"],
-                "Importe": c["monto"],
-                "Producto": c["producto"],
-                "Tipo de producto": c["tipo_producto"],
-                "Vendedor": c["vendedor"],
-                "Supervisor": c["supervisor"],
-            }
-                for c in cuotas_1a4_x_region
-            ]
+                sheets["Cuotas 1 - 4"].append(dict_data)
 
         # llamo al formateador central
         filename_prefix = f"Detalle de {user.nombre} _ {campania.replace(' ','')}"

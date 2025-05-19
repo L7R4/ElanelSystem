@@ -252,7 +252,7 @@ def get_sucursales_por_provincias(agencia):
         "corrientes,corrientes": ["Corrientes, Corrientes","Paso De Los Libres, Corrientes", "Goya, Corrientes"],
         "pasodeloslibres,corrientes":["Paso De Los Libres, Corrientes"],
         "goya,corrientes":["Goya, Corrientes"],
-        "resistencia,chaco":["Saenz Peña, Chaco", "Resistencia, Chaco"],
+        "resistencia,chaco":["Resistencia, Chaco"],
         "saenzpeña,chaco":["Saenz Peña, Chaco"],
         "concordia,entrerios":["Concordia, Entre Rios"],
         "santiagodelestero,santiagodelestero":["Santiago Del Estero, Santiago Del Estero"],
