@@ -510,14 +510,10 @@ def get_premio_x_cantidad_ventas_sucursal(campania, agencia, objetivo_gerente=0)
 
 
 def get_detalle_sucursales_de_region(agencia,campania):
-    clean_pseudonimo = agencia.pseudonimo.replace(" ", "").lower()
+    from elanelsystem.utils import get_sucursales_por_provincias
+    
     agencias_8_porc =["Corrientes, Corrientes", "Concordia, Entre Rios", "Resistencia, Chaco","Posadas, Misiones","Santiago Del Estero, Santiago Del Estero","Formosa, Formosa","Saenz Peña, Chaco"]
     agencias_6_porc =["Paso De Los Libres, Corrientes", "Goya, Corrientes"]
-
-    dict_regiones = {
-        "corrientes,corrientes" : ["Paso De Los Libres, Corrientes", "Goya, Corrientes", "Corrientes, Corrientes"],
-        # "resistencia,chaco" : ["Saenz Peña, Chaco", "Goya, Corrientes"],
-    }
 
     result = {
         "detalleRegion": {},
@@ -529,7 +525,7 @@ def get_detalle_sucursales_de_region(agencia,campania):
         "dinero_recadudado_cuotas_0": 0,
     }
 
-    lista_sucursales = dict_regiones.get(clean_pseudonimo, [agencia.pseudonimo])
+    lista_sucursales = get_sucursales_por_provincias(agencia)
 
     for suc in lista_sucursales:
         sucObject = Sucursal.objects.filter(pseudonimo=suc).first()
@@ -584,6 +580,7 @@ def get_detalle_sucursales_de_region(agencia,campania):
         result["dinero_recadudado_cuotas_0"] += math.ceil(detalle_cuota_0["dinero_recadudado_cuotas_0"])
         
     return result
+
 #endregion
 
 #region Funciones para obtener y calcular el asegurado de los usuarios
@@ -990,3 +987,141 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
     }
 
     return resultado_final
+
+
+
+#region Detalle de las ventas consideradas para comisionar en JSON
+
+def detalle_ventas_consideradas(agencia,campania):
+    ventas_qs = Ventas.objects.filter(
+        campania=campania,
+        agencia=agencia,
+        is_commissionable=True,
+    )
+
+    ventas_list=[]
+    for venta in ventas_qs:
+        for contrato in venta.cantidadContratos:
+            ventas_list.append(
+                {
+                    "agencia_id": venta.agencia.id,
+                    "agencia": venta.agencia.pseudonimo,
+                    "nro_cliente": venta.nro_cliente.nro_cliente,
+                    "nombre_cliente": venta.nro_cliente.nombre,
+                    "contrato": contrato["nro_contrato"],
+                    "nro_cuotas": venta.nro_cuotas,
+                    "importe": int(venta.importe / len(venta.cantidadContratos)),
+                    "fecha_inscripcion": venta.fecha,
+                    "campana": venta.campania,
+                    "producto_id":venta.producto.id,
+                    "producto": venta.producto.nombre,
+                    "tipo_producto": venta.producto.tipo_de_producto,
+                    "vendedor_id": venta.vendedor.id,
+                    "vendedor": venta.vendedor.nombre,
+                    "supervisor_id": venta.supervisor.id,
+                    "supervisor": venta.supervisor.nombre,
+                }
+            )
+    return ventas_list
+
+
+def detalles_ventas_propias(agencia,campania,user):
+    ventas = detalle_ventas_consideradas(agencia,campania)
+    ventas_by_user = list(filter(lambda x: x["vendedor_id"] == user.id, ventas))
+
+    return ventas_by_user
+
+
+def detalles_ventas_x_equipo(agencia,campania,user):
+    ventas = detalle_ventas_consideradas(agencia,campania)
+    ventas_by_user = list(filter(lambda x: x["supervisor_id"] == user.id, ventas))
+
+    return ventas_by_user
+
+
+def detalle_pagos_considerados(agencia,campania):
+    from sales.models import PagoCannon
+
+    pagos_qs = (
+        PagoCannon.objects
+        .filter(
+            venta__agencia=agencia,
+            venta__is_commissionable=True,
+            campana_de_pago=campania,
+        )
+        .select_related('venta')
+    )
+
+    pagos_list=[]
+    for pago in pagos_qs:
+        for contrato in pago.venta.cantidadContratos:
+            pagos_list.append(
+                {
+                    "agencia_id": pago.venta.agencia.id,
+                    "agencia": pago.venta.agencia.pseudonimo,
+                    "venta_id": pago.venta.id,
+                    "nro_cliente": pago.venta.nro_cliente.nro_cliente,
+                    "nombre_cliente": pago.venta.nro_cliente.nombre,
+                    "contrato": contrato["nro_contrato"],
+                    "fecha_inscripcion": pago.venta.fecha,
+                    "fecha_pago": pago.fecha,
+                    "nro_cuota": pago.nro_cuota,
+                    "campana_pago": pago.campana_de_pago,
+                    "monto": pago.monto,
+                    "vendedor_id": pago.venta.vendedor.id,
+                    "vendedor": pago.venta.vendedor.nombre,
+                    "supervisor_id": pago.venta.supervisor.id,
+                    "supervisor": pago.venta.supervisor.nombre,
+                    "producto_id":pago.venta.producto.id,
+                    "producto": pago.venta.producto.nombre,
+                    "tipo_producto": pago.venta.producto.tipo_de_producto,
+                }
+            )
+    return pagos_list
+
+
+def detalle_cuota_1_adelantadas(agencia,campania,user):
+    from sales.models import PagoCannon
+
+    pagos_cuotas1_qs = (
+        PagoCannon.objects
+        .filter(
+            venta__agencia=agencia,
+            venta__is_commissionable=True,
+            venta__vendedor=user,
+            nro_cuota=1,
+            campana_de_pago=campania,
+        )
+        .select_related('venta')
+    )
+
+    pagos_cuotas1_list=[]
+    for pago in pagos_cuotas1_qs:
+        for contrato in pago.venta.cantidadContratos:
+            pagos_cuotas1_list.append(
+                {
+                    "agencia_id": pago.venta.agencia.id,
+                    "agencia": pago.venta.agencia.pseudonimo,
+                    "venta_id": pago.venta.id,
+                    "nro_cliente": pago.venta.nro_cliente.nro_cliente,
+                    "nombre_cliente": pago.venta.nro_cliente.nombre,
+                    "contrato": contrato["nro_contrato"],
+                    "fecha_inscripcion_venta": pago.venta.fecha,
+                    "fecha_pago": pago.fecha,
+                    "dias_diff": (parse_fecha(pago.fecha) - parse_fecha(pago.venta.fecha)).days,
+                    "nro_cuota": pago.nro_cuota,
+                    "campana_pago": pago.campana_de_pago,
+                    "monto": pago.monto,
+                    "vendedor_id": pago.venta.vendedor.id,
+                    "vendedor": pago.venta.vendedor.nombre,
+                    "supervisor_id": pago.venta.supervisor.id,
+                    "supervisor": pago.venta.supervisor.nombre,
+                    "producto_id":pago.venta.producto.id,
+                    "producto": pago.venta.producto.nombre,
+                    "tipo_producto": pago.venta.producto.tipo_de_producto,
+                }
+            )
+    return pagos_cuotas1_list
+
+
+#endregion

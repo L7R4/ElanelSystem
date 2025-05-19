@@ -26,6 +26,9 @@ from .utils import (
     liquidaciones_countFaltas,
     liquidaciones_countTardanzas,
     get_comision_total,
+    detalles_ventas_propias,
+    detalle_cuota_1_adelantadas,
+    detalles_ventas_x_equipo,
     get_detalle_comision_x_cantidad_ventasPropias
 )
 
@@ -833,66 +836,72 @@ def export_excel_detalle_comisionado(request):
         
         # 1) Obtenemos el dict con toda la info
         resultado = get_comision_total(user, campania, agencia)
-        print("\n\n VENTAS PROPIAS DESDE EXPORT VENTAS \n\n")
-        print(resultado["detalle"]["ventasPropias"])
+
         sheets = {}
 
         # 1) Siempre: Ventas propias
-        ventas_propias = resultado["detalle"]["ventasPropias"]["detalle"]["detalleVentasPropias"]
-        todas_las_ventas = ventas_propias["com_24_30_motos"]["ventas"] + ventas_propias["com_24_30_prestamo_combo"]["ventas"] + ventas_propias["com_48_60"]["ventas"]
-        
-        for plan_key, info in todas_las_ventas.items():
-            sheets["Ventas propias"] = [
-                {
-                    "N° Cliente": info["nro_cliente"],
-                    "Nombre cliente": info["nombre_cliente"],
-                    "N° Operacion": info["nro_operacion"],
-                    "Contrato": c["nro_contrato"],
-                    "N° Cuotas": info["nro_cuotas"],
-                    "Importe": info["importe"],
-                    "Fecha de inscripcion": info["fecha"],
-                    "Producto": info["producto"]
-                }
-                for c in info["cantidadContratos"]
-            ]
+        ventas_propias = detalles_ventas_propias(agencia,campania,user)
+    
+        sheets["Ventas propias"] = [
+            {
+                "Agencia": v["agencia"],
+                "Contrato": v["nro_contrato"],
+                "Cliente": v["nombre_cliente"],
+                "Campaña": v["campana"],
+                "Fecha inscripcion": v["fecha_inscripcion"],
+                "Nro cuotas": v["nro_cuotas"],
+                "Importe": v["importe"],
+                "Producto": v["producto"],
+                "Tipo de producto": v["tipo_producto"],
+                "Vendedor": v["vendedor"],
+                "Supervisor": v["supervisor"],
+            }
+            for v in ventas_propias
+        ]
+
 
         # 2) Siempre: Cuotas 1
-        cuotas1 = resultado["detalle"]["ventasPropias"]["detalleCuotas1"]
-
-        for cuota in cuotas1:
-            sheets["Cuotas 1 adelantadas"] = [
-                {
-                    "N° Operacion": cuota["nro_operacion"],
-                    "Contrato": c["nro_contrato"],
-                    "Fecha inscripcion":cuota["fecha_incripcion_venta"],
-                    "Fecha de pago": cuota["fecha_pago"],
-                    "Importe": int(cuota["cuota_comercial"] / len(c["nro_contrato"])),
-                    "Comision": int(cuota["comision"] / len(c["nro_contrato"])),
-                }
-                for c in cuota["contratos_detalle"]
-            ]
+        cuotas1 = detalle_cuota_1_adelantadas(agencia,campania,user)
+       
+        sheets["Cuotas 1 adelantadas"] = [
+            {
+                "Agencia": c["agencia"],
+                "Contrato": c["nro_contrato"],
+                "Cliente": c["nombre_cliente"],
+                "Fecha inscripcion":c["fecha_inscripcion_venta"],
+                "Fecha de pago": c["fecha_pago"],
+                "Dias de diferencia": c["dias_diff"],
+                "Nro cuota": c["nro_cuota"],
+                "Importe": c["monto"],
+                "Producto": c["producto"],
+                "Tipo de producto": c["tipo_producto"],
+                "Vendedor": c["vendedor"],
+                "Supervisor": c["supervisor"],
+            }
+            for c in cuotas1["contratos_detalle"]
+        ]
 
         rol = user.rango.lower()
 
         # 4) Si es supervisor o superior: agrega Ventas del equipo
         if rol == "supervisor":
-            equipo = resultado["detalle"]["rol"]["detalle"]["detalleVentasXEquipo"]
-
-            for vend in equipo:
-                for venta in vend["detalle"]:
-                    sheets["Ventas del equipo"] = [
-                        {
-                            "N° Cliente": venta["nro_cliente"],
-                            "Nombre cliente": venta["nombre_cliente"],
-                            # "N° Operacion": venta["nro_operacion"],
-                            "Contrato": c["nro_contrato"],
-                            "N° Cuotas": venta["nro_cuotas"],
-                            "Importe": venta["importe"],
-                            "Fecha de inscripcion": venta["fecha"],
-                            "Producto": venta["producto"]
-                        }
-                        for c in venta["cantidadContratos"]
-                    ]
+            ventas_x_equipo = detalles_ventas_x_equipo(agencia,campania,user)
+            sheets["Ventas propias"] = [
+            {
+                "Agencia": v["agencia"],
+                "Contrato": v["nro_contrato"],
+                "Cliente": v["nombre_cliente"],
+                "Campaña": v["campana"],
+                "Fecha inscripcion": v["fecha_inscripcion"],
+                "Nro cuotas": v["nro_cuotas"],
+                "Importe": v["importe"],
+                "Producto": v["producto"],
+                "Tipo de producto": v["tipo_producto"],
+                "Vendedor": v["vendedor"],
+                "Supervisor": v["supervisor"],
+            }
+            for v in ventas_x_equipo
+        ]
 
         # 5) Si es gerente sucursal: agrega dos hojas más
         if rol == "gerente sucursal":
