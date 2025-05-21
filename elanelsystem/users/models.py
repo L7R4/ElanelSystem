@@ -22,7 +22,7 @@ class Sucursal(models.Model):
     email_ref = models.CharField("Email de referencia",max_length =60, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.pseudonimo}"
+        return f" {self.id} {self.pseudonimo}"
 
     def save(self, *args, **kwargs):
         self.direccion = self.direccion.capitalize()

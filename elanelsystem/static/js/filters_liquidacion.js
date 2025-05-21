@@ -389,6 +389,7 @@ async function create_excel_detail_info(userId, campania, agenciaId) {
     const body = { user_id: userId, campania: campania, agencia_id: agenciaId };
     const csrftoken = getCookie("csrftoken");
 
+    showLoader();
     const resp = await fetch(urlExportDetallesComision, {
         method: "POST",
         headers: {
@@ -397,10 +398,10 @@ async function create_excel_detail_info(userId, campania, agenciaId) {
         },
         body: JSON.stringify(body)
     });
+    hiddenLoader();
 
     if (!resp.ok) throw new Error("Error al generar Excel");
     const blob = await resp.blob();
-    console.log(resp)
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = resp.headers.get("filename");

@@ -531,7 +531,7 @@ def get_premio_x_cantidad_ventas_sucursal(campania, agencia, objetivo_gerente=0)
     1000 * cantidad_cuotas_0 si >= objetivo => se multiplica => potencial decimal no,
     pero se hace un int. Por seguridad, math.ceil.
     """
-    objetivo_gerente = 200
+    # objetivo_gerente = 200
     cantidad_cuotas_0 = get_detalle_cuotas_0(campania, agencia)["cantidad_cuotas_0"]
 
     if cantidad_cuotas_0 >= objetivo_gerente:
@@ -544,7 +544,7 @@ def get_detalle_sucursales_de_region(agencia,campania):
     
     agencias_8_porc =["Corrientes, Corrientes", "Concordia, Entre Rios", "Resistencia, Chaco","Posadas, Misiones","Santiago Del Estero, Santiago Del Estero","Formosa, Formosa","Saenz Peña, Chaco"]
     agencias_6_porc =["Paso De Los Libres, Corrientes", "Goya, Corrientes"]
-
+    agencias_objs_200_ventas = ["Corrientes, Corrientes", "Concordia, Entre Rios", "Resistencia, Chaco","Posadas, Misiones","Santiago Del Estero, Santiago Del Estero","Formosa, Formosa"]
     result = {
         "detalleRegion": {},
         "porcetage_x_cuota": 0,
@@ -566,7 +566,14 @@ def get_detalle_sucursales_de_region(agencia,campania):
             porcentage_x_cuota = 0.03
         else:
             porcentage_x_cuota = 0.08 if suc in agencias_8_porc else 0.06
-            premios_por_venta = get_premio_x_cantidad_ventas_sucursal(campania, sucObject, 200)
+            if(suc in agencias_objs_200_ventas):
+                premios_por_venta = get_premio_x_cantidad_ventas_sucursal(campania, sucObject, 200)
+                print("wepsss1")
+
+            else:
+                print("wepsss")
+                premios_por_venta = get_premio_x_cantidad_ventas_sucursal(campania, sucObject, 150)
+                
         result["porcetage_x_cuota"] = porcentage_x_cuota
 
         suc_clean = sucObject.pseudonimo.replace(" ", "").replace(",", "").lower()

@@ -82,8 +82,12 @@
                                     {% if recibo.sucursal == agencia.suc_name %}
                                         {% for a in recibo.info_total_de_comision.detalle.rol.values  %}
                                         <tr class="subTotalWrapper">
+                                            {% if recibo.sucursal == a.suc_name %}
+                                            <td colspan="2">Sub-total {{a.suc_name}}</td>
+                                            {% else %}
                                             <td colspan="2">Comisiones de {{a.suc_name}}</td> 
-                                            <td colspan="2">{{a.sub_total|currency_ar}}</td>
+                                            {% endif %}
+                                            <td colspan="2">{{a.sub_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                         </tr>
                                         {% endfor %}
                                     {%endif%}
@@ -162,19 +166,18 @@
                                     <tr>
                                         <td>Ausencias</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.dinero|currency_ar}}</td>      
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
-
                                     <tr>
                                         <td>Compras</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.cantidad}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.dinero|currency_ar}}</td>      
+                                        <td> - - - </td>
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
-
+        
                                     <tr>
                                         <td>Adelantos/Descuestos</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.adelantos.dineroTotal|currency_ar}}</td>      
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
 
                                     <tr>
@@ -286,8 +289,12 @@
                                     {% if recibo.sucursal == agencia.suc_name %}
                                         {% for a in recibo.info_total_de_comision.detalle.rol.values  %}
                                         <tr class="subTotalWrapper">
+                                            {% if recibo.sucursal == a.suc_name %}
+                                            <td colspan="2">Sub-total {{a.suc_name}}</td>
+                                            {% else %}
                                             <td colspan="2">Comisiones de {{a.suc_name}}</td> 
-                                            <td colspan="2">{{a.sub_total|currency_ar}}</td>
+                                            {% endif %}
+                                            <td colspan="2">{{a.sub_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                         </tr>
                                         {% endfor %}
                                     {%endif%}
@@ -366,19 +373,18 @@
                                     <tr>
                                         <td>Ausencias</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.dinero|currency_ar}}</td>      
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
-
                                     <tr>
                                         <td>Compras</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.cantidad}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.dinero|currency_ar}}</td>      
+                                        <td> - - - </td>
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
-
+        
                                     <tr>
                                         <td>Adelantos/Descuestos</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.adelantos.dineroTotal|currency_ar}}</td>      
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
 
                                     <tr>
@@ -494,6 +500,10 @@
                                         <td> - - - </td>
                                         <td>{{recibo.info_total_de_comision.asegurado|currency_ar}}</td>      
                                     </tr>
+                                    <tr class="subTotalWrapper">
+                                        <td colspan="2">Sub-total</td> 
+                                        <td>{{recibo.info_total_de_comision.detalle.rol.comision_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                             
@@ -553,7 +563,7 @@
                                     {% endif %}
                                     <tr class="subTotalWrapper">
                                         <td colspan="2">Sub-total</td> 
-                                        <td>{{recibo.info_total_de_comision.comision_bruta|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|currency_ar}}</td>
                                     </tr>
 
                                     <tr class ="divider"><td colspan="3"></td></tr>
@@ -563,18 +573,18 @@
                                     <tr>
                                         <td>Ausencias</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.dinero|currency_ar}}</td>      
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
                                     <tr>
                                         <td>Compras</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.cantidad}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.dinero|currency_ar}}</td>      
+                                        <td> - - - </td>
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
-
+        
                                     <tr>
                                         <td>Adelantos/Descuestos</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.adelantos.dineroTotal|currency_ar}}</td>      
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
                                     <tr>
                                         <td>Otros</td>
@@ -645,7 +655,7 @@
                                         </tr>
                                         <tr class="subTotalWrapper">
                                             <td colspan="2">Sub-total</td> 
-                                            <td>{{recibo.info_total_de_comision.comisionado_sin_descuento|currency_ar}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                         </tr>
 
                                         <tr class ="divider"><td colspan="3"></td></tr>
@@ -655,18 +665,18 @@
                                         <tr>
                                             <td>Ausencias</td>
                                             <td> - - - </td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.dinero|currency_ar}}</td>      
+                                            <td>{{0|currency_ar}}</td>      
                                         </tr>
                                         <tr>
                                             <td>Compras</td>
                                             <td> - - - </td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.dinero|currency_ar}}</td>      
+                                            <td>{{0|currency_ar}}</td>      
                                         </tr>
             
                                         <tr>
                                             <td>Adelantos/Descuestos</td>
                                             <td> - - - </td>
-                                            <td>{{recibo.info_total_de_comision.detalle.adelantos.dineroTotal|currency_ar}}</td>      
+                                            <td>{{0|currency_ar}}</td>      
                                         </tr>
                                         <tr>
                                             <td>Otros</td>
@@ -771,6 +781,10 @@
                                         <td> - - - </td>
                                         <td>{{recibo.info_total_de_comision.asegurado|currency_ar}}</td>      
                                     </tr>
+                                    <tr class="subTotalWrapper">
+                                        <td colspan="2">Sub-total</td> 
+                                        <td>{{recibo.info_total_de_comision.detalle.rol.comision_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                             
@@ -830,7 +844,7 @@
                                     {% endif %}
                                     <tr class="subTotalWrapper">
                                         <td colspan="2">Sub-total</td> 
-                                        <td>{{recibo.info_total_de_comision.comision_bruta|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|currency_ar}}</td>
                                     </tr>
 
                                     <tr class ="divider"><td colspan="3"></td></tr>
@@ -840,18 +854,18 @@
                                     <tr>
                                         <td>Ausencias</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.dinero|currency_ar}}</td>      
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
                                     <tr>
                                         <td>Compras</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.cantidad}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.dinero|currency_ar}}</td>      
+                                        <td> - - - </td>
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
-
+        
                                     <tr>
                                         <td>Adelantos/Descuestos</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.adelantos.dineroTotal|currency_ar}}</td>      
+                                        <td>{{0|currency_ar}}</td>      
                                     </tr>
                                     <tr>
                                         <td>Otros</td>
@@ -922,7 +936,7 @@
                                         </tr>
                                         <tr class="subTotalWrapper">
                                             <td colspan="2">Sub-total</td> 
-                                            <td>{{recibo.info_total_de_comision.comisionado_sin_descuento|currency_ar}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                         </tr>
 
                                         <tr class ="divider"><td colspan="3"></td></tr>
@@ -932,18 +946,18 @@
                                         <tr>
                                             <td>Ausencias</td>
                                             <td> - - - </td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.tardanzas.dinero|currency_ar}}</td>      
+                                            <td>{{0|currency_ar}}</td>      
                                         </tr>
                                         <tr>
                                             <td>Compras</td>
                                             <td> - - - </td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ausencias_tardanzas.detalle.faltas.dinero|currency_ar}}</td>      
+                                            <td>{{0|currency_ar}}</td>      
                                         </tr>
             
                                         <tr>
                                             <td>Adelantos/Descuestos</td>
                                             <td> - - - </td>
-                                            <td>{{recibo.info_total_de_comision.detalle.adelantos.dineroTotal|currency_ar}}</td>      
+                                            <td>{{0|currency_ar}}</td>      
                                         </tr>
                                         <tr>
                                             <td>Otros</td>
