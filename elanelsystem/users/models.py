@@ -1,11 +1,9 @@
 from django.db import models
-from django.dispatch import receiver
-from django.core.validators import RegexValidator,EmailValidator,validate_email
+from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager, PermissionsMixin
 import re, datetime
-from dateutil.relativedelta import relativedelta
-from django.utils import timezone
+from simple_history.models import HistoricalRecords
 
 from elanelsystem.utils import obtenerCampaña_atraves_fecha
 
@@ -103,6 +101,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     datos_familiares = models.JSONField("Datos familiares", default=list,blank=True,null=True)
     vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
     additional_passwords = models.JSONField("Contraseñas adicionales",default=dict,blank=True,null=True)
+    history = HistoricalRecords()
     
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
