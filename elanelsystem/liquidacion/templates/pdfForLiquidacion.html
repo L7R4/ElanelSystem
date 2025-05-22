@@ -154,7 +154,7 @@
 
                                     <tr class="subTotalWrapper">
                                         <td colspan="2">Sub-total</td> 
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|add:recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar}}</td>
                                     </tr>
 
                                     <tr class ="divider"><td colspan="3"></td></tr>
@@ -361,7 +361,7 @@
 
                                     <tr class="subTotalWrapper">
                                         <td colspan="2">Sub-total</td> 
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|add:recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar}}</td>
                                     </tr>
 
                                     <tr class ="divider"><td colspan="3"></td></tr>
@@ -563,7 +563,7 @@
                                     {% endif %}
                                     <tr class="subTotalWrapper">
                                         <td colspan="2">Sub-total</td> 
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|add:recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar}}</td>
                                     </tr>
 
                                     <tr class ="divider"><td colspan="3"></td></tr>
@@ -655,7 +655,7 @@
                                         </tr>
                                         <tr class="subTotalWrapper">
                                             <td colspan="2">Sub-total</td> 
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|add:recibo.info_total_de_comision.asegurado|add:recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar}}</td>
                                         </tr>
 
                                         <tr class ="divider"><td colspan="3"></td></tr>
@@ -844,7 +844,7 @@
                                     {% endif %}
                                     <tr class="subTotalWrapper">
                                         <td colspan="2">Sub-total</td> 
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|add:recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar}}</td>
                                     </tr>
 
                                     <tr class ="divider"><td colspan="3"></td></tr>
@@ -936,7 +936,7 @@
                                         </tr>
                                         <tr class="subTotalWrapper">
                                             <td colspan="2">Sub-total</td> 
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_total|add:recibo.info_total_de_comision.asegurado|add:recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar}}</td>
                                         </tr>
 
                                         <tr class ="divider"><td colspan="3"></td></tr>
