@@ -8,6 +8,9 @@ from django.template.loader import get_template
 from weasyprint import HTML,CSS
 import numpy as np
 
+from datetime import datetime, date, timedelta
+import calendar
+from django.utils import timezone # Para history.as_of
 
 def safe_to_int(value):
     """
@@ -148,6 +151,36 @@ def printPDF(data,url,liquidacionName,htmlPath,cssPath):
         target=liquidacionName, stylesheets = [CSS(css_url)])
 
     return pdf
+
+
+def obtener_fechas_campania(nombre_campania):
+    """
+    Convierte un nombre de campaña como "Abril 2025" a (fecha_inicio, fecha_fin).
+    """
+    # Ejemplo de implementación (puede necesitar ajustes para nombres de mes en español)
+    try:
+        partes = nombre_campania.split()
+        nombre_mes = partes[0].lower()
+        anio = int(partes[1])
+
+        # Mapeo de meses (simplificado, considera localización)
+        mapa_meses = {
+            "enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5, "junio": 6,
+            "julio": 7, "agosto": 8, "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12
+        }
+        numero_mes = mapa_meses.get(nombre_mes)
+
+        if not numero_mes:
+            raise ValueError(f"Nombre de mes inválido en la campaña: {nombre_mes}")
+
+        fecha_inicio = date(anio, numero_mes, 1)
+        _, ultimo_dia_mes = calendar.monthrange(anio, numero_mes)
+        fecha_fin = date(anio, numero_mes, ultimo_dia_mes)
+        return fecha_inicio, fecha_fin
+    except Exception as e:
+        # print(f"Error al obtener fechas de campaña '{nombre_campania}': {e}")
+        raise ValueError(f"Formato de campaña inválido: {nombre_campania}. Usar 'Mes Año', ej: 'Abril 2025'")
+
 
 
 # Funcion para formatear las fechas

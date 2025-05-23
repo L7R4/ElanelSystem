@@ -26,7 +26,7 @@ from django.core.validators import validate_email
 import json
 from django.http import HttpResponse, JsonResponse
 from dateutil.relativedelta import relativedelta
-from elanelsystem.utils import format_date, formatear_columnas, handle_nan
+from elanelsystem.utils import format_date, formatear_columnas, formatear_dd_mm_yyyy_h_m, handle_nan
 
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
@@ -226,7 +226,34 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
 
 
     def get(self,request,*args, **kwargs):
-        users = Usuario.objects.all()
+        from sales.utils import getCampaniaByFecha
+        from elanelsystem.utils import parse_fecha, obtener_fechas_campania
+        sucursalObject = Sucursal.objects.get(pseudonimo='Formosa, Formosa')
+        campania = "Abril 2025"
+        colaboradores = (
+            Usuario.objects
+                .filter(sucursales__in=[sucursalObject])  
+        )
+
+        print(obtener_fechas_campania(campania))
+        # Agregar colaboradores que corresponden a determinada campaña
+        # user_list = []
+        # for c in colaboradores:
+        #     print(f"\n--- Colaborador: {c.nombre} ---")
+        #     for h in c.history.all():
+        #         print(f"Id del history: {h.history_user_id}\n Fecha de egreso {h.fec_egreso}\n Suspendido: {h.suspendido}")
+                
+        #         campania_history = getCampaniaByFecha(parse_fecha(h.fec_egreso)) if (h.fec_egreso != "" and h.fec_egreso != None) else ""
+
+        #         if(h.suspendido and campania_history != campania):
+        #             continue
+        #         else:
+        #             user_list.append(c)
+        #             break
+        # print(f"\n\n COLABORADORES QUE ESTAN ACTIVOS EN CAMPAÑA {campania} \n")
+        # for c in user_list:
+        #     print(c.nombre)
+        #     # if () 
 
         campaniasDisponibles = getCampanasDisponibles()
         metodosPago = [{"id": metodo.id, "alias": metodo.alias } for metodo in MetodoPago.objects.all()]
@@ -745,10 +772,14 @@ def importar_usuarios(request):
 
 #region Clientes - - - - - - - - - - - - - - - - - - - - - - -
 class ListaClientes(TestLogin, generic.View):
+
+
     model = Cliente
     template_name= "list_customers.html"
 
     def get(self,request,*args, **kwargs):
+        
+
         customers = Cliente.objects.filter(agencia_registrada = request.user.sucursales.all()[0])
         sucursalesObject = Sucursal.objects.all()
         sucursales = [sucursal.pseudonimo for sucursal in sucursalesObject ]
