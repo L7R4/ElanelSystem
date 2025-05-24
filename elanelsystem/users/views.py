@@ -25,6 +25,8 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.validators import validate_email
 import json
 from django.http import HttpResponse, JsonResponse
+from datetime import date
+
 from dateutil.relativedelta import relativedelta
 from elanelsystem.utils import format_date, formatear_columnas, formatear_dd_mm_yyyy_h_m, handle_nan
 
@@ -219,6 +221,69 @@ class CrearUsuario(TestLogin, generic.View):
             return JsonResponse(response_data, safe=False)         
   
 
+def dias_trabajados_en_campania(user, campania_str):
+    from elanelsystem.utils import parse_fecha, obtener_fechas_campania
+    """
+    Devuelve (snapshot_correcto, total_dias_trabajados) o (None, 0)
+    """
+    inicio_camp, fin_camp = obtener_fechas_campania(campania_str)
+
+    # Paso 1: recopilar versiones con fec_egreso >= inicio_camp
+    ab = []
+    for h in user.history.all():
+        eg = parse_fecha(h.fec_egreso).date() if h.fec_egreso else None
+        if (eg is None or eg == "") and not h.suspendido:
+            # si no tiene egreso, asumimos que sigue vigente -> lo incluimos
+            ab.append(h)
+        elif eg is not None and eg >= inicio_camp:
+            ab.append(h)    
+
+    # Paso 2: si ab vacío, no estuvo en campaña
+    if not ab:
+        return None, 0
+
+    # Paso 3: ordenar por fec_egreso descendente (None = vigente al final)
+    
+    def key_egreso(hist):
+        eg = parse_fecha(hist.fec_egreso).date() if hist.fec_egreso else None
+        return eg if eg else date(2100, 1, 1)
+    ab.sort(key=key_egreso, reverse=True)
+
+
+    # Paso 4: ¿varios ingresos dentro de campaña?
+    ingresos = [
+        parse_fecha(h.fec_ingreso).date()
+        for h in ab
+        if parse_fecha(h.fec_ingreso).date() and inicio_camp <= parse_fecha(h.fec_ingreso).date() <= fin_camp
+    ]
+
+    total_dias = 0
+    if len(ingresos) > 1:
+        # sumamos rango para cada snapshot
+        for h in ab:
+            ing = parse_fecha(h.fec_egreso).date() if h.fec_egreso else None
+            eg  = parse_fecha(h.fec_egreso).date() if h.fec_egreso else fin_camp
+            if not ing:
+                continue
+            # limitamos al rango de campaña
+            inicio = max(ing, inicio_camp)
+            fin    = min(eg, fin_camp)
+            if inicio <= fin:
+                total_dias += (fin - inicio).days + 1
+    else:
+        # un solo ingreso en campaña: tomamos el primero de ab
+        h = ab[0]
+        print(f"\nHistorial seleccionado {h.history_user_id}\n")
+        ing = parse_fecha(h.fec_egreso).date() if h.fec_egreso else inicio_camp
+        eg  = parse_fecha(h.fec_egreso).date() if h.fec_egreso else fin_camp
+        inicio = max(ing, inicio_camp)
+        fin    = min(eg, fin_camp)
+        total_dias = max(0, (fin - inicio).days + 1) if inicio <= fin else 0
+
+    # Paso 5: devolvemos la versión “correcta” (la más reciente) y los días
+    snapshot_correcto = ab[0]
+    return snapshot_correcto, total_dias
+
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
     template_name = "list_users.html"
@@ -235,7 +300,15 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
                 .filter(sucursales__in=[sucursalObject])  
         )
 
-        print(obtener_fechas_campania(campania))
+        for user in colaboradores:
+            snap, dias = dias_trabajados_en_campania(user, campania)
+            if snap:
+                print(f"{user.nombre}: {dias} días (versión usada: {snap.history_date.date()})")
+            else:
+                print(f"{user.nombre}: no estuvo activo en {campania}")
+
+        
+
         # Agregar colaboradores que corresponden a determinada campaña
         # user_list = []
         # for c in colaboradores:

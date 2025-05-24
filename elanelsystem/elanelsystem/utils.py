@@ -218,7 +218,8 @@ def parse_fecha(fecha_str):
             return datetime.strptime(fecha_str, formato)
         except ValueError:
             continue
-    raise ValueError(f"Formato de fecha no válido: {fecha_str}")
+    return None
+    # raise ValueError(f"Formato de fecha no válido: {fecha_str}")
 
 
 def formatar_fecha(value, with_time = False):
