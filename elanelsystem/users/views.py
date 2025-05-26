@@ -231,8 +231,9 @@ def dias_trabajados_en_campania(user, campania_str):
     # Paso 1: recopilar versiones con fec_egreso >= inicio_camp
     ab = []
     for h in user.history.all():
+        # print(f"\n Tipo de cambio de historial: {type(h.history_type)}\n")
         eg = parse_fecha(h.fec_egreso).date() if h.fec_egreso else None
-        if (eg is None or eg == "") and not h.suspendido:
+        if (eg is None or eg == "") and not h.suspendido and h.history_type != "+":
             # si no tiene egreso, asumimos que sigue vigente -> lo incluimos
             ab.append(h)
         elif eg is not None and eg >= inicio_camp:
