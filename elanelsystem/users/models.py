@@ -125,6 +125,16 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         self.xp_laboral = str(self.xp_laboral.capitalize())
         self.email = str(self.email.lower())
 
+        # Solo en actualizaciones (no en creación):
+        if self.pk:
+            # Traigo el estado anterior de la BD
+            old = Usuario.objects.get(pk=self.pk)
+            # Si cambiaron fec_ingreso:
+            if old.fec_ingreso != self.fec_ingreso:
+                # Limpio la fecha de egreso y desactivo la suspensión
+                self.fec_egreso = ""
+                self.suspendido = False
+
 
         super(Usuario, self).save(*args, **kwargs)
 

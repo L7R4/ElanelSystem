@@ -221,6 +221,14 @@ def parse_fecha(fecha_str):
     return None
     # raise ValueError(f"Formato de fecha no válido: {fecha_str}")
 
+def parse_fecha_to_date(fecha_str):
+    formatos = ["%d/%m/%Y %H:%M", "%d/%m/%Y"]  # Formatos posibles
+    for formato in formatos:
+        try:
+            return datetime.strptime(fecha_str, formato).date()
+        except ValueError:
+            continue
+    return None
 
 def formatar_fecha(value, with_time = False):
     """
