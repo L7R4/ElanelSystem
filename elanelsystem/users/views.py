@@ -227,106 +227,56 @@ def dias_trabajados_en_campania(user, campania_str):
     basándose únicamente en los diferentes fec_ingreso del history.
     Devuelve (snapshot_primero, total_dias).
     """
+
+    # 1) Obtener fechas de inicio y fin de la campaña
     inicio_camp, fin_camp = obtener_fechas_campania(campania_str)
 
-    # 1) Filtrar snapshots con fec_ingreso <= fin de campaña
-    ingresos = [
-        (parse_fecha_to_date(h.fec_ingreso), h)
-        for h in user.history.all()
-        if parse_fecha_to_date(h.fec_ingreso) and parse_fecha_to_date(h.fec_ingreso) <= fin_camp
-    ]
+    # 2) Filtrar snapshots con fec_ingreso <= fin de campaña
+
+    ingresos = []
+    for h in user.history.all():
+        fecha_ing = parse_fecha_to_date(h.fec_ingreso)
+        if fecha_ing and fecha_ing <= fin_camp:
+            print(f"Usuario: {user.nombre}, Fecha de ingreso: {fecha_ing}, Fec Egreso: {h.fec_egreso}")
+            ingresos.append((fecha_ing, h))
+
     if not ingresos:
         return None, 0
 
-    # 2) Ordenar ascendente por fecha de ingreso
+    # 3) Ordenar ascendente por fecha de ingreso
     ingresos.sort(key=lambda tup: tup[0])
+    print(f"\nFechas de ingreso ordenado para {user.nombre}: {[h.fec_egreso for fecha, h in ingresos]}\n")
+
 
     total_dias = 0
+    # 4) Recorrer cada ingreso y calcular su intervalo hasta el siguiente ingreso (menos 1 día) o fin_camp
     for idx, (fecha_ing, hist) in enumerate(ingresos):
-        # 3a) inicio del periodo
+        # 4a) Límite inferior = máximo entre la fecha de ingreso y el inicio de campaña
         start = max(fecha_ing, inicio_camp)
+        print(f"\nUsuario: {user.nombre}, Fecha de ingreso: {fecha_ing}, Inicio campaña: {inicio_camp}, Límite inferior: {start}")
 
-        # 3b) fin del periodo: siguiente ingreso menos 1 día, o fin de campaña
+        # 4b) Límite superior = día anterior al próximo ingreso, o fin de campaña si es el último
         if idx + 1 < len(ingresos):
             next_ing, _ = ingresos[idx + 1]
             end = next_ing - timedelta(days=1)
         else:
             end = fin_camp
-
-        # 4) recortamos al rango de campaña
-        if start > fin_camp or end < inicio_camp:
-            # completamente fuera del rango
+        print(f"Usuario: {user.nombre}, Límite superior: {end}")
+        # 5) Recortar el intervalo al rango [inicio_camp, fin_camp]
+        if end < inicio_camp or start > fin_camp:
+            # fuera del rango de la campaña
             continue
+
         start_clip = max(start, inicio_camp)
         end_clip   = min(end,   fin_camp)
 
-        # 5) sumamos si es válido
+        # 6) Sumar días (inclusive)
         if start_clip <= end_clip:
             total_dias += (end_clip - start_clip).days + 1
 
-    # Devolvemos el primer snapshot (el más antiguo) y los días totales
-    primera_version = ingresos[0][1]
-    return primera_version, total_dias
-
-    # inicio_camp, fin_camp = obtener_fechas_campania(campania_str)
-
-    # # Paso 1: recopilar versiones con fec_egreso >= inicio_camp
-    # ab = []
-    # for h in user.history.all():
-    #     # print(f"\n Tipo de cambio de historial: {type(h.history_type)}\n")
-    #     eg = parse_fecha(h.fec_egreso).date() if h.fec_egreso else None
-    #     if (eg is None or eg == "") and not h.suspendido and h.history_type != "+":
-    #         # si no tiene egreso, asumimos que sigue vigente -> lo incluimos
-    #         ab.append(h)
-    #     elif eg is not None and eg >= inicio_camp:
-    #         ab.append(h)
-
-
-    # # Paso 2: si ab vacío, no estuvo en campaña
-    # if not ab:
-    #     return None, 0
-
-    # # Paso 3: ordenar por fec_egreso descendente (None = vigente al final)
-    
-    # def key_egreso(hist):
-    #     eg = parse_fecha(hist.fec_egreso).date() if hist.fec_egreso else None
-    #     return eg if eg else date(2100, 1, 1)
-    # ab.sort(key=key_egreso, reverse=True)
-
-
-    # # Paso 4: ¿varios ingresos dentro de campaña?
-    # ingresos = [
-    #     parse_fecha(h.fec_ingreso).date()
-    #     for h in ab
-    #     if parse_fecha(h.fec_ingreso).date() and inicio_camp <= parse_fecha(h.fec_ingreso).date() <= fin_camp
-    # ]
-
-    # total_dias = 0
-    # if len(ingresos) > 1:
-    #     # sumamos rango para cada snapshot
-    #     for h in ab:
-    #         ing = parse_fecha(h.fec_egreso).date() if h.fec_egreso else None
-    #         eg  = parse_fecha(h.fec_egreso).date() if h.fec_egreso else fin_camp
-    #         if not ing:
-    #             continue
-    #         # limitamos al rango de campaña
-    #         inicio = max(ing, inicio_camp)
-    #         fin    = min(eg, fin_camp)
-    #         if inicio <= fin:
-    #             total_dias += (fin - inicio).days + 1
-    # else:
-    #     # un solo ingreso en campaña: tomamos el primero de ab
-    #     h = ab[0]
-    #     print(f"\nHistorial seleccionado {h.history_user_id}\n")
-    #     ing = parse_fecha(h.fec_egreso).date() if h.fec_egreso else inicio_camp
-    #     eg  = parse_fecha(h.fec_egreso).date() if h.fec_egreso else fin_camp
-    #     inicio = max(ing, inicio_camp)
-    #     fin    = min(eg, fin_camp)
-    #     total_dias = max(0, (fin - inicio).days + 1) if inicio <= fin else 0
-
-    # # Paso 5: devolvemos la versión “correcta” (la más reciente) y los días
-    # snapshot_correcto = ab[0]
-    # return snapshot_correcto, total_dias
+    # 7) Devolver el primer snapshot (más antiguo) y los días totales
+    ultima_version = ingresos[-1][1]
+    return ultima_version, total_dias
 
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
@@ -345,11 +295,18 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
         )
 
         for user in colaboradores:
-            snap, dias = dias_trabajados_en_campania(user, campania)
-            if snap:
+            if user.nombre == "Lautaro Rodriguez":
+                snap, dias = dias_trabajados_en_campania(user, campania)
                 print(f"{user.nombre}: {dias} días (versión usada: {snap.history_date.date()})")
-            else:
-                print(f"{user.nombre}: no estuvo activo en {campania}")
+            # else:
+                # print(f"{user.nombre}: no estuvo activo en {campania}")
+
+        # for user in colaboradores:
+        #     snap, dias = dias_trabajados_en_campania(user, campania)
+        #     if snap:
+        #         print(f"{user.nombre}: {dias} días (versión usada: {snap.history_date.date()})")
+        #     else:
+        #         print(f"{user.nombre}: no estuvo activo en {campania}")
 
         
 
