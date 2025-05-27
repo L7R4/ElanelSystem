@@ -8,7 +8,6 @@ from django.forms import ValidationError
 from django.db.utils import IntegrityError
 from django.shortcuts import redirect, render
 from django.views import generic
-
 from users.utils import preprocesar_excel_clientes, printPDFNewUSer
 from sales.utils import getAllCampaniaOfYear, getCampanasDisponibles, getCampaniaActual
 from django.db import transaction
@@ -25,7 +24,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.validators import validate_email
 import json
 from django.http import HttpResponse, JsonResponse
-from datetime import date
+from datetime import date,timedelta
 
 from dateutil.relativedelta import relativedelta
 from elanelsystem.utils import format_date, formatear_columnas, formatear_dd_mm_yyyy_h_m, handle_nan
@@ -222,68 +221,112 @@ class CrearUsuario(TestLogin, generic.View):
   
 
 def dias_trabajados_en_campania(user, campania_str):
-    from elanelsystem.utils import parse_fecha, obtener_fechas_campania
+    from elanelsystem.utils import parse_fecha_to_date, obtener_fechas_campania
     """
-    Devuelve (snapshot_correcto, total_dias_trabajados) o (None, 0)
+    Calcula días trabajados dentro de la campaña,
+    basándose únicamente en los diferentes fec_ingreso del history.
+    Devuelve (snapshot_primero, total_dias).
     """
     inicio_camp, fin_camp = obtener_fechas_campania(campania_str)
 
-    # Paso 1: recopilar versiones con fec_egreso >= inicio_camp
-    ab = []
-    for h in user.history.all():
-        # print(f"\n Tipo de cambio de historial: {type(h.history_type)}\n")
-        eg = parse_fecha(h.fec_egreso).date() if h.fec_egreso else None
-        if (eg is None or eg == "") and not h.suspendido and h.history_type != "+":
-            # si no tiene egreso, asumimos que sigue vigente -> lo incluimos
-            ab.append(h)
-        elif eg is not None and eg >= inicio_camp:
-            ab.append(h)    
-
-    # Paso 2: si ab vacío, no estuvo en campaña
-    if not ab:
+    # 1) Filtrar snapshots con fec_ingreso <= fin de campaña
+    ingresos = [
+        (parse_fecha_to_date(h.fec_ingreso), h)
+        for h in user.history.all()
+        if parse_fecha_to_date(h.fec_ingreso) and parse_fecha_to_date(h.fec_ingreso) <= fin_camp
+    ]
+    if not ingresos:
         return None, 0
 
-    # Paso 3: ordenar por fec_egreso descendente (None = vigente al final)
-    
-    def key_egreso(hist):
-        eg = parse_fecha(hist.fec_egreso).date() if hist.fec_egreso else None
-        return eg if eg else date(2100, 1, 1)
-    ab.sort(key=key_egreso, reverse=True)
-
-
-    # Paso 4: ¿varios ingresos dentro de campaña?
-    ingresos = [
-        parse_fecha(h.fec_ingreso).date()
-        for h in ab
-        if parse_fecha(h.fec_ingreso).date() and inicio_camp <= parse_fecha(h.fec_ingreso).date() <= fin_camp
-    ]
+    # 2) Ordenar ascendente por fecha de ingreso
+    ingresos.sort(key=lambda tup: tup[0])
 
     total_dias = 0
-    if len(ingresos) > 1:
-        # sumamos rango para cada snapshot
-        for h in ab:
-            ing = parse_fecha(h.fec_egreso).date() if h.fec_egreso else None
-            eg  = parse_fecha(h.fec_egreso).date() if h.fec_egreso else fin_camp
-            if not ing:
-                continue
-            # limitamos al rango de campaña
-            inicio = max(ing, inicio_camp)
-            fin    = min(eg, fin_camp)
-            if inicio <= fin:
-                total_dias += (fin - inicio).days + 1
-    else:
-        # un solo ingreso en campaña: tomamos el primero de ab
-        h = ab[0]
-        print(f"\nHistorial seleccionado {h.history_user_id}\n")
-        ing = parse_fecha(h.fec_egreso).date() if h.fec_egreso else inicio_camp
-        eg  = parse_fecha(h.fec_egreso).date() if h.fec_egreso else fin_camp
-        inicio = max(ing, inicio_camp)
-        fin    = min(eg, fin_camp)
-        total_dias = max(0, (fin - inicio).days + 1) if inicio <= fin else 0
+    for idx, (fecha_ing, hist) in enumerate(ingresos):
+        # 3a) inicio del periodo
+        start = max(fecha_ing, inicio_camp)
 
-    # Paso 5: devolvemos la versión “correcta” (la más reciente) y los días
-    snapshot_correcto = ab[0]
-    return snapshot_correcto, total_dias
+        # 3b) fin del periodo: siguiente ingreso menos 1 día, o fin de campaña
+        if idx + 1 < len(ingresos):
+            next_ing, _ = ingresos[idx + 1]
+            end = next_ing - timedelta(days=1)
+        else:
+            end = fin_camp
+
+        # 4) recortamos al rango de campaña
+        if start > fin_camp or end < inicio_camp:
+            # completamente fuera del rango
+            continue
+        start_clip = max(start, inicio_camp)
+        end_clip   = min(end,   fin_camp)
+
+        # 5) sumamos si es válido
+        if start_clip <= end_clip:
+            total_dias += (end_clip - start_clip).days + 1
+
+    # Devolvemos el primer snapshot (el más antiguo) y los días totales
+    primera_version = ingresos[0][1]
+    return primera_version, total_dias
+
+    # inicio_camp, fin_camp = obtener_fechas_campania(campania_str)
+
+    # # Paso 1: recopilar versiones con fec_egreso >= inicio_camp
+    # ab = []
+    # for h in user.history.all():
+    #     # print(f"\n Tipo de cambio de historial: {type(h.history_type)}\n")
+    #     eg = parse_fecha(h.fec_egreso).date() if h.fec_egreso else None
+    #     if (eg is None or eg == "") and not h.suspendido and h.history_type != "+":
+    #         # si no tiene egreso, asumimos que sigue vigente -> lo incluimos
+    #         ab.append(h)
+    #     elif eg is not None and eg >= inicio_camp:
+    #         ab.append(h)
+
+
+    # # Paso 2: si ab vacío, no estuvo en campaña
+    # if not ab:
+    #     return None, 0
+
+    # # Paso 3: ordenar por fec_egreso descendente (None = vigente al final)
+    
+    # def key_egreso(hist):
+    #     eg = parse_fecha(hist.fec_egreso).date() if hist.fec_egreso else None
+    #     return eg if eg else date(2100, 1, 1)
+    # ab.sort(key=key_egreso, reverse=True)
+
+
+    # # Paso 4: ¿varios ingresos dentro de campaña?
+    # ingresos = [
+    #     parse_fecha(h.fec_ingreso).date()
+    #     for h in ab
+    #     if parse_fecha(h.fec_ingreso).date() and inicio_camp <= parse_fecha(h.fec_ingreso).date() <= fin_camp
+    # ]
+
+    # total_dias = 0
+    # if len(ingresos) > 1:
+    #     # sumamos rango para cada snapshot
+    #     for h in ab:
+    #         ing = parse_fecha(h.fec_egreso).date() if h.fec_egreso else None
+    #         eg  = parse_fecha(h.fec_egreso).date() if h.fec_egreso else fin_camp
+    #         if not ing:
+    #             continue
+    #         # limitamos al rango de campaña
+    #         inicio = max(ing, inicio_camp)
+    #         fin    = min(eg, fin_camp)
+    #         if inicio <= fin:
+    #             total_dias += (fin - inicio).days + 1
+    # else:
+    #     # un solo ingreso en campaña: tomamos el primero de ab
+    #     h = ab[0]
+    #     print(f"\nHistorial seleccionado {h.history_user_id}\n")
+    #     ing = parse_fecha(h.fec_egreso).date() if h.fec_egreso else inicio_camp
+    #     eg  = parse_fecha(h.fec_egreso).date() if h.fec_egreso else fin_camp
+    #     inicio = max(ing, inicio_camp)
+    #     fin    = min(eg, fin_camp)
+    #     total_dias = max(0, (fin - inicio).days + 1) if inicio <= fin else 0
+
+    # # Paso 5: devolvemos la versión “correcta” (la más reciente) y los días
+    # snapshot_correcto = ab[0]
+    # return snapshot_correcto, total_dias
 
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
