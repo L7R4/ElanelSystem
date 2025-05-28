@@ -8,6 +8,9 @@ from django.template.loader import get_template
 from weasyprint import HTML,CSS
 import numpy as np
 
+from datetime import datetime, date, timedelta
+import calendar
+from django.utils import timezone # Para history.as_of
 
 def safe_to_int(value):
     """
@@ -150,6 +153,36 @@ def printPDF(data,url,liquidacionName,htmlPath,cssPath):
     return pdf
 
 
+def obtener_fechas_campania(nombre_campania):
+    """
+    Convierte un nombre de campaña como "Abril 2025" a (fecha_inicio, fecha_fin).
+    """
+    # Ejemplo de implementación (puede necesitar ajustes para nombres de mes en español)
+    try:
+        partes = nombre_campania.split()
+        nombre_mes = partes[0].lower()
+        anio = int(partes[1])
+
+        # Mapeo de meses (simplificado, considera localización)
+        mapa_meses = {
+            "enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5, "junio": 6,
+            "julio": 7, "agosto": 8, "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12
+        }
+        numero_mes = mapa_meses.get(nombre_mes)
+
+        if not numero_mes:
+            raise ValueError(f"Nombre de mes inválido en la campaña: {nombre_mes}")
+
+        fecha_inicio = date(anio, numero_mes, 1)
+        _, ultimo_dia_mes = calendar.monthrange(anio, numero_mes)
+        fecha_fin = date(anio, numero_mes, ultimo_dia_mes)
+        return fecha_inicio, fecha_fin
+    except Exception as e:
+        # print(f"Error al obtener fechas de campaña '{nombre_campania}': {e}")
+        raise ValueError(f"Formato de campaña inválido: {nombre_campania}. Usar 'Mes Año', ej: 'Abril 2025'")
+
+
+
 # Funcion para formatear las fechas
 def formatear_dd_mm_yyyy(valor):
     # print(valor)
@@ -185,8 +218,17 @@ def parse_fecha(fecha_str):
             return datetime.strptime(fecha_str, formato)
         except ValueError:
             continue
-    raise ValueError(f"Formato de fecha no válido: {fecha_str}")
+    return None
+    # raise ValueError(f"Formato de fecha no válido: {fecha_str}")
 
+def parse_fecha_to_date(fecha_str):
+    formatos = ["%d/%m/%Y %H:%M", "%d/%m/%Y"]  # Formatos posibles
+    for formato in formatos:
+        try:
+            return datetime.strptime(fecha_str, formato).date()
+        except ValueError:
+            continue
+    return None
 
 def formatar_fecha(value, with_time = False):
     """
@@ -252,7 +294,7 @@ def get_sucursales_por_provincias(agencia):
         "corrientes,corrientes": ["Corrientes, Corrientes","Paso De Los Libres, Corrientes", "Goya, Corrientes"],
         "pasodeloslibres,corrientes":["Paso De Los Libres, Corrientes"],
         "goya,corrientes":["Goya, Corrientes"],
-        "resistencia,chaco":["Saenz Peña, Chaco", "Resistencia, Chaco"],
+        "resistencia,chaco":["Resistencia, Chaco"],
         "saenzpeña,chaco":["Saenz Peña, Chaco"],
         "concordia,entrerios":["Concordia, Entre Rios"],
         "santiagodelestero,santiagodelestero":["Santiago Del Estero, Santiago Del Estero"],

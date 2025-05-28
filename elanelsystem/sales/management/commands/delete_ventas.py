@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from sales.models import Ventas
 
 class Command(BaseCommand):
-    help = "Audita las ventas (todas o de una sucursal) y marca is_commissionable=True."
+    # help = "Audita las ventas (todas o de una sucursal) y marca is_commissionable=True."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -10,7 +10,7 @@ class Command(BaseCommand):
             nargs='?',
             type=int,
             default=None,
-            help="(Opcional) ID de la sucursal cuyas ventas quieres auditar. Si no se pasa, se auditan todas."
+            help="(Opcional) ID de la sucursal cuyas ventas quieres elimintar. Si no se pasa, se eliminan todas."
         )
 
     def handle(self, *args, **options):
@@ -36,8 +36,9 @@ class Command(BaseCommand):
             ))
             ventas_qs.delete()
 
+            
         except Exception as e:
             self.stdout.write(self.style.ERROR(
-                f"❌ Error al procesar auditoría para {label}: {e}"
+                f"❌ Error al eliminar las ventas para {label}: {e}"
             ))
-            raise CommandError("No se completó la auditoría.") 
+            raise CommandError("No se completo la eliminacion de las ventas.") 
