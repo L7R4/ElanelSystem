@@ -1,11 +1,9 @@
 from django.db import models
-from django.dispatch import receiver
-from django.core.validators import RegexValidator,EmailValidator,validate_email
+from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager, PermissionsMixin
 import re, datetime
-from dateutil.relativedelta import relativedelta
-from django.utils import timezone
+from simple_history.models import HistoricalRecords
 
 from elanelsystem.utils import obtenerCampaña_atraves_fecha
 
@@ -22,7 +20,7 @@ class Sucursal(models.Model):
     email_ref = models.CharField("Email de referencia",max_length =60, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.pseudonimo}"
+        return f" {self.id} {self.pseudonimo}"
 
     def save(self, *args, **kwargs):
         self.direccion = self.direccion.capitalize()
@@ -103,6 +101,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     datos_familiares = models.JSONField("Datos familiares", default=list,blank=True,null=True)
     vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
     additional_passwords = models.JSONField("Contraseñas adicionales",default=dict,blank=True,null=True)
+    history = HistoricalRecords()
     
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
@@ -125,6 +124,16 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         self.estado_civil = str(self.estado_civil.capitalize())
         self.xp_laboral = str(self.xp_laboral.capitalize())
         self.email = str(self.email.lower())
+
+        # Solo en actualizaciones (no en creación):
+        if self.pk:
+            # Traigo el estado anterior de la BD
+            old = Usuario.objects.get(pk=self.pk)
+            # Si cambiaron fec_ingreso:
+            if old.fec_ingreso != self.fec_ingreso:
+                # Limpio la fecha de egreso y desactivo la suspensión
+                self.fec_egreso = ""
+                self.suspendido = False
 
 
         super(Usuario, self).save(*args, **kwargs)

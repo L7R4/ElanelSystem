@@ -8,7 +8,6 @@ from django.forms import ValidationError
 from django.db.utils import IntegrityError
 from django.shortcuts import redirect, render
 from django.views import generic
-
 from users.utils import preprocesar_excel_clientes, printPDFNewUSer
 from sales.utils import getAllCampaniaOfYear, getCampanasDisponibles, getCampaniaActual
 from django.db import transaction
@@ -25,8 +24,10 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.validators import validate_email
 import json
 from django.http import HttpResponse, JsonResponse
+from datetime import date,timedelta
+
 from dateutil.relativedelta import relativedelta
-from elanelsystem.utils import format_date, formatear_columnas, handle_nan
+from elanelsystem.utils import format_date, formatear_columnas, formatear_dd_mm_yyyy_h_m, handle_nan
 
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
@@ -219,6 +220,64 @@ class CrearUsuario(TestLogin, generic.View):
             return JsonResponse(response_data, safe=False)         
   
 
+def dias_trabajados_en_campania(user, campania_str):
+    from elanelsystem.utils import parse_fecha_to_date, obtener_fechas_campania
+    """
+    Calcula días trabajados dentro de la campaña,
+    basándose únicamente en los diferentes fec_ingreso del history.
+    Devuelve (snapshot_primero, total_dias).
+    """
+
+    # 1) Obtener fechas de inicio y fin de la campaña
+    inicio_camp, fin_camp = obtener_fechas_campania(campania_str)
+
+    # 2) Filtrar snapshots con fec_ingreso <= fin de campaña
+
+    ingresos = []
+    for h in user.history.all():
+        fecha_ing = parse_fecha_to_date(h.fec_ingreso)
+        if fecha_ing and fecha_ing <= fin_camp:
+            print(f"Usuario: {user.nombre}, Fecha de ingreso: {fecha_ing}, Fec Egreso: {h.fec_egreso}")
+            ingresos.append((fecha_ing, h))
+
+    if not ingresos:
+        return None, 0
+
+    # 3) Ordenar ascendente por fecha de ingreso
+    ingresos.sort(key=lambda tup: tup[0])
+    print(f"\nFechas de ingreso ordenado para {user.nombre}: {[h.fec_egreso for fecha, h in ingresos]}\n")
+
+
+    total_dias = 0
+    # 4) Recorrer cada ingreso y calcular su intervalo hasta el siguiente ingreso (menos 1 día) o fin_camp
+    for idx, (fecha_ing, hist) in enumerate(ingresos):
+        # 4a) Límite inferior = máximo entre la fecha de ingreso y el inicio de campaña
+        start = max(fecha_ing, inicio_camp)
+        print(f"\nUsuario: {user.nombre}, Fecha de ingreso: {fecha_ing}, Inicio campaña: {inicio_camp}, Límite inferior: {start}")
+
+        # 4b) Límite superior = día anterior al próximo ingreso, o fin de campaña si es el último
+        if idx + 1 < len(ingresos):
+            next_ing, _ = ingresos[idx + 1]
+            end = next_ing - timedelta(days=1)
+        else:
+            end = fin_camp
+        print(f"Usuario: {user.nombre}, Límite superior: {end}")
+        # 5) Recortar el intervalo al rango [inicio_camp, fin_camp]
+        if end < inicio_camp or start > fin_camp:
+            # fuera del rango de la campaña
+            continue
+
+        start_clip = max(start, inicio_camp)
+        end_clip   = min(end,   fin_camp)
+
+        # 6) Sumar días (inclusive)
+        if start_clip <= end_clip:
+            total_dias += (end_clip - start_clip).days + 1
+
+    # 7) Devolver el primer snapshot (más antiguo) y los días totales
+    ultima_version = ingresos[-1][1]
+    return ultima_version, total_dias
+
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
     template_name = "list_users.html"
@@ -226,7 +285,49 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
 
 
     def get(self,request,*args, **kwargs):
-        users = Usuario.objects.all()
+        from sales.utils import getCampaniaByFecha
+        from elanelsystem.utils import parse_fecha, obtener_fechas_campania
+        sucursalObject = Sucursal.objects.get(pseudonimo='Formosa, Formosa')
+        campania = "Abril 2025"
+        colaboradores = (
+            Usuario.objects
+                .filter(sucursales__in=[sucursalObject])  
+        )
+
+        for user in colaboradores:
+            if user.nombre == "Lautaro Rodriguez":
+                snap, dias = dias_trabajados_en_campania(user, campania)
+                print(f"{user.nombre}: {dias} días (versión usada: {snap.history_date.date()})")
+            # else:
+                # print(f"{user.nombre}: no estuvo activo en {campania}")
+
+        # for user in colaboradores:
+        #     snap, dias = dias_trabajados_en_campania(user, campania)
+        #     if snap:
+        #         print(f"{user.nombre}: {dias} días (versión usada: {snap.history_date.date()})")
+        #     else:
+        #         print(f"{user.nombre}: no estuvo activo en {campania}")
+
+        
+
+        # Agregar colaboradores que corresponden a determinada campaña
+        # user_list = []
+        # for c in colaboradores:
+        #     print(f"\n--- Colaborador: {c.nombre} ---")
+        #     for h in c.history.all():
+        #         print(f"Id del history: {h.history_user_id}\n Fecha de egreso {h.fec_egreso}\n Suspendido: {h.suspendido}")
+                
+        #         campania_history = getCampaniaByFecha(parse_fecha(h.fec_egreso)) if (h.fec_egreso != "" and h.fec_egreso != None) else ""
+
+        #         if(h.suspendido and campania_history != campania):
+        #             continue
+        #         else:
+        #             user_list.append(c)
+        #             break
+        # print(f"\n\n COLABORADORES QUE ESTAN ACTIVOS EN CAMPAÑA {campania} \n")
+        # for c in user_list:
+        #     print(c.nombre)
+        #     # if () 
 
         campaniasDisponibles = getCampanasDisponibles()
         metodosPago = [{"id": metodo.id, "alias": metodo.alias } for metodo in MetodoPago.objects.all()]
@@ -745,10 +846,14 @@ def importar_usuarios(request):
 
 #region Clientes - - - - - - - - - - - - - - - - - - - - - - -
 class ListaClientes(TestLogin, generic.View):
+
+
     model = Cliente
     template_name= "list_customers.html"
 
     def get(self,request,*args, **kwargs):
+        
+
         customers = Cliente.objects.filter(agencia_registrada = request.user.sucursales.all()[0])
         sucursalesObject = Sucursal.objects.all()
         sucursales = [sucursal.pseudonimo for sucursal in sucursalesObject ]

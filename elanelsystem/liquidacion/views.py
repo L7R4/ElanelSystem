@@ -29,7 +29,8 @@ from .utils import (
     detalles_ventas_propias,
     detalle_cuota_1_adelantadas,
     detalles_ventas_x_equipo,
-    get_detalle_comision_x_cantidad_ventasPropias
+    detalles_cuotas_1_a_4,
+    detalle_cuotas_0,
 )
 
 class LiquidacionesPanel(TestLogin,generic.View):
@@ -233,7 +234,7 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
             "nombre": item.nombre,
             "id": item.pk,
             "dni": item.dni,
-            "sucursal": str(sucursalObject.id),
+            "sucursal": int(sucursalObject.id),
             "campania": campania,
             "ajustes_comision": ajustes_usuario,
             "comisionTotal": comision_data["comision_total"],
@@ -834,9 +835,6 @@ def export_excel_detalle_comisionado(request):
         except Exception as e:
             return JsonResponse({"error": "Parámetros inválidos"}, status=400)
         
-        # 1) Obtenemos el dict con toda la info
-        resultado = get_comision_total(user, campania, agencia)
-
         sheets = {}
 
         # 1) Siempre: Ventas propias
@@ -845,7 +843,7 @@ def export_excel_detalle_comisionado(request):
         sheets["Ventas propias"] = [
             {
                 "Agencia": v["agencia"],
-                "Contrato": v["nro_contrato"],
+                "Contrato": v["contrato"],
                 "Cliente": v["nombre_cliente"],
                 "Campaña": v["campana"],
                 "Fecha inscripcion": v["fecha_inscripcion"],
@@ -862,24 +860,25 @@ def export_excel_detalle_comisionado(request):
 
         # 2) Siempre: Cuotas 1
         cuotas1 = detalle_cuota_1_adelantadas(agencia,campania,user)
-       
-        sheets["Cuotas 1 adelantadas"] = [
-            {
+        sheets["Cuotas 1 adelantadas"] = []
+        for c in cuotas1: 
+            venta= Ventas.objects.filter(id=c["venta_id"]).first()
+            dict_data = {
                 "Agencia": c["agencia"],
-                "Contrato": c["nro_contrato"],
+                "Contrato": c["contrato"],
                 "Cliente": c["nombre_cliente"],
                 "Fecha inscripcion":c["fecha_inscripcion_venta"],
                 "Fecha de pago": c["fecha_pago"],
                 "Dias de diferencia": c["dias_diff"],
                 "Nro cuota": c["nro_cuota"],
-                "Importe": c["monto"],
+                "Importe de pago": c["monto"],
+                "Importe cuota comercial": int(venta.cuotas[4]["total"] / len(venta.cantidadContratos)),
                 "Producto": c["producto"],
                 "Tipo de producto": c["tipo_producto"],
                 "Vendedor": c["vendedor"],
                 "Supervisor": c["supervisor"],
             }
-            for c in cuotas1["contratos_detalle"]
-        ]
+            sheets["Cuotas 1 adelantadas"].append(dict_data)
 
         rol = user.rango.lower()
 
@@ -889,7 +888,7 @@ def export_excel_detalle_comisionado(request):
             sheets["Ventas propias"] = [
             {
                 "Agencia": v["agencia"],
-                "Contrato": v["nro_contrato"],
+                "Contrato": v["contrato"],
                 "Cliente": v["nombre_cliente"],
                 "Campaña": v["campana"],
                 "Fecha inscripcion": v["fecha_inscripcion"],
@@ -906,26 +905,47 @@ def export_excel_detalle_comisionado(request):
         # 5) Si es gerente sucursal: agrega dos hojas más
         if rol == "gerente sucursal":
 
-            sucursales = resultado["detalle"]["rol"]["detalle"]["info"]
-            # for suc_key, info in sucursales.items():
-                
-            # Cuotas 0
-            c0 = resultado["detalle"]["rol"].get("detalle", {}).get("cantidad_cuotas_0", 0)
-            
-            sheets[f"C 0"] = [{"Cantidad recaudada": c0}]
+            cuotas_0_x_region = detalle_cuotas_0(agencia,campania)
 
-            # Cuotas 1 a 4
-            # asumimos que get_detalle_sucursales_de_region armó esta info:
-            region = resultado["detalle"]["rol"].get("info", {})
-            sheets[f"C 1-4"] = [
-                {
-                    "Sucursal": info["suc_name"],
-                    "Cant. cuotas": info["suc_info"]["cantidad_total_cuotas"],
-                    "Comisión": info["suc_info"]["comision_total_cuotas"]
-                }
-                for info in region.values()
+            sheets["Cuotas 0"] = [
+            {
+                "Agencia": c["agencia"],
+                "Contrato": c["contrato"],
+                "Cliente": c["nombre_cliente"],
+                "Fecha inscripcion":c["fecha_inscripcion_venta"],
+                "Fecha de pago": c["fecha_pago"],
+                "Nro cuota": c["nro_cuota"],
+                "Importe": c["monto"],
+                "Producto": c["producto"],
+                "Tipo de producto": c["tipo_producto"],
+                "Vendedor": c["vendedor"],
+                "Supervisor": c["supervisor"],
+            }
+                for c in cuotas_0_x_region
             ]
 
+
+            cuotas_1a4_x_region = detalles_cuotas_1_a_4(agencia,campania)
+            sheets["Cuotas 1 - 4"] = []
+            for c in cuotas_1a4_x_region:
+                venta = Ventas.objects.filter(id=c["venta_id"]).first()
+                dict_data = {
+                    "Agencia": c["agencia"],
+                    "Contrato": c["contrato"],
+                    "Cliente": c["nombre_cliente"],
+                    "Fecha inscripcion":c["fecha_inscripcion_venta"],
+                    "Fecha de pago": c["fecha_pago"],
+                    "Nro cuota": c["nro_cuota"],
+                    "Importe de pago": c["monto"],
+                    "Importe cuota comercial": int(venta.cuotas[4]["total"] / len(venta.cantidadContratos)),
+                    "Producto": c["producto"],
+                    "Tipo de producto": c["tipo_producto"],
+                    "Vendedor": c["vendedor"],
+                    "Supervisor": c["supervisor"],
+                }
+
+                sheets["Cuotas 1 - 4"].append(dict_data)
+
         # llamo al formateador central
-        filename_prefix = f"{user.nombre}_{campania.replace(' ','')}"
+        filename_prefix = f"Detalle de {user.nombre} _ {campania.replace(' ','')}"
         return exportar_excel2(sheets, filename_prefix)
