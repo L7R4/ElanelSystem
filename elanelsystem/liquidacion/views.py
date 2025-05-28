@@ -191,17 +191,14 @@ class LiquidacionesComisiones(TestLogin,generic.View):
 
 
 def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador=None):
+    from users.utils import obtener_usuarios_segun_campana
     """
     Función auxiliar que encapsula el cálculo de la liquidación para 
     (campaña, sucursal) y opcionalmente filtra por tipo_colaborador.
     Devuelve: (colaboradores_list, totalDeComisiones)
     """
     sucursalObject = Sucursal.objects.get(id=int(sucursal_id))
-    colaboradores = (
-        Usuario.objects
-               .filter(sucursales__in=[sucursalObject])
-               .order_by('suspendido')  
-    )
+    colaboradores = obtener_usuarios_segun_campana(campania, sucursalObject)
     
     rangos = [item.name for item in Group.objects.all()]
 

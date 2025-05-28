@@ -107,3 +107,65 @@ def preprocesar_excel_clientes(file_path):
             df[text_col] = df[text_col].fillna("").astype(str).str.strip()
 
     return df
+
+def snapshot_usuario_by_campana(user,campania_str):
+    from elanelsystem.utils import obtener_fechas_campania,parse_fecha_to_date
+
+    inicio_camp, fin_camp = obtener_fechas_campania(campania_str)
+
+    history_list_by_user = []
+    for h in user.history.all():
+            fecha_ing = parse_fecha_to_date(h.fec_ingreso)
+            if fecha_ing and fecha_ing <= fin_camp:
+                history_list_by_user.append(h)
+
+    if not history_list_by_user:
+        return None, 0
+    elif len(history_list_by_user) == 1 and history_list_by_user[0].history_type == "+": # Si solo hay un ingreso y es de tipo +, quiere decir que desde que se registró no salio
+        pass
+    elif len(history_list_by_user) > 1:
+        history_list_by_user = [h for h in history_list_by_user if h.history_type != "+"]
+
+    history_list_by_user.sort(key=lambda h: parse_fecha_to_date(h.fec_ingreso))
+
+    ultima_version = history_list_by_user[-1]
+    days_worked = count_days_worked_by_user(ultima_version, campania_str)
+    return ultima_version, days_worked
+
+
+def obtener_usuarios_segun_campana(campania_str,sucursal):
+    from elanelsystem.utils import obtener_fechas_campania,parse_fecha_to_date
+    from users.models import Usuario
+
+    colaboradores = (Usuario.objects.filter(
+        sucursales__in=[sucursal]
+        )).exclude(nombre__startswith="Agencia")
+    
+    usuarios_activos = []
+
+    for c in colaboradores:
+        snapshot_by_user, days_worked = snapshot_usuario_by_campana(c, campania_str)
+        if snapshot_by_user and days_worked > 0:
+            usuarios_activos.append(c)    
+
+
+    return usuarios_activos
+
+
+def count_days_worked_by_user(user_last_version, compania_str):
+    from elanelsystem.utils import obtener_fechas_campania,parse_fecha_to_date
+    inicio_camp, fin_camp = obtener_fechas_campania(compania_str)
+    
+    fecha_ingreso = parse_fecha_to_date(user_last_version.fec_ingreso)
+    fecha_egreso = parse_fecha_to_date(user_last_version.fec_egreso) if user_last_version.fec_egreso else datetime.datetime.today().date()
+
+
+    fecha_inicio_real = max(fecha_ingreso, inicio_camp)
+    fecha_fin_real = min(fecha_egreso, fin_camp)
+    dias_trabajados_campania = 0
+    if fecha_inicio_real > fecha_fin_real:
+        dias_trabajados_campania = 0
+    else:
+        dias_trabajados_campania = (fecha_fin_real - fecha_inicio_real).days + 1
+
+    return dias_trabajados_campania
