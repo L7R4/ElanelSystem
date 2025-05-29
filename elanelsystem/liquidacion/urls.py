@@ -17,6 +17,7 @@ urlpatterns = [
     path("ventas/liquidaciones/pdf/pre_liquidacion/", preViewPDFLiquidacion, name="preViewPDFLiquidacion"),
     path('ventas/liquidaciones/pdf/liquidacion/<int:id>/', viewPDFLiquidacion, name='viewPDFLiquidacion'),
     path('ventas/liquidaciones/detalles/<slug:tipo_slug>/', DetallesComisionesView.as_view(), name='detallesComisionesView'),
+    path("ventas/liquidaciones/pdf/recibo_liquidacion_especifico/", reciboPDFLiquidacionEspecifico, name="reciboPDFLiquidacionEspecifico"),
 
 
     path("ventas/liquidaciones/historial/", HistorialLiquidaciones.as_view(), name="historialLiquidaciones"),

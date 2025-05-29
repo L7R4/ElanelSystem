@@ -453,6 +453,19 @@ def preViewPDFLiquidacion(request):
         return response
 
 
+def reciboPDFLiquidacionEspecifico(request):
+    informeName = "Informe"
+    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "liquidacion.pdf")
+    printPDF({},request.build_absolute_uri(),urlPDF,"pdf_liquidacion_especifico.html","static/css/pdf_liquidacion_especifico.css")
+
+    
+    with open(urlPDF, 'rb') as pdf_file:
+        response = HttpResponse(pdf_file,content_type="application/pdf")
+        response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
+        return response
+
+
+
 def viewPDFLiquidacion(request, id):
     # Obtener la liquidación desde la base de datos
     try:
@@ -946,3 +959,5 @@ def export_excel_detalle_comisionado(request):
         # llamo al formateador central
         filename_prefix = f"Detalle de {user.nombre} _ {campania.replace(' ','')}"
         return exportar_excel2(sheets, filename_prefix)
+    
+

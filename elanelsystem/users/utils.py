@@ -134,7 +134,7 @@ def snapshot_usuario_by_campana(user,campania_str):
 
 
 def obtener_usuarios_segun_campana(campania_str,sucursal):
-    from elanelsystem.utils import obtener_fechas_campania,parse_fecha_to_date
+    # from elanelsystem.utils import obtener_fechas_campania,parse_fecha_to_date
     from users.models import Usuario
 
     colaboradores = (Usuario.objects.filter(

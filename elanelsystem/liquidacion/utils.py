@@ -6,6 +6,7 @@ from django.db.models import Q
 import datetime
 import calendar
 import math
+from users.utils import snapshot_usuario_by_campana
 
 def liquidaciones_countFaltas(colaborador):
     data = colaborador.faltas_tardanzas
@@ -689,21 +690,39 @@ def calcular_asegurado_segun_dias_trabajados(dinero, usuario, campania_str):
         return math.ceil(proporcional)
 
 def get_asegurado(usuario, campania_str):
-    rango = usuario.rango.lower()
+    snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania_str)
+    rango = snapshot_usuario_by_campania.rango.lower()
     if rango == "vendedor":
         asegurado_obj = Asegurado.objects.get(dirigido="Vendedor")
         dineroAsegurado = asegurado_obj.dinero
-        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario, campania_str)
+        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, snapshot_usuario_by_campania, campania_str)
     elif rango == "supervisor":
         asegurado_obj = Asegurado.objects.get(dirigido="Supervisor")
         dineroAsegurado = asegurado_obj.dinero
-        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario, campania_str)
+        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, snapshot_usuario_by_campania, campania_str)
     elif rango == "gerente sucursal":
         # Podrías hacer math.ceil si quieres 
         asegurado_obj = Asegurado.objects.get(dirigido="Gerente sucursal")
         return math.ceil(asegurado_obj.dinero)
     else:
         raise ValueError("Error al obtener el asegurado: rango no reconocido.")
+    
+
+    # rango = usuario.rango.lower()
+    # if rango == "vendedor":
+    #     asegurado_obj = Asegurado.objects.get(dirigido="Vendedor")
+    #     dineroAsegurado = asegurado_obj.dinero
+    #     return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario, campania_str)
+    # elif rango == "supervisor":
+    #     asegurado_obj = Asegurado.objects.get(dirigido="Supervisor")
+    #     dineroAsegurado = asegurado_obj.dinero
+    #     return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario, campania_str)
+    # elif rango == "gerente sucursal":
+    #     # Podrías hacer math.ceil si quieres 
+    #     asegurado_obj = Asegurado.objects.get(dirigido="Gerente sucursal")
+    #     return math.ceil(asegurado_obj.dinero)
+    # else:
+    #     raise ValueError("Error al obtener el asegurado: rango no reconocido."
 
 #endregion
 
@@ -823,52 +842,14 @@ def detalle_descuestos(usuario, campania, agencia):
     }
     return resultado
 
-# def detalle_premios_x_objetivo(usuario, campania, agencia, objetivo_gerente=0):
-#     """
-#     get_premio_x_productividad_ventasPropias => ceil
-#     get_premio_x_cantidad_ventas_equipo => ceil
-#     get_premio_x_productividad_supervisor => ceil
-#     get_premio_x_cantidad_ventas_sucursal => ceil
-#     Sumamos => aplicamos ceil a final.
-#     """
-#     premio_subtotal = 0
-#     detalle = {}
-
-#     premio_x_productividad_ventas_propias = get_premio_x_productividad_ventasPropias(usuario, campania, agencia)
-
-#     rango_lower = str(usuario.rango).lower()
-#     if rango_lower == "supervisor":
-#         premio_x_cantidad_ventas_equipo = get_premio_x_cantidad_ventas_equipo(usuario, campania, agencia)
-#         premio_x_productividad_ventas_equipo = get_premio_x_productividad_supervisor(usuario, campania, agencia)
-#         detalle = {
-#             "premio_x_cantidad_ventas_equipo": premio_x_cantidad_ventas_equipo,
-#             "premio_x_productividad_ventas_equipo": premio_x_productividad_ventas_equipo
-#         }
-#         premio_subtotal += (premio_x_cantidad_ventas_equipo + premio_x_productividad_ventas_equipo)
-#     elif rango_lower == "gerente sucursal":
-#         premio_x_cantidad_ventas_agencia = get_premio_x_cantidad_ventas_sucursal(campania, agencia, objetivo_gerente)
-#         detalle = {
-#             "premio_x_cantidad_ventas_agencia": premio_x_cantidad_ventas_agencia,
-#         }
-#         premio_subtotal += premio_x_cantidad_ventas_agencia
-
-#     premio_subtotal += premio_x_productividad_ventas_propias
-#     premio_subtotal = math.ceil(premio_subtotal)
-
-#     detalle["premio_x_productividad_ventas_propias"] = premio_x_productividad_ventas_propias
-#     resultado = {
-#         "total_premios": premio_subtotal,
-#         "detalle": detalle
-#     }
-#     return resultado
-
 def detalle_liquidado_x_rol(usuario, campania, agencia, porcentage_x_cuota_gerente=0):
     """
     P.ej. comision_x_cantidad_ventas_equipo => ceil
     comision_x_cuotas => ceil
     etc. Revisado arriba, devuelven ya en ceil.
     """
-    rango_lower = str(usuario.rango).lower()
+    snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania)
+    rango_lower = snapshot_usuario_by_campania.rango.lower()
 
     if rango_lower == "supervisor":
         comisiones_brutas = comisiones_brutas_supervisor(usuario, campania, agencia)
@@ -930,7 +911,9 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
     # print(f"\n ✅ Detalle de rol liquidadas de -------- {usuario.nombre} --------:\n")
     # print(f"{rol_dict}")
     
-    rango_lower = usuario.rango.lower()
+    snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania)
+    rango_lower = snapshot_usuario_by_campania.rango.lower()
+    # rango_lower = usuario.rango.lower()
     comision_bruta_inicial = 0
     if rango_lower == "vendedor":
         comision_bruta_inicial = comisiones_brutas_vendedor(usuario,campania,agencia)["comision_total"]
