@@ -569,10 +569,8 @@ def get_detalle_sucursales_de_region(agencia,campania):
             porcentage_x_cuota = 0.08 if suc in agencias_8_porc else 0.06
             if(suc in agencias_objs_200_ventas):
                 premios_por_venta = get_premio_x_cantidad_ventas_sucursal(campania, sucObject, 200)
-                print("wepsss1")
 
             else:
-                print("wepsss")
                 premios_por_venta = get_premio_x_cantidad_ventas_sucursal(campania, sucObject, 150)
                 
         result["porcetage_x_cuota"] = porcentage_x_cuota
