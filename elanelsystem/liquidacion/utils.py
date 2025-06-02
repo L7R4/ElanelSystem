@@ -689,15 +689,16 @@ def calcular_asegurado_segun_dias_trabajados(dinero, usuario, campania_str):
 
 def get_asegurado(usuario, campania_str):
     snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania_str)
-    rango = snapshot_usuario_by_campania.rango.lower()
+
+    rango = snapshot_usuario_by_campania[0].rango.lower()
     if rango == "vendedor":
         asegurado_obj = Asegurado.objects.get(dirigido="Vendedor")
         dineroAsegurado = asegurado_obj.dinero
-        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, snapshot_usuario_by_campania, campania_str)
+        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, snapshot_usuario_by_campania[0], campania_str)
     elif rango == "supervisor":
         asegurado_obj = Asegurado.objects.get(dirigido="Supervisor")
         dineroAsegurado = asegurado_obj.dinero
-        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, snapshot_usuario_by_campania, campania_str)
+        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, snapshot_usuario_by_campania[0], campania_str)
     elif rango == "gerente sucursal":
         # Podrías hacer math.ceil si quieres 
         asegurado_obj = Asegurado.objects.get(dirigido="Gerente sucursal")
@@ -847,7 +848,7 @@ def detalle_liquidado_x_rol(usuario, campania, agencia, porcentage_x_cuota_geren
     etc. Revisado arriba, devuelven ya en ceil.
     """
     snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania)
-    rango_lower = snapshot_usuario_by_campania.rango.lower()
+    rango_lower = snapshot_usuario_by_campania[0].rango.lower()
 
     if rango_lower == "supervisor":
         comisiones_brutas = comisiones_brutas_supervisor(usuario, campania, agencia)
@@ -910,7 +911,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
     # print(f"{rol_dict}")
     
     snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania)
-    rango_lower = snapshot_usuario_by_campania.rango.lower()
+    rango_lower = snapshot_usuario_by_campania[0].rango.lower()
     # rango_lower = usuario.rango.lower()
     comision_bruta_inicial = 0
     if rango_lower == "vendedor":
