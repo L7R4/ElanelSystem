@@ -238,13 +238,6 @@ def dias_trabajados_en_campania(user, campania_str):
 
     if not ingresos:
         return None, 0
-<<<<<<< HEAD
-    
-
-    # 3) Ordenar ascendente por fecha de ingreso
-    ingresos.sort(key=lambda tup: tup[0])
-    print(f"\nFechas de ingreso ordenado para {user.nombre}: {[h.fec_ingreso for fecha, h in ingresos]}\n")
-=======
     elif len(ingresos) == 1 and ingresos[0].history_type == "+": # Si solo hay un ingreso y es de tipo +, quiere decir que desde que se registró no salio
         pass
         # print(f"\nUsuario: {user.nombre}, solo tiene un ingreso y no tiene egreso, por lo tanto se considera que estuvo activo todo el tiempo de la campaña")        
@@ -260,7 +253,6 @@ def dias_trabajados_en_campania(user, campania_str):
     # print(f"\nUltima version de {user.nombre} es: {ultima_version.fec_ingreso} - {ultima_version.fec_egreso} - {ultima_version.history_type}\n")
     fecha_ingreso = parse_fecha_to_date(ultima_version.fec_ingreso)
     fecha_egreso = parse_fecha_to_date(ultima_version.fec_egreso) if ultima_version.fec_egreso else datetime.datetime.today().date()
->>>>>>> c28d526f2f813a8308367ef86c51dcd5b391e9b4
 
 
     fecha_inicio_real = max(fecha_ingreso, inicio_camp)
