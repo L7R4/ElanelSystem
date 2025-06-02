@@ -228,56 +228,50 @@ def dias_trabajados_en_campania(user, campania_str):
     Devuelve (snapshot_primero, total_dias).
     """
 
-    # 1) Obtener fechas de inicio y fin de la campaña
     inicio_camp, fin_camp = obtener_fechas_campania(campania_str)
-
-    # 2) Filtrar snapshots con fec_ingreso <= fin de campaña
 
     ingresos = []
     for h in user.history.all():
         fecha_ing = parse_fecha_to_date(h.fec_ingreso)
         if fecha_ing and fecha_ing <= fin_camp:
-            print(f"Usuario: {user.nombre}, Fecha de ingreso: {fecha_ing}, Fec Egreso: {h.fec_egreso}")
-            ingresos.append((fecha_ing, h))
+            ingresos.append(h)
 
     if not ingresos:
         return None, 0
+<<<<<<< HEAD
     
 
     # 3) Ordenar ascendente por fecha de ingreso
     ingresos.sort(key=lambda tup: tup[0])
     print(f"\nFechas de ingreso ordenado para {user.nombre}: {[h.fec_ingreso for fecha, h in ingresos]}\n")
+=======
+    elif len(ingresos) == 1 and ingresos[0].history_type == "+": # Si solo hay un ingreso y es de tipo +, quiere decir que desde que se registró no salio
+        pass
+        # print(f"\nUsuario: {user.nombre}, solo tiene un ingreso y no tiene egreso, por lo tanto se considera que estuvo activo todo el tiempo de la campaña")        
+    elif len(ingresos) > 1:
+        # print(f"\nUsuario: {user.nombre}, solo tiene mas de un ingreso")        
+        ingresos = [h for h in ingresos if h.history_type != "+"]
+
+    # 3) Ordenar ascendente por fecha de ingreso
+    ingresos.sort(key=lambda h: parse_fecha_to_date(h.fec_ingreso))
+    # print(f"\nFechas de ingreso ordenado para {user.nombre}: {[h.fec_egreso for h in ingresos]}\n")
+
+    ultima_version = ingresos[-1]
+    # print(f"\nUltima version de {user.nombre} es: {ultima_version.fec_ingreso} - {ultima_version.fec_egreso} - {ultima_version.history_type}\n")
+    fecha_ingreso = parse_fecha_to_date(ultima_version.fec_ingreso)
+    fecha_egreso = parse_fecha_to_date(ultima_version.fec_egreso) if ultima_version.fec_egreso else datetime.datetime.today().date()
+>>>>>>> c28d526f2f813a8308367ef86c51dcd5b391e9b4
 
 
-    total_dias = 0
-    # 4) Recorrer cada ingreso y calcular su intervalo hasta el siguiente ingreso (menos 1 día) o fin_camp
-    for idx, (fecha_ing, hist) in enumerate(ingresos):
-        # 4a) Límite inferior = máximo entre la fecha de ingreso y el inicio de campaña
-        start = max(fecha_ing, inicio_camp)
-        print(f"\nUsuario: {user.nombre}, Fecha de ingreso: {fecha_ing}, Inicio campaña: {inicio_camp}, Límite inferior: {start}")
+    fecha_inicio_real = max(fecha_ingreso, inicio_camp)
+    fecha_fin_real = min(fecha_egreso, fin_camp)
+    dias_trabajados_campania = 0
+    if fecha_inicio_real > fecha_fin_real:
+        dias_trabajados_campania = 0
+    else:
+        dias_trabajados_campania = (fecha_fin_real - fecha_inicio_real).days + 1
 
-        # 4b) Límite superior = día anterior al próximo ingreso, o fin de campaña si es el último
-        if idx + 1 < len(ingresos):
-            next_ing, _ = ingresos[idx + 1]
-            end = next_ing - timedelta(days=1)
-        else:
-            end = fin_camp
-        print(f"Usuario: {user.nombre}, Límite superior: {end}")
-        # 5) Recortar el intervalo al rango [inicio_camp, fin_camp]
-        if end < inicio_camp or start > fin_camp:
-            # fuera del rango de la campaña
-            continue
-
-        start_clip = max(start, inicio_camp)
-        end_clip   = min(end,   fin_camp)
-
-        # 6) Sumar días (inclusive)
-        if start_clip <= end_clip:
-            total_dias += (end_clip - start_clip).days + 1
-
-    # 7) Devolver el primer snapshot (más antiguo) y los días totales
-    ultima_version = ingresos[-1][1]
-    return ultima_version, total_dias
+    return ultima_version, dias_trabajados_campania
 
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
@@ -286,8 +280,6 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
 
 
     def get(self,request,*args, **kwargs):
-        from sales.utils import getCampaniaByFecha
-        from elanelsystem.utils import parse_fecha, obtener_fechas_campania
         sucursalObject = Sucursal.objects.get(pseudonimo='Formosa, Formosa')
         campania = "Abril 2025"
         colaboradores = (
@@ -296,18 +288,11 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
         )
 
         for user in colaboradores:
-            if user.nombre == "Lautaro Rodriguez":
-                snap, dias = dias_trabajados_en_campania(user, campania)
-                print(f"{user.nombre}: {dias} días (versión usada: {snap.history_date.date()})")
-            # else:
-                # print(f"{user.nombre}: no estuvo activo en {campania}")
-
-        # for user in colaboradores:
-        #     snap, dias = dias_trabajados_en_campania(user, campania)
-        #     if snap:
-        #         print(f"{user.nombre}: {dias} días (versión usada: {snap.history_date.date()})")
-        #     else:
-        #         print(f"{user.nombre}: no estuvo activo en {campania}")
+            snap, dias = dias_trabajados_en_campania(user, campania)
+            if dias > 0: 
+                print(f"{user.nombre}: Trabajo {dias} días en la campaña {campania} ")
+            else:
+                print(f"{user.nombre}: no estuvo activo en {campania}")
 
         
 

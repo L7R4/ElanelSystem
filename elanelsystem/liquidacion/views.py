@@ -191,17 +191,14 @@ class LiquidacionesComisiones(TestLogin,generic.View):
 
 
 def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador=None):
+    from users.utils import obtener_usuarios_segun_campana
     """
     Función auxiliar que encapsula el cálculo de la liquidación para 
     (campaña, sucursal) y opcionalmente filtra por tipo_colaborador.
     Devuelve: (colaboradores_list, totalDeComisiones)
     """
     sucursalObject = Sucursal.objects.get(id=int(sucursal_id))
-    colaboradores = (
-        Usuario.objects
-               .filter(sucursales__in=[sucursalObject])
-               .order_by('suspendido')  
-    )
+    colaboradores = obtener_usuarios_segun_campana(campania, sucursalObject)
     
     rangos = [item.name for item in Group.objects.all()]
 
@@ -454,6 +451,19 @@ def preViewPDFLiquidacion(request):
         response = HttpResponse(pdf_file,content_type="application/pdf")
         response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
         return response
+
+
+def reciboPDFLiquidacionEspecifico(request):
+    informeName = "Informe"
+    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "liquidacion.pdf")
+    printPDF({},request.build_absolute_uri(),urlPDF,"pdf_liquidacion_especifico.html","static/css/pdf_liquidacion_especifico.css")
+
+    
+    with open(urlPDF, 'rb') as pdf_file:
+        response = HttpResponse(pdf_file,content_type="application/pdf")
+        response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
+        return response
+
 
 
 def viewPDFLiquidacion(request, id):
@@ -949,3 +959,5 @@ def export_excel_detalle_comisionado(request):
         # llamo al formateador central
         filename_prefix = f"Detalle de {user.nombre} _ {campania.replace(' ','')}"
         return exportar_excel2(sheets, filename_prefix)
+    
+

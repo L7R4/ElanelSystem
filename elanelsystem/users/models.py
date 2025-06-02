@@ -134,6 +134,16 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
                 # Limpio la fecha de egreso y desactivo la suspensión
                 self.fec_egreso = ""
                 self.suspendido = False
+            
+            #region Definir el tipo de cambio segun el campo que se modificó
+            
+            if old.fec_ingreso != self.fec_ingreso:
+                self._change_reason = "change_fechas"
+            elif old.rango != self.rango:
+                self._change_reason = "change_rango"
+            elif old.sucursales.all() != self.sucursales.all():
+                self._change_reason = "change_sucursal"  
+            #endregion
 
 
         super(Usuario, self).save(*args, **kwargs)

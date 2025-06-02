@@ -122,6 +122,7 @@ class Ventas(models.Model):
     paquete = models.CharField(max_length=20,default="")
     vendedor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="ventas_ven_usuario",default="",blank=True,null=True)
     supervisor = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="venta_super_usuario",default="",blank=True,null=True)
+    gerente = models.ForeignKey(Usuario,on_delete=models.CASCADE,related_name="venta_ger_usuario",default="",blank=True,null=True)
     observaciones = models.CharField("Obeservaciones:",max_length=255,blank=True,null=True)
     cantidadContratos = models.JSONField("Chances", default=list, blank=True, null=True)
     
