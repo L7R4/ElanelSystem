@@ -409,6 +409,89 @@ def comisiones_brutas_supervisor(usuario,campania,agencia=None):
 
 #region Funciones enfocadas a los gerentes de sucursal
 
+def get_detalle_cuotas_x2(campania, gerente, porcetage_x_cuota):
+    """
+    Comision de cuotas 1,2,3,4 => math.ceil en comision_total_cuotas.
+    Ahora usamos solo PagoCannon para extraer los pagos ya filtrados.
+    """
+    from sales.models import PagoCannon
+    # Los índices de cuota que nos interesan
+    cuotas_numeros = [1, 2, 3, 4]
+
+    # Diccionario base
+    result = {
+        "porcetage_x_cuota": porcetage_x_cuota,
+        "detalleCuota": {},
+        "cantidad_total_cuotas": 0,
+        "dinero_total_cuotas": 0,
+        "comision_total_cuotas": 0,
+    }
+
+    # Inicializamos acumuladores por cuota
+    stats = {
+        nro: {"cantidad": 0, "dinero": 0, "detalle": [], "cuotas":[]}
+        for nro in cuotas_numeros
+    }
+
+    # 1) Traemos todos los pagos que cumplan las condiciones
+    pagos = (
+        PagoCannon.objects
+        .filter(
+            campana_de_pago=campania,
+            venta__gerente=gerente,
+            venta__is_commissionable=True,
+            nro_cuota__in=cuotas_numeros,
+        )
+        .select_related("venta")  # para no golpear la db al leer pago.venta
+    )
+
+    # Extraemos las sucursales únicas involucradas  de los pagos
+    sucursales_ids = pagos.values_list('venta__agencia_id', flat=True).distinct()
+
+    # 2) Recorremos solo los pagos válidos
+    for pago in pagos:
+        venta = pago.venta
+        idx = pago.nro_cuota
+        cuota_info = venta.cuotas[idx]
+        total_cuota = venta.cuotas[5]["total"]
+        n_contratos = len(venta.cantidadContratos)
+        agencia = pago.venta.agencia
+        
+        cuota_info.update({
+            "fecha_pago": pago.fecha,
+            "contratos": venta.cantidadContratos,
+            "agencia": agencia.pseudonimo
+        })
+
+        stats[idx]["cantidad"] += n_contratos
+        stats[idx]["dinero"]   += total_cuota
+        stats[idx]["detalle"].append(total_cuota)
+        stats[idx]["cuotas"].append(cuota_info)
+
+    # 3) Construimos el bloque de salida y acumulamos totales
+    for nro in cuotas_numeros:
+        dinero = stats[nro]["dinero"]
+        comision = dinero * porcetage_x_cuota
+
+        result["detalleCuota"][f"cuotas{nro}"] = {
+            "cantidad": stats[nro]["cantidad"],
+            "dinero_x_cuota": math.ceil(dinero),
+            "comision": math.ceil(comision),
+            "detalle": stats[nro]["detalle"],
+            "cuotas":  stats[nro]["cuotas"]
+        }
+
+        result["cantidad_total_cuotas"]   += stats[nro]["cantidad"]
+        result["dinero_total_cuotas"]     += dinero
+        result["comision_total_cuotas"]   += comision
+
+    # 4) Redondeos finales
+    result["dinero_total_cuotas"]   = math.ceil(result["dinero_total_cuotas"])
+    result["comision_total_cuotas"] = math.ceil(result["comision_total_cuotas"])
+
+    return result
+
+
 def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota):
     """
     Comision de cuotas 1,2,3,4 => math.ceil en comision_total_cuotas.
