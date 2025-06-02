@@ -242,10 +242,11 @@ def dias_trabajados_en_campania(user, campania_str):
 
     if not ingresos:
         return None, 0
+    
 
     # 3) Ordenar ascendente por fecha de ingreso
     ingresos.sort(key=lambda tup: tup[0])
-    print(f"\nFechas de ingreso ordenado para {user.nombre}: {[h.fec_egreso for fecha, h in ingresos]}\n")
+    print(f"\nFechas de ingreso ordenado para {user.nombre}: {[h.fec_ingreso for fecha, h in ingresos]}\n")
 
 
     total_dias = 0
