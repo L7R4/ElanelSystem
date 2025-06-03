@@ -590,6 +590,10 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
     for p in all_pagos_by_gerente:
         pagos_del_gerente[p.venta.agencia_id].append(p)
 
+    
+    for p in all_pagos_by_region:
+        
+
     # for suc_obj  in sucursales_involucradas:
     #     suc_nombre = suc_obj.pseudonimo
     #     porcentaje_1_4 = 0.08 if suc_nombre in agencias_8_porc else 0.06
