@@ -79,7 +79,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     nombre = models.CharField("Nombre Completo",max_length=100)
     sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios',blank=True)
-    email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
+    # email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
+    email = models.EmailField("Correo Electrónico",max_length=254, unique=True, default ="", blank=True, null=True)
+
     rango = models.CharField("Rango:",max_length=40)
     dni = models.CharField("DNI",max_length=12, blank = True, null = True)
     tel = models.CharField("Telefono",max_length=15, blank = True, null = True)
@@ -87,13 +89,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     fec_ingreso = models.CharField("Fecha de ingreso", max_length = 10, default ="")
     fec_egreso = models.CharField("Fecha de egreso", max_length = 10, default ="", blank=True, null=True)
 
-    domic = models.CharField("Domicilio",max_length=200, default="")
-    prov = models.CharField("Provincia",max_length=40, default="")
-    cp = models.CharField("Codigo postal",max_length=5, default="")
-    loc = models.CharField("Localidad",max_length=100, default="")
-    lugar_nacimiento = models.CharField("Lugar de nacimiento",max_length=100, default ="")
-    fec_nacimiento = models.CharField("Fecha de nacimiento", max_length = 10, default ="")
-    estado_civil = models.CharField("Estado civil", max_length =30,default ="")
+    domic = models.CharField("Domicilio",max_length=200, default="", blank=True, null=True)
+    prov = models.CharField("Provincia",max_length=40, default="", blank=True, null=True)
+    cp = models.CharField("Codigo postal",max_length=5, default="", blank=True, null=True)
+    loc = models.CharField("Localidad",max_length=100, default="", blank=True, null=True)
+    lugar_nacimiento = models.CharField("Lugar de nacimiento",max_length=100, default ="", blank=True, null=True)
+    fec_nacimiento = models.CharField("Fecha de nacimiento", max_length = 10, default ="", blank=True, null=True)
+    estado_civil = models.CharField("Estado civil", max_length =30,default ="", blank=True, null=True)
     xp_laboral = models.TextField("Experiencia laboral", blank=True,null=True, default="")
     
     premios = models.JSONField("Premios", default=list,blank=True,null=True)
@@ -116,14 +118,21 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     def save(self, *args, **kwargs):
 
         # Capitalizar campos seleccionados
-        self.nombre = str(self.nombre.title())
-        self.domic = str(self.domic.capitalize())
-        self.prov = str(self.prov.title())
-        self.loc = str(self.loc.title())
-        self.lugar_nacimiento = str(self.lugar_nacimiento.title())
-        self.estado_civil = str(self.estado_civil.capitalize())
-        self.xp_laboral = str(self.xp_laboral.capitalize())
-        self.email = str(self.email.lower())
+        nombre_limpio = ' '.join(self.nombre.split()).title()
+        self.nombre = nombre_limpio
+
+        if not self.email:
+            local_part = self.nombre.replace(' ', '').lower()
+            self.email = f"{local_part}@gmail.com"
+        else:
+            self.email = self.email.lower()
+
+        # self.domic = str(self.domic.capitalize())
+        # self.prov = str(self.prov.title())
+        # self.loc = str(self.loc.title())
+        # self.lugar_nacimiento = str(self.lugar_nacimiento.title())
+        # self.estado_civil = str(self.estado_civil.capitalize())
+        # self.xp_laboral = str(self.xp_laboral.capitalize())
 
         # Solo en actualizaciones (no en creación):
         if self.pk:
@@ -167,13 +176,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     def clean(self):
         errors = {}
         validation_methods = [
-            self.validation_nombre,
-            self.validation_email,
-            self.validation_dni,
-            self.validation_tel,
-            self.validation_fec_ingreso,
-            self.validation_fec_nacimiento,
-            self.validation_cp,
+            # self.validation_nombre,
+            # self.validation_email,
+            # self.validation_dni,
+            # self.validation_tel,
+            # self.validation_fec_ingreso,
+            # self.validation_fec_nacimiento,
+            # self.validation_cp,
         ]
 
         for method in validation_methods:
