@@ -972,13 +972,13 @@ def importar_clientes(request):
                     nombre              = handle_nan(row['cliente']),
                     dni                 = dni,
                     agencia_registrada  = sucursal,
-                    domic               = handle_nan(row.get('domic', '')),
-                    loc                 = handle_nan(row.get('loc', '')),
-                    prov                = handle_nan(row.get('prov', '')),
-                    cod_postal          = row.get('cod_pos', ''),
-                    tel                 = row.get('tel_1', ''),
-                    estado_civil        = handle_nan(row.get('estado_civil', '')),
-                    ocupacion           = handle_nan(row.get('ocupacion', '')),
+                    # domic               = handle_nan(row.get('domic', '')),
+                    # loc                 = handle_nan(row.get('loc', '')),
+                    # prov                = handle_nan(row.get('prov', '')),
+                    # cod_postal          = row.get('cod_pos', ''),
+                    # tel                 = row.get('tel_1', ''),
+                    # estado_civil        = handle_nan(row.get('estado_civil', '')),
+                    # ocupacion           = handle_nan(row.get('ocupacion', '')),
                     # fec_nacimiento = format_date(row.get('fecha_de_nac', ''))  # si la incluyes
                 )
                 nuevos += 1
