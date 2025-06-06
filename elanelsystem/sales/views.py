@@ -374,6 +374,7 @@ def importVentas(request):
                     for cuota_dict in venta.cuotas:
                         nro = int(cuota_dict['cuota'].split()[-1])
                         for pago_data in cuota_dict.get('pagos', []):
+                            print(f"Venta: {venta.nro_operacion}, Metodo de pago: {pago_data['metodoPago']}, Cobrador: {pago_data['cobrador']}")
                             pagos_to_create.append(
                                 PagoCannon(
                                     venta=venta,
@@ -387,7 +388,7 @@ def importVentas(request):
                                 )
                             )
                 
-
+            # Error al importar: Field 'id' expected a number but got {'monto': 67500, 'metodoPago': 7, 'fecha': '03/04/2025 00:00', 'cobrador': 20, 'campaniaPago': 'Abril 2025'}.
                  # — Genero N recibos de golpe, empezando justo donde la seq quedó
                 count = len(pagos_to_create)
                 if count:
