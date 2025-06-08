@@ -374,7 +374,7 @@ def importVentas(request):
                     for cuota_dict in venta.cuotas:
                         nro = int(cuota_dict['cuota'].split()[-1])
                         for pago_data in cuota_dict.get('pagos', []):
-                            print(f"Venta: {venta.nro_operacion}, Metodo de pago: {pago_data['metodoPago']}, Cobrador: {pago_data['cobrador']}")
+                            print(f"ID de metodo de pago: {pago_data['metodoPago']}\n ID de cobrador: {pago_data['cobrador']}\n")
                             pagos_to_create.append(
                                 PagoCannon(
                                     venta=venta,
@@ -388,7 +388,7 @@ def importVentas(request):
                                 )
                             )
                 
-            # Error al importar: Field 'id' expected a number but got {'monto': 67500, 'metodoPago': 7, 'fecha': '03/04/2025 00:00', 'cobrador': 20, 'campaniaPago': 'Abril 2025'}.
+                print(f"✅ {len(pagos_to_create)} PAGOS POR CREAR")
                  # — Genero N recibos de golpe, empezando justo donde la seq quedó
                 count = len(pagos_to_create)
                 if count:
@@ -404,7 +404,7 @@ def importVentas(request):
                         pago_obj.nro_recibo = f"RC-{seq:06d}"
 
                 pagos_created = PagoCannon.objects.bulk_create(pagos_to_create)
-
+                print(f"✅ {len(pagos_created)} PAGOS CREADOS")
                 # 1) Agrupa los pagos recién creados por (venta_id, nro_cuota)
                 pagos_por_venta_cuota = defaultdict(list)
                 for pago in pagos_created:
