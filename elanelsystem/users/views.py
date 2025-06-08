@@ -8,7 +8,6 @@ from django.forms import ValidationError
 from django.db.utils import IntegrityError
 from django.shortcuts import redirect, render
 from django.views import generic
-
 from users.utils import preprocesar_excel_clientes, printPDFNewUSer
 from sales.utils import getAllCampaniaOfYear, getCampanasDisponibles, getCampaniaActual
 from django.db import transaction
@@ -25,8 +24,10 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.validators import validate_email
 import json
 from django.http import HttpResponse, JsonResponse
+from datetime import date,timedelta
+
 from dateutil.relativedelta import relativedelta
-from elanelsystem.utils import format_date, formatear_columnas, handle_nan
+from elanelsystem.utils import format_date, formatear_columnas, formatear_dd_mm_yyyy_h_m, handle_nan
 
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
@@ -219,6 +220,51 @@ class CrearUsuario(TestLogin, generic.View):
             return JsonResponse(response_data, safe=False)         
   
 
+def dias_trabajados_en_campania(user, campania_str):
+    from elanelsystem.utils import parse_fecha_to_date, obtener_fechas_campania
+    """
+    Calcula días trabajados dentro de la campaña,
+    basándose únicamente en los diferentes fec_ingreso del history.
+    Devuelve (snapshot_primero, total_dias).
+    """
+
+    inicio_camp, fin_camp = obtener_fechas_campania(campania_str)
+
+    ingresos = []
+    for h in user.history.all():
+        fecha_ing = parse_fecha_to_date(h.fec_ingreso)
+        if fecha_ing and fecha_ing <= fin_camp:
+            ingresos.append(h)
+
+    if not ingresos:
+        return None, 0
+    elif len(ingresos) == 1 and ingresos[0].history_type == "+": # Si solo hay un ingreso y es de tipo +, quiere decir que desde que se registró no salio
+        pass
+        # print(f"\nUsuario: {user.nombre}, solo tiene un ingreso y no tiene egreso, por lo tanto se considera que estuvo activo todo el tiempo de la campaña")        
+    elif len(ingresos) > 1:
+        # print(f"\nUsuario: {user.nombre}, solo tiene mas de un ingreso")        
+        ingresos = [h for h in ingresos if h.history_type != "+"]
+
+    # 3) Ordenar ascendente por fecha de ingreso
+    ingresos.sort(key=lambda h: parse_fecha_to_date(h.fec_ingreso))
+    # print(f"\nFechas de ingreso ordenado para {user.nombre}: {[h.fec_egreso for h in ingresos]}\n")
+
+    ultima_version = ingresos[-1]
+    # print(f"\nUltima version de {user.nombre} es: {ultima_version.fec_ingreso} - {ultima_version.fec_egreso} - {ultima_version.history_type}\n")
+    fecha_ingreso = parse_fecha_to_date(ultima_version.fec_ingreso)
+    fecha_egreso = parse_fecha_to_date(ultima_version.fec_egreso) if ultima_version.fec_egreso else datetime.datetime.today().date()
+
+
+    fecha_inicio_real = max(fecha_ingreso, inicio_camp)
+    fecha_fin_real = min(fecha_egreso, fin_camp)
+    dias_trabajados_campania = 0
+    if fecha_inicio_real > fecha_fin_real:
+        dias_trabajados_campania = 0
+    else:
+        dias_trabajados_campania = (fecha_fin_real - fecha_inicio_real).days + 1
+
+    return ultima_version, dias_trabajados_campania
+
 class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
     model = Usuario
     template_name = "list_users.html"
@@ -226,7 +272,40 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
 
 
     def get(self,request,*args, **kwargs):
-        users = Usuario.objects.all()
+        sucursalObject = Sucursal.objects.get(pseudonimo='Formosa, Formosa')
+        campania = "Abril 2025"
+        colaboradores = (
+            Usuario.objects
+                .filter(sucursales__in=[sucursalObject])  
+        )
+
+        for user in colaboradores:
+            snap, dias = dias_trabajados_en_campania(user, campania)
+            if dias > 0: 
+                print(f"{user.nombre}: Trabajo {dias} días en la campaña {campania} ")
+            else:
+                print(f"{user.nombre}: no estuvo activo en {campania}")
+
+        
+
+        # Agregar colaboradores que corresponden a determinada campaña
+        # user_list = []
+        # for c in colaboradores:
+        #     print(f"\n--- Colaborador: {c.nombre} ---")
+        #     for h in c.history.all():
+        #         print(f"Id del history: {h.history_user_id}\n Fecha de egreso {h.fec_egreso}\n Suspendido: {h.suspendido}")
+                
+        #         campania_history = getCampaniaByFecha(parse_fecha(h.fec_egreso)) if (h.fec_egreso != "" and h.fec_egreso != None) else ""
+
+        #         if(h.suspendido and campania_history != campania):
+        #             continue
+        #         else:
+        #             user_list.append(c)
+        #             break
+        # print(f"\n\n COLABORADORES QUE ESTAN ACTIVOS EN CAMPAÑA {campania} \n")
+        # for c in user_list:
+        #     print(c.nombre)
+        #     # if () 
 
         campaniasDisponibles = getCampanasDisponibles()
         metodosPago = [{"id": metodo.id, "alias": metodo.alias } for metodo in MetodoPago.objects.all()]
@@ -745,10 +824,14 @@ def importar_usuarios(request):
 
 #region Clientes - - - - - - - - - - - - - - - - - - - - - - -
 class ListaClientes(TestLogin, generic.View):
+
+
     model = Cliente
     template_name= "list_customers.html"
 
     def get(self,request,*args, **kwargs):
+        
+
         customers = Cliente.objects.filter(agencia_registrada = request.user.sucursales.all()[0])
         sucursalesObject = Sucursal.objects.all()
         sucursales = [sucursal.pseudonimo for sucursal in sucursalesObject ]
@@ -889,13 +972,13 @@ def importar_clientes(request):
                     nombre              = handle_nan(row['cliente']),
                     dni                 = dni,
                     agencia_registrada  = sucursal,
-                    domic               = handle_nan(row.get('domic', '')),
-                    loc                 = handle_nan(row.get('loc', '')),
-                    prov                = handle_nan(row.get('prov', '')),
-                    cod_postal          = row.get('cod_pos', ''),
-                    tel                 = row.get('tel_1', ''),
-                    estado_civil        = handle_nan(row.get('estado_civil', '')),
-                    ocupacion           = handle_nan(row.get('ocupacion', '')),
+                    # domic               = handle_nan(row.get('domic', '')),
+                    # loc                 = handle_nan(row.get('loc', '')),
+                    # prov                = handle_nan(row.get('prov', '')),
+                    # cod_postal          = row.get('cod_pos', ''),
+                    # tel                 = row.get('tel_1', ''),
+                    # estado_civil        = handle_nan(row.get('estado_civil', '')),
+                    # ocupacion           = handle_nan(row.get('ocupacion', '')),
                     # fec_nacimiento = format_date(row.get('fecha_de_nac', ''))  # si la incluyes
                 )
                 nuevos += 1

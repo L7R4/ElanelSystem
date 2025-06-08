@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Cliente,Usuario,Key,Sucursal,Ausencia,Descuento
 from django.contrib.auth.models import Permission
+from simple_history.admin import SimpleHistoryAdmin
 
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
@@ -9,14 +10,14 @@ class ClienteAdmin(admin.ModelAdmin):
     search_fields = ('nombre', 'dni',)
     
 
-@admin.register(Usuario)
-class UsuarioAdmin(admin.ModelAdmin):
+class UsuarioHistoryAdmin(SimpleHistoryAdmin):
     list_display = ('nombre', 'rango', 'dni', 'domic', 'prov', 'tel', 'fec_nacimiento')
-
+    history_list_display = ["status"]
     list_filter = ("sucursales", "suspendido",)
-
     search_fields = ('nombre', 'dni',)
+    history_list_per_page = 100
 
+admin.site.register(Usuario, UsuarioHistoryAdmin)
 admin.site.register(Key)
 admin.site.register(Sucursal)
 admin.site.register(Permission)

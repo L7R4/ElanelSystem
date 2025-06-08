@@ -35,7 +35,8 @@ table {
     /* border: 1px solid #000; */
 }
 table  td{
-    width: 200px;
+    /* width: 200px; */
+    font-size: 12px
 }
 table  td:nth-child(2){
     width: 100px;
@@ -65,7 +66,7 @@ table  td:nth-child(3){
 .notaImportanteWrapper{
     width: 100%;
     text-align: center;
-    margin-top: 8px;
+    margin-top: 20px;
 }
 .notaImportanteWrapper > p{
     font-size: 11px;
@@ -79,7 +80,7 @@ table  td:nth-child(3){
     display: flex;
     justify-content: space-between;
     font-weight: bold;
-    margin-top: 5px;
+    margin-top: 300px;
     /* height: 13px; */
     padding: 0 10px;
     border: 1px solid #00000079;
@@ -92,6 +93,7 @@ table  td:nth-child(3){
     /* align-items: center; */
     width: 100%;
     padding: 2px 0;
+    font-size: 13px;
     /* height: 30px; */
     /* margin-top: 5px; */
     /* margin-bottom: 2px; */
