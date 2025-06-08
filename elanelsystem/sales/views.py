@@ -411,7 +411,7 @@ def importVentas(request):
                     key = (pago.venta.id, pago.nro_cuota)
                     pagos_por_venta_cuota[key].append(pago.id)
 
-
+                print(f"✅ Pasó el agrupamiento de pagos")
                 ventas_map = { v.id: v for v in ventas_created}
                 ventas_para_actualizar = []
                 # 3) Recorre cada grupo y actualiza la cuota correspondiente
@@ -421,13 +421,22 @@ def importVentas(request):
                     cuota_dict = venta.cuotas[nro_cuota]
                     cuota_dict['pagos'] = pago_ids
                     ventas_para_actualizar.append(venta)
+                print(f"✅ Pasó el agrupamiento de ventas")
 
                 for venta in ventas_para_actualizar:
+                    print(f"|\nVenta {venta.nro_operacion} Cliente {venta.nro_cliente.nombre}")
                     # recalculo vencimientos y suspensión (si hace falta)
                     venta.testVencimientoCuotas()
+                    print(f"✅ Pasó test de vencimiento de cuotas")
+                    
                     venta.suspenderOperacion()
+                    print(f"✅ Pasó la verificacion de suspension de la operacion")
+
                     venta.cuotas = bloquer_desbloquear_cuotas(venta.cuotas)
+                    print(f"✅ Pasó el bloqueo o desbloqueo de cuotas")
+
                     venta.setDefaultFields()
+                print(f"✅ Pasó el recalculo de vencimientos y suspensión")
 
                 Ventas.objects.bulk_update(ventas_para_actualizar,['cuotas', 'adjudicado', 'suspendida', 'deBaja'])
                 print(f"✅  == CREACION DE CUOTAS Y PAGOS CON EXITO == ")
