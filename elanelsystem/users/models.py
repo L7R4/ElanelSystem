@@ -1,11 +1,9 @@
 from django.db import models
-from django.dispatch import receiver
-from django.core.validators import RegexValidator,EmailValidator,validate_email
+from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager, PermissionsMixin
 import re, datetime
-from dateutil.relativedelta import relativedelta
-from django.utils import timezone
+from simple_history.models import HistoricalRecords
 
 from elanelsystem.utils import obtenerCampaña_atraves_fecha
 
@@ -22,7 +20,7 @@ class Sucursal(models.Model):
     email_ref = models.CharField("Email de referencia",max_length =60, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.pseudonimo}"
+        return f" {self.id} {self.pseudonimo}"
 
     def save(self, *args, **kwargs):
         self.direccion = self.direccion.capitalize()
@@ -81,7 +79,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     nombre = models.CharField("Nombre Completo",max_length=100)
     sucursales = models.ManyToManyField(Sucursal, related_name='sucursales_usuarios',blank=True)
-    email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
+    # email = models.EmailField("Correo Electrónico",max_length=254, unique=True)
+    email = models.EmailField("Correo Electrónico",max_length=254, unique=True, default ="", blank=True, null=True)
+
     rango = models.CharField("Rango:",max_length=40)
     dni = models.CharField("DNI",max_length=12, blank = True, null = True)
     tel = models.CharField("Telefono",max_length=15, blank = True, null = True)
@@ -89,13 +89,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     fec_ingreso = models.CharField("Fecha de ingreso", max_length = 10, default ="")
     fec_egreso = models.CharField("Fecha de egreso", max_length = 10, default ="", blank=True, null=True)
 
-    domic = models.CharField("Domicilio",max_length=200, default="")
-    prov = models.CharField("Provincia",max_length=40, default="")
-    cp = models.CharField("Codigo postal",max_length=5, default="")
-    loc = models.CharField("Localidad",max_length=100, default="")
-    lugar_nacimiento = models.CharField("Lugar de nacimiento",max_length=100, default ="")
-    fec_nacimiento = models.CharField("Fecha de nacimiento", max_length = 10, default ="")
-    estado_civil = models.CharField("Estado civil", max_length =30,default ="")
+    domic = models.CharField("Domicilio",max_length=200, default="", blank=True, null=True)
+    prov = models.CharField("Provincia",max_length=40, default="", blank=True, null=True)
+    cp = models.CharField("Codigo postal",max_length=5, default="", blank=True, null=True)
+    loc = models.CharField("Localidad",max_length=100, default="", blank=True, null=True)
+    lugar_nacimiento = models.CharField("Lugar de nacimiento",max_length=100, default ="", blank=True, null=True)
+    fec_nacimiento = models.CharField("Fecha de nacimiento", max_length = 10, default ="", blank=True, null=True)
+    estado_civil = models.CharField("Estado civil", max_length =30,default ="", blank=True, null=True)
     xp_laboral = models.TextField("Experiencia laboral", blank=True,null=True, default="")
     
     premios = models.JSONField("Premios", default=list,blank=True,null=True)
@@ -103,6 +103,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     datos_familiares = models.JSONField("Datos familiares", default=list,blank=True,null=True)
     vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
     additional_passwords = models.JSONField("Contraseñas adicionales",default=dict,blank=True,null=True)
+    history = HistoricalRecords()
     
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
@@ -117,14 +118,41 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     def save(self, *args, **kwargs):
 
         # Capitalizar campos seleccionados
-        self.nombre = str(self.nombre.title())
-        self.domic = str(self.domic.capitalize())
-        self.prov = str(self.prov.title())
-        self.loc = str(self.loc.title())
-        self.lugar_nacimiento = str(self.lugar_nacimiento.title())
-        self.estado_civil = str(self.estado_civil.capitalize())
-        self.xp_laboral = str(self.xp_laboral.capitalize())
-        self.email = str(self.email.lower())
+        nombre_limpio = ' '.join(self.nombre.split()).title()
+        self.nombre = nombre_limpio
+
+        if not self.email:
+            local_part = self.nombre.replace(' ', '').lower()
+            self.email = f"{local_part}@gmail.com"
+        else:
+            self.email = self.email.lower()
+
+        # self.domic = str(self.domic.capitalize())
+        # self.prov = str(self.prov.title())
+        # self.loc = str(self.loc.title())
+        # self.lugar_nacimiento = str(self.lugar_nacimiento.title())
+        # self.estado_civil = str(self.estado_civil.capitalize())
+        # self.xp_laboral = str(self.xp_laboral.capitalize())
+
+        # Solo en actualizaciones (no en creación):
+        if self.pk:
+            # Traigo el estado anterior de la BD
+            old = Usuario.objects.get(pk=self.pk)
+            # Si cambiaron fec_ingreso:
+            if old.fec_ingreso != self.fec_ingreso:
+                # Limpio la fecha de egreso y desactivo la suspensión
+                self.fec_egreso = ""
+                self.suspendido = False
+            
+            #region Definir el tipo de cambio segun el campo que se modificó
+            
+            if old.fec_ingreso != self.fec_ingreso:
+                self._change_reason = "change_fechas"
+            elif old.rango != self.rango:
+                self._change_reason = "change_rango"
+            elif old.sucursales.all() != self.sucursales.all():
+                self._change_reason = "change_sucursal"  
+            #endregion
 
 
         super(Usuario, self).save(*args, **kwargs)
@@ -148,13 +176,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     def clean(self):
         errors = {}
         validation_methods = [
-            self.validation_nombre,
-            self.validation_email,
-            self.validation_dni,
-            self.validation_tel,
-            self.validation_fec_ingreso,
-            self.validation_fec_nacimiento,
-            self.validation_cp,
+            # self.validation_nombre,
+            # self.validation_email,
+            # self.validation_dni,
+            # self.validation_tel,
+            # self.validation_fec_ingreso,
+            # self.validation_fec_nacimiento,
+            # self.validation_cp,
         ]
 
         for method in validation_methods:
@@ -319,11 +347,11 @@ class Cliente(models.Model):
     # agencia_registrada = models.CharField(max_length=30,default="")
     agencia_registrada = models.ForeignKey(Sucursal, on_delete=models.PROTECT, related_name="cliente_sucursal")
 
-    domic = models.CharField(max_length=100,default="")
-    loc = models.CharField(max_length=40,default="")
-    prov = models.CharField(max_length=40,default="")
-    cod_postal = models.CharField(max_length=7,default="")
-    tel = models.CharField(max_length=15,default="")
+    domic = models.CharField(max_length=100,default="", blank = True, null = True)
+    loc = models.CharField(max_length=40,default="", blank = True, null = True)
+    prov = models.CharField(max_length=40,default="", blank = True, null = True)
+    cod_postal = models.CharField(max_length=7,default="", blank = True, null = True)
+    tel = models.CharField(max_length=15,default="", blank = True, null = True)
     fec_nacimiento = models.CharField(max_length=10, default="",blank=True,null=True)
     estado_civil = models.CharField(max_length=50, blank=True, null=True)
     ocupacion = models.CharField(max_length=50, blank=True, null=True)
