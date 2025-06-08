@@ -548,7 +548,7 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
     all_pagos_by_gerente = (
         PagoCannon.objects
         .filter(
-            Q(venta__gerente=gerente) & ~Q(venta__agencia__in=sucursales_region_objs),
+            Q(venta__gerente=gerente) & ~Q(venta__agencia = agencia),
             venta__is_commissionable=True,
             nro_cuota__in=[0, 1, 2, 3, 4],
             campana_de_pago=campania
@@ -592,99 +592,7 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
 
     
     for p in all_pagos_by_region:
-        
-
-    # for suc_obj  in sucursales_involucradas:
-    #     suc_nombre = suc_obj.pseudonimo
-    #     porcentaje_1_4 = 0.08 if suc_nombre in agencias_8_porc else 0.06
-
-
-        
-
-
-    #     sucObject = Sucursal.objects.filter(pseudonimo=suc).first()
-    #     porcentage_x_cuota = 0
-    #     premios_por_venta = 0
-
-    #     if(sucObject != agencia):
-    #         porcentage_x_cuota = 0.03
-    #         pagos_by_region = [p for p in all_pagos if p.venta.gerente != gerente and p.venta.agencia == sucObject]
-    #     else:
-    #         porcentage_x_cuota = 0.08 if suc in agencias_8_porc else 0.06
-    #         pagos_by_region = [p for p in all_pagos if p.venta.gerente == gerente and p.venta.agencia == sucObject]
-
-    #         if(suc in agencias_objs_200_ventas):
-    #             premios_por_venta = get_premio_x_cantidad_ventas_sucursal(campania, sucObject, 200)
-
-    #         else:
-    #             premios_por_venta = get_premio_x_cantidad_ventas_sucursal(campania, sucObject, 150)
-                
-    #     result["porcetage_x_cuota"] = porcentage_x_cuota
-
-    #     suc_clean = sucObject.pseudonimo.replace(" ", "").replace(",", "").lower()
-        
-    #     detalle_cuota_x = get_detalle_cuotas_x2(campania,sucObject,porcentage_x_cuota)
-    #     detalle_cuota_0 = get_detalle_cuotas_02(campania,sucObject)
-
-    #     result["detalleRegion"][f"{suc_clean}"] = {
-    #         "suc_id": sucObject.id,
-    #         "suc_name": sucObject.pseudonimo,
-    #         "suc_info": detalle_cuota_x | detalle_cuota_0 ,
-    #         "premios_por_venta": math.ceil(premios_por_venta),
-    #         "sub_total":math.ceil(detalle_cuota_x["comision_total_cuotas"] + premios_por_venta)
-    #     }
-
-    #     result["cantidad_total_cuotas"] += math.ceil(detalle_cuota_x["cantidad_total_cuotas"])
-    #     result["dinero_total_cuotas"] += math.ceil(detalle_cuota_x["dinero_total_cuotas"])
-    #     result["comision_total_cuotas"] += math.ceil(detalle_cuota_x["comision_total_cuotas"])
-    #     result["dinero_recadudado_cuotas_0"] += math.ceil(detalle_cuota_0["dinero_recadudado_cuotas_0"])
-
-    # # Analisis 2) Manejo cuyos pagos son del gerente en cuestion sin importar su region, sino por el simple hecho trabajado en esa sucursal
-    # sucursal_ids_involucradas = all_pagos.values_list("venta__agencia_id", flat=True).distinct()
-    # sucursales_involucradas = Sucursal.objects.filter(id__in=list(sucursal_ids_involucradas))
-
-    # for suc in sucursales_involucradas:
-    #     pagos_by_gerente = [p for p in all_pagos if p.venta.gerente == gerente and agencia != suc]
-    #     porcentage_x_cuota = 0.08 if suc.pseudonimo in agencias_8_porc else 0.06
-
-    #     suc_clean = sucObject.pseudonimo.replace(" ", "").replace(",", "").lower()
-
-    #     detalle_cuota_x = get_detalle_cuotas_x2(campania,sucObject,porcentage_x_cuota)
-    #     detalle_cuota_0 = get_detalle_cuotas_02(campania,sucObject)
-
-    #     if result["detalleRegion"].get(f"{suc_clean}"):
-    #         result["detalleRegion"][f"{suc_clean}"]["suc_info"].update(detalle_cuota_x | detalle_cuota_0)
-    #         result["detalleRegion"][f"{suc_clean}"]["sub_total"] += math.ceil(detalle_cuota_x["comision_total_cuotas"])
-    #     else:
-    #         result["detalleRegion"][f"{suc_clean}"] = {
-    #             "suc_id": suc.id,
-    #             "suc_name": suc.pseudonimo,
-    #             "suc_info": detalle_cuota_x | detalle_cuota_0,
-    #             "premios_por_venta": 0,  # No aplica en este caso
-    #             "sub_total": math.ceil(detalle_cuota_x["comision_total_cuotas"])
-    #         }
-    #     result["cantidad_total_cuotas"] += math.ceil(detalle_cuota_x["cantidad_total_cuotas"])
-    #     result["dinero_total_cuotas"] += math.ceil(detalle_cuota_x["dinero_total_cuotas"])
-    #     result["comision_total_cuotas"] += math.ceil(detalle_cuota_x["comision_total_cuotas"])
-    #     result["dinero_recadudado_cuotas_0"] += math.ceil(detalle_cuota_0["dinero_recadudado_cuotas_0"])
-    
-
-    # # Agrupo los pagos segun corresponda a su comision
-    # weps= {}
-    # for suc_id, pagos in pagos_por_sucursal.items():
-    #     weps["agencia_id"] = suc_id
-    #     for p in pagos:
-    #         venta = p.venta
-    #         suc = venta.agencia.pseudonimo
-    #         gerente = venta.gerente
-
-    #         if():
-    #             pass
-    #         elif():
-    #             pass
-    #         elif():
-    #             pass
-                
+        pass
 
 
 
