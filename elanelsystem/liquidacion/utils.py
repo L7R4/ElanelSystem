@@ -36,8 +36,8 @@ def calcular_cantidad_ventasPropias(ventas):
     """
 
     response ={}
-    response["ventas_x_suc"]["cant_ventas"] = len(ventas)
-    response["ventas_x_suc"]["detalle"] = [v.nro_operacion for v in ventas]
+    response["cant_ventas"] = len(ventas)
+    response["detalle"] = [v.nro_operacion for v in ventas]
 
     return response
 
@@ -124,7 +124,7 @@ def get_detalle_comision_x_cantidad_ventasPropias(ventas):
         response["planes"][typePlan]["cantidad_ventas"] += len(venta.cantidadContratos)
 
 
-    comisionTotal = 0.0
+    comisionTotal_by_suc = 0
     for keyPlan in response["planes"]:
         # ceil a cada comision de plan
         response["planes"][keyPlan]["comision"] = math.ceil(response["planes"][keyPlan]["comision"])
@@ -261,38 +261,24 @@ def comisiones_brutas_vendedor(usuario, campania, ventas):
 
 #region Funciones enfocadas a los  supervisores
 
-def calcular_ventas_supervisor(usuario, campania, agencia=None):
+def calcular_ventas_supervisor(ventas):
     """
     Cantidad de ventas totales del supervisor. (Siempre entero)
     """
-    ventas_qs = Ventas.objects.filter(
-        supervisor=usuario,
-        campania=campania,
-        # agencia=agencia,
-        is_commissionable=True,
-    )
+    return sum(len(v.cantidadContratos) for v in ventas)  # entero
 
-    return sum(len(v.cantidadContratos) for v in ventas_qs)  # entero
-
-def calcular_productividad_supervisor(usuario, campania, agencia=None):
+def calcular_productividad_supervisor(ventas):
     """
     Productividad total (sum of venta.importe). Aplico math.ceil.
     """
-    ventas_qs = Ventas.objects.filter(
-        supervisor=usuario,
-        campania=campania,
-        # agencia=agencia,
-        is_commissionable=True,
-    )
-
-    total = sum(v.importe for v in ventas_qs)
+    total = sum(v.importe for v in ventas)
     return math.ceil(total)
 
-def get_premio_x_productividad_supervisor(usuario, campania, agencia=None):
+def get_premio_x_productividad_supervisor(ventas):
     """
     Multiplicamos total_prod * coef. => ahí puede salir decimal => math.ceil
     """
-    total_prod = calcular_productividad_supervisor(usuario, campania)
+    total_prod = calcular_productividad_supervisor(ventas)
     premio = 0
     bandas = [
         (0, 16000000, 0),
@@ -308,7 +294,7 @@ def get_premio_x_productividad_supervisor(usuario, campania, agencia=None):
             break
     return math.ceil(premio)
 
-def get_premio_x_cantidad_ventas_equipo(usuario, campania, agencia=None):
+def get_premio_x_cantidad_ventas_equipo(ventas):
     """
     Devuelve dineroAsegurado si la suma de ventas > 80, sino 0. 
     No hace falta ceil, pues dineroAsegurado es un entero. 
@@ -316,24 +302,17 @@ def get_premio_x_cantidad_ventas_equipo(usuario, campania, agencia=None):
     """
     asegurado = Asegurado.objects.get(dirigido="Supervisor")
     dineroAsegurado = asegurado.dinero
-    cantidad_ventas_x_equipo = calcular_ventas_supervisor(usuario,campania)
+    cantidad_ventas_x_equipo = calcular_ventas_supervisor(ventas)
     
     if cantidad_ventas_x_equipo > 80:
         return math.ceil(dineroAsegurado)
     return 0
 
-def get_comision_x_cantidad_ventas_equipo(usuario, campania, agencia=None):
+def get_comision_x_cantidad_ventas_equipo(ventas):
     """
     total += venta.importe * coef => decimal => uso ceil en el final.
     """
-    ventas_qs = Ventas.objects.filter(
-        supervisor=usuario,
-        campania=campania,
-        # agencia=agencia,
-        is_commissionable=True,
-    )
-
-    cantVentas = sum(len(v.cantidadContratos) for v in ventas_qs)
+    cantVentas = sum(len(v.cantidadContratos) for v in ventas)
 
     bandas = [
         (0, 30, 0),
@@ -353,45 +332,18 @@ def get_comision_x_cantidad_ventas_equipo(usuario, campania, agencia=None):
             break
 
     total = 0
-    for venta in ventas_qs:
+    for venta in ventas:
         total += venta.importe * coef
 
     return math.ceil(total)
 
-def detalle_de_equipo_x_supervisor(usuario, campania, agencia=None):
-    """
-    Lista con nombre, cantidad de ventas y productividad.
-    Cantidad de ventas = entero; productividad = redondeo arriba.
-    """
-    ventas_qs = Ventas.objects.filter(
-        supervisor=usuario,
-        campania=campania,
-        # agencia=agencia,
-        is_commissionable=True,
-    )
-    
-    detalle_vendedores = []
-    for venta in ventas_qs:
-        vend = venta.vendedor
-        detalle = get_detalle_comision_x_cantidad_ventasPropias(vend, campania)["planes"]
-        
-        # detalle = detalle["planes"]
-        item = {
-            "nombre": vend.nombre,
-            "cantidad_ventas": calcular_cantidad_ventasPropias(vend, campania),
-            "productividad": calcular_productividad_ventasPropias(vend, campania),
-            "detalle": detalle["com_24_30_motos"]["ventas"] + detalle["com_24_30_prestamo_combo"]["ventas"] + detalle["com_48_60"]["ventas"]
-        }
-        detalle_vendedores.append(item)
-    return detalle_vendedores
-
-def comisiones_brutas_supervisor(usuario,campania,agencia=None):
+def comisiones_brutas_supervisor(ventas):
     """
     Devuelve la comision bruta del supervisor. 
     """
-    comision_x_cantidad_ventas = get_comision_x_cantidad_ventas_equipo(usuario, campania)
-    comision_x_productividad = get_premio_x_productividad_supervisor(usuario, campania)
-    comision_x_ventas_equipo = get_premio_x_cantidad_ventas_equipo(usuario, campania)
+    comision_x_cantidad_ventas = get_comision_x_cantidad_ventas_equipo(ventas)
+    comision_x_productividad = get_premio_x_productividad_supervisor(ventas)
+    comision_x_ventas_equipo = get_premio_x_cantidad_ventas_equipo(ventas)
 
     return {
         "comision_total": math.ceil(comision_x_cantidad_ventas + comision_x_productividad + comision_x_ventas_equipo),
@@ -497,14 +449,14 @@ def get_detalle_cuotas_02(pagos_sucursal):
 
 
 def get_premio_x_cantidad_ventas_sucursal2(campania, agencia, objetivo_gerente=0):
-    from elanelsystem.utils import get_subAgencias_por_provincia
+    # from elanelsystem.utils import get_subAgencias_por_provincia
     
     """
     1000 * cantidad_cuotas_0 si >= objetivo => se multiplica => potencial decimal no,
     pero se hace un int. Por seguridad, math.ceil.
     """
     # objetivo_gerente = 200
-    cantidad_cuotas_0 = get_detalle_cuotas_0(campania, agencia)["cantidad_cuotas_0"]
+    cantidad_cuotas_0 = get_detalle_cuotas_02(campania, agencia)["cantidad_cuotas_0"]
 
     if cantidad_cuotas_0 >= objetivo_gerente:
         return math.ceil(1000 * cantidad_cuotas_0)
@@ -567,9 +519,9 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
         pagos_0 = get_detalle_cuotas_02(value)
 
         if(suc_obj.pseudonimo in agencias_objs_200_ventas):
-            premios_por_venta = get_premio_x_cantidad_ventas_sucursal(campania, suc_obj, 200)
+            premios_por_venta = get_premio_x_cantidad_ventas_sucursal2(campania, suc_obj, 200)
         else:
-            premios_por_venta = get_premio_x_cantidad_ventas_sucursal(campania, suc_obj, 150)
+            premios_por_venta = get_premio_x_cantidad_ventas_sucursal2(campania, suc_obj, 150)
 
         result["porcetage_x_cuota"] = porcentage_x_cuota
 
@@ -641,208 +593,25 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
                 result["dinero_total_cuotas"] += math.ceil(pagos_1_4["dinero_total_cuotas"])
                 result["comision_total_cuotas"] += math.ceil(pagos_1_4["comision_total_cuotas"])
                 result["dinero_recadudado_cuotas_0"] += math.ceil(pagos_0["dinero_recadudado_cuotas_0"])
-    return result
-
-
-
-
-
-
-def get_detalle_cuotas_x(campania, agencia, porcetage_x_cuota):
-    """
-    Comision de cuotas 1,2,3,4 => math.ceil en comision_total_cuotas.
-    Ahora usamos solo PagoCannon para extraer los pagos ya filtrados.
-    """
-    from sales.models import PagoCannon
-    # Los índices de cuota que nos interesan
-    cuotas_numeros = [1, 2, 3, 4]
-
-    # Diccionario base
-    result = {
-        "porcetage_x_cuota": porcetage_x_cuota,
-        "detalleCuota": {},
-        "cantidad_total_cuotas": 0,
-        "dinero_total_cuotas": 0,
-        "comision_total_cuotas": 0,
-    }
-
-    # Inicializamos acumuladores por cuota
-    stats = {
-        nro: {"cantidad": 0, "dinero": 0, "detalle": [], "cuotas":[]}
-        for nro in cuotas_numeros
-    }
-
-    # 1) Traemos todos los pagos que cumplan las condiciones
-    pagos = (
-        PagoCannon.objects
-        .filter(
-            venta__agencia=agencia,
-            venta__is_commissionable=True,
-            nro_cuota__in=cuotas_numeros,
-            campana_de_pago=campania,
-        )
-        .select_related("venta")  # para no golpear la db al leer pago.venta
-    )
-
-    # 2) Recorremos solo los pagos válidos
-    for pago in pagos:
-        venta = pago.venta
-        idx = pago.nro_cuota
-        cuota_info = venta.cuotas[idx]
-        total_cuota = venta.cuotas[5]["total"]
-        n_contratos = len(venta.cantidadContratos)
-        
-        cuota_info.update({
-            "fecha_pago": pago.fecha,
-            "contratos": venta.cantidadContratos,
-        })
-
-        stats[idx]["cantidad"] += n_contratos
-        stats[idx]["dinero"]   += total_cuota
-        stats[idx]["detalle"].append(total_cuota)
-        stats[idx]["cuotas"].append(cuota_info)
-
-    # 3) Construimos el bloque de salida y acumulamos totales
-    for nro in cuotas_numeros:
-        dinero = stats[nro]["dinero"]
-        comision = dinero * porcetage_x_cuota
-
-        result["detalleCuota"][f"cuotas{nro}"] = {
-            "cantidad": stats[nro]["cantidad"],
-            "dinero_x_cuota": math.ceil(dinero),
-            "comision": math.ceil(comision),
-            "detalle": stats[nro]["detalle"],
-            "cuotas":  stats[nro]["cuotas"]
-        }
-
-        result["cantidad_total_cuotas"]   += stats[nro]["cantidad"]
-        result["dinero_total_cuotas"]     += dinero
-        result["comision_total_cuotas"]   += comision
-
-    # 4) Redondeos finales
-    result["dinero_total_cuotas"]   = math.ceil(result["dinero_total_cuotas"])
-    result["comision_total_cuotas"] = math.ceil(result["comision_total_cuotas"])
 
     return result
 
 
-def get_detalle_cuotas_0(campania, agencia):
-    """
-    Cuotas 0 => redondear dinero_recadudado_cuotas_0
-    Ahora usando solo PagoCannon para extraer pagos de cuota 0.
-    """
-    from sales.models import PagoCannon
-
-
-    # 1) Traer todos los pagos de cuota 0 para la campaña y agencia dadas
-    pagos0 = (
-        PagoCannon.objects
-        .filter(
-            venta__agencia=agencia,
-            venta__campania=campania,
-            venta__is_commissionable=True,
-            nro_cuota=0,
-            campana_de_pago=campania,
-        )
-        .select_related("venta")  # evitar JOIN extra al leer venta
-    )
-
-    # 2) Contar cuántas "cuotas 0" efectivas (= número de contratos por venta)
-    cantidad_cuotas_0 = sum(len(pago.venta.cantidadContratos) for pago in pagos0)
-
-    # 3) Sumar todo el dinero recaudado de esas cuotas 0
-    dinero_recadudado_cuotas_0 = sum(pago.monto for pago in pagos0)
-
-    # 4) Devolver el mismo formato de dict, con ceil en el dinero
-    return {
-        "cantidad_cuotas_0": cantidad_cuotas_0,
-        "dinero_recadudado_cuotas_0": math.ceil(dinero_recadudado_cuotas_0),
-    }
-
-
-def get_premio_x_cantidad_ventas_sucursal(campania, agencia, objetivo_gerente=0):
-    from elanelsystem.utils import get_subAgencias_por_provincia
-    
-    """
-    1000 * cantidad_cuotas_0 si >= objetivo => se multiplica => potencial decimal no,
-    pero se hace un int. Por seguridad, math.ceil.
-    """
-    # objetivo_gerente = 200
-    cantidad_cuotas_0 = get_detalle_cuotas_0(campania, agencia)["cantidad_cuotas_0"]
-
-    if cantidad_cuotas_0 >= objetivo_gerente:
-        return math.ceil(1000 * cantidad_cuotas_0)
-    return 0
-
-
-def get_detalle_sucursales_de_region(agencia,campania):
-    from elanelsystem.utils import get_subAgencias_por_provincia
-    
-    agencias_8_porc =["Corrientes, Corrientes", "Concordia, Entre Rios", "Resistencia, Chaco","Posadas, Misiones","Santiago Del Estero, Santiago Del Estero","Formosa, Formosa","Saenz Peña, Chaco"]
-    agencias_6_porc =["Paso De Los Libres, Corrientes", "Goya, Corrientes"]
-    agencias_objs_200_ventas = ["Corrientes, Corrientes", "Concordia, Entre Rios", "Resistencia, Chaco","Posadas, Misiones","Santiago Del Estero, Santiago Del Estero","Formosa, Formosa"]
-    result = {
-        "detalleRegion": {},
-        "porcetage_x_cuota": 0,
-        "cantidad_total_cuotas": 0,
-        "dinero_total_cuotas": 0,
-        "comision_total_cuotas": 0,
-        "cantidad_cuotas_0": 0,
-        "dinero_recadudado_cuotas_0": 0,
-    }
-
-    lista_sucursales = get_subAgencias_por_provincia(agencia)
-
-    for suc in lista_sucursales:
-        sucObject = Sucursal.objects.filter(pseudonimo=suc).first()
-        porcentage_x_cuota = 0
-        premios_por_venta = 0
-
-        if(sucObject != agencia):
-            porcentage_x_cuota = 0.03
-        else:
-            porcentage_x_cuota = 0.08 if suc in agencias_8_porc else 0.06
-            if(suc in agencias_objs_200_ventas):
-                premios_por_venta = get_premio_x_cantidad_ventas_sucursal(campania, sucObject, 200)
-
-            else:
-                premios_por_venta = get_premio_x_cantidad_ventas_sucursal(campania, sucObject, 150)
-                
-        result["porcetage_x_cuota"] = porcentage_x_cuota
-
-        suc_clean = sucObject.pseudonimo.replace(" ", "").replace(",", "").lower()
-        
-        detalle_cuota_x = get_detalle_cuotas_x(campania,sucObject,porcentage_x_cuota)
-        detalle_cuota_0 = get_detalle_cuotas_0(campania,sucObject)
-
-        result["detalleRegion"][f"{suc_clean}"] = {
-            "suc_id": sucObject.id,
-            "suc_name": sucObject.pseudonimo,
-            "suc_info": detalle_cuota_x | detalle_cuota_0 ,
-            "premios_por_venta": math.ceil(premios_por_venta),
-            "sub_total":math.ceil(detalle_cuota_x["comision_total_cuotas"] + premios_por_venta)
-        }
-
-        result["cantidad_total_cuotas"] += math.ceil(detalle_cuota_x["cantidad_total_cuotas"])
-        result["dinero_total_cuotas"] += math.ceil(detalle_cuota_x["dinero_total_cuotas"])
-        result["comision_total_cuotas"] += math.ceil(detalle_cuota_x["comision_total_cuotas"])
-        result["dinero_recadudado_cuotas_0"] += math.ceil(detalle_cuota_0["dinero_recadudado_cuotas_0"])
-    return result
-
-
-def comisiones_brutas_gerente(agencia,campania):
+def comisiones_brutas_gerente(gerente, agencia,campania):
     """
     Devuelve la comision bruta del gerente.
     """
-    detalle_region = get_detalle_sucursales_de_region(agencia,campania)["detalleRegion"]
+    detalle_region = get_detalle_sucursales_de_region2(gerente, agencia, campania)
 
-    total_comision = 0
-    for r in detalle_region.values():
-        total_comision += r["sub_total"]
+    
+    total_premios = 0
+    for r in detalle_region["detalleRegion"].values():
+        total_premios += r["premios_por_venta"]
 
     return {
-        "comision_total": math.ceil(total_comision),
-        "detalle_region": detalle_region,
+        "comision_total": math.ceil(detalle_region["comision_total_cuotas"]) + math.ceil(total_premios),
+        "comision_total_cuotas": detalle_region["comision_total_cuotas"],
+        "total_premios": total_premios
     }
 
 #endregion
@@ -1020,7 +789,7 @@ def get_ausencias_tardanzas(usuario, campania):
 # Las funciones detalle_liquidado_ventasPropias, detalle_descuestos, etc.
 # ya usan las de arriba, pero revisemos si necesitan un math.ceil extra.
 
-def detalle_liquidado_ventasPropias(usuario, campania, agencia):
+def detalle_liquidado_ventasPropias(usuario, campania):
     """
     Al final sumas la subcomisión. Ya viene redondeada de get_detalle_comision_x_cantidad_ventasPropias
     y get_detalle_cuotas1. 
@@ -1039,9 +808,11 @@ def detalle_liquidado_ventasPropias(usuario, campania, agencia):
 
     ventas_x_suc = defaultdict(list)
     for v in ventas_qs:
-        ventas_x_suc[v.agencia].append(v)
+        ventas_x_suc[v.agencia.id].append(v)
 
     for suc, ventas in ventas_x_suc.items():
+        suc_obj = Sucursal.objects.filter(id=suc).first()
+        suc_clean = suc_obj.pseudonimo.replace(" ", "").replace(",", "").lower()
         # 1) Calcular cantidad de ventas propias
         cantidad_ventas = calcular_cantidad_ventasPropias(ventas)["cant_ventas"]
 
@@ -1063,7 +834,8 @@ def detalle_liquidado_ventasPropias(usuario, campania, agencia):
         response["productividad_x_ventas_propias_total"] += productividad_x_ventas_propias
         response["cantidad_cuotas_1_total"] += cantidad_cuotas1
 
-        response["detalle"][suc.pseudonimo] = {
+        response["detalle"][suc_clean] = {
+            "suc_name": suc_obj.pseudonimo,
             "cantidadVentas": cantidad_ventas,
             "productividadXVentasPropias": productividad_x_ventas_propias,
             "cantidadCuotas1": cantidad_cuotas1,
@@ -1073,36 +845,6 @@ def detalle_liquidado_ventasPropias(usuario, campania, agencia):
             }
         }
 
-
-    # cantidad_ventas = calcular_cantidad_ventasPropias(usuario, campania, agencia)
-    # comisiones_brutas = comisiones_brutas_vendedor(usuario, campania, agencia)
-    # productividad_x_ventas_propias = calcular_productividad_ventasPropias(usuario, campania, agencia)
-    
-    # dict_comision_cant_ventas = get_detalle_comision_x_cantidad_ventasPropias(usuario, campania, agencia)
-    # # comision_x_cantidad_ventas_propias = dict_comision_cant_ventas["comision"]
-    # detalle_ventas_propias = dict_comision_cant_ventas["planes"]
-    # # coeficienteSelected = dict_comision_cant_ventas["coeficienteSelected"]
-
-
-    # dict_cuotas1 = get_detalle_cuotas1(usuario, campania, agencia)
-    # # comision_x_cuotas1 = dict_cuotas1["comision_total"]
-    # cantidad_cuotas1 = dict_cuotas1["cantidadCuotas1"]
-    # detalle_cuotas1 = dict_cuotas1["detalle"]
-
-    # # subtotal = comision_x_cantidad_ventas_propias + comision_x_cuotas1
-    # # subtotal = math.ceil(subtotal)
-
-    # resultado = {
-    #     **comisiones_brutas,
-    #     "coeficienteSelected": coeficienteSelected,
-    #     "cantidadVentas": cantidad_ventas,
-    #     "productividadXVentasPropias": productividad_x_ventas_propias, 
-    #     "cantidadCuotas1": cantidad_cuotas1,
-    #     "detalle": {
-    #         "detalleVentasPropias": detalle_ventas_propias,
-    #         "detalleCuotas1": detalle_cuotas1
-    #     }
-    # }
     return response
 
 def detalle_descuestos(usuario, campania, agencia):
@@ -1124,47 +866,64 @@ def detalle_descuestos(usuario, campania, agencia):
     }
     return resultado
 
-def detalle_liquidado_x_rol(usuario, campania, agencia, porcentage_x_cuota_gerente=0):
-    """
-    P.ej. comision_x_cantidad_ventas_equipo => ceil
-    comision_x_cuotas => ceil
-    etc. Revisado arriba, devuelven ya en ceil.
-    """
+def detalle_liquidado_x_rol(usuario, campania, suc):
+
     snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania)
     rango_lower = snapshot_usuario_by_campania[0].rango.lower()
 
     if rango_lower == "supervisor":
-        comisiones_brutas = comisiones_brutas_supervisor(usuario, campania, agencia)
-        cantidad_ventas_x_equipo = calcular_ventas_supervisor(usuario, campania, agencia)
-        productividad_x_equipo = calcular_productividad_supervisor(usuario, campania, agencia)
-        # comision_x_cantidad_ventas_equipo = get_comision_x_cantidad_ventas_equipo(usuario, campania, agencia)
-        # detalle_ventas_equipo = detalle_de_equipo_x_supervisor(usuario, campania, agencia)
-        resultado = {
-            **comisiones_brutas,
-            "cantidadVentasXEquipo": cantidad_ventas_x_equipo,
-            "productividadXVentasEquipo": productividad_x_equipo,
+        ventas_qs = Ventas.objects.filter(supervisor= usuario, campania=campania, is_commissionable=True)
+        comisiones_brutas_dict = comisiones_brutas_supervisor(usuario, campania, ventas_qs)
+        
+        ventas_x_suc = defaultdict(list)
+        for v in ventas_qs:
+            ventas_x_suc[v.agencia.id].append(v)
+        
+        response = {
+            **comisiones_brutas_dict,
+            "cantidadVentasXEquipo_total": 0,
+            "productividadXVentasEquipo_total": 0,
+            "detalle" : {}
         }
 
-        # resultado = {
-        #     "comision_subtotal": comision_x_cantidad_ventas_equipo,  # ya ceil
-        #     "detalle": {
-        #         "cantidadVentasXEquipo": cantidad_ventas_x_equipo,    # int
-        #         "productividadXVentasEquipo": productividad_x_equipo, # ceil
-        #         "detalleVentasXEquipo": detalle_ventas_equipo
-        #     }
-        # }
-        return resultado
+        for suc, ventas in ventas_x_suc.items():
+            suc_obj = Sucursal.objects.filter(id=suc).first()
+            suc_clean = suc_obj.pseudonimo.replace(" ", "").replace(",", "").lower()
+
+            cantidad_ventas_x_equipo = calcular_ventas_supervisor(ventas)
+            productividad_x_equipo = calcular_productividad_supervisor(ventas)
+
+            # 5) Sumar resultados al response
+            response["cantidadVentasXEquipo_total"] += cantidad_ventas_x_equipo
+            response["productividad_x_equipo_total"] += productividad_x_equipo
+
+            response["detalle"][suc_clean] = {
+                "suc_name": suc_obj.pseudonimo,
+                "cantidad_ventas_x_equipo": cantidad_ventas_x_equipo,
+                "productividad_x_equipo": productividad_x_equipo,
+            }
+
+
+        return response
 
     elif rango_lower == "gerente sucursal":
-        detalleRegion = get_detalle_sucursales_de_region(agencia, campania)
-        region = detalleRegion["detalleRegion"]         
+        detalleRegion = get_detalle_sucursales_de_region2(usuario, suc, campania)
 
-        resultado = {**region}
-        return resultado
+        comisiones_brutas_dict = comisiones_brutas_gerente(usuario, suc, campania)
+
+        response = {
+            **comisiones_brutas_dict,
+            "cantidad_total_cuotas": detalleRegion["cantidad_total_cuotas"],
+            "dinero_total_cuotas": detalleRegion["dinero_total_cuotas"],
+            "dinero_recadudado_cuotas_0": detalleRegion["dinero_recadudado_cuotas_0"],
+            "detalle" : detalleRegion["detalleRegion"] 
+        }
+
+        return response
 
     else:
         return {
-            "comision_subtotal": 0,
+            "comision_total": 0,
             "detalle": {}
         }
 
@@ -1178,7 +937,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
         ajustes_usuario = []
 
     # 1) Comisiones de ventas propias
-    ventas_propias_dict = detalle_liquidado_ventasPropias(usuario, campania, agencia)
+    ventas_propias_dict = detalle_liquidado_ventasPropias(usuario, campania)
     comision_bruta_vendedor = ventas_propias_dict["comision_total"]
     # print(f"\n ✅ Detalle de ventas propias liquidadas de -------- {usuario.nombre} --------:\n")
     # print(f"{ventas_propias_dict}")
@@ -1190,6 +949,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
 
     # 4) Comisión / bonos de rol
     rol_dict = detalle_liquidado_x_rol(usuario, campania, agencia)
+
     # print(f"\n ✅ Detalle de rol liquidadas de -------- {usuario.nombre} --------:\n")
     # print(f"{rol_dict}")
     
@@ -1200,9 +960,9 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
     if rango_lower == "vendedor":
         comision_bruta_inicial = comision_bruta_vendedor
     elif rango_lower == "supervisor":
-        comision_bruta_inicial = comisiones_brutas_supervisor(usuario,campania,agencia)["comision_total"]
+        comision_bruta_inicial = rol_dict["comision_total"]
     elif rango_lower == "gerente sucursal":
-        comision_bruta_inicial = comisiones_brutas_gerente(agencia,campania)["comision_total"]
+        comision_bruta_inicial = rol_dict["comision_total"]
 
     # 5) Asegurado
     try:
@@ -1230,7 +990,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
 
     # Si no es vendedor, sumamos comisiones de ventas propias nuevamente (+ premios) 
     if rango_lower != "vendedor":
-        comision_bruta_final += comisiones_brutas_vendedor(usuario,campania,agencia)["comision_total"]
+        comision_bruta_final += comision_bruta_vendedor
 
     comision_neta = comision_bruta_final - total_descuentos
 
