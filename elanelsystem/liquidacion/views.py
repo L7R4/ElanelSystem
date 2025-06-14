@@ -213,7 +213,7 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
     colaboradores_list = []
 
     for item in colaboradores:
-        if item.rango in ["Admin","Administrativa","Administrativo"]:
+        if item.rango in ["Admin","Administrativa","Administrativo"] or item.is_superuser:
             continue
 
         # Filtrar los ajustes de este usuario
