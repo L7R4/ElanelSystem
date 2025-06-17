@@ -512,8 +512,10 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
         suc_obj = Sucursal.objects.filter(id=key).first()
         suc_clean = suc_obj.pseudonimo.replace(" ", "").replace(",", "").lower()
 
-        porcentage_x_cuota = 0.08 if suc_clean in agencias_8_porc else 0.06
+        print(f"\n Sucursal a trabajar -> {suc_clean}")
+        porcentage_x_cuota = 0.08 if suc_obj.pseudonimo in agencias_8_porc else 0.06
         premios_por_venta = 0
+        print(f"\n Procentaje seleccionado -> {porcentage_x_cuota}")
 
         pagos_1_4 = get_detalle_cuotas_x2(value, porcentage_x_cuota)
         pagos_0 = get_detalle_cuotas_02(value)
@@ -566,7 +568,7 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
             suc_obj = Sucursal.objects.filter(id=key).first()
             suc_clean = suc_obj.pseudonimo.replace(" ", "").replace(",", "").lower()
 
-            porcentage_x_cuota = 0.08 if suc_clean in agencias_8_porc else 0.06
+            porcentage_x_cuota = 0.03
             premios_por_venta = 0
 
             pagos_1_4 = get_detalle_cuotas_x2(value, porcentage_x_cuota)

@@ -9,14 +9,13 @@
 <body> 
     {% for recibo in data %}
         {% if recibo.tipo_colaborador == "Gerente sucursal"%}
-            {% for agencia in recibo.info_total_de_comision.detalle.rol.values %}
+            {% for agencia in recibo.info_total_de_comision.detalle.rol.detalle.values %}
                 <div class="reciboPairWrapper"> 
 
                     <div class="reciboWrapper">
                         <div class="recibo">
                             <img class="logo" src="{% static 'images/logoElanelPDF.png' %}">
                             <h1 class="tittleRecibo">RECIBO DE HONORARIOS – SERVICIOS PROFESIONALES</h1>
-
                             <div class="divInfoWrapper"> 
                                 <div class="infoUserWrapper">
                                     <p>{{agencia.suc_name}}</p>
@@ -74,20 +73,24 @@
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.cantidad}}</td>
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.comision|currency_ar}}</td>
                                     </tr>
+                                    {% if recibo.sucursal == agencia.suc_name %}
                                     <tr>
                                         <td>Asegurado</td>
                                         <td> - - - </td>
                                         <td>{{recibo.info_total_de_comision.asegurado|currency_ar}}</td>      
                                     </tr>
+                                    {%endif%}
+
                                     {% if recibo.sucursal == agencia.suc_name %}
-                                        {% for a in recibo.info_total_de_comision.detalle.rol.values  %}
+                                        {% for a in recibo.info_total_de_comision.detalle.rol.detalle.values  %}
                                         <tr class="subTotalWrapper">
                                             {% if recibo.sucursal == a.suc_name %}
                                             <td colspan="2">Sub-total {{a.suc_name}}</td>
+                                            <td colspan="2">{{a.sub_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                             {% else %}
                                             <td colspan="2">Comisiones de {{a.suc_name}}</td> 
+                                            <td colspan="2">{{a.sub_total|currency_ar}}</td>
                                             {% endif %}
-                                            <td colspan="2">{{a.sub_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                         </tr>
                                         {% endfor %}
                                     {%endif%}
@@ -206,7 +209,7 @@
                             </div>
                             <div class="notaImportanteWrapper">
                                 <p><span>Finiquito Parcial:</span>
-Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
+                                Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
                             </div>
                         </div>
                     
@@ -224,7 +227,6 @@ Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERV
                         <div class="recibo">
                             <img class="logo" src="{% static 'images/logoElanelPDF.png' %}">
                             <h1 class="tittleRecibo">RECIBO DE HONORARIOS – SERVICIOS PROFESIONALES</h1>
-
                             <div class="divInfoWrapper"> 
                                 <div class="infoUserWrapper">
                                     <p>{{agencia.suc_name}}</p>
@@ -282,20 +284,24 @@ Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERV
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.cantidad}}</td>
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.comision|currency_ar}}</td>
                                     </tr>
+                                    {% if recibo.sucursal == agencia.suc_name %}
                                     <tr>
                                         <td>Asegurado</td>
                                         <td> - - - </td>
                                         <td>{{recibo.info_total_de_comision.asegurado|currency_ar}}</td>      
                                     </tr>
+                                    {%endif%}
+                                    
                                     {% if recibo.sucursal == agencia.suc_name %}
-                                        {% for a in recibo.info_total_de_comision.detalle.rol.values  %}
+                                        {% for a in recibo.info_total_de_comision.detalle.rol.detalle.values  %}
                                         <tr class="subTotalWrapper">
                                             {% if recibo.sucursal == a.suc_name %}
                                             <td colspan="2">Sub-total {{a.suc_name}}</td>
+                                            <td colspan="2">{{a.sub_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                             {% else %}
                                             <td colspan="2">Comisiones de {{a.suc_name}}</td> 
+                                            <td colspan="2">{{a.sub_total|currency_ar}}</td>
                                             {% endif %}
-                                            <td colspan="2">{{a.sub_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                         </tr>
                                         {% endfor %}
                                     {%endif%}
@@ -414,7 +420,7 @@ Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERV
                             </div>
                             <div class="notaImportanteWrapper">
                                 <p><span>Finiquito Parcial:</span>
-Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
+                                Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
                             </div>
                         </div>
                     
