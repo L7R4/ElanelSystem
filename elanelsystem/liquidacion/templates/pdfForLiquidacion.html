@@ -114,20 +114,18 @@
                                 <tbody>
                                     <tr>
                                         <td>Motos (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
                                     </tr>
-
                                     <tr>
                                         <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                     </tr>
-
                                     <tr>
                                         <td>Ventas (48/60 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                     </tr>
 
                                     <tr>
@@ -143,7 +141,7 @@
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                     </tr>
                                     
@@ -291,7 +289,7 @@
                                         <td>{{recibo.info_total_de_comision.asegurado|currency_ar}}</td>      
                                     </tr>
                                     {%endif%}
-                                    
+
                                     {% if recibo.sucursal == agencia.suc_name %}
                                         {% for a in recibo.info_total_de_comision.detalle.rol.detalle.values  %}
                                         <tr class="subTotalWrapper">
@@ -325,20 +323,18 @@
                                 <tbody>
                                     <tr>
                                         <td>Motos (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
                                     </tr>
-
                                     <tr>
                                         <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                     </tr>
-
                                     <tr>
                                         <td>Ventas (48/60 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                     </tr>
 
                                     <tr>
@@ -354,7 +350,7 @@
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                     </tr>
                                     
@@ -478,13 +474,13 @@
                                 <tbody>
                                     <tr>
                                         <td>Ventas del equipo</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.rol.cantidadVentasXEquipo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.rol.cantidadVentasXEquipo_total}}</td>
                                         <td> - - - </td>
                                     </tr>
                                     <tr>
                                         <td>Desempeño del equipo</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.rol.productividadXVentasEquipo|currency_ar}} </td>
+                                        <td>{{recibo.info_total_de_comision.detalle.rol.productividad_x_equipo_total|currency_ar}} </td>
                                     </tr>
                                     <tr>
                                         <td>Comision por cant. ventas</td>
@@ -531,19 +527,19 @@
                                 <tbody>
                                     <tr>
                                         <td>Motos (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
             
                                     </tr>
                                     <tr>
                                         <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                     </tr>
                                     <tr>
                                         <td>Ventas (48/60 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                     </tr>
                                     <tr>
                                         <td>Premio por productividad</td>
@@ -558,7 +554,7 @@
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                     </tr>
                                     
@@ -627,20 +623,21 @@
                                     <tbody>
                                         <tr>
                                             <td>Motos (24/30 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
-                
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
+            
                                         </tr>
                                         <tr>
                                             <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                         </tr>
                                         <tr>
                                             <td>Ventas (48/60 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                         </tr>
+                                        
                                         <tr>
                                             <td>Premio por productividad</td>
                                             <td> - - - </td>
@@ -654,7 +651,7 @@
                                         
                                         <tr>
                                             <td>Cuotas 1</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                             <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                         </tr>
                                         <tr>
@@ -761,13 +758,13 @@
                                 <tbody>
                                     <tr>
                                         <td>Ventas del equipo</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.rol.cantidadVentasXEquipo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.rol.cantidadVentasXEquipo_total}}</td>
                                         <td> - - - </td>
                                     </tr>
                                     <tr>
                                         <td>Desempeño del equipo</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.rol.productividadXVentasEquipo|currency_ar}} </td>
+                                        <td>{{recibo.info_total_de_comision.detalle.rol.productividad_x_equipo_total|currency_ar}} </td>
                                     </tr>
                                     <tr>
                                         <td>Comision por cant. ventas</td>
@@ -814,19 +811,19 @@
                                 <tbody>
                                     <tr>
                                         <td>Motos (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
             
                                     </tr>
                                     <tr>
                                         <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                     </tr>
                                     <tr>
                                         <td>Ventas (48/60 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                     </tr>
                                     <tr>
                                         <td>Premio por productividad</td>
@@ -841,7 +838,7 @@
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                     </tr>
                                     
@@ -910,20 +907,21 @@
                                     <tbody>
                                         <tr>
                                             <td>Motos (24/30 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
-                
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
+            
                                         </tr>
                                         <tr>
                                             <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                         </tr>
                                         <tr>
                                             <td>Ventas (48/60 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                         </tr>
+                                        
                                         <tr>
                                             <td>Premio por productividad</td>
                                             <td> - - - </td>
@@ -937,7 +935,7 @@
                                         
                                         <tr>
                                             <td>Cuotas 1</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                             <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                         </tr>
                                         <tr>
@@ -987,7 +985,7 @@
                                     <p>{{recibo.info_total_de_comision.comision_total|currency_ar}}</p>
                                 </div>
                                 <div class="notaImportanteWrapper">
-                                    <p><span>Finiquito Parcial:</span>
+                                   <p><span>Finiquito Parcial:</span>
                                     Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
                                 </div>
                             </div>

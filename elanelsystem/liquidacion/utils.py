@@ -512,10 +512,10 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
         suc_obj = Sucursal.objects.filter(id=key).first()
         suc_clean = suc_obj.pseudonimo.replace(" ", "").replace(",", "").lower()
 
-        print(f"\n Sucursal a trabajar -> {suc_clean}")
+        # print(f"\n Sucursal a trabajar -> {suc_clean}")
         porcentage_x_cuota = 0.08 if suc_obj.pseudonimo in agencias_8_porc else 0.06
         premios_por_venta = 0
-        print(f"\n Procentaje seleccionado -> {porcentage_x_cuota}")
+        # print(f"\n Procentaje seleccionado -> {porcentage_x_cuota}")
 
         pagos_1_4 = get_detalle_cuotas_x2(value, porcentage_x_cuota)
         pagos_0 = get_detalle_cuotas_02(value)
@@ -806,6 +806,12 @@ def detalle_liquidado_ventasPropias(usuario, campania):
         "cant_ventas_total":0,
         "productividad_x_ventas_propias_total": 0,
         "cantidad_cuotas_1_total":0,
+        "cant_ventas_com_24_30_motos": 0,
+        "comisiones_com_24_30_motos": 0,
+        "cant_ventas_com_24_30_prestamo_combo": 0,
+        "comisiones_com_24_30_prestamo_combo": 0,
+        "cant_ventas_com_48_60": 0,
+        "comisiones_com_48_60": 0,
         "detalle": {}    
     }
 
@@ -838,6 +844,13 @@ def detalle_liquidado_ventasPropias(usuario, campania):
         response["cant_ventas_total"] += cantidad_ventas
         response["productividad_x_ventas_propias_total"] += productividad_x_ventas_propias
         response["cantidad_cuotas_1_total"] += cantidad_cuotas1
+        response["cant_ventas_com_24_30_motos"] += detalle_ventas_propias["com_24_30_motos"]["cantidad_ventas"]
+        response["comisiones_com_24_30_motos"] += detalle_ventas_propias["com_24_30_motos"]["comision"]
+        response["cant_ventas_com_24_30_prestamo_combo"] += detalle_ventas_propias["com_24_30_prestamo_combo"]["cantidad_ventas"]
+        response["comisiones_com_24_30_prestamo_combo"] += detalle_ventas_propias["com_24_30_prestamo_combo"]["comision"]
+        response["cant_ventas_com_48_60"] += detalle_ventas_propias["com_48_60"]["cantidad_ventas"]
+        response["comisiones_com_48_60"] += detalle_ventas_propias["com_48_60"]["comision"]
+
 
         response["detalle"][suc_clean] = {
             "suc_name": suc_obj.pseudonimo,
@@ -878,7 +891,7 @@ def detalle_liquidado_x_rol(usuario, campania, suc):
 
     snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania)
     rango_lower = snapshot_usuario_by_campania[0].rango.lower()
-
+    print(f"\n\nRango de {usuario.nombre} -> {rango_lower}")
     if rango_lower == "supervisor":
         ventas_qs = Ventas.objects.filter(supervisor= usuario, campania=campania, is_commissionable=True)
         comisiones_brutas_dict = comisiones_brutas_supervisor(ventas_qs)
@@ -1077,21 +1090,9 @@ def detalles_ventas_x_equipo(agencia,campania,user):
     return ventas_by_user
 
 
-def detalle_pagos_considerados_x_agencia(agencia,campania):
-    from sales.models import PagoCannon
-
-    pagos_qs = (
-        PagoCannon.objects
-        .filter(
-            venta__agencia=agencia,
-            venta__is_commissionable=True,
-            campana_de_pago=campania,
-        )
-        .select_related('venta')
-    )
-
+def factory_pagos(pagos):
     pagos_list=[]
-    for pago in pagos_qs:
+    for pago in pagos:
         for contrato in pago.venta.cantidadContratos:
             pagos_list.append(
                 {
@@ -1118,16 +1119,49 @@ def detalle_pagos_considerados_x_agencia(agencia,campania):
     return pagos_list
 
 
+def detalle_pagos_x_gerente(gerente,campania):
+    from sales.models import PagoCannon
+
+    all_pagos_by_gerente = (
+        PagoCannon.objects
+        .filter(
+            Q(venta__gerente=gerente),
+            venta__is_commissionable=True,
+            nro_cuota__in=[0, 1, 2, 3, 4],
+            campana_de_pago=campania
+        )
+        .select_related("venta", "venta__agencia")
+    )
+    pagos = factory_pagos(all_pagos_by_gerente)
+    return pagos
+
+
 def detalles_pagos_x_region(agencia,campania):
     from elanelsystem.utils import get_subAgencias_por_provincia
-    sucursales_x_region = get_subAgencias_por_provincia(agencia)
+    from sales.models import PagoCannon
 
-    all_pagos = []
-    for sucursal in sucursales_x_region:
-        sucursalObject = Sucursal.objects.filter(pseudonimo=sucursal).first()
-        ventas = detalle_pagos_considerados_x_agencia(sucursalObject,campania)
-        all_pagos.extend(ventas)
-    return all_pagos
+    pagos = []
+    subAgencias = get_subAgencias_por_provincia(agencia)
+    if subAgencias != []:
+        sucursales_region_objs = list(
+            Sucursal.objects.filter(pseudonimo__in=subAgencias)
+        )
+        
+        all_pagos_by_subAgencias = (
+            PagoCannon.objects
+            .filter(
+                Q(venta__agencia__in=sucursales_region_objs),
+                venta__is_commissionable=True,
+                nro_cuota__in=[1, 2, 3, 4],
+                campana_de_pago=campania
+            )
+            .select_related("venta", "venta__agencia")
+        )
+
+        ventas = factory_pagos(all_pagos_by_subAgencias)
+        pagos.extend(ventas)
+
+    return pagos
 
 
 def detalle_cuota_1_adelantadas(agencia,campania,user):
@@ -1186,15 +1220,18 @@ def detalles_ventas_x_region(agencia,campania):
     return all_ventas
 
 
-def detalle_cuotas_0(agencia,campania):
-    cuotas_por_region = detalles_pagos_x_region(agencia,campania)
+def detalle_cuotas_0(gerente,campania):
+    cuotas_por_region = detalle_pagos_x_gerente(gerente,campania)
     return list(filter(lambda x: x["nro_cuota"] == 0, cuotas_por_region))
 
 
-def detalles_cuotas_1_a_4(agencia,campania):
+def detalles_cuotas_1_a_4(agencia,campania,gerente):
     nums_cuotas = [1, 2, 3, 4]
+    all_cuotas = []
     cuotas_por_region = detalles_pagos_x_region(agencia,campania)
-    return list(filter(lambda x: x["nro_cuota"] in nums_cuotas, cuotas_por_region))
+    cuotas_por_gerente = detalle_pagos_x_gerente(gerente,campania)
+    all_cuotas = cuotas_por_region + cuotas_por_gerente
+    return list(filter(lambda x: x["nro_cuota"] in nums_cuotas, all_cuotas))
 
 
 
