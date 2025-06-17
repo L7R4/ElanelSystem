@@ -417,13 +417,13 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
             html += `
             <div class="subDetalleGroup">
               <h3>Ventas de la agencia</h3>
-              <p><strong>Cuotas 0:</strong> ${vp_suc.cantidad_cuotas_0 || 0}</p>
+              <p><strong>Cuotas 0:</strong> ${rp_suc.suc_info.cantidad_cuotas_0 || 0}</p>
               <p><strong>Premio cuota 0:</strong> $${rp_suc.premios_por_venta || 0}</p>
           `;
             ["1", "2", "3", "4"].forEach(nro => {
                 const det = rp_suc.suc_info.detalleCuota?.[`cuotas${nro}`] || {};
                 html += `
-                <p><strong>Cuota ${nro}:</strong> ${det.cantidad || 0} unidades — Comisión: $${det.comision || 0}</p>
+                <p><strong>Cuota ${nro}:</strong> ${det.cantidad || 0} — Comisión: $${det.comision || 0}</p>
             `;
             });
             // sub‐total sucursal
