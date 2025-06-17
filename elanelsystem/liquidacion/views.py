@@ -425,7 +425,7 @@ def ajustesCoeficiente_gerente_sucursal(request):
 def preViewPDFLiquidacion(request):
     datos = request.session.get('liquidacion_data', {})
     print(f"\n\n [DEBUG] Datos de liquidación: \n")
-    gerente = [item for item in datos if item["tipo_colaborador"] == "Gerente sucursal"]
+    gerente = [item for item in datos if item["tipo_colaborador"] == "Supervisor"]
     print(gerente)
 
     # Para pasar el detalles de los movs
@@ -912,7 +912,7 @@ def export_excel_detalle_comisionado(request):
         # 5) Si es gerente sucursal: agrega dos hojas más
         if rol == "gerente sucursal":
 
-            cuotas_0_x_region = detalle_cuotas_0(agencia,campania)
+            cuotas_0_x_region = detalle_cuotas_0(user,campania)
 
             sheets["Cuotas 0"] = [
             {
@@ -932,7 +932,7 @@ def export_excel_detalle_comisionado(request):
             ]
 
 
-            cuotas_1a4_x_region = detalles_cuotas_1_a_4(agencia,campania)
+            cuotas_1a4_x_region = detalles_cuotas_1_a_4(agencia,campania,user)
             sheets["Cuotas 1 - 4"] = []
             for c in cuotas_1a4_x_region:
                 venta = Ventas.objects.filter(id=c["venta_id"]).first()
