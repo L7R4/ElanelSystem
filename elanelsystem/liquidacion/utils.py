@@ -984,7 +984,8 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
     elif rango_lower == "supervisor":
         comision_bruta_inicial = rol_dict["comision_total"]
     elif rango_lower == "gerente sucursal":
-        comision_bruta_inicial = rol_dict["comision_total"]
+        suc_clean = agencia.pseudonimo.replace(" ", "").replace(",", "").lower()
+        comision_bruta_inicial = rol_dict["detalle"][suc_clean]["sub_total"]
 
     # 5) Asegurado
     try:
@@ -1000,6 +1001,9 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
     if comision_bruta_inicial < asegurado_completo:
         diferencia_asegurado = asegurado_completo - comision_bruta_inicial
         comision_bruta_final = comision_bruta_inicial + diferencia_asegurado
+        if rango_lower == "gerente sucursal":
+            comision_bruta_final = rol_dict["comision_total"] + diferencia_asegurado
+
     else:
         comision_bruta_final = comision_bruta_inicial
 
