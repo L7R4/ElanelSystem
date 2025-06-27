@@ -149,7 +149,9 @@ function actualizarResultadosColaboradores(resultados, contenedor) {
         // Se reccore los campos de cada elemento y se lo guarda en un div
         divs += `<li id="idColaborador_${item.id}">
         <div class="wrapperNombreColaborador">
-            <p>${item.nombre}</p>
+            <p class="name_user">${item.nombre}</p>
+            <p class="type_user" >${item.tipo_colaborador}</p>
+            
         </div>
         <div class="wrapperComisionColaborador">
             <p>$ ${item.comisionTotal}</p>
@@ -232,121 +234,6 @@ function hiddenLoader() {
 
 
 // #region Obtener mas info sobre la liquidacion
-// function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_ajustes, detalle) {
-
-
-//     const ventas = detalle.info_total_de_comision.detalle.ventasPropias || {};
-//     const rol = detalle.info_total_de_comision.detalle.rol || {};
-//     const ajustes = otros_ajustes || [];
-
-//     let total_ajuste = 0;
-//     ajustes.forEach(aj => {
-//         if (aj.ajuste_tipo === "positivo") total_ajuste += aj.dinero;
-//         else if (aj.ajuste_tipo === "negativo") total_ajuste -= aj.dinero;
-//     });
-
-//     const comision_ventas = ventas.comision_x_cantidad_ventas || 0;
-//     const comision_cuotas = ventas.comision_x_cuotas1 || 0;
-//     const premio_productividad_propia = ventas.premio_x_productividad_ventas_propias || 0;
-
-//     const premio_ventas_equipo = rol.comision_x_ventas_equipo || 0;
-//     const premio_productividad_equipo = rol.comision_x_productividad || 0;
-//     const comision_ventas_equipo = rol.comision_x_cantidad_ventas || 0;
-
-//     const comision_total = detalle.comisionTotal
-//     const asegurado = detalle.info_total_de_comision.asegurado
-
-//     let html = `<div class="wrapperDetalleLiquidacion">
-//         <h2>Detalle de ${user_name}</h2>`;
-
-//     html += `
-//     <div class="subDetalleGroup">
-//         <h3>Ventas propias</h3>
-//         <p><strong>Cantidad de ventas:</strong> ${ventas.cantidadVentas || 0}</p>
-//         <p><strong>Productividad propia:</strong> $${ventas.productividadXVentasPropias || 0}</p>
-//         <p><strong>Cuotas 1 pagadas:</strong> ${ventas.cantidadCuotas1 || 0}</p>
-//         <p><strong>Comisión por ventas:</strong> $${comision_ventas}</p>
-//         <p><strong>Comisión por cuotas 1:</strong> $${comision_cuotas}</p>
-//         <p><strong>Premio por productividad propia:</strong> $${premio_productividad_propia}</p>
-//     </div>`;
-
-//     if (tipo_colaborador.toLowerCase() === "supervisor") {
-//         html += `
-//         <div class="subDetalleGroup">
-//             <h3>Equipo</h3>
-//             <p><strong>Cantidad de ventas del equipo:</strong> ${rol.cantidadVentasXEquipo || 0}</p>
-//             <p><strong>Productividad del equipo:</strong> $${rol.productividadXVentasEquipo || 0}</p>
-//             <p><strong>Comision por cantidad de ventas del equipo:</strong> $${comision_ventas_equipo}</p>
-//             <p><strong>Premio por cantidad de ventas del equipo:</strong> $${premio_ventas_equipo}</p>
-//             <p><strong>Premio por productividad del equipo:</strong> $${premio_productividad_equipo}</p>
-//         </div>`;
-//     }
-
-//     if (tipo_colaborador.toLowerCase() === "gerente sucursal") {
-
-//         Object.values(rol).forEach(valor => {
-
-//             const agenciaId = valor["suc_id"]
-//             const agenciaName = valor["suc_name"]
-//             const agenciaInfo = valor["suc_info"]
-//             const premios_x_venta = valor["premios_por_venta"]
-//             const sub_total = valor["sub_total"]
-//             // <p><strong>Premio por cuotas 0:</strong> $${premios.premio_x_cantidad_ventas_agencia || 0}</p>
-
-//             html += `
-//                 <div class="subDetalleGroup">
-//                     <h3>Sucursal ${agenciaName}</h3>
-//                     <p><strong>Cantidad de cuotas 0:</strong> ${agenciaInfo.cantidad_cuotas_0 || 0}</p>
-//                     <p><strong>Premio por cuotas 0:</strong> $${premios_x_venta}</p>
-
-
-//                     <p><strong>Cantidad de cuotas 1:</strong> ${agenciaInfo.detalleCuota.cuotas1.cantidad || 0}</p>
-//                     <p><strong>Comision por cuotas 1:</strong> $${agenciaInfo.detalleCuota.cuotas1.comision || 0}</p>
-
-//                     <p><strong>Cantidad de cuotas 2:</strong> ${agenciaInfo.detalleCuota.cuotas2.cantidad || 0}</p>
-//                     <p><strong>Comision por cuotas 2:</strong> $${agenciaInfo.detalleCuota.cuotas2.comision || 0}</p>
-
-//                     <p><strong>Cantidad de cuotas 3:</strong> ${agenciaInfo.detalleCuota.cuotas3.cantidad || 0}</p>
-//                     <p><strong>Comision por cuotas 3:</strong> $${agenciaInfo.detalleCuota.cuotas3.comision || 0}</p>
-
-//                     <p><strong>Cantidad de cuotas 4:</strong> ${agenciaInfo.detalleCuota.cuotas4.cantidad || 0}</p>
-//                     <p><strong>Comision por cuotas 4:</strong> $${agenciaInfo.detalleCuota.cuotas4.comision || 0}</p>
-
-//                     <p><strong>Comision por cartera:</strong> ${sub_total || 0}</p>
-//                 </div>`
-//                 ;
-//         });
-
-
-//     }
-//     html += `
-//         <div class="subDetalleGroup asegurado">
-//             <p><strong>Asegurado:</strong> $${asegurado}</p>
-//         </div>`;
-
-//     html += `
-//         <div class="subDetalleGroup">
-//             <h3>Ajustes manuales</h3>`;
-
-//     if (ajustes.length === 0) {
-//         html += `<p>No se aplicaron ajustes.</p>`;
-//     } else {
-//         ajustes.forEach((aj, i) => {
-//             const signo = aj.ajuste_tipo === "positivo" ? "+" : "-";
-//             html += `<p><strong>${signo}$${aj.dinero}</strong> - ${aj.observaciones || "Sin observaciones"}</p>`;
-//         });
-//         html += `<p><strong>Total ajustado:</strong> $${total_ajuste}</p>`;
-//     }
-
-//     html += `</div>
-//         <div class="subDetalleGroup resumenTotalComision">
-//             <h3>Total final de comisión:</h3>
-//             <p><strong>$${comision_total}</strong></p>
-//         </div>
-//     </div>`;
-
-//     return html;
-// }
 
 function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_ajustes, detalle) {
     const ventas = detalle.info_total_de_comision.detalle.ventasPropias || {};
