@@ -288,18 +288,18 @@ def formatar_fecha(value, with_time = False):
         return dt.strftime("%d/%m/%Y")
     
 
-def get_sucursales_por_provincias(agencia):
+def get_subAgencias_por_provincia(agencia):
     agencia_clean = agencia.pseudonimo.replace(" ", "").lower()
     sucursales ={
-        "corrientes,corrientes": ["Corrientes, Corrientes","Paso De Los Libres, Corrientes", "Goya, Corrientes"],
-        "pasodeloslibres,corrientes":["Paso De Los Libres, Corrientes"],
-        "goya,corrientes":["Goya, Corrientes"],
-        "resistencia,chaco":["Resistencia, Chaco"],
-        "saenzpeña,chaco":["Saenz Peña, Chaco"],
-        "concordia,entrerios":["Concordia, Entre Rios"],
-        "santiagodelestero,santiagodelestero":["Santiago Del Estero, Santiago Del Estero"],
-        "formosa,formosa":["Formosa, Formosa"],
-        "posadas,misiones":["Posadas, Misiones"]
+        "corrientes,corrientes": ["Paso De Los Libres, Corrientes", "Goya, Corrientes"],
+        "pasodeloslibres,corrientes":[],
+        "goya,corrientes":[],
+        "resistencia,chaco":[],
+        "saenzpeña,chaco":[],
+        "concordia,entrerios":[],
+        "santiagodelestero,santiagodelestero":[],
+        "formosa,formosa":[],
+        "posadas,misiones":[]
         }
         
     return sucursales[agencia_clean]

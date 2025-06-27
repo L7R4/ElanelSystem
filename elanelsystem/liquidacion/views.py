@@ -213,7 +213,7 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
     colaboradores_list = []
 
     for item in colaboradores:
-        if item.rango in ["Admin","Administrativa","Administrativo"]:
+        if item.rango in ["Admin","Administrativa","Administrativo"] or item.is_superuser:
             continue
 
         # Filtrar los ajustes de este usuario
@@ -265,7 +265,7 @@ def requestColaboradoresWithComisiones(request):
         "totalDeComisiones": str(int(totalDeComisiones))}
 
     ventas_no_aptas_comisionar = Ventas.objects.filter(campania=campania, agencia=sucursalObject, is_commissionable=False)
-    print(f"[DEBUG] Ventas no aptas para comisionar: {ventas_no_aptas_comisionar}")
+    # print(f"[DEBUG] Ventas no aptas para comisionar: {ventas_no_aptas_comisionar}")
     
     if(len(ventas_no_aptas_comisionar) != 0):
         context["messageAlert"] = f"Tienes ventas {len(ventas_no_aptas_comisionar)} ventas no se estan comisionando"
@@ -303,7 +303,6 @@ def crearAjusteComision(request):
         ajustes_sesion.append(ajuste)
         request.session["ajustes_comisiones"] = ajustes_sesion
         request.session.modified = True
-        print(f"[DEBUG] Ajustes totales en sesión --> {ajustes_sesion}")
 
         # -- OPCIONAL: recalculamos la liquidación entera para 
         # actualizar 'liquidacion_data' en la misma sesión --
@@ -378,7 +377,6 @@ def ajustesCoeficiente_gerente_sucursal(request):
         ajustes_sesion.append(ajuste)
         request.session["ajustes_comisiones"] = ajustes_sesion
         request.session.modified = True
-        print(f"[DEBUG] Ajustes totales en sesión --> {ajustes_sesion}")
 
         # -- OPCIONAL: recalculamos la liquidación entera para 
         # actualizar 'liquidacion_data' en la misma sesión --
@@ -427,7 +425,7 @@ def ajustesCoeficiente_gerente_sucursal(request):
 def preViewPDFLiquidacion(request):
     datos = request.session.get('liquidacion_data', {})
     print(f"\n\n [DEBUG] Datos de liquidación: \n")
-    gerente = [item for item in datos if item["tipo_colaborador"] == "Gerente sucursal"]
+    gerente = [item for item in datos if item["tipo_colaborador"] == "Supervisor"]
     print(gerente)
 
     # Para pasar el detalles de los movs
@@ -441,7 +439,6 @@ def preViewPDFLiquidacion(request):
                 "nombre": item.get("nombre"),
                 "info_total_de_comision": item.get("info_total_de_comision")
             })
-
     informeName = "Informe"
     urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "liquidacion.pdf")
     printPDF({"data":contexto},request.build_absolute_uri(),urlPDF,"pdfForLiquidacion.html","static/css/pdfLiquidacion.css")
@@ -915,7 +912,7 @@ def export_excel_detalle_comisionado(request):
         # 5) Si es gerente sucursal: agrega dos hojas más
         if rol == "gerente sucursal":
 
-            cuotas_0_x_region = detalle_cuotas_0(agencia,campania)
+            cuotas_0_x_region = detalle_cuotas_0(user,campania)
 
             sheets["Cuotas 0"] = [
             {
@@ -935,7 +932,7 @@ def export_excel_detalle_comisionado(request):
             ]
 
 
-            cuotas_1a4_x_region = detalles_cuotas_1_a_4(agencia,campania)
+            cuotas_1a4_x_region = detalles_cuotas_1_a_4(agencia,campania,user)
             sheets["Cuotas 1 - 4"] = []
             for c in cuotas_1a4_x_region:
                 venta = Ventas.objects.filter(id=c["venta_id"]).first()

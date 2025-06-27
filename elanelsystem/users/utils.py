@@ -155,7 +155,6 @@ def obtener_usuarios_segun_campana(campania_str,sucursal):
 def count_days_worked_by_user(user_last_version, compania_str):
     from elanelsystem.utils import obtener_fechas_campania,parse_fecha_to_date
     inicio_camp, fin_camp = obtener_fechas_campania(compania_str)
-    
     fecha_ingreso = parse_fecha_to_date(user_last_version.fec_ingreso)
     fecha_egreso = parse_fecha_to_date(user_last_version.fec_egreso) if user_last_version.fec_egreso else datetime.datetime.today().date()
 
