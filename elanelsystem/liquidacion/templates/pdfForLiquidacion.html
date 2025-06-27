@@ -9,14 +9,13 @@
 <body> 
     {% for recibo in data %}
         {% if recibo.tipo_colaborador == "Gerente sucursal"%}
-            {% for agencia in recibo.info_total_de_comision.detalle.rol.values %}
+            {% for agencia in recibo.info_total_de_comision.detalle.rol.detalle.values %}
                 <div class="reciboPairWrapper"> 
 
                     <div class="reciboWrapper">
                         <div class="recibo">
                             <img class="logo" src="{% static 'images/logoElanelPDF.png' %}">
-                            <h1 class="tittleRecibo">Recibo</h1>
-
+                            <h1 class="tittleRecibo">RECIBO DE HONORARIOS – SERVICIOS PROFESIONALES</h1>
                             <div class="divInfoWrapper"> 
                                 <div class="infoUserWrapper">
                                     <p>{{agencia.suc_name}}</p>
@@ -74,20 +73,24 @@
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.cantidad}}</td>
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.comision|currency_ar}}</td>
                                     </tr>
+                                    {% if recibo.sucursal == agencia.suc_name %}
                                     <tr>
                                         <td>Asegurado</td>
                                         <td> - - - </td>
                                         <td>{{recibo.info_total_de_comision.asegurado|currency_ar}}</td>      
                                     </tr>
+                                    {%endif%}
+
                                     {% if recibo.sucursal == agencia.suc_name %}
-                                        {% for a in recibo.info_total_de_comision.detalle.rol.values  %}
+                                        {% for a in recibo.info_total_de_comision.detalle.rol.detalle.values  %}
                                         <tr class="subTotalWrapper">
                                             {% if recibo.sucursal == a.suc_name %}
                                             <td colspan="2">Sub-total {{a.suc_name}}</td>
+                                            <td colspan="2">{{a.sub_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                             {% else %}
                                             <td colspan="2">Comisiones de {{a.suc_name}}</td> 
+                                            <td colspan="2">{{a.sub_total|currency_ar}}</td>
                                             {% endif %}
-                                            <td colspan="2">{{a.sub_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                         </tr>
                                         {% endfor %}
                                     {%endif%}
@@ -111,20 +114,18 @@
                                 <tbody>
                                     <tr>
                                         <td>Motos (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
                                     </tr>
-
                                     <tr>
                                         <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                     </tr>
-
                                     <tr>
                                         <td>Ventas (48/60 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                     </tr>
 
                                     <tr>
@@ -140,7 +141,7 @@
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                     </tr>
                                     
@@ -205,7 +206,8 @@
                                 {% endif %}
                             </div>
                             <div class="notaImportanteWrapper">
-                                <p><span>Importante</span>: Estimado colaborador: Usted dispone de 10 días para realizar observaciones a la presente liquidación. Luego de este plazo la misma se considera aprobada.</p>
+                                <p><span>Finiquito Parcial:</span>
+                                Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
                             </div>
                         </div>
                     
@@ -222,8 +224,7 @@
                     <div class="reciboWrapper">
                         <div class="recibo">
                             <img class="logo" src="{% static 'images/logoElanelPDF.png' %}">
-                            <h1 class="tittleRecibo">Recibo</h1>
-
+                            <h1 class="tittleRecibo">RECIBO DE HONORARIOS – SERVICIOS PROFESIONALES</h1>
                             <div class="divInfoWrapper"> 
                                 <div class="infoUserWrapper">
                                     <p>{{agencia.suc_name}}</p>
@@ -281,20 +282,24 @@
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.cantidad}}</td>
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.comision|currency_ar}}</td>
                                     </tr>
+                                    {% if recibo.sucursal == agencia.suc_name %}
                                     <tr>
                                         <td>Asegurado</td>
                                         <td> - - - </td>
                                         <td>{{recibo.info_total_de_comision.asegurado|currency_ar}}</td>      
                                     </tr>
+                                    {%endif%}
+
                                     {% if recibo.sucursal == agencia.suc_name %}
-                                        {% for a in recibo.info_total_de_comision.detalle.rol.values  %}
+                                        {% for a in recibo.info_total_de_comision.detalle.rol.detalle.values  %}
                                         <tr class="subTotalWrapper">
                                             {% if recibo.sucursal == a.suc_name %}
                                             <td colspan="2">Sub-total {{a.suc_name}}</td>
+                                            <td colspan="2">{{a.sub_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                             {% else %}
                                             <td colspan="2">Comisiones de {{a.suc_name}}</td> 
+                                            <td colspan="2">{{a.sub_total|currency_ar}}</td>
                                             {% endif %}
-                                            <td colspan="2">{{a.sub_total|add:recibo.info_total_de_comision.asegurado|currency_ar}}</td>
                                         </tr>
                                         {% endfor %}
                                     {%endif%}
@@ -318,20 +323,18 @@
                                 <tbody>
                                     <tr>
                                         <td>Motos (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
                                     </tr>
-
                                     <tr>
                                         <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                     </tr>
-
                                     <tr>
                                         <td>Ventas (48/60 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                     </tr>
 
                                     <tr>
@@ -347,7 +350,7 @@
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                     </tr>
                                     
@@ -412,7 +415,8 @@
                                 {% endif %}
                             </div>
                             <div class="notaImportanteWrapper">
-                                <p><span>Importante</span>: Estimado colaborador: Usted dispone de 10 días para realizar observaciones a la presente liquidación. Luego de este plazo la misma se considera aprobada.</p>
+                                <p><span>Finiquito Parcial:</span>
+                                Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
                             </div>
                         </div>
                     
@@ -433,7 +437,7 @@
                 <div class="reciboWrapper">
                     <div class="recibo">
                         <img class="logo" src="{% static 'images/logoElanelPDF.png' %}">
-                        <h1 class="tittleRecibo">Recibo</h1>
+                        <h1 class="tittleRecibo">RECIBO DE HONORARIOS – SERVICIOS PROFESIONALES</h1>
                         <div class="divInfoWrapper"> 
                             <div class="infoUserWrapper">
                                 <p>{{recibo.sucursal}}</p>
@@ -470,13 +474,13 @@
                                 <tbody>
                                     <tr>
                                         <td>Ventas del equipo</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.rol.cantidadVentasXEquipo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.rol.cantidadVentasXEquipo_total}}</td>
                                         <td> - - - </td>
                                     </tr>
                                     <tr>
                                         <td>Desempeño del equipo</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.rol.productividadXVentasEquipo|currency_ar}} </td>
+                                        <td>{{recibo.info_total_de_comision.detalle.rol.productividad_x_equipo_total|currency_ar}} </td>
                                     </tr>
                                     <tr>
                                         <td>Comision por cant. ventas</td>
@@ -523,19 +527,19 @@
                                 <tbody>
                                     <tr>
                                         <td>Motos (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
             
                                     </tr>
                                     <tr>
                                         <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                     </tr>
                                     <tr>
                                         <td>Ventas (48/60 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                     </tr>
                                     <tr>
                                         <td>Premio por productividad</td>
@@ -550,7 +554,7 @@
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                     </tr>
                                     
@@ -603,7 +607,8 @@
                                 <p>{{recibo.info_total_de_comision.comision_total|currency_ar}}</p>
                             </div>
                             <div class="notaImportanteWrapper">
-                                <p><span>Importante</span>: Estimado colaborador: Usted dispone de 10 días para realizar observaciones a la presente liquidación de honorarios. Luego de este plazo la misma se considera aprobada.</p>
+                                <p><span>Finiquito Parcial:</span>
+                                Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
                             </div>
                         {% elif recibo.tipo_colaborador == "Vendedor" %}
                             <div class="detalle">
@@ -618,20 +623,21 @@
                                     <tbody>
                                         <tr>
                                             <td>Motos (24/30 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
-                
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
+            
                                         </tr>
                                         <tr>
                                             <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                         </tr>
                                         <tr>
                                             <td>Ventas (48/60 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                         </tr>
+                                        
                                         <tr>
                                             <td>Premio por productividad</td>
                                             <td> - - - </td>
@@ -645,7 +651,7 @@
                                         
                                         <tr>
                                             <td>Cuotas 1</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                             <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                         </tr>
                                         <tr>
@@ -695,7 +701,8 @@
                                     <p>{{recibo.info_total_de_comision.comision_total|currency_ar}}</p>
                                 </div>
                                 <div class="notaImportanteWrapper">
-                                    <p><span>Importante</span>: Estimado colaborador: Usted dispone de 10 días para realizar observaciones a la presente liquidación de honorarios. Luego de este plazo la misma se considera aprobada.</p>
+                                   <p><span>Finiquito Parcial:</span>
+                                    Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
                                 </div>
                             </div>
                         {%endif%}
@@ -714,7 +721,7 @@
                 <div class="reciboWrapper">
                     <div class="recibo">
                         <img class="logo" src="{% static 'images/logoElanelPDF.png' %}">
-                        <h1 class="tittleRecibo">Recibo</h1>
+                        <h1 class="tittleRecibo">RECIBO DE HONORARIOS – SERVICIOS PROFESIONALES</h1>
                         <div class="divInfoWrapper"> 
                             <div class="infoUserWrapper">
                                 <p>{{recibo.sucursal}}</p>
@@ -751,13 +758,13 @@
                                 <tbody>
                                     <tr>
                                         <td>Ventas del equipo</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.rol.cantidadVentasXEquipo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.rol.cantidadVentasXEquipo_total}}</td>
                                         <td> - - - </td>
                                     </tr>
                                     <tr>
                                         <td>Desempeño del equipo</td>
                                         <td> - - - </td>
-                                        <td>{{recibo.info_total_de_comision.detalle.rol.productividadXVentasEquipo|currency_ar}} </td>
+                                        <td>{{recibo.info_total_de_comision.detalle.rol.productividad_x_equipo_total|currency_ar}} </td>
                                     </tr>
                                     <tr>
                                         <td>Comision por cant. ventas</td>
@@ -804,19 +811,19 @@
                                 <tbody>
                                     <tr>
                                         <td>Motos (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
             
                                     </tr>
                                     <tr>
                                         <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                     </tr>
                                     <tr>
                                         <td>Ventas (48/60 Cuotas)</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                     </tr>
                                     <tr>
                                         <td>Premio por productividad</td>
@@ -831,7 +838,7 @@
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
-                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                        <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                     </tr>
                                     
@@ -884,7 +891,8 @@
                                 <p>{{recibo.info_total_de_comision.comision_total|currency_ar}}</p>
                             </div>
                             <div class="notaImportanteWrapper">
-                                <p><span>Importante</span>: Estimado colaborador: Usted dispone de 10 días para realizar observaciones a la presente liquidación de honorarios. Luego de este plazo la misma se considera aprobada.</p>
+                                <p><span>Finiquito Parcial:</span>
+                                Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
                             </div>
                         {% elif recibo.tipo_colaborador == "Vendedor" %}
                             <div class="detalle">
@@ -899,20 +907,21 @@
                                     <tbody>
                                         <tr>
                                             <td>Motos (24/30 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_motos.comision|currency_ar}}</td>
-                
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_motos}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_motos|currency_ar}}</td>
+            
                                         </tr>
                                         <tr>
                                             <td>Combos/Soluciones (24/30 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_24_30_prestamo_combo.comision|currency_ar}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_24_30_prestamo_combo}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_24_30_prestamo_combo|currency_ar}}</td>
                                         </tr>
                                         <tr>
                                             <td>Ventas (48/60 Cuotas)</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.cantidad_ventas}}</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.detalle.detalleVentasPropias.com_48_60.comision|currency_ar}}</td> 
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cant_ventas_com_48_60}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comisiones_com_48_60|currency_ar}}</td> 
                                         </tr>
+                                        
                                         <tr>
                                             <td>Premio por productividad</td>
                                             <td> - - - </td>
@@ -926,7 +935,7 @@
                                         
                                         <tr>
                                             <td>Cuotas 1</td>
-                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidadCuotas1}}</td>
+                                            <td>{{recibo.info_total_de_comision.detalle.ventasPropias.cantidad_cuotas_1_total}}</td>
                                             <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_cuotas1|currency_ar}}</td>
                                         </tr>
                                         <tr>
@@ -976,7 +985,8 @@
                                     <p>{{recibo.info_total_de_comision.comision_total|currency_ar}}</p>
                                 </div>
                                 <div class="notaImportanteWrapper">
-                                    <p><span>Importante</span>: Estimado colaborador: Usted dispone de 10 días para realizar observaciones a la presente liquidación de honorarios. Luego de este plazo la misma se considera aprobada.</p>
+                                   <p><span>Finiquito Parcial:</span>
+                                    Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
                                 </div>
                             </div>
                         {%endif%}

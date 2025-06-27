@@ -3,7 +3,7 @@ const radioFiltros = document.querySelectorAll('.inputSelectTipoColaborador');
 
 
 let colaboradoresAFiltrar = "todos"
-let body ={}
+let body = {}
 
 //Funcion para habilitar panel de comision
 function habilitarPanelComision() {
@@ -13,26 +13,26 @@ function habilitarPanelComision() {
 
 //#region Filtro sucursal - - - - - - - - - - - - 
 let inputSucursal = document.getElementById("sucursalInput")
-inputSucursal.addEventListener("input", async ()=>{
-    
-    if(habilitarPanelComision()){
+inputSucursal.addEventListener("input", async () => {
+
+    if (habilitarPanelComision()) {
 
         body.sucursal = inputSucursal.value;
         body.campania = inputCampania.value;
         body.tipoColaborador = colaboradoresAFiltrar;
         showLoader()
-        let response = await fetchFunction(body,urlRequestColaboradores)
+        let response = await fetchFunction(body, urlRequestColaboradores)
         hiddenLoader()
-        console.log(response)   
-        actualizarResultadosColaboradores(response["colaboradores_data"],contendorColaboradores)
+        console.log(response)
+        actualizarResultadosColaboradores(response["colaboradores_data"], contendorColaboradores)
         actualizarTotalComisionado(response["totalDeComisiones"])
-        
-        if(response["messageAlert"]){
+
+        if (response["messageAlert"]) {
             let messageDOM = messageAlert(response["messageAlert"], "alert")
             toggleMessage(document.querySelector(".wrapperHeader"), messageDOM)
         }
 
-    }else{
+    } else {
         contendorColaboradores.innerHTML = ""
         actualizarTotalComisionado(0)
     }
@@ -44,27 +44,27 @@ inputSucursal.addEventListener("input", async ()=>{
 
 //#region Filtro campaña - - - - - - - - - - - - 
 let inputCampania = document.getElementById("campaniaInput")
-inputCampania.addEventListener("input", async ()=>{
-    
-    if(habilitarPanelComision()){
+inputCampania.addEventListener("input", async () => {
+
+    if (habilitarPanelComision()) {
         body.sucursal = inputSucursal.value;
         body.campania = inputCampania.value;
         body.tipoColaborador = colaboradoresAFiltrar;
-        
+
         showLoader()
-        let response = await fetchFunction(body,urlRequestColaboradores)
+        let response = await fetchFunction(body, urlRequestColaboradores)
         hiddenLoader()
         console.log(response)
-        actualizarResultadosColaboradores(response["colaboradores_data"],contendorColaboradores)
+        actualizarResultadosColaboradores(response["colaboradores_data"], contendorColaboradores)
         actualizarTotalComisionado(response["totalDeComisiones"])
 
-        if(response["messageAlert"]){
+        if (response["messageAlert"]) {
             let messageDOM = messageAlert(response["messageAlert"], "alert")
             toggleMessage(document.querySelector(".wrapperHeader"), messageDOM)
         }
 
     }
-    else{
+    else {
         contendorColaboradores.innerHTML = ""
         actualizarTotalComisionado(0)
     }
@@ -88,7 +88,7 @@ radioFiltros.forEach(radio => {
         let response = await fetchFunction(body, urlRequestColaboradores)
         hiddenLoader()
         console.log(response)
-        actualizarResultadosColaboradores(response["colaboradores_data"],contendorColaboradores)
+        actualizarResultadosColaboradores(response["colaboradores_data"], contendorColaboradores)
         actualizarTotalComisionado(response["totalDeComisiones"])
     });
 })
@@ -139,15 +139,15 @@ async function fetchFunction(body, url) {
 let itemsColaboradores;
 function actualizarResultadosColaboradores(resultados, contenedor) {
     console.log(resultados)
-  // Limpia el contenedor de los datos
-  contenedor.innerHTML = "";
-  itemsColaboradores = resultados.filter(item => !item.tipo_colaborador.includes("Administracion"))
+    // Limpia el contenedor de los datos
+    contenedor.innerHTML = "";
+    itemsColaboradores = resultados.filter(item => !item.tipo_colaborador.includes("Administracion"))
 
-  // Se reccore los datos filtrados
-  itemsColaboradores.forEach((item) => {
-    let divs ="";
-    // Se reccore los campos de cada elemento y se lo guarda en un div
-    divs += `<li id="idColaborador_${item.id}">
+    // Se reccore los datos filtrados
+    itemsColaboradores.forEach((item) => {
+        let divs = "";
+        // Se reccore los campos de cada elemento y se lo guarda en un div
+        divs += `<li id="idColaborador_${item.id}">
         <div class="wrapperNombreColaborador">
             <p>${item.nombre}</p>
         </div>
@@ -161,12 +161,12 @@ function actualizarResultadosColaboradores(resultados, contenedor) {
         </div>
         
     </li>`;
-    contenedor.insertAdjacentHTML("beforeend",divs)
-  
-});
+        contenedor.insertAdjacentHTML("beforeend", divs)
+
+    });
 }
 
-function actualizarTotalComisionado(dinero){
+function actualizarTotalComisionado(dinero) {
     const spanDinero = document.querySelector("#dineroTotalComisiones");
     let inputDinero = document.querySelector("#totalComisionesInput");
     if (spanDinero) {
@@ -181,11 +181,11 @@ function update_textPreValues_to_values() {
     let valuesWrapper = document.querySelector(".listColaboradoresWrapper > .valuesWrapper")
     let wrapperButtonsActions = document.querySelector(".wrapperButtonsActions")
 
-    if(habilitarPanelComision()){
+    if (habilitarPanelComision()) {
         textPreValues.classList.add("hidden")
         valuesWrapper.classList.remove("preValues")
         wrapperButtonsActions.classList.remove("hidden")
-    }else{
+    } else {
         textPreValues.classList.remove("hidden")
         valuesWrapper.classList.add("preValues")
         wrapperButtonsActions.classList.add("hidden")
@@ -199,17 +199,17 @@ function update_textPreValues_to_values() {
 
 //#region Manejo de posibles mensajes
 
-function messageAlert(messaje, type){
-    return`<a target="_blank" href="${urlVentasNoComisionables}" class="wrapperMessage ${type}">
+function messageAlert(messaje, type) {
+    return `<a target="_blank" href="${urlVentasNoComisionables}" class="wrapperMessage ${type}">
             <h3><strong>Alerta</strong> ${messaje} <span>(click para ver)</span></h3>
         </a>`
 }
 
-function toggleMessage(container, messageDOM){
+function toggleMessage(container, messageDOM) {
     if (container.querySelector(".wrapperMessage")) {
         let messageWrapper = container.querySelector(".wrapperMessage");
         messageWrapper.remove();
-    }else{
+    } else {
         container.insertAdjacentHTML("beforeend", messageDOM)
     }
 }
@@ -217,11 +217,11 @@ function toggleMessage(container, messageDOM){
 //#endregion
 
 //#region Manejar el display del loader
-function showLoader(container=false) {
-    if(container){
+function showLoader(container = false) {
+    if (container) {
         document.querySelector(container).children[0].style.display = "none";
     }
-    
+
     document.getElementById('wrapperLoader').style.display = 'flex';
 }
 
@@ -232,121 +232,237 @@ function hiddenLoader() {
 
 
 // #region Obtener mas info sobre la liquidacion
-function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_ajustes, detalle) {
-   
+// function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_ajustes, detalle) {
 
+
+//     const ventas = detalle.info_total_de_comision.detalle.ventasPropias || {};
+//     const rol = detalle.info_total_de_comision.detalle.rol || {};
+//     const ajustes = otros_ajustes || [];
+
+//     let total_ajuste = 0;
+//     ajustes.forEach(aj => {
+//         if (aj.ajuste_tipo === "positivo") total_ajuste += aj.dinero;
+//         else if (aj.ajuste_tipo === "negativo") total_ajuste -= aj.dinero;
+//     });
+
+//     const comision_ventas = ventas.comision_x_cantidad_ventas || 0;
+//     const comision_cuotas = ventas.comision_x_cuotas1 || 0;
+//     const premio_productividad_propia = ventas.premio_x_productividad_ventas_propias || 0;
+
+//     const premio_ventas_equipo = rol.comision_x_ventas_equipo || 0;
+//     const premio_productividad_equipo = rol.comision_x_productividad || 0;
+//     const comision_ventas_equipo = rol.comision_x_cantidad_ventas || 0;
+
+//     const comision_total = detalle.comisionTotal
+//     const asegurado = detalle.info_total_de_comision.asegurado
+
+//     let html = `<div class="wrapperDetalleLiquidacion">
+//         <h2>Detalle de ${user_name}</h2>`;
+
+//     html += `
+//     <div class="subDetalleGroup">
+//         <h3>Ventas propias</h3>
+//         <p><strong>Cantidad de ventas:</strong> ${ventas.cantidadVentas || 0}</p>
+//         <p><strong>Productividad propia:</strong> $${ventas.productividadXVentasPropias || 0}</p>
+//         <p><strong>Cuotas 1 pagadas:</strong> ${ventas.cantidadCuotas1 || 0}</p>
+//         <p><strong>Comisión por ventas:</strong> $${comision_ventas}</p>
+//         <p><strong>Comisión por cuotas 1:</strong> $${comision_cuotas}</p>
+//         <p><strong>Premio por productividad propia:</strong> $${premio_productividad_propia}</p>
+//     </div>`;
+
+//     if (tipo_colaborador.toLowerCase() === "supervisor") {
+//         html += `
+//         <div class="subDetalleGroup">
+//             <h3>Equipo</h3>
+//             <p><strong>Cantidad de ventas del equipo:</strong> ${rol.cantidadVentasXEquipo || 0}</p>
+//             <p><strong>Productividad del equipo:</strong> $${rol.productividadXVentasEquipo || 0}</p>
+//             <p><strong>Comision por cantidad de ventas del equipo:</strong> $${comision_ventas_equipo}</p>
+//             <p><strong>Premio por cantidad de ventas del equipo:</strong> $${premio_ventas_equipo}</p>
+//             <p><strong>Premio por productividad del equipo:</strong> $${premio_productividad_equipo}</p>
+//         </div>`;
+//     }
+
+//     if (tipo_colaborador.toLowerCase() === "gerente sucursal") {
+
+//         Object.values(rol).forEach(valor => {
+
+//             const agenciaId = valor["suc_id"]
+//             const agenciaName = valor["suc_name"]
+//             const agenciaInfo = valor["suc_info"]
+//             const premios_x_venta = valor["premios_por_venta"]
+//             const sub_total = valor["sub_total"]
+//             // <p><strong>Premio por cuotas 0:</strong> $${premios.premio_x_cantidad_ventas_agencia || 0}</p>
+
+//             html += `
+//                 <div class="subDetalleGroup">
+//                     <h3>Sucursal ${agenciaName}</h3>
+//                     <p><strong>Cantidad de cuotas 0:</strong> ${agenciaInfo.cantidad_cuotas_0 || 0}</p>
+//                     <p><strong>Premio por cuotas 0:</strong> $${premios_x_venta}</p>
+
+
+//                     <p><strong>Cantidad de cuotas 1:</strong> ${agenciaInfo.detalleCuota.cuotas1.cantidad || 0}</p>
+//                     <p><strong>Comision por cuotas 1:</strong> $${agenciaInfo.detalleCuota.cuotas1.comision || 0}</p>
+
+//                     <p><strong>Cantidad de cuotas 2:</strong> ${agenciaInfo.detalleCuota.cuotas2.cantidad || 0}</p>
+//                     <p><strong>Comision por cuotas 2:</strong> $${agenciaInfo.detalleCuota.cuotas2.comision || 0}</p>
+
+//                     <p><strong>Cantidad de cuotas 3:</strong> ${agenciaInfo.detalleCuota.cuotas3.cantidad || 0}</p>
+//                     <p><strong>Comision por cuotas 3:</strong> $${agenciaInfo.detalleCuota.cuotas3.comision || 0}</p>
+
+//                     <p><strong>Cantidad de cuotas 4:</strong> ${agenciaInfo.detalleCuota.cuotas4.cantidad || 0}</p>
+//                     <p><strong>Comision por cuotas 4:</strong> $${agenciaInfo.detalleCuota.cuotas4.comision || 0}</p>
+
+//                     <p><strong>Comision por cartera:</strong> ${sub_total || 0}</p>
+//                 </div>`
+//                 ;
+//         });
+
+
+//     }
+//     html += `
+//         <div class="subDetalleGroup asegurado">
+//             <p><strong>Asegurado:</strong> $${asegurado}</p>
+//         </div>`;
+
+//     html += `
+//         <div class="subDetalleGroup">
+//             <h3>Ajustes manuales</h3>`;
+
+//     if (ajustes.length === 0) {
+//         html += `<p>No se aplicaron ajustes.</p>`;
+//     } else {
+//         ajustes.forEach((aj, i) => {
+//             const signo = aj.ajuste_tipo === "positivo" ? "+" : "-";
+//             html += `<p><strong>${signo}$${aj.dinero}</strong> - ${aj.observaciones || "Sin observaciones"}</p>`;
+//         });
+//         html += `<p><strong>Total ajustado:</strong> $${total_ajuste}</p>`;
+//     }
+
+//     html += `</div>
+//         <div class="subDetalleGroup resumenTotalComision">
+//             <h3>Total final de comisión:</h3>
+//             <p><strong>$${comision_total}</strong></p>
+//         </div>
+//     </div>`;
+
+//     return html;
+// }
+
+function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_ajustes, detalle) {
     const ventas = detalle.info_total_de_comision.detalle.ventasPropias || {};
     const rol = detalle.info_total_de_comision.detalle.rol || {};
     const ajustes = otros_ajustes || [];
+    const ventasPorSucursal = ventas.detalle || {};
+    const rolPorSucursal = rol.detalle || {};
+    const sucursalesKeys = [
+        ...new Set([
+            ...Object.keys(ventasPorSucursal),
+            ...Object.keys(rolPorSucursal)
+        ])
+    ];
 
+    // Calculamos ajustes totales
     let total_ajuste = 0;
     ajustes.forEach(aj => {
-        if (aj.ajuste_tipo === "positivo") total_ajuste += aj.dinero;
-        else if (aj.ajuste_tipo === "negativo") total_ajuste -= aj.dinero;
+        total_ajuste += aj.ajuste_tipo === "positivo" ? aj.dinero : -aj.dinero;
     });
 
-    const comision_ventas = ventas.comision_x_cantidad_ventas || 0;
-    const comision_cuotas = ventas.comision_x_cuotas1 || 0;
-    const premio_productividad_propia = ventas.premio_x_productividad_ventas_propias || 0;
-    
-    const premio_ventas_equipo = rol.comision_x_ventas_equipo || 0;
-    const premio_productividad_equipo = rol.comision_x_productividad || 0;
-    const comision_ventas_equipo = rol.comision_x_cantidad_ventas|| 0;
+    // Extraemos datos generales
+    const comision_total = detalle.comisionTotal;
+    const asegurado = detalle.info_total_de_comision.asegurado;
 
-    const comision_total = detalle.comisionTotal
-    const asegurado = detalle.info_total_de_comision.asegurado
+    // Preparamos el HTML inicial
+    let html = `
+      <div class="wrapperDetalleLiquidacion">
+        <h2>Detalle de ${user_name}</h2>
+    `;
 
-    let html = `<div class="wrapperDetalleLiquidacion">
-        <h2>Detalle de ${user_name}</h2>`;
+    sucursalesKeys.forEach(key => {
+        const vp_suc = ventasPorSucursal[key] || {};
+        const rp_suc = rolPorSucursal[key] || {};
+        const sucName = vp_suc.suc_name || rp_suc.suc_name || key;
 
-    html += `
-    <div class="subDetalleGroup">
-        <h3>Ventas propias</h3>
-        <p><strong>Cantidad de ventas:</strong> ${ventas.cantidadVentas || 0}</p>
-        <p><strong>Productividad propia:</strong> $${ventas.productividadXVentasPropias || 0}</p>
-        <p><strong>Cuotas 1 pagadas:</strong> ${ventas.cantidadCuotas1 || 0}</p>
-        <p><strong>Comisión por ventas:</strong> $${comision_ventas}</p>
-        <p><strong>Comisión por cuotas 1:</strong> $${comision_cuotas}</p>
-        <p><strong>Premio por productividad propia:</strong> $${premio_productividad_propia}</p>
-    </div>`;
+        html += `<div class="detalle_by_agencia"><h3>Sucursal ${sucName}</h3>`;
 
-    if (tipo_colaborador.toLowerCase() === "supervisor") {
-        html += `
-        <div class="subDetalleGroup">
-            <h3>Equipo</h3>
-            <p><strong>Cantidad de ventas del equipo:</strong> ${rol.cantidadVentasXEquipo || 0}</p>
-            <p><strong>Productividad del equipo:</strong> $${rol.productividadXVentasEquipo || 0}</p>
-            <p><strong>Comision por cantidad de ventas del equipo:</strong> $${comision_ventas_equipo}</p>
-            <p><strong>Premio por cantidad de ventas del equipo:</strong> $${premio_ventas_equipo}</p>
-            <p><strong>Premio por productividad del equipo:</strong> $${premio_productividad_equipo}</p>
-        </div>`;
-    }
-
-    if (tipo_colaborador.toLowerCase() === "gerente sucursal") {
-       
-        Object.values(rol).forEach(valor => {
-
-            const agenciaId = valor["suc_id"]
-            const agenciaName = valor["suc_name"]
-            const agenciaInfo = valor["suc_info"]
-            const premios_x_venta = valor["premios_por_venta"]
-            const sub_total = valor["sub_total"]
-            // <p><strong>Premio por cuotas 0:</strong> $${premios.premio_x_cantidad_ventas_agencia || 0}</p>
-            
+        // — Ventas propias en esta sucursal —
+        if (vp_suc.cantidadVentas != null) {
             html += `
-                <div class="subDetalleGroup">
-                    <h3>Sucursal ${agenciaName}</h3>
-                    <p><strong>Cantidad de cuotas 0:</strong> ${agenciaInfo.cantidad_cuotas_0 || 0}</p>
-                    <p><strong>Premio por cuotas 0:</strong> $${premios_x_venta}</p>
-                    
 
-                    <p><strong>Cantidad de cuotas 1:</strong> ${agenciaInfo.detalleCuota.cuotas1.cantidad || 0}</p>
-                    <p><strong>Comision por cuotas 1:</strong> $${agenciaInfo.detalleCuota.cuotas1.comision || 0}</p>
+            <div class="subDetalleGroup">
+                <h3>Ventas propias</h3>
+                <p><strong>Ventas:</strong> ${vp_suc.cantidadVentas || 0}</p>
+                <p><strong>Productividad:</strong> $${vp_suc.productividadXVentasPropias || 0}</p>
+                <p><strong>Cuotas 1 pagadas:</strong> ${vp_suc.cantidadCuotas1 || 0}</p>
+                <p><strong>Comisión por ventas:</strong> $${vp_suc.comision_subTotal || 0}</p>
+                <p><strong>Comisión por cuotas 1:</strong> $${vp_suc.comision_x_cuotas1 || 0}</p>
+                <p><strong>Premio productividad propia:</strong> $${vp_suc.comision_x_productividad || 0}</p>
+            </div>
+        `;
+        }
 
-                    <p><strong>Cantidad de cuotas 2:</strong> ${agenciaInfo.detalleCuota.cuotas2.cantidad || 0}</p>
-                    <p><strong>Comision por cuotas 2:</strong> $${agenciaInfo.detalleCuota.cuotas2.comision || 0}</p>
+        if (tipo_colaborador.toLowerCase() === "supervisor") {
+            const r = detalle.info_total_de_comision.detalle.rol;
+            html += `
+            <div class="subDetalleGroup">
+              <h3>Ventas del equipo</h3>
+              <p><strong>Ventas:</strong> ${rp_suc.cantidad_ventas_x_equipo || 0}</p>
+              <p><strong>Productividad:</strong> $${rp_suc.productividad_x_equipo || 0}</p>
+              <p><strong>Comisión ventas equipo:</strong> $${rp_suc.comision_x_cantidad_ventas || 0}</p>
+              <p><strong>Premio productividad equipo:</strong> $${rp_suc.comision_x_productividad || 0}</p>
+              <p><strong>Premio ventas equipo:</strong> $${rp_suc.comision_x_ventas_equipo || 0}</p>
+            </div>
+          `;
+        }
+        else if (tipo_colaborador.toLowerCase() === "gerente sucursal") {
+            html += `
+            <div class="subDetalleGroup">
+              <h3>Ventas de la agencia</h3>
+              <p><strong>Cuotas 0:</strong> ${rp_suc.suc_info.cantidad_cuotas_0 || 0}</p>
+              <p><strong>Premio cuota 0:</strong> $${rp_suc.premios_por_venta || 0}</p>
+          `;
+            ["1", "2", "3", "4"].forEach(nro => {
+                const det = rp_suc.suc_info.detalleCuota?.[`cuotas${nro}`] || {};
+                html += `
+                <p><strong>Cuota ${nro}:</strong> ${det.cantidad || 0} — Comisión: $${det.comision || 0}</p>
+            `;
+            });
+            // sub‐total sucursal
+            html += `<p><strong>Sub‐total sucursal:</strong> $${rp_suc.sub_total || 0}</p></div>`;
+        }
 
-                    <p><strong>Cantidad de cuotas 3:</strong> ${agenciaInfo.detalleCuota.cuotas3.cantidad || 0}</p>
-                    <p><strong>Comision por cuotas 3:</strong> $${agenciaInfo.detalleCuota.cuotas3.comision || 0}</p>
-                    
-                    <p><strong>Cantidad de cuotas 4:</strong> ${agenciaInfo.detalleCuota.cuotas4.cantidad || 0}</p>
-                    <p><strong>Comision por cuotas 4:</strong> $${agenciaInfo.detalleCuota.cuotas4.comision || 0}</p>
+        html += `</div>`;
+    });
 
-                    <p><strong>Comision por cartera:</strong> ${sub_total || 0}</p>
-                </div>`
-                ;
-        });
 
-        
-    }
+
+    // --------------------------------------------------------
+    // 4) Asegurado, ajustes y total final
+    // --------------------------------------------------------
     html += `
         <div class="subDetalleGroup asegurado">
             <p><strong>Asegurado:</strong> $${asegurado}</p>
-        </div>`;
-
-    html += `
+        </div>
         <div class="subDetalleGroup">
             <h3>Ajustes manuales</h3>`;
-
     if (ajustes.length === 0) {
         html += `<p>No se aplicaron ajustes.</p>`;
     } else {
-        ajustes.forEach((aj, i) => {
+        ajustes.forEach(aj => {
             const signo = aj.ajuste_tipo === "positivo" ? "+" : "-";
-            html += `<p><strong>${signo}$${aj.dinero}</strong> - ${aj.observaciones || "Sin observaciones"}</p>`;
+            html += `<p><strong>${signo}$${aj.dinero}</strong> – ${aj.observaciones || "Sin observaciones"}</p>`;
         });
-        html += `<p><strong>Total ajustado:</strong> $${total_ajuste}</p>`;
+        html += `<p><strong>Total ajustes:</strong> $${total_ajuste}</p>`;
     }
-
     html += `</div>
         <div class="subDetalleGroup resumenTotalComision">
-            <h3>Total final de comisión:</h3>
+            <h3>Total comisión:</h3>
             <p><strong>$${comision_total}</strong></p>
         </div>
-    </div>`;
+        </div>`;
 
     return html;
 }
+
 
 
 function modal_more_info_comision_by_id(user_id) {
@@ -366,7 +482,7 @@ function modal_more_info_comision(user_id, user_name, tipo_colaborador, otros_aj
         footer: true,
         closeMethods: [''],
         cssClass: ['moda_container_more_info'],
-        onOpen: function () {},
+        onOpen: function () { },
         onClose: function () { modal.destroy(); },
     });
 
@@ -385,7 +501,7 @@ function modal_more_info_comision(user_id, user_name, tipo_colaborador, otros_aj
 
 // #region Para exportar datos que se esta liquidando
 async function create_excel_detail_info(userId, campania, agenciaId) {
-    
+
     const body = { user_id: userId, campania: campania, agencia_id: agenciaId };
     const csrftoken = getCookie("csrftoken");
 
