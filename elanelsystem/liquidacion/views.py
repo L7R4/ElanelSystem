@@ -2,7 +2,7 @@ import os
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views import generic
-from elanelsystem import settings
+# from elanelsystem import settings
 from users.utils import get_vendedores_a_cargo
 from elanelsystem.views import filterDataBy_campania
 from sales.mixins import TestLogin
@@ -72,11 +72,11 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             request.session["ajustes_comisiones"] = [] # Reiniciar posibles ajustes de la comisiones que existan
             # print(len(Ventas.objects.all()))
             context["urlPDFLiquidacion"] = reverse_lazy("liquidacion:viewPDFLiquidacion")
-            context["defaultSucursal"] = Sucursal.objects.first()
+            # context["defaultSucursal"] = Sucursal.objects.first()
             context["sucursales"] = Sucursal.objects.all()
             context["campanias"] = getTodasCampaniasDesdeInicio()
             context["urlRequestColaboradores"] = reverse_lazy('liquidacion:requestColaboradoresWithComisiones')
-            usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor","Gerente sucursal"])
+            # usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor","Gerente sucursal"])
             return render(request, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
@@ -87,11 +87,8 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             sucursal = form["agencia"]
             sucursalObject = Sucursal.objects.get(pseudonimo=sucursal)
 
-            ventas = Ventas.objects.filter(campania=campania, agencia=sucursalObject)
-            ventas = [
-                v for v in ventas
-                if v.auditoria and len(v.auditoria) > 0 and v.auditoria[-1].get("grade") is True
-            ]
+            ventas_qs = Ventas.objects.filter(agencia=sucursalObject, campania=campania, is_commissionable=True)
+            
 
             datos = request.session.get('liquidacion_data', [])
             ajustes_sesion = request.session.get('ajustes_comisiones', [])
@@ -348,78 +345,78 @@ def crearAjusteComision(request):
         return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
 
 
-def ajustesCoeficiente_gerente_sucursal(request):
-    if request.method == "POST":
-        body = json.loads(request.body)
-        user_id = body.get("user_id")
-        ajuste_tipo = body.get("ajuste")
-        dinero = body.get("dinero")
-        observaciones = body.get("observaciones", "")
-        campania = body.get("campania")
-        agencia = body.get("agencia")
-        tipo_colaborador = body.get("tipoColaborador")
+# def ajustesCoeficiente_gerente_sucursal(request):
+#     if request.method == "POST":
+#         body = json.loads(request.body)
+#         user_id = body.get("user_id")
+#         ajuste_tipo = body.get("ajuste")
+#         dinero = body.get("dinero")
+#         observaciones = body.get("observaciones", "")
+#         campania = body.get("campania")
+#         agencia = body.get("agencia")
+#         tipo_colaborador = body.get("tipoColaborador")
 
-        total_comisiones = int(body.get("total_comisiones", 0))
+#         total_comisiones = int(body.get("total_comisiones", 0))
 
-        if not user_id or not campania or not agencia:
-            return JsonResponse({"status": False, "message": "Faltan datos obligatorios"}, status=400)
+#         if not user_id or not campania or not agencia:
+#             return JsonResponse({"status": False, "message": "Faltan datos obligatorios"}, status=400)
 
-        # Se arma el ajuste y se guarda en sesión
-        ajuste = {
-            "user_id": user_id,
-            "ajuste_tipo": ajuste_tipo,
-            "dinero": int(dinero) if dinero else 0,
-            "observaciones": observaciones,
-            "campania": campania,
-            "agencia": agencia
-        }
-        ajustes_sesion = request.session.get("ajustes_comisiones", [])
-        ajustes_sesion.append(ajuste)
-        request.session["ajustes_comisiones"] = ajustes_sesion
-        request.session.modified = True
+#         # Se arma el ajuste y se guarda en sesión
+#         ajuste = {
+#             "user_id": user_id,
+#             "ajuste_tipo": ajuste_tipo,
+#             "dinero": int(dinero) if dinero else 0,
+#             "observaciones": observaciones,
+#             "campania": campania,
+#             "agencia": agencia
+#         }
+#         ajustes_sesion = request.session.get("ajustes_comisiones", [])
+#         ajustes_sesion.append(ajuste)
+#         request.session["ajustes_comisiones"] = ajustes_sesion
+#         request.session.modified = True
 
-        # -- OPCIONAL: recalculamos la liquidación entera para 
-        # actualizar 'liquidacion_data' en la misma sesión --
-        # (Si tu interfaz llama a requestColaboradoresWithComisiones luego,
-        #  puedes omitir esto. Pero si quieres reflejarlo de inmediato en
-        #  'liquidacion_data', se hace así:)
-        colaboradores_list, totalDeComisionesRecalc = recalcular_liquidacion_data(
-            request=request,
-            campania=campania,
-            sucursal_id=agencia,
-            tipo_colaborador=tipo_colaborador  # O define si usas uno en particular
-        )
-        request.session["liquidacion_data"] = colaboradores_list
-        request.session.modified = True
+#         # -- OPCIONAL: recalculamos la liquidación entera para 
+#         # actualizar 'liquidacion_data' en la misma sesión --
+#         # (Si tu interfaz llama a requestColaboradoresWithComisiones luego,
+#         #  puedes omitir esto. Pero si quieres reflejarlo de inmediato en
+#         #  'liquidacion_data', se hace así:)
+#         colaboradores_list, totalDeComisionesRecalc = recalcular_liquidacion_data(
+#             request=request,
+#             campania=campania,
+#             sucursal_id=agencia,
+#             tipo_colaborador=tipo_colaborador  # O define si usas uno en particular
+#         )
+#         request.session["liquidacion_data"] = colaboradores_list
+#         request.session.modified = True
 
-        # Cálculo de comisión final del usuario con esos nuevos ajustes
-        # (si deseas devolverlo inmediatamente al front)
-        sucursalObject = Sucursal.objects.get(id=agencia)
-        usuario = Usuario.objects.get(pk=user_id)
-        datos_comision = get_comision_total(
-            usuario, 
-            campania, 
-            sucursalObject, 
-            [ a for a in ajustes_sesion
-              if int(a["user_id"]) == int(user_id)
-              and a["campania"] == campania
-              and a["agencia"] == agencia
-            ]
-        )
-        comision_base = datos_comision["comision_total"]
+#         # Cálculo de comisión final del usuario con esos nuevos ajustes
+#         # (si deseas devolverlo inmediatamente al front)
+#         sucursalObject = Sucursal.objects.get(id=agencia)
+#         usuario = Usuario.objects.get(pk=user_id)
+#         datos_comision = get_comision_total(
+#             usuario, 
+#             campania, 
+#             sucursalObject, 
+#             [ a for a in ajustes_sesion
+#               if int(a["user_id"]) == int(user_id)
+#               and a["campania"] == campania
+#               and a["agencia"] == agencia
+#             ]
+#         )
+#         comision_base = datos_comision["comision_total"]
 
-        return JsonResponse({
-            "status": True,
-            "message": "Ajuste de comisión creado en sesión.",
-            "user_id": user_id,
-            "user_name": usuario.nombre,
-            "new_comision": comision_base,
-            "nuevo_total_comisiones": str(int(totalDeComisionesRecalc)),
-            "ajuste_sesion": ajustes_sesion
-        })
+#         return JsonResponse({
+#             "status": True,
+#             "message": "Ajuste de comisión creado en sesión.",
+#             "user_id": user_id,
+#             "user_name": usuario.nombre,
+#             "new_comision": comision_base,
+#             "nuevo_total_comisiones": str(int(totalDeComisionesRecalc)),
+#             "ajuste_sesion": ajustes_sesion
+#         })
 
-    else:
-        return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
+#     else:
+#         return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
 
 
 def preViewPDFLiquidacion(request):
@@ -957,4 +954,3 @@ def export_excel_detalle_comisionado(request):
         filename_prefix = f"Detalle de {user.nombre} _ {campania.replace(' ','')}"
         return exportar_excel2(sheets, filename_prefix)
     
-
