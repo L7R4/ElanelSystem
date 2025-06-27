@@ -35,6 +35,11 @@ class Asegurado(models.Model):
     def __str__(self):
         return str(self.dinero) + "--" + str(self.dirigido)
 
+class Liquidacion(models.Model):
+    agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING, related_name="liquidacion_agencia")
+    campania = models.CharField("Campaña", max_length=50)
+    fecha = models.CharField("Fecha", max_length=15)
+    json_data_liquidacion = models.JSONField(default=list, blank=True, null=True)
 
 class LiquidacionVendedor(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING)

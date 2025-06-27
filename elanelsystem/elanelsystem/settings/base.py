@@ -11,8 +11,7 @@ environ.Env.read_env(os.path.join(ROOT_DIR, '.env'))
 
 # ——— Seguridad & debug ———
 SECRET_KEY = env('SECRET_KEY')
-DEBUG = env.bool('DEBUG', default=False)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', [])
 
 # ——— Apps & middleware ———
 INSTALLED_APPS = [
@@ -47,7 +46,7 @@ WSGI_APPLICATION = 'elanelsystem.wsgi.application'
 # ——— Templates ———
 TEMPLATES = [{
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [BASE_DIR / 'templates'],
+    'DIRS': [ROOT_DIR / 'templates'],
     'APP_DIRS': True,
     'OPTIONS': {
         'context_processors': [
