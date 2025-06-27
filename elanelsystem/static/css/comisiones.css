@@ -111,7 +111,7 @@
     justify-content: center;
     border-radius: 0.6rem;
     cursor: pointer;
-    border: 2px solid var(--primary-color);
+    /* border: 2px solid var(--primary-color); */
 }
 
 .wrapperButtonsActions>#liquidarButton {
@@ -229,7 +229,8 @@
     border-radius: .6rem;
     box-sizing: border-box;
     padding: 1rem;
-    border: 1px solid var(--third-color);
+    background-color: var(--blue-700-20);
+    border: 1px solid var(--white-800-50);
     height: 100%;
     flex: 1 1 100%;
     display: flex;
@@ -243,7 +244,7 @@
 
 .listColaboradoresWrapper>.tittlesWrapper {
     width: 100%;
-    background-color: var(--third-color);
+    background-color: var(--blue-300);
     padding: 1rem 2rem;
     border-radius: .6rem;
 }
@@ -262,8 +263,7 @@
     font-family: raleway-semibold;
     width: 40%;
     box-sizing: border-box;
-    /* padding-left: 2rem; */
-    color: var(--primary-color);
+    color: var(--white-color-800);
 }
 
 .listColaboradoresWrapper>.tittlesWrapper>.tittles>li:nth-child(2) {
@@ -287,8 +287,8 @@
 .listColaboradoresWrapper>.valuesWrapper >h3#textPreValuesColaboradores{
     position:absolute;
     font-size: clamp(1.4rem, 1.4vw, 2rem);
-    font-family: raleway-semibold;
-    color: var(--third-color);
+    font-family: raleway;
+    color: var(--white-800-80);
 }
 
 .listColaboradoresWrapper>.valuesWrapper >h3#textPreValuesColaboradores.hidden{
@@ -332,8 +332,17 @@
 .listColaboradoresWrapper>.valuesWrapper>.values>li>div {
     width: 40%;
     box-sizing: border-box;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
 
 }
+.listColaboradoresWrapper>.valuesWrapper>.values>li>div > .type_user{
+    padding: .5rem 1rem;
+    background-color: #304361;
+    border-radius: 1rem;
+}
+
 
 .listColaboradoresWrapper>.valuesWrapper>.values>li>div:nth-child(2) {
     width: 20%;
@@ -350,7 +359,7 @@
     justify-content: space-between;
     padding: 0 1.5rem;
     align-items: center;
-    background-color: var(--primary-color);
+    background-color: var(--blue-300);
     border-radius: .6rem;
 
 }
@@ -358,11 +367,11 @@
 
 .resumen_actions_wrapper>div#totalComisionesTextColaboradores_wrapper {
     font-size: clamp(1.2rem, 1.1vw, 1.5rem);
-    font-family: raleway-semibold;
+    font-family: raleway;
     display: flex;
     align-items: center;
     color: var(--third-color);
-    background-color: var(--third-color);
+    background-color: var(--white-color-800);
     color: var(--background-color);
     padding: 1rem;
     width: 20%;

@@ -47,7 +47,7 @@ WSGI_APPLICATION = 'elanelsystem.wsgi.application'
 # ——— Templates ———
 TEMPLATES = [{
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [BASE_DIR / 'templates'],
+    'DIRS': [ROOT_DIR / 'templates'],
     'APP_DIRS': True,
     'OPTIONS': {
         'context_processors': [

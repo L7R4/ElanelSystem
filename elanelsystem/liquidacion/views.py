@@ -2,7 +2,7 @@ import os
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views import generic
-from elanelsystem import settings
+from elanelsystem.settings import base as settings 
 from users.utils import get_vendedores_a_cargo
 from elanelsystem.views import filterDataBy_campania
 from sales.mixins import TestLogin
@@ -85,103 +85,34 @@ class LiquidacionesComisiones(TestLogin,generic.View):
 
             campania = form["campania"]
             sucursal = form["agencia"]
-            sucursalObject = Sucursal.objects.get(pseudonimo=sucursal)
-
-            ventas = Ventas.objects.filter(campania=campania, agencia=sucursalObject)
-            ventas = [
-                v for v in ventas
-                if v.auditoria and len(v.auditoria) > 0 and v.auditoria[-1].get("grade") is True
-            ]
+            sucursalObject = Sucursal.objects.get(id=sucursal)
 
             datos = request.session.get('liquidacion_data', [])
-            ajustes_sesion = request.session.get('ajustes_comisiones', [])
 
-            # Borramos liquidaciones previas
-            LiquidacionVendedor.objects.filter(campania=campania, sucursal=sucursalObject).delete()
-            LiquidacionSupervisor.objects.filter(campania=campania, sucursal=sucursalObject).delete()
-            LiquidacionGerenteSucursal.objects.filter(campania=campania, sucursal=sucursalObject).delete()
-            LiquidacionCompleta.objects.filter(campania=campania, sucursal=sucursalObject).delete()
+            #1 --- Verificamos que exista datos para la liquidacion ---
+            if not datos:
+                return JsonResponse({"status": False, "message": "No existen datos para procesar la liquidacion de honorarios."}, safe=False)
+                
+            
+            #2 --- Verificamos que no haya otra liquidacion de ese periodo y agencia ---
+            if Liquidacion.objects.filter(campania=campania, agencia=sucursalObject).exists():
+                return JsonResponse({"status": False, "message": "Ya existe una liquidación para esta campaña y agencia."}, safe=False)
 
-            vendedores = []
-            supervisores = []
-            gerentes = []
 
-            total_liquidado_final = 0
-
-            for item in datos:
-                user_id = item["id"]
-                detalle_sin_ajuste = item["info_total_de_comision"]["detalle"]
-                comision_base = item["comisionTotal"]
-
-                # ✅ Insertar ajustes al detalle y calcular total ajustado
-                detalle_con_ajustes, total_ajuste = insertar_ajustes_en_detalle(detalle_sin_ajuste, ajustes_sesion, user_id)
-                comision_total_ajustada = comision_base + total_ajuste
-                total_liquidado_final += comision_total_ajustada
-
-                user_obj = Usuario.objects.get(pk=user_id)
-
-                if item["tipo_colaborador"] == "Vendedor":
-                    liquidacion = LiquidacionVendedor(
-                        usuario=user_obj,
-                        campania=campania,
-                        sucursal=sucursalObject,
-                        cant_ventas=item["info_total_de_comision"]["cant_ventas_propia"],
-                        productividad=item["info_total_de_comision"]["productividad_propia"],
-                        total_comisionado=comision_total_ajustada,
-                        detalle=detalle_con_ajustes
-                    )
-                    liquidacion.save()
-                    vendedores.append(liquidacion)
-
-                elif item["tipo_colaborador"] == "Supervisor":
-                    liquidacion = LiquidacionSupervisor(
-                        usuario=user_obj,
-                        campania=campania,
-                        sucursal=sucursalObject,
-                        cant_ventas=item["info_total_de_comision"]["cant_ventas_fromRol"],
-                        productividad=item["info_total_de_comision"]["productividad_fromRol"],
-                        total_comisionado=comision_total_ajustada,
-                        detalle=detalle_con_ajustes
-                    )
-                    liquidacion.save()
-                    supervisores.append(liquidacion)
-
-                elif item["tipo_colaborador"] == "Gerente sucursal":
-                    liquidacion = LiquidacionGerenteSucursal(
-                        usuario=user_obj,
-                        campania=campania,
-                        sucursal=sucursalObject,
-                        total_comisionado=comision_total_ajustada,
-                        detalle=detalle_con_ajustes
-                    )
-                    liquidacion.save()
-                    gerentes.append(liquidacion)
-
-            # ✅ Liquidación completa
-            liquidacion_completa = LiquidacionCompleta(
-                fecha=datetime.date.today().strftime("%d/%m/%Y"),
-                campania=campania,
-                sucursal=sucursalObject,
-                total_liquidado=total_liquidado_final,
-                total_proyectado=sum([venta.importe for venta in ventas]),
-                total_recaudado=0,  # Se puede recalcular luego
-                cant_ventas=len(ventas)
-            )
-            liquidacion_completa.total_recaudado = liquidacion_completa.total_proyectado - total_liquidado_final
-            liquidacion_completa.save()
-            liquidacion_completa.detalle_vendedores.add(*vendedores)
-            liquidacion_completa.detalle_supervisores.add(*supervisores)
-            liquidacion_completa.detalle_gerentes.add(*gerentes)
-            liquidacion_completa.save()
-
-            # ✅ Limpiar la sesión de ajustes y liquidación
-            request.session["ajustes_comisiones"] = []
-            # request.session["liquidacion_data"] = []
+            #3 --- Crearmos la liquidacion ---
+            new_liquidacion = Liquidacion()
+            new_liquidacion.agencia = sucursalObject
+            new_liquidacion.campania = campania
+            new_liquidacion.fecha = datetime.date.today().strftime("%d/%m/%Y")
+            new_liquidacion.json_data_liquidacion = datos
+            new_liquidacion.save()
+          
             
 
             return JsonResponse({
                 "status": True,
-                "urlPDF": reverse_lazy('liquidacion:viewPDFLiquidacion', kwargs={"id": liquidacion_completa.id}),
+                "message": "Liquidacion completada.",
+                "urlPDF": reverse_lazy('liquidacion:viewPDFLiquidacion', kwargs={"id": new_liquidacion.id}),
                 "urlRedirect": reverse_lazy('liquidacion:liquidacionesPanel')
             })
 
@@ -348,78 +279,78 @@ def crearAjusteComision(request):
         return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
 
 
-def ajustesCoeficiente_gerente_sucursal(request):
-    if request.method == "POST":
-        body = json.loads(request.body)
-        user_id = body.get("user_id")
-        ajuste_tipo = body.get("ajuste")
-        dinero = body.get("dinero")
-        observaciones = body.get("observaciones", "")
-        campania = body.get("campania")
-        agencia = body.get("agencia")
-        tipo_colaborador = body.get("tipoColaborador")
+# def ajustesCoeficiente_gerente_sucursal(request):
+#     if request.method == "POST":
+#         body = json.loads(request.body)
+#         user_id = body.get("user_id")
+#         ajuste_tipo = body.get("ajuste")
+#         dinero = body.get("dinero")
+#         observaciones = body.get("observaciones", "")
+#         campania = body.get("campania")
+#         agencia = body.get("agencia")
+#         tipo_colaborador = body.get("tipoColaborador")
 
-        total_comisiones = int(body.get("total_comisiones", 0))
+#         total_comisiones = int(body.get("total_comisiones", 0))
 
-        if not user_id or not campania or not agencia:
-            return JsonResponse({"status": False, "message": "Faltan datos obligatorios"}, status=400)
+#         if not user_id or not campania or not agencia:
+#             return JsonResponse({"status": False, "message": "Faltan datos obligatorios"}, status=400)
 
-        # Se arma el ajuste y se guarda en sesión
-        ajuste = {
-            "user_id": user_id,
-            "ajuste_tipo": ajuste_tipo,
-            "dinero": int(dinero) if dinero else 0,
-            "observaciones": observaciones,
-            "campania": campania,
-            "agencia": agencia
-        }
-        ajustes_sesion = request.session.get("ajustes_comisiones", [])
-        ajustes_sesion.append(ajuste)
-        request.session["ajustes_comisiones"] = ajustes_sesion
-        request.session.modified = True
+#         # Se arma el ajuste y se guarda en sesión
+#         ajuste = {
+#             "user_id": user_id,
+#             "ajuste_tipo": ajuste_tipo,
+#             "dinero": int(dinero) if dinero else 0,
+#             "observaciones": observaciones,
+#             "campania": campania,
+#             "agencia": agencia
+#         }
+#         ajustes_sesion = request.session.get("ajustes_comisiones", [])
+#         ajustes_sesion.append(ajuste)
+#         request.session["ajustes_comisiones"] = ajustes_sesion
+#         request.session.modified = True
 
-        # -- OPCIONAL: recalculamos la liquidación entera para 
-        # actualizar 'liquidacion_data' en la misma sesión --
-        # (Si tu interfaz llama a requestColaboradoresWithComisiones luego,
-        #  puedes omitir esto. Pero si quieres reflejarlo de inmediato en
-        #  'liquidacion_data', se hace así:)
-        colaboradores_list, totalDeComisionesRecalc = recalcular_liquidacion_data(
-            request=request,
-            campania=campania,
-            sucursal_id=agencia,
-            tipo_colaborador=tipo_colaborador  # O define si usas uno en particular
-        )
-        request.session["liquidacion_data"] = colaboradores_list
-        request.session.modified = True
+#         # -- OPCIONAL: recalculamos la liquidación entera para 
+#         # actualizar 'liquidacion_data' en la misma sesión --
+#         # (Si tu interfaz llama a requestColaboradoresWithComisiones luego,
+#         #  puedes omitir esto. Pero si quieres reflejarlo de inmediato en
+#         #  'liquidacion_data', se hace así:)
+#         colaboradores_list, totalDeComisionesRecalc = recalcular_liquidacion_data(
+#             request=request,
+#             campania=campania,
+#             sucursal_id=agencia,
+#             tipo_colaborador=tipo_colaborador  # O define si usas uno en particular
+#         )
+#         request.session["liquidacion_data"] = colaboradores_list
+#         request.session.modified = True
 
-        # Cálculo de comisión final del usuario con esos nuevos ajustes
-        # (si deseas devolverlo inmediatamente al front)
-        sucursalObject = Sucursal.objects.get(id=agencia)
-        usuario = Usuario.objects.get(pk=user_id)
-        datos_comision = get_comision_total(
-            usuario, 
-            campania, 
-            sucursalObject, 
-            [ a for a in ajustes_sesion
-              if int(a["user_id"]) == int(user_id)
-              and a["campania"] == campania
-              and a["agencia"] == agencia
-            ]
-        )
-        comision_base = datos_comision["comision_total"]
+#         # Cálculo de comisión final del usuario con esos nuevos ajustes
+#         # (si deseas devolverlo inmediatamente al front)
+#         sucursalObject = Sucursal.objects.get(id=agencia)
+#         usuario = Usuario.objects.get(pk=user_id)
+#         datos_comision = get_comision_total(
+#             usuario, 
+#             campania, 
+#             sucursalObject, 
+#             [ a for a in ajustes_sesion
+#               if int(a["user_id"]) == int(user_id)
+#               and a["campania"] == campania
+#               and a["agencia"] == agencia
+#             ]
+#         )
+#         comision_base = datos_comision["comision_total"]
 
-        return JsonResponse({
-            "status": True,
-            "message": "Ajuste de comisión creado en sesión.",
-            "user_id": user_id,
-            "user_name": usuario.nombre,
-            "new_comision": comision_base,
-            "nuevo_total_comisiones": str(int(totalDeComisionesRecalc)),
-            "ajuste_sesion": ajustes_sesion
-        })
+#         return JsonResponse({
+#             "status": True,
+#             "message": "Ajuste de comisión creado en sesión.",
+#             "user_id": user_id,
+#             "user_name": usuario.nombre,
+#             "new_comision": comision_base,
+#             "nuevo_total_comisiones": str(int(totalDeComisionesRecalc)),
+#             "ajuste_sesion": ajustes_sesion
+#         })
 
-    else:
-        return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
+#     else:
+#         return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
 
 
 def preViewPDFLiquidacion(request):
@@ -450,6 +381,38 @@ def preViewPDFLiquidacion(request):
         return response
 
 
+def viewPDFLiquidacion(request, id):
+    # Obtener la liquidación desde la base de datos
+    try:
+        liquidacion = Liquidacion.objects.get(id=id)
+    except Liquidacion.DoesNotExist:
+        return HttpResponse("Liquidación no encontrada", status=404)
+    
+    datos = liquidacion.json_data_liquidacion
+
+    # Para pasar el detalles de los movs
+    contexto = []
+    for item in datos:
+        contexto.append({
+                "tipo_colaborador": item.get("tipo_colaborador"),
+                "sucursal": Sucursal.objects.filter(id = item.get("sucursal")).first().pseudonimo,
+                "fecha": datetime.date.today().strftime("%d-%m-%Y"),
+                "campania": item.get("campania"),
+                "nombre": item.get("nombre"),
+                "info_total_de_comision": item.get("info_total_de_comision")
+            })
+    informeName = "Informe"
+    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "liquidacion.pdf")
+    printPDF({"data":contexto},request.build_absolute_uri(),urlPDF,"pdfForLiquidacion.html","static/css/pdfLiquidacion.css")
+
+    
+    with open(urlPDF, 'rb') as pdf_file:
+        response = HttpResponse(pdf_file,content_type="application/pdf")
+        response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
+        return response
+
+
+
 def reciboPDFLiquidacionEspecifico(request):
     informeName = "Informe"
     urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "liquidacion.pdf")
@@ -462,54 +425,6 @@ def reciboPDFLiquidacionEspecifico(request):
         return response
 
 
-
-def viewPDFLiquidacion(request, id):
-    # Obtener la liquidación desde la base de datos
-    try:
-        liquidacion = LiquidacionCompleta.objects.get(id=id)
-    except LiquidacionCompleta.DoesNotExist:
-        return HttpResponse("Liquidación no encontrada", status=404)
-    
-    vendedores = liquidacion.detalle_vendedores.all()
-    supervisores = liquidacion.detalle_supervisores.all()
-    gerentes = liquidacion.detalle_gerentes.all()
-
-    colaboradores = list(vendedores) + list(supervisores) + list(gerentes)
-
-    colaboradores_list = [{
-        "tipo_colaborador": item.usuario.rango,
-        "nombre": item.usuario.nombre,
-        "id": item.usuario.pk, 
-        "dni":item.usuario.dni,
-        "sucursal": liquidacion.sucursal.pseudonimo,
-        "campania": liquidacion.campania,
-        "comisionTotal": get_comision_total(item.usuario,liquidacion.campania,liquidacion.sucursal)["total_comisionado"],
-        "info_total_de_comision": get_comision_total(item.usuario,liquidacion.campania,liquidacion.sucursal)
-        } 
-        for item in colaboradores]
-
-
-    contexto = []
-    for item in colaboradores_list:
-        contexto.append({
-                "tipo_colaborador": item.get("tipo_colaborador"),
-                "sucursal": item.get("sucursal"),
-                "fecha":liquidacion.fecha,
-                "campania": item.get("campania"),
-                "nombre": item.get("nombre"),
-                "info_total_de_comision": item.get("info_total_de_comision")
-            })
-
-    informeName = f"Informe_Liquidacion_{liquidacion.id}"
-    urlPDF = os.path.join(settings.PDF_STORAGE_DIR, f"liquidacion.pdf")
-    print(contexto)
-    printPDF({"data": contexto}, request.build_absolute_uri(), urlPDF, "pdfForLiquidacion.html", "static/css/pdfLiquidacion.css")
-
-    
-    with open(urlPDF, 'rb') as pdf_file:
-        response = HttpResponse(pdf_file,content_type="application/pdf")
-        response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
-        return response
 
 
 class LiquidacionesRanking(TestLogin,generic.View):

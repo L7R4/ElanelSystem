@@ -1,7 +1,7 @@
 from datetime import datetime
 import re
 import pandas as pd
-import elanelsystem.settings as settings
+from elanelsystem.settings import base as settings
 from django.template.loader import get_template
 import os
 from django.template.loader import get_template
@@ -142,7 +142,7 @@ def printPDF(data,url,liquidacionName,htmlPath,cssPath):
     template = get_template(htmlPath)
     context = data
     html_template = template.render(context)
-    css_url = os.path.join(settings.BASE_DIR, cssPath)
+    css_url = os.path.join(settings.ROOT_DIR, cssPath)
     # print(f"Base dir: {settings.BASE_DIR}")
     if not os.path.exists(settings.PDF_STORAGE_DIR):
         os.makedirs(settings.PDF_STORAGE_DIR)
