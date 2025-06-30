@@ -1,0 +1,2 @@
+[tools.python]
+interpreter = ".venv/bin/python"
