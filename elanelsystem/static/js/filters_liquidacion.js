@@ -4,6 +4,7 @@ const radioFiltros = document.querySelectorAll('.inputSelectTipoColaborador');
 
 let colaboradoresAFiltrar = "todos"
 let body = {}
+let allColaboradoresData = [];
 
 //Funcion para habilitar panel de comision
 function habilitarPanelComision() {
@@ -23,6 +24,7 @@ inputSucursal.addEventListener("input", async () => {
         showLoader()
         let response = await fetchFunction(body, urlRequestColaboradores)
         hiddenLoader()
+        allColaboradoresData = response.colaboradores_data;
         console.log(response)
         actualizarResultadosColaboradores(response["colaboradores_data"], contendorColaboradores)
         actualizarTotalComisionado(response["totalDeComisiones"])
@@ -54,6 +56,7 @@ inputCampania.addEventListener("input", async () => {
         showLoader()
         let response = await fetchFunction(body, urlRequestColaboradores)
         hiddenLoader()
+        allColaboradoresData = response.colaboradores_data;
         console.log(response)
         actualizarResultadosColaboradores(response["colaboradores_data"], contendorColaboradores)
         actualizarTotalComisionado(response["totalDeComisiones"])
@@ -75,23 +78,17 @@ inputCampania.addEventListener("input", async () => {
 //#endregion  - - - - - - - - - - - - - - - - - - - 
 
 
-//#region  Filtros de radios - - - - - - - - - - - - - - - - -
+//#region  Filtros de search colaboradores - - - - - - - - - - - - - - - - -
 
-radioFiltros.forEach(radio => {
-    radio.addEventListener('change', async () => {
-        console.log("Funciona input de tipo de colaboradores")
-        colaboradoresAFiltrar = radio.value // Actuliza el valor de la variable global para posibles filtros
-        body.sucursal = inputSucursal.value;
-        body.campania = inputCampania.value;
-        body.tipoColaborador = colaboradoresAFiltrar;
-        showLoader()
-        let response = await fetchFunction(body, urlRequestColaboradores)
-        hiddenLoader()
-        console.log(response)
-        actualizarResultadosColaboradores(response["colaboradores_data"], contendorColaboradores)
-        actualizarTotalComisionado(response["totalDeComisiones"])
-    });
-})
+const searchInput = document.querySelector(".searchColaboradores input");
+searchInput.addEventListener("input", () => {
+    const term = searchInput.value.trim().toLowerCase();
+    // Filtramos contra allColaboradoresData
+    const filtrados = allColaboradoresData
+        .filter(item => !item.tipo_colaborador.includes("Administracion"))
+        .filter(item => item.nombre.toLowerCase().includes(term));
+    actualizarResultadosColaboradores(filtrados, contendorColaboradores);
+});
 //#endregion  - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -150,16 +147,17 @@ function actualizarResultadosColaboradores(resultados, contenedor) {
         divs += `<li id="idColaborador_${item.id}">
         <div class="wrapperNombreColaborador">
             <p class="name_user">${item.nombre}</p>
-            <p class="type_user" >${item.tipo_colaborador}</p>
-            
         </div>
         <div class="wrapperComisionColaborador">
-            <p>$ ${item.comisionTotal}</p>
-            <button type="button" class="iconInfoMore moreInfoComisionButton" onclick="modal_more_info_comision_by_id(${item.id})"><img src=${info_icon} alt=""></button>
-            <button type="button" class="iconInfoMore moreInfoComisionButton" onclick="create_excel_detail_info(${item.id},'${inputCampania.value}',${inputSucursal.value})"><img src=${export_icon} alt=""></button>
+            <p class="type_user" >${item.tipo_colaborador}</p>
+        </div>
+        <div class="wrapperComisionColaborador">
+            <p>${formatMoney(item.comisionTotal)}</p>
         </div>
         <div>
             <button type="button" class="button-default-style ajusteComisionButton" onclick="modal_ajuste_comision(${item.id}, '${item.nombre}', ${item.comisionTotal})">Ajustar comision</button>
+            <button type="button" class="iconInfoMore moreInfoComisionButton" onclick="modal_more_info_comision_by_id(${item.id})"><img src=${info_icon} alt=""></button>
+            <button type="button" class="iconInfoMore moreInfoComisionButton" onclick="create_excel_detail_info(${item.id},'${inputCampania.value}',${inputSucursal.value})"><img src=${export_icon} alt=""></button>
         </div>
         
     </li>`;
@@ -172,7 +170,7 @@ function actualizarTotalComisionado(dinero) {
     const spanDinero = document.querySelector("#dineroTotalComisiones");
     let inputDinero = document.querySelector("#totalComisionesInput");
     if (spanDinero) {
-        const dineroFormateado = new Intl.NumberFormat("es-AR").format(dinero);
+        const dineroFormateado = formatMoney(dinero);
         spanDinero.textContent = dineroFormateado;
         inputDinero.value = dinero
     }
@@ -237,6 +235,7 @@ function hiddenLoader() {
 
 function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_ajustes, detalle) {
     const ventas = detalle.info_total_de_comision.detalle.ventasPropias || {};
+    const dias_trabajados = detalle.info_total_de_comision.dias_trabajados
     const rol = detalle.info_total_de_comision.detalle.rol || {};
     const ajustes = otros_ajustes || [];
     const ventasPorSucursal = ventas.detalle || {};
@@ -261,64 +260,103 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
     // Preparamos el HTML inicial
     let html = `
       <div class="wrapperDetalleLiquidacion">
+      <div class="titleDetalleLiquidacion">
         <h2>Detalle de ${user_name}</h2>
+        <p>${tipo_colaborador}</p>
+        <p>${dias_trabajados >= 30 ? "+" : ""}${dias_trabajados} dias</p>
+
+      </div>
     `;
 
-    sucursalesKeys.forEach(key => {
-        const vp_suc = ventasPorSucursal[key] || {};
-        const rp_suc = rolPorSucursal[key] || {};
-        const sucName = vp_suc.suc_name || rp_suc.suc_name || key;
+    if (sucursalesKeys.length != 0) {
+        sucursalesKeys.forEach(key => {
+            console.log(inputSucursal.value)
+            console.log(detalle.sucursal)
 
-        html += `<div class="detalle_by_agencia"><h3>Sucursal ${sucName}</h3>`;
+            const vp_suc = ventasPorSucursal[key] || {};
+            const rp_suc = rolPorSucursal[key] || {};
+            const sucName = vp_suc.suc_name || rp_suc.suc_name || key;
+            const idSuc = vp_suc.suc_id || rp_suc.suc_id
 
-        // — Ventas propias en esta sucursal —
-        if (vp_suc.cantidadVentas != null) {
-            html += `
-
+            html += `<div class="detalle_by_agencia"><h3>Sucursal ${sucName}</h3>`;
+            if (vp_suc == {}) {
+                html += `
             <div class="subDetalleGroup">
                 <h3>Ventas propias</h3>
-                <p><strong>Ventas:</strong> ${vp_suc.cantidadVentas || 0}</p>
-                <p><strong>Productividad:</strong> $${vp_suc.productividadXVentasPropias || 0}</p>
-                <p><strong>Cuotas 1 pagadas:</strong> ${vp_suc.cantidadCuotas1 || 0}</p>
-                <p><strong>Comisión por ventas:</strong> $${vp_suc.comision_subTotal || 0}</p>
-                <p><strong>Comisión por cuotas 1:</strong> $${vp_suc.comision_x_cuotas1 || 0}</p>
-                <p><strong>Premio productividad propia:</strong> $${vp_suc.comision_x_productividad || 0}</p>
+                <div>
+                    <p class="messageBackground">No hubo ventas propias</p>
+                </div>
             </div>
-        `;
-        }
-
-        if (tipo_colaborador.toLowerCase() === "supervisor") {
-            const r = detalle.info_total_de_comision.detalle.rol;
-            html += `
+            `
+            } else {
+                html += `
             <div class="subDetalleGroup">
-              <h3>Ventas del equipo</h3>
-              <p><strong>Ventas:</strong> ${rp_suc.cantidad_ventas_x_equipo || 0}</p>
-              <p><strong>Productividad:</strong> $${rp_suc.productividad_x_equipo || 0}</p>
-              <p><strong>Comisión ventas equipo:</strong> $${rp_suc.comision_x_cantidad_ventas || 0}</p>
-              <p><strong>Premio productividad equipo:</strong> $${rp_suc.comision_x_productividad || 0}</p>
-              <p><strong>Premio ventas equipo:</strong> $${rp_suc.comision_x_ventas_equipo || 0}</p>
+                <h3>Ventas propias</h3>
+                <div>
+                    <p>Ventas <strong>${vp_suc.cantidadVentas || 0}</strong></p>
+                    <p>Productividad <strong>${formatMoney(vp_suc.productividadXVentasPropias || 0)}</strong></p>
+                    <p>Cuotas 1 pagadas <strong>${vp_suc.cantidadCuotas1 || 0}</strong></p>
+                    <p>Comisión por ventas <strong>${formatMoney(vp_suc.comision_subTotal || 0)}</strong></p>
+                    <p>Comisión por cuotas 1 <strong>${formatMoney(vp_suc.comision_x_cuotas1 || 0)}</strong></p>
+                    <p>Premio productividad propia <strong>${formatMoney(vp_suc.comision_x_productividad || 0)}</strong></p>
+                    ${parseInt(idSuc) == parseInt(inputSucursal.value)
+                        ?
+                        `<p>Asegurado <strong>${formatMoney(asegurado)}</strong></p>`
+                        :
+                        ""
+                    }
+                </div>
+            </div>
+            `;
+
+            }
+
+            if (tipo_colaborador.toLowerCase() === "supervisor") {
+                const r = detalle.info_total_de_comision.detalle.rol;
+                html += `
+            <div class="subDetalleGroup">
+                <h3>Ventas del equipo</h3>
+                <div>
+                    <p>Ventas <strong>${rp_suc.cantidad_ventas_x_equipo || 0}</strong></p>
+                    <p>Productividad <strong>${formatMoney(rp_suc.productividad_x_equipo || 0)}</strong></p>
+                    <p>Comisión ventas equipo <strong>${formatMoney(rp_suc.comision_x_cantidad_ventas || 0)}</strong></p>
+                    <p>Premio productividad equipo <strong>${formatMoney(rp_suc.comision_x_productividad || 0)}</strong></p>
+                    <p>Premio ventas equipo <strong>${formatMoney(rp_suc.comision_x_ventas_equipo || 0)}</strong></p>
+                </div>
             </div>
           `;
-        }
-        else if (tipo_colaborador.toLowerCase() === "gerente sucursal") {
-            html += `
+            }
+            else if (tipo_colaborador.toLowerCase() === "gerente sucursal") {
+                html += `
             <div class="subDetalleGroup">
               <h3>Ventas de la agencia</h3>
-              <p><strong>Cuotas 0:</strong> ${rp_suc.suc_info.cantidad_cuotas_0 || 0}</p>
-              <p><strong>Premio cuota 0:</strong> $${rp_suc.premios_por_venta || 0}</p>
-          `;
-            ["1", "2", "3", "4"].forEach(nro => {
-                const det = rp_suc.suc_info.detalleCuota?.[`cuotas${nro}`] || {};
+              <div>
+                <p>Cuotas 0<strong>${rp_suc.suc_info.cantidad_cuotas_0 || 0}</strong></p>
+                <p>Premio cuota 0<strong>${formatMoney(rp_suc.premios_por_venta || 0)}</strong></p>
+              `;
+                ["1", "2", "3", "4"].forEach(nro => {
+                    const det = rp_suc.suc_info.detalleCuota?.[`cuotas${nro}`] || {};
+                    html += `
+                <p>Cuota ${nro} <strong>${det.cantidad || 0} - ${formatMoney(det.comision || 0)}</strong></p>`;
+                });
+                // sub‐total sucursal
                 html += `
-                <p><strong>Cuota ${nro}:</strong> ${det.cantidad || 0} — Comisión: $${det.comision || 0}</p>
-            `;
-            });
-            // sub‐total sucursal
-            html += `<p><strong>Sub‐total sucursal:</strong> $${rp_suc.sub_total || 0}</p></div>`;
-        }
+                <p class="subTotalAgenciaGerente">Sub‐total de sucursal<strong>${formatMoney(rp_suc.sub_total || 0)}</strong></p></div>
+                </div>`;
+            }
 
-        html += `</div>`;
-    });
+            html += `</div>`;
+        });
+    } else {
+        html += `
+        <div class="subDetalleGroup">
+            <div>
+                <p class="messageBackground">El ${tipo_colaborador} no tuvo movimientos</p>
+            </div>
+        </div>
+    `;
+
+    }
 
 
 
@@ -326,13 +364,10 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
     // 4) Asegurado, ajustes y total final
     // --------------------------------------------------------
     html += `
-        <div class="subDetalleGroup asegurado">
-            <p><strong>Asegurado:</strong> $${asegurado}</p>
-        </div>
         <div class="subDetalleGroup">
             <h3>Ajustes manuales</h3>`;
     if (ajustes.length === 0) {
-        html += `<p>No se aplicaron ajustes.</p>`;
+        html += `<p class="messageBackground">No se aplicaron ajustes</p>`;
     } else {
         ajustes.forEach(aj => {
             const signo = aj.ajuste_tipo === "positivo" ? "+" : "-";
@@ -341,9 +376,9 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
         html += `<p><strong>Total ajustes:</strong> $${total_ajuste}</p>`;
     }
     html += `</div>
-        <div class="subDetalleGroup resumenTotalComision">
-            <h3>Total comisión:</h3>
-            <p><strong>$${comision_total}</strong></p>
+        <div class="resumenTotalComision">
+            <h3>Total comisión</h3>
+            <p>${formatMoney(comision_total)}</p>
         </div>
         </div>`;
 
