@@ -36,6 +36,23 @@
         </div>
       </div>
       {% comment %} ------------ {% endcomment %}
+
+      <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+        <h3 class="labelInput">Sucursal</h3>
+        <div class="containerInputAndOptions">
+          <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+          <input type="hidden" class="filterInput" name="sucursal" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
+          <div class="onlySelect pseudo-input-select-wrapper">
+                <h3></h3>
+          </div>
+          <ul id="contenedorSucursal" class="list-select-custom options">
+            {% for sucursal in sucursales %}
+                <li data-value={{sucursal.id}}>{{sucursal}}</li>
+            {% endfor %}
+        </ul>
+        </div>
+      </div>
+
       <div class="searchActionWrapper">
         <input 
         type="text"
@@ -104,7 +121,8 @@
 </script>
 
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
-<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+<script src="{% static 'js/z_index_orders_selects.js' %}"></script>
 <script src="{% static 'js/importDataCliente.js' %}"></script>
 <script src="{% static 'js/x_filter_customers.js' %}"></script>
 {% endblock js %}

@@ -657,10 +657,8 @@ def parse_campania_to_dates(campania_str):
 
     return (primer_dia, ultimo_dia)
 
-def calcular_asegurado_segun_dias_trabajados(dinero, usuario, campania_str):
-    """
-    Aplico math.ceil al proporcional. 
-    """
+
+def calcular_dias_trabajados(usuario, campania_str):
     inicio_campania, fin_campania = parse_campania_to_dates(campania_str)
 
     fecha_ingreso = usuario.fec_ingreso
@@ -683,9 +681,14 @@ def calcular_asegurado_segun_dias_trabajados(dinero, usuario, campania_str):
     fecha_fin_real = min(fecha_egreso, fin_campania)
 
     if fecha_inicio_real > fecha_fin_real:
-        dias_trabajados_campania = 0
+        return 0
     else:
-        dias_trabajados_campania = (fecha_fin_real - fecha_inicio_real).days + 1
+        return (fecha_fin_real - fecha_inicio_real).days + 1
+
+
+
+def calcular_asegurado_segun_dias_trabajados(dinero, usuario, campania_str):
+    dias_trabajados_campania = calcular_dias_trabajados(usuario, campania_str)
 
     # print(f"Dias trabajados {dias_trabajados_campania}")
     if dias_trabajados_campania >= 30:
@@ -1031,6 +1034,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
         "comision_total": comision_neta,
         "comision_bruta": comision_bruta_final,
         "asegurado": diferencia_asegurado,
+        "dias_trabajados" : calcular_dias_trabajados(usuario,campania),
         "detalle": {
             "ventasPropias": ventas_propias_dict,
             "descuentos": descuentos_dict,
