@@ -68,7 +68,10 @@ def insertar_ajustes_en_detalle(detalle_actual, ajustes, user_id):
 class LiquidacionesComisiones(TestLogin,generic.View):
     template_name = 'comisiones.html'
     def get(self,request,*args,**kwargs):
+            from sales.models import PagoCannon
             context = {}
+            pago = PagoCannon.objects.filter(nro_recibo="RC-223583").first()
+            print(f"\n AAAAA\n {pago.id}")
             request.session["ajustes_comisiones"] = [] # Reiniciar posibles ajustes de la comisiones que existan
             # print(len(Ventas.objects.all()))
             context["urlPDFLiquidacion"] = reverse_lazy("liquidacion:viewPDFLiquidacion")
