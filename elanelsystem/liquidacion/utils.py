@@ -304,7 +304,7 @@ def get_premio_x_cantidad_ventas_equipo(ventas):
     dineroAsegurado = asegurado.dinero
     cantidad_ventas_x_equipo = calcular_ventas_supervisor(ventas)
     
-    if cantidad_ventas_x_equipo > 80:
+    if cantidad_ventas_x_equipo >= 80:
         return math.ceil(dineroAsegurado)
     return 0
 
