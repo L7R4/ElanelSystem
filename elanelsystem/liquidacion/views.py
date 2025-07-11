@@ -2,11 +2,7 @@ import os
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views import generic
-<<<<<<< HEAD
-# from elanelsystem import settings
-=======
 from elanelsystem.settings import base as settings 
->>>>>>> tester
 from users.utils import get_vendedores_a_cargo
 from elanelsystem.views import filterDataBy_campania
 from sales.mixins import TestLogin
