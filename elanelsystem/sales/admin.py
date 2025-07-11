@@ -52,7 +52,7 @@ class VentasAdmin(admin.ModelAdmin):
     # list_editable = ('modalidad', 'importe', 'total_a_pagar')
     
     # Agregar opciones de búsqueda
-    search_fields = ('nro_cliente__nombre', 'producto__nombre', 'fecha',"campania","nro_cuotas",)
+    search_fields = ('nro_operacion','nro_cliente__nombre', 'producto__nombre', 'fecha',"campania","nro_cuotas",)
     
     # Agregar filtros
     list_filter = ('supervisor', "vendedor", "agencia","campania",)

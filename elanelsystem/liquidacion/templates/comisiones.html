@@ -14,7 +14,7 @@
     </div>
 
     <div class="wrapperHeader">
-        
+        <h3 class="titleHeader">Calculo de comisiones</h3>
         <div class="wrapperInputsSearchs">
             <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
                 <h3 class="labelInput">Sucursal</h3>
@@ -55,10 +55,19 @@
 
                 <div class="colaboradores">
                     <div class="listColaboradoresWrapper">
+                        <div class="wrapperTittle">
+                            <h3>Liquidacion de comisiones</h3>
+                            <div class="searchColaboradores">
+                                <input type="text" placeholder="Buscar colaborador..." class="input-read-write-default">
+                                <img src="{% static 'images/icons/search.svg' %}" alt="search">
+                            </div>
+                        </div>
                         <div class="tittlesWrapper">
                             <ul class="tittles">
-                                <li>Nombre</li>
+                                <li>Colaborador</li>
+                                <li>Cargo</li>
                                 <li>Comisión</li>
+                                <li>Acciones</li>
                             </ul>   
                         </div>
                 
@@ -69,7 +78,7 @@
                             </ul>       
                         </div>
                     </div>
-
+{% comment %} 
                     <div class="selectTipoColaborador">
                         <div>
                             <input type="radio" name="tipoColaborador" id="todos" value="todos" class="inputSelectTipoColaborador" checked>
@@ -87,13 +96,14 @@
                             <input type="radio" name="tipoColaborador" id="gerente_sucursal" value="Gerente sucursal" class="inputSelectTipoColaborador">
                             <label for="gerente_sucursal">Gerentes de sucursal</label>
                         </div>
-                    </div>
+                    </div> {% endcomment %}
                 </div>
 
                 <div class="resumen_actions_wrapper">
                     <div id="totalComisionesTextColaboradores_wrapper">
+                        <h2>Total de comisionar</h2>
                         <input type="hidden" id="totalComisionesInput" value="0">
-                        <h3>Total $<span id="dineroTotalComisiones">0</span></h3>
+                        <h3><span id="dineroTotalComisiones">$ 0</span></h3>
                     </div>
                     <div class="wrapperButtonsActions hidden" id="wrapperButtonsActions">
                         <a href="{% url 'liquidacion:preViewPDFLiquidacion' %}" id="previsualizarButton" target="_blank">Previsualizar</a>
@@ -115,6 +125,7 @@
         var export_icon = "{% static 'images/icons/export_icon.svg' %}"
 
     </script>
+    <script src="{% static 'js/formatMoney.js' %}"></script>
     <script src="{% static 'js/redirectToPDFNewLiquidacion.js' %}"></script>
     <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 
