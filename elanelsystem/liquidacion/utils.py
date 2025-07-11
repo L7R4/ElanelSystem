@@ -976,9 +976,9 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
 
     # 4) Comisión / bonos de rol
     rol_dict = detalle_liquidado_x_rol(usuario, campania, agencia)
-
-    # print(f"\n ✅ Detalle de rol liquidadas de -------- {usuario.nombre} --------:\n")
-    # print(f"{rol_dict}")
+    
+    print(f"\n ✅ Detalle de rol liquidadas de -------- {usuario.nombre} --------:\n")
+    print(f"{rol_dict}")
     
     snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania)
     rango_lower = snapshot_usuario_by_campania[0].rango.lower()
