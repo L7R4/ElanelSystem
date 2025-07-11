@@ -31,31 +31,34 @@
    --fourth-color: #546FFF;
 
 
-  --blue-900:   #0A2647;
-  --blue-900-50: rgba(10, 38,  71, 0.5);  /* 50% */
-  --blue-900-20: rgba(10, 38,  71, 0.2);  /* 20% */
-  
-  --blue-700:   #144272;
-  --blue-700-50: rgba(20, 66, 114, 0.5);
-  --blue-700-20: rgba(20, 66, 114, 0.2);
-  
-  --blue-500:   #205295;
-  --blue-500-50: rgba(32, 82, 149, 0.5);
-  --blue-500-20: rgba(32, 82, 149, 0.2);
-  
-  --blue-300:   #2C74B3;
-  --blue-300-50: rgba(44,116,179, 0.5);
-  --blue-300-20: rgba(44,116,179, 0.2);
-
-  --white-color-800: rgb(250, 248, 255);
-  --white-800-80: rgba(250, 248, 255, 0.8);
-  --white-800-50: rgba(250, 248, 255, 0.5);
-  --white-800-20: rgba(250, 248, 255, 0.2);
+   --white-color-800: rgb(250, 248, 255);
+   --white-800-80: rgba(250, 248, 255, 0.8);
+   --white-800-50: rgba(250, 248, 255, 0.5);
+   --white-800-20: rgba(250, 248, 255, 0.2);
 
 
-  /* Duraciones (igual que antes) */
-  --trans-fast:   150ms;
-  --trans-normal: 300ms;
+   --success-color: rgb(46, 204, 113);
+   --success-color-50: rgba(46, 204, 113, 0.5);
+   --success-color-20: rgba(46, 204, 113, 0.2);
+
+   --danger-color: rgb(231, 76, 60);
+   --danger-color-50: rgba(231, 76, 60, 0.5);
+   --danger-color-20: rgba(231, 76, 60, 0.2);
+
+   --warning-color: rgb(243, 156, 18);
+   --warning-color-50: rgba(243, 156, 18, 0.5);
+   --warning-color-20: rgba(243, 156, 18, 0.2);
+
+   --info-color: rgb(127, 140, 141);
+   --info-color-50: rgba(127, 140, 141, 0.5);
+   --info-color-20: rgba(127, 140, 141, 0.2);
+
+   --blue-0: rgb(17, 25, 41);
+   --blue-1: rgb(24, 31, 46);
+   --blue-2: rgb(32, 43, 68);
+   --blue-3: rgb(32, 83, 149);
+   --blue-4: rgb(47, 116, 176);
+   --blue-accent-color: rgb(16, 95, 166);
 
 }
 
@@ -97,18 +100,17 @@ input[type=number]::-webkit-inner-spin-button {
 .button-default-style {
    font-family: raleway-semibold;
    background-color: transparent;
-   color: var(--third-color);
+   color: var(--white-color-800);
    display: flex;
    justify-content: center;
    align-items: center;
    cursor: pointer;
    padding: 1rem 1.5rem;
-
    outline: none;
    border-radius: .6rem;
    cursor: pointer;
    width: fit-content;
-   border: 2px solid var(--primary-color);
+   border: 1px solid var(--blue-3);
    max-height: 3.5rem;
    min-height: 2.8rem;
    max-width: 25rem;
@@ -183,9 +185,8 @@ input[type=number]::-webkit-inner-spin-button {
 .input-read-only-default {
    max-height: 3.5rem;
    min-height: 2.8rem;
-   border: 2px solid var(--secundary-colorr);
+   background-color: var(--blue-2);
    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
-   background-color: #deddf3;
    position: relative;
    border-radius: .6rem;
    outline: none;
@@ -193,15 +194,15 @@ input[type=number]::-webkit-inner-spin-button {
    width: 100%;
    font-feature-settings: "pnum" on, "lnum" on;
    height: 100%;
+   border: none;
 }
 
 input.input-read-write-default,
 textarea.input-read-write-default {
    max-height: 3.5rem;
    min-height: 3rem;
-   border: 2px solid var(--secundary-color);
+   background-color: var(--blue-2);
    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
-   background-color: transparent;
    position: relative;
    border-radius: .6rem;
    outline: none;
@@ -210,8 +211,15 @@ textarea.input-read-write-default {
    font-feature-settings: "pnum" on, "lnum" on;
    height: 100%;
    box-sizing: border-box;
+   border: none;
+   color: var(--white-800-80);
 }
 
+textarea.input-read-write-default {
+   max-height: none;
+   text-indent: 0;
+   padding: 1.2rem;
+}
 
 /* --------------------------------------------------
    > INPUTs selects customerize
@@ -219,7 +227,8 @@ textarea.input-read-write-default {
 .input-select-custom {
    max-height: 3.5rem;
    min-height: 3rem;
-   border: 2px solid var(--secundary-color);
+   /* border: 2px solid var(--blue-accent-color); */
+   background-color: var(--blue-2);
    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
    position: relative;
    border-radius: .6rem;
@@ -234,7 +243,8 @@ textarea.input-read-write-default {
 .pseudo-input-select-wrapper {
    max-height: 3.5rem;
    min-height: 3rem;
-   border: 2px solid var(--secundary-color);
+   /* border: 2px solid var(--blue-accent-color); */
+   background-color: var(--blue-2);
    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
    position: relative;
    outline: none;
@@ -253,7 +263,8 @@ textarea.input-read-write-default {
    white-space: nowrap;
    overflow-x: auto;
    -ms-overflow-style: none;
-   /* Oculta la barra de scroll en Internet Explorer y Edge */
+   color: var(--white-800-80);
+
 }
 
 .pseudo-input-select-wrapper>h3::-webkit-scrollbar {
@@ -266,8 +277,10 @@ textarea.input-read-write-default {
 
 ul.list-select-custom {
    list-style: none;
-   background-color: var(--background-color);
-   border: 2px solid var(--secundary-color);
+   /* background-color: var(--background-color); */
+   background-color: var(--blue-2);
+
+   /* border: 2px solid var(--blue-accent-color); */
    font: clamp(1rem, 1vw, 1.3rem) 'raleway-semibold';
    border-radius: .6rem;
    color: var(--third-color);
@@ -407,7 +420,7 @@ ul.list-select-custom.open {
    list-style: none;
    padding: .7rem;
    background-color: var(--background-color);
-   border: 2px solid var(--secundary-color);
+   border: 2px solid var(--blue-accent-color);
    flex-direction: column;
    height: fit-content;
    gap: 1rem;

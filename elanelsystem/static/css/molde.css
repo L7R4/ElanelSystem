@@ -1,142 +1,112 @@
-
-.wrapper
-{
-    display: flex;
-    height: 100vh;
-    background-color: var(--background-color);
+.wrapper {
+  display: flex;
+  height: 100vh;
+  background-color: var(--blue-0);
 }
 
 /* ASIDE ACTIVE*/
-aside.menu.active{
-    width: 25%;
-    min-width: 8rem;
-    border-top-right-radius: 1rem;
-    border-bottom-right-radius: 1rem;
-}
-#menu {
-    background-color: #fff;
-    transition: all 0.3s ease-in-out;
-    height: 100%;
-  }
-
-  #menu ul {
-    list-style: none;
-    height: 90%;
-    display: flex;
-    flex-direction: column;
-    padding: 0 2rem;
-  }
-  #menu li {
-    height: 4rem;
-    margin-top: 2rem;
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  .button_menu-wrapper
-  {
-    height: 7%;
-    margin-top: 1rem;
-    margin-left: 2.7rem;
-    display: flex;
-    align-items: center;
-  }
-  #menu > .list > li.add_user
-  {
-    margin-top: auto;
-  }
-
-  #menu > .list > li > a{
-    display: flex;
-    gap: 1rem;
-    height: 100%;
-    width: fit-content;
-    align-items: center;
-    text-decoration: none;
-    font-size: clamp(1.5rem, 1.3vw, 1.8rem);
-    font-family: raleway-semibold;
-    position: relative;
-    z-index: 2;
-  }
-  
-  #menu > .list > li > a>img{
-    height: 75%;
-    padding: 0 1rem;
-  }
-  #menu > .list > li > a > p{
-    padding: 0 2rem 0rem 1rem;
-    white-space: nowrap;
-    color: rgb(32, 53, 85);
-  }
-  #menu > .list > li > .check{
-    background-color: #3d7bd8;
-    border-radius: .4rem;
-    height: 90%;
-    width: 1.7rem;
-    position: absolute;
-    z-index: 1;
-    left: -2.6rem;
-    display: none;
-  }
-  #menu > .list > li:hover > .check{
-    display: block;
-    background-color: #3d7bd83b;
-  }
-  #menu > .list > li.in_path > .check
-  {
-    display: block;
-  }
-
-  
-
-  /* Estilos para el botón que abre y cierra el aside */
-  .toggle-button {
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 3.5rem;
-    height: 3.5rem;
-    background-color: var(--primary-color);
-  }
-  .menu.active > .button_menu-wrapper > .toggle-button > img{
-    width: 1rem;
-    rotate: 0deg;
-    transition: all 0.3s ease-in-out;
-  }
-  
-/*#region ASIDE NO ACTIVE*/
-aside.menu{
-    width: 5%;
-    min-width: 9rem;
-}
-.menu .toggle-button > img
-{
-    width: 1rem;
-    rotate: 180deg;
-    transition: all 0.3s ease-in-out;
-    filter: invert(1);
+aside.menu {
+  width: 15vw;
+  min-width: 8rem;
+  border-right: 1px solid var(--white-800-20);
 }
 
-.wrapper_content
-{
+.tittleAsideWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .7rem;
+  padding: 2rem;
+}
+
+.tittleAsideWrapper>.logoWrapper {
+  width: 50%;
+}
+
+.tittleAsideWrapper>.logoWrapper>img {
+  width: 100%;
+}
+
+.tittleAsideWrapper>h3.tittleAside {
+  font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+  font-family: raleway;
+  color: var(--white-color-800);
+}
+
+.aside-item-perfil {
+  padding: 2rem;
+  border-bottom: 1px solid var(--white-800-20);
+  border-top: 1px solid var(--white-800-20);
+  display: flex;
+  align-items: center;
+  /* justify-content: center; */
+  gap: 1rem;
+}
+
+.aside-item-perfil>.circleNombre {
+  background-color: var(--blue-3);
+  color: var(--white-800-80);
+  font-family: raleway-semibold;
+  font-size: clamp(1.1rem, 1.1vw, 1.4rem);
+  padding: .8rem;
+  border-radius: 50%;
+}
+
+.aside-item-perfil>.nombreUsuarioWrapper {
+  font-family: raleway;
+  font-size: clamp(1.1rem, 1.1vw, 1.4rem);
+  color: var(--white-800-80);
+}
+
+#menu ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+#menu>ul>li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+#menu>ul>li:hover {
+  background-color: var(--blue-3);
+  cursor: pointer;
+  border-left: 2px solid var(--white-800-50);
+}
+
+.button_menu-wrapper {
+  height: 7%;
+  margin-top: 1rem;
+  margin-left: 2.7rem;
+  display: flex;
+  align-items: center;
+}
+
+#menu>.list>li.add_user {
+  margin-top: auto;
+}
+
+#menu>.list>li>a {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  text-decoration: none;
+  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--white-color-800);
+}
+
+#menu>.list>li>a>img {
+  padding: 0 1rem;
+}
+
+
+.wrapper_content {
   width: 100%;
   height: 100%;
-  /* background-color: #213149; */
-  background-color: var(--background-color);
-  overflow-y: auto;
-
+  /* overflow-y: auto; */
 }
-.wrapper_content::-webkit-scrollbar{
-  width: 4px;
-  border-radius: 5px;
-}
-.wrapper_content::-webkit-scrollbar-thumb{
-  background: #fff;
-  border-radius: 1rem;
-}
-#close_session > img{
-  rotate: 180deg;
-}
-
-/* #endregion */
-

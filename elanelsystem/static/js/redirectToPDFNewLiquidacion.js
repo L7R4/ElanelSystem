@@ -54,7 +54,7 @@ function newModalLiquidacion() {
 
 
     // add a button
-    modal.addFooterBtn('Liquidar', 'tingle-btn tingle-btn--primary', async function () {
+    modal.addFooterBtn('Liquidar', 'tingle-btn tingle-btn--primary add-button-default', async function () {
 
         body = {
             "campania": document.querySelector("#campaniaInput").value,
@@ -84,7 +84,7 @@ function newModalLiquidacion() {
     });
 
     // add another button
-    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default', function () {
+    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default button-default-style', function () {
         modal.close();
         modal.destroy();
     });
@@ -118,7 +118,7 @@ function newModalMessage(message, iconMessage) {
     modalMessage.setContent(renderMessage(message, iconMessage));
 
 
-    modalMessage.addFooterBtn('Cerrar', 'tingle-btn tingle-btn--default', function () {
+    modalMessage.addFooterBtn('Cerrar', 'tingle-btn tingle-btn--default button-default-style', function () {
         // here goes some logic
         modalMessage.close();
         modalMessage.destroy();
