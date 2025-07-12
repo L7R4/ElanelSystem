@@ -1,0 +1,123 @@
+{% load static %}
+{% load currency_ar %} 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body> 
+    <div class="reciboPairWrapper"> 
+        <div class="reciboWrapper">
+            <div class="recibo">
+                <img class="logo" src="{% static 'images/logoElanelPDF.png' %}">
+                <h1 class="tittleRecibo">Recibo de Honorarios - Servicios Profesionales</h1>
+                <div class="divInfoWrapper"> 
+                    <div class="infoUserWrapper">
+                        <p>Agencia Resistencia, Chaco</p>
+                    </div>
+                    <div class="campaniaWrapper infoUserWrapper">
+                        <p>Junio 2025</p>
+                    </div>
+                </div>
+                
+                
+                <div class="colaboradorWrapper infoUserWrapper">
+                    {% comment %} <p><strong>{{ recibo.tipo_colaborador }}</strong></p> {% endcomment %}
+                    <p>Gunther Sabrina</p>
+                </div>
+        
+                <div class="tittleConceptoWrapper">
+                    <p>Concepto de recibo</p>
+                </div>
+                <table>
+                    {% comment %} <thead>
+                        <tr>
+                            <th>Concepto</th>
+                        </tr>
+                    </thead> {% endcomment %}
+                    <tbody>
+                        <tr>
+                            <td>Honorarios profesionales correspondientes a la prestación de servicios de Supervisora de Ventas , conforme a lo pactado en el contrato de Servicios citado.</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+                
+                
+                <div class="totalComisionadoWrapper">
+                    <p>IMPORTE</p>
+                    <p>$ 1.200.000</p>
+                </div>
+                <div class="notaImportanteWrapper">
+                    <p><span>Finiquito Total</span>: Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito Total /Final .</p>
+                </div>
+            </div>
+        
+            <div id="firmas">
+                <div>
+                <p>Firma</p>
+                </div>
+                <div>
+                    <p>Aclaracion y DNI</p>
+                </div>
+            </div>
+        </div>
+        <div class="reciboWrapper">
+            <div class="recibo">
+                <img class="logo" src="{% static 'images/logoElanelPDF.png' %}">
+                <h1 class="tittleRecibo">Recibo de Honorarios - Servicios Profesionales</h1>
+                <div class="divInfoWrapper"> 
+                    <div class="infoUserWrapper">
+                        <p>Agencia Resistencia, Chaco</p>
+                    </div>
+                    <div class="campaniaWrapper infoUserWrapper">
+                        <p>Junio 2025</p>
+                    </div>
+                </div>
+                
+                
+                <div class="colaboradorWrapper infoUserWrapper">
+                    {% comment %} <p><strong>{{ recibo.tipo_colaborador }}</strong></p> {% endcomment %}
+                    <p>Gunther Sabrina</p>
+                </div>
+        
+                <div class="tittleConceptoWrapper">
+                    <p>Concepto de recibo</p>
+                </div>
+                <table>
+                    {% comment %} <thead>
+                        <tr>
+                            <th>Concepto</th>
+                        </tr>
+                    </thead> {% endcomment %}
+                    <tbody>
+                        <tr>
+                            <td>Honorarios profesionales correspondientes a la prestación de servicios de Supervisora de Ventas , conforme a lo pactado en el contrato de Servicios citado.</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+                
+                
+                <div class="totalComisionadoWrapper">
+                    <p>IMPORTE</p>
+                    <p>$ 1.200.000</p>
+                </div>
+                <div class="notaImportanteWrapper">
+                    <p><span>Finiquito Final</span>: Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito Total /Final .</p>
+                </div>
+            </div>
+        
+            <div id="firmas">
+                <div>
+                <p>Firma</p>
+                </div>
+                <div>
+                    <p>Aclaracion y DNI</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

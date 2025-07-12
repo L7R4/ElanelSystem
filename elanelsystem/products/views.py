@@ -145,7 +145,7 @@ class ViewProducts(generic.View):
                     'success': True,
                     'producto': {
                         'nombre': producto.nombre,
-                        'plan': producto.plan.tipodePlan,
+                        'plan': producto.tipodePlan,
                         'precio': producto.plan.valor_nominal
                     }
                 })
@@ -166,7 +166,7 @@ def requestProducts(request):
         for producto in productos:
             productos_list.append(
                 {"nombre": producto.nombre, 
-                "paquete": producto.plan.tipodePlan,
+                "paquete": producto.tipodePlan,
                 "primer_cuota": producto.plan.primer_cuota,
                 "suscripcion": producto.plan.suscripcion,
                 "importe": producto.plan.valor_nominal,
