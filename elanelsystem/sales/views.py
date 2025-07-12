@@ -433,6 +433,8 @@ def importVentas(request):
                     print(f"✅ Pasó la verificacion de suspension de la operacion")
 
                     venta.cuotas = bloquer_desbloquear_cuotas(venta.cuotas)
+                    if(int(venta.nro_operacion) == 2342):
+                        print(venta.cuotas)
                     print(f"✅ Pasó el bloqueo o desbloqueo de cuotas")
 
                     venta.setDefaultFields()
