@@ -111,6 +111,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     generico_user = models.BooleanField(default=False)
     suspendido = models.BooleanField(default=False)
     objects = UserManager()
+
+    class Meta:
+        ordering = ['nombre'] 
     
     def __str__(self):
         return self.nombre
