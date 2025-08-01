@@ -38,6 +38,7 @@ import pandas as pd
 from django.core.files.storage import FileSystemStorage
 
 
+
 class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
     permission_required = "sales.my_ver_resumen"
     # login_url = "/ventas/caja/"
