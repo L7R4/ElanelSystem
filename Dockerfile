@@ -1,22 +1,31 @@
-# 1. Base
+# Stage 1: Base build stage
 FROM python:3.11-slim
+ 
+# Set environment variables to optimize Python
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1 
 
-# 2. Variables de entorno
-ENV PYTHONUNBUFFERED 1 \
-    POETRY_VIRTUALENVS_CREATE=false
+# Dependencias del OS para psycopg2
+RUN apt-get update \
+ && apt-get install -y build-essential libpq-dev \
+ && rm -rf /var/lib/apt/lists/*
 
-# 3. Directorio de trabajo
+# Create the app directory
+RUN mkdir /app
 WORKDIR /app
 
-# 4. Instala dependencias
-COPY proyecto_django/requirements.txt .
+COPY requirements.txt /app/
+ 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 5. Copia el código
-COPY proyecto_django/ .
+COPY . .
+                         
+EXPOSE 8000
 
-# 6. Recolecta estáticos (opcionalmente en build)
-# RUN python manage.py collectstatic --noinput
+CMD [
+  "gunicorn",
+  "elanelasystem.wsgi:application",
+  "--workers", "3",
+  "--bind", "0.0.0.0:8000"
+]
 
-# 7. Comando por defecto
-CMD ["uvicorn", "mi_proyecto.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
