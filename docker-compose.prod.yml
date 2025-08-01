@@ -24,7 +24,7 @@ services:
     env_file:
       - ./elanelsystem/.env
     depends_on:
-      - db_elanelsys
+      - db_elanelsystem
     volumes:
       - static_volume_elanelsystem:/app/staticfiles
       - media_volume_elanelsystem:/app/media
