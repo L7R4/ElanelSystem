@@ -419,7 +419,7 @@ def viewPDFLiquidacion(request, id):
 def reciboPDFLiquidacionEspecifico(request):
     informeName = "Informe"
     urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "liquidacion.pdf")
-    printPDF({},request.build_absolute_uri(),urlPDF,"pdf_liquidacion_especifico.html","static/css/pdf_liquidacion_especifico.css")
+    printPDF({},request.build_absolute_uri(),urlPDF,"pdf_finiquito_final.html","static/css/pdf_liquidacion_especifico.css")
 
     
     with open(urlPDF, 'rb') as pdf_file:
