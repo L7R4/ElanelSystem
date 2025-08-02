@@ -18,7 +18,6 @@ class Plan(models.Model):
     def __str__(self):
         return f"Plan {self.valor_nominal}"
     
-    
     #region Validaciones
     def clean(self):
         errors = {}

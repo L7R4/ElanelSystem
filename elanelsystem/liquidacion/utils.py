@@ -304,7 +304,7 @@ def get_premio_x_cantidad_ventas_equipo(ventas):
     dineroAsegurado = asegurado.dinero
     cantidad_ventas_x_equipo = calcular_ventas_supervisor(ventas)
     
-    if cantidad_ventas_x_equipo > 80:
+    if cantidad_ventas_x_equipo >= 80:
         return math.ceil(dineroAsegurado)
     return 0
 
@@ -605,7 +605,6 @@ def comisiones_brutas_gerente(gerente, agencia,campania):
     Devuelve la comision bruta del gerente.
     """
     detalle_region = get_detalle_sucursales_de_region2(gerente, agencia, campania)
-
     
     total_premios = 0
     for r in detalle_region["detalleRegion"].values():
@@ -657,10 +656,8 @@ def parse_campania_to_dates(campania_str):
 
     return (primer_dia, ultimo_dia)
 
-def calcular_asegurado_segun_dias_trabajados(dinero, usuario, campania_str):
-    """
-    Aplico math.ceil al proporcional. 
-    """
+
+def calcular_dias_trabajados(usuario, campania_str):
     inicio_campania, fin_campania = parse_campania_to_dates(campania_str)
 
     fecha_ingreso = usuario.fec_ingreso
@@ -683,9 +680,14 @@ def calcular_asegurado_segun_dias_trabajados(dinero, usuario, campania_str):
     fecha_fin_real = min(fecha_egreso, fin_campania)
 
     if fecha_inicio_real > fecha_fin_real:
-        dias_trabajados_campania = 0
+        return 0
     else:
-        dias_trabajados_campania = (fecha_fin_real - fecha_inicio_real).days + 1
+        return (fecha_fin_real - fecha_inicio_real).days + 1
+
+
+
+def calcular_asegurado_segun_dias_trabajados(dinero, usuario, campania_str):
+    dias_trabajados_campania = calcular_dias_trabajados(usuario, campania_str)
 
     # print(f"Dias trabajados {dias_trabajados_campania}")
     if dias_trabajados_campania >= 30:
@@ -942,6 +944,7 @@ def detalle_liquidado_x_rol(usuario, campania, suc):
             "dinero_recadudado_cuotas_0": detalleRegion["dinero_recadudado_cuotas_0"],
             "detalle" : detalleRegion["detalleRegion"] 
         }
+        print(f"\n\n Detalle de region de gerente {usuario.nombre} -> \n{response} \n\n")
 
         return response
 
@@ -973,7 +976,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
 
     # 4) Comisión / bonos de rol
     rol_dict = detalle_liquidado_x_rol(usuario, campania, agencia)
-
+    
     # print(f"\n ✅ Detalle de rol liquidadas de -------- {usuario.nombre} --------:\n")
     # print(f"{rol_dict}")
     
@@ -1007,7 +1010,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
             comision_bruta_final = rol_dict["comision_total"] + diferencia_asegurado
 
     else:
-        comision_bruta_final = comision_bruta_inicial
+        comision_bruta_final = rol_dict["comision_total"] if rango_lower != "vendedor" else comision_bruta_vendedor
 
     # 6) Ajustes y descuentos
     ajustes_positivos = sum(a["dinero"] for a in ajustes_usuario if a["ajuste_tipo"] == "positivo")
@@ -1031,6 +1034,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
         "comision_total": comision_neta,
         "comision_bruta": comision_bruta_final,
         "asegurado": diferencia_asegurado,
+        "dias_trabajados" : calcular_dias_trabajados(usuario,campania),
         "detalle": {
             "ventasPropias": ventas_propias_dict,
             "descuentos": descuentos_dict,

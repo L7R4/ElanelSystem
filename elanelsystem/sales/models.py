@@ -132,11 +132,14 @@ class Ventas(models.Model):
     cuotas = models.JSONField(default=list,blank=True,null=True)
     is_commissionable = models.BooleanField(verbose_name="Venta apta para comisionar",default=False,help_text="Indica si esta venta debe generar comisión para el vendedor a cargo")
 
+    # class Meta:
+    #     ordering = ['-fecha']
+    #     indexes = [
+    #         models.Index(fields=['agencia', 'campania']),
+    #     ]
+
     class Meta:
-        ordering = ['-fecha']
-        indexes = [
-            models.Index(fields=['agencia', 'campania']),
-        ]
+        ordering = ['nro_operacion'] 
 
     #endregion
     
@@ -890,7 +893,7 @@ class PagoCannon(models.Model):
         if not self.nro_recibo:
             with connection.cursor() as cursor:
                 cursor.execute("SELECT nextval('recibo_seq')")
-                next_num = cursor.fetchone()[0]
+                next_num = cursor.fetchone()[0] + 2
             # formatea a tu gusto, p.e. RC-000001
             self.nro_recibo = f"RC-{next_num:06d}"
         super().save(*args, **kwargs)
