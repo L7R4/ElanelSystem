@@ -3,13 +3,8 @@ from .models import *
 
 admin.site.register(Asegurado)
 admin.site.register(MontoTardanzaAusencia)
+admin.site.register(Liquidacion)
 
-
-admin.site.register(LiquidacionVendedor)
-admin.site.register(LiquidacionSupervisor)
-admin.site.register(LiquidacionGerenteSucursal)
-admin.site.register(LiquidacionAdmin)
-admin.site.register(LiquidacionCompleta)
 
 
 

@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db_elanelsystem:
+    image: postgres:17
+    restart: unless-stopped
+    env_file:
+      - ./elanelsystem/.env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data_elanelsystem:/var/lib/postgresql/data
+    networks:
+      - elanelsystem_net
+
+  web_elanelsystem:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web_elanelsystem
+    restart: always
+    env_file:
+      - ./elanelsystem/.env
+    depends_on:
+      - db_elanelsystem
+    volumes:
+      - static_volume_elanelsystem:/app/staticfiles
+      - media_volume_elanelsystem:/app/media
+    networks:
+      - elanelsystem_net
+
+  nginx_elanelsystem:
+    image: nginx:stable-alpine
+    container_name: nginx_elanelsystem
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - static_volume_elanelsystem:/app/staticfiles:ro
+      - media_volume_elanelsystem:/app/media:ro
+    depends_on:
+      - web_elanelsystem
+    networks:
+      - elanelsystem_net
+
+networks:
+  elanelsystem_net:
+
+volumes:
+  postgres_data_elanelsystem:
+  static_volume_elanelsystem:
+  media_volume_elanelsystem:

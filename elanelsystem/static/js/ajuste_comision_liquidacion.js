@@ -2,7 +2,7 @@ function render_form_ajuse_comision(nombre_usuario, comision) {
     return `<form method="POST" class="modal_form" id="formNewAjuste">
 
             <div class="wrapperTittle">
-                <h3 class="labelInput">Ajustar comisiones a <span>${nombre_usuario} ($${comision})</span></h3>
+                <h3 class="labelInput">Ajustar comisiones a ${nombre_usuario} <span>${formatMoney(comision)}</span></h3>
             </div>
 
             <div class="wrapperButtonsSelectTipoAjuste">
@@ -22,7 +22,7 @@ function render_form_ajuse_comision(nombre_usuario, comision) {
             </div>
             <div class="wrapperInputObservaciones">
                 <h3>Observaciones</h3>
-                <textarea name="observaciones" id="observacionesInput" rows="10"></textarea>
+                <textarea class="input-read-write-default" name="observaciones" id="observacionesInput" rows="10"></textarea>
             </div>
         </form>`
 }
@@ -116,7 +116,7 @@ function update_total_comisiones(new_total) {
     const textTotal = document.querySelector("#dineroTotalComisiones")
     let inputDinero = document.querySelector("#totalComisionesInput");
 
-    
+
     const dineroFormateado = new Intl.NumberFormat("es-AR").format(new_total);
     textTotal.textContent = dineroFormateado
     inputDinero.value = new_total

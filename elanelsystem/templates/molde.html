@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/molde.css' %}">
     <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
-    <link rel="shortcut icon" href="{% static 'images/icons/diamong.png' %}">
+    <link rel="shortcut icon" href="{% static 'images/icon_windown.png' %}">
 
     {% block css %}
     {% endblock css %}
@@ -18,107 +18,49 @@
 <body>
     <div class="wrapper">
 
-        <aside class="menu active" id="menu">
-            <div class="button_menu-wrapper">
-                <button class="toggle-button">
-                    <img src="{% static 'images/icons/previous.svg' %}" alt="">
-                </button>
+        <aside class="menu" id="menu">
+            <div class="tittleAsideWrapper">
+                <div class="logoWrapper">
+                    <img src="{% static 'images/icono.sinfondo_admin.png' %}" alt="">
+                </div>
+                <h3 class="tittleAside">Elanel Servicios SRL</h3>
+            </div>
+            <div class="aside-item-perfil">
+                {% iniciales_de_nombre_usuario as iniciales %}
+                    <div class="circleNombre">
+                        {{iniciales}}
+                    </div>
+                    <div class="nombreUsuarioWrapper">
+                    {% nombre_completo_usuario as nombre_completo %}
+                    {% rango_usuario as rango %}
+                        <h3>{{nombre_completo}}</h3>
+                        <h5>{{rango}}</h5>
+                    </div>  
             </div>
             
             <ul class="list">
+                
                 {% seccionesPorPermisos as secciones %}
                 {% for seccion, data in secciones.items %}
                     <li>
                         <a href="{{data.url}}" id="{{seccion|lower}}">
+                            <img src="{{data.image}}" alt="">
                             <p>{{seccion}}</p> 
                         </a>
-                        <div class="check"></div>
                     </li>
                 {% endfor %}
-                {% comment %} {% if perms.sales.my_ver_resumen%}
-
-                    <li>
-                        <a href="{% url 'sales:resumen' %}" id="resumen">
-                            <img src="{% static 'images/icons/resumen.svg' %}" alt="">
-                            <p>Resumen</p> 
-                        </a>
-                        <div class="check"></div>
-                    </li>
-
-                {% endif %}
                 
-                <li>
-                    <a href="{% url 'users:list_customers' %}" id="clientes">
-                        <img src="{% static 'images/icons/clientes.svg' %}" alt="">
-                        <p>Clientes</p> 
-                    </a>
-                    <div class="check"></div>
-                </li>
-
-                <li>
-                    <a href="{% url 'sales:caja' %}" id="caja">
-                        <img src="{% static 'images/icons/dinero.svg' %}" alt="">
-                        <p>Caja</p> 
-                    </a>
-                    <div class="check"></div>
-                </li> {% endcomment %}
-
-                {% comment %} {% if perms.sales.my_ver_planes%}
-
-                    <li>
-                        <a href="{% url 'products:planes' %}" id="planes">
-                            <img src="{% static 'images/icons/planes.svg' %}" alt="">
-                            <p>Planes</p>
-                        </a>
-                        <div class="check"></div>
-                    </li> 
-
-                {% endif %} {% endcomment %}
-                {% comment %} <li>
-                    <a href="{% url 'reporteView' %}" id="reportes">
-                        <img src="{% static 'images/icons/planes.svg' %}" alt="">
-                        <p>Reportes</p>
-                    </a>
-                    <div class="check"></div>
-                </li> 
-                
-                {% if perms.users.my_ver_colaboradores %}
-                    <li class="add_user">
-                        <a href="{% url 'users:list_users' %}" id="colaboradores">
-                            <img src="{% static 'images/icons/usuarios.svg' %}" alt="">
-                            <p>Colaboradores</p>
-                        </a>
-                        <div class="check"></div>
-                    </li>
-                {% endif %}
-                <li class="">
-                    <a href="{% url 'liquidacion:liquidacionesPanel' %}" id="liquidaciones">
-                        <img src="{% static 'images/icons/porcentaje.png' %}" alt="">
-                        <p>Liquidaciones</p>
-                    </a>
-                    <div class="check"></div>
-                </li>
-                {% if perms.users.my_ver_administracion%}
-                    <li>
-                        <a href="{% url 'users:panelAdmin' %}" id="panelAdmin">
-                            <img src="{% static 'images/icons/administracion.svg' %}" alt="">
-                            <p>Administracion</p> 
-                        </a>
-                        <div class="check"></div>
-                    </li>
-                {% endif %} {% endcomment %}
-                
-
                 <li>
                     <a href="{% url 'users:configurarPerfil'%}" id="close_session">
-                        <p>Configurar perfil</p> 
+                        <img src="{% static 'images/icons_sider/perfil.svg' %}" alt="">
+                        <p>Perfil</p> 
                     </a>
                     <div class="check"></div>
                 </li>
 
                 <li>
                     <a href="{% url 'logout' %}" id="close_session">
-                        <img src="{% static 'images/icons/logout.png' %}" alt="">
+                        <img src="{% static 'images/icons_sider/logout.svg' %}" alt="">
                         <p>Cerrar sesion</p> 
                     </a>
                     <div class="check"></div>

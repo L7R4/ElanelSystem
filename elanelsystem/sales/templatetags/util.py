@@ -6,6 +6,7 @@ from django.db.models import Max
 from sales.models import Ventas
 from sales.utils import formatear_moneda_sin_centavos
 from elanelsystem.utils import formatear_dd_mm_yyyy
+from django.templatetags.static import static
 
 register = template.Library()
 
@@ -70,13 +71,13 @@ def seccionesPorPermisos(context):
     user = context['request'].user
     secciones = {
         # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
-        "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
-        "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja")},
+        "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers"),"image": static("images/icons_sider/clientes.svg")},
+        "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja"),"image": static("images/icons_sider/caja.svg")},
         # "Exportar datos": {"permisos": ["sales.my_ver_reportes"], "url": reverse("detallesNegocio")}, #Mover a a la vista de "Configuracion"
-        "Auditorías": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList")},
-        "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
-        "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
-        "Configuración": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},
+        "Auditorías": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList"),"image": static("images/icons_sider/auditoria.svg")},
+        "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users"),"image": static("images/icons_sider/colaboradores.svg")},
+        "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel"),"image": static("images/icons_sider/liquidacion.svg")},
+        "Configuración": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin"),"image": static("images/icons_sider/configuracion.svg")},
     }
 
     secciones_permitidas = {}
@@ -95,7 +96,7 @@ def iniciales_de_nombre_usuario(context):
 @register.simple_tag(takes_context=True)
 def nombre_completo_usuario(context):
     nombre = context['request'].user.nombre
-    return ''.join([n.capitalize() for n in nombre.split()][:2])
+    return ' '.join([n.capitalize() for n in nombre.split()][:2])
 
 
 @register.simple_tag(takes_context=True)
