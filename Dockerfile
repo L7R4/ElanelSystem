@@ -22,10 +22,5 @@ COPY . .
 
 EXPOSE 8000
 
-CMD [
-"gunicorn",
-"elanelasystem.wsgi:application",
-"--workers", "3",
-"--bind", "0.0.0.0:8000"
-]
+CMD ["gunicorn","elanelsystem.wsgi:application","--workers", "4","--bind", "0.0.0.0:8000"]
 

@@ -3,9 +3,10 @@ version: '3.8'
 services:
   db_elanelsystem:
     image: postgres:17
+    container_name: db_elanelsystem
     restart: unless-stopped
     env_file:
-      - ./elanelsystem/.env
+      - ./.env
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -22,7 +23,7 @@ services:
     container_name: web_elanelsystem
     restart: always
     env_file:
-      - ./elanelsystem/.env
+      - ./.env
     depends_on:
       - db_elanelsystem
     volumes:
@@ -36,8 +37,8 @@ services:
     container_name: nginx_elanelsystem
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - "81:80"
+      - "444:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - static_volume_elanelsystem:/app/staticfiles:ro
