@@ -4,6 +4,10 @@ services:
   db_elanelsystem:
     image: postgres:17
     container_name: db_elanelsystem
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     restart: unless-stopped
     env_file:
       - ./.env
