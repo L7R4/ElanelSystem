@@ -22,5 +22,6 @@ COPY . .
 
 EXPOSE 8000
 
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["gunicorn","elanelsystem.elanelsystem.wsgi:application","--workers", "4","--bind", "0.0.0.0:8000"]
 
