@@ -7,14 +7,10 @@ services:
     restart: unless-stopped
     env_file:
       - ./.env
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data_elanelsystem:/var/lib/postgresql/data
     networks:
-      - elanelsystem_net
+      - proxy-network
 
   web_elanelsystem:
     build:
@@ -29,27 +25,30 @@ services:
     volumes:
       - static_volume_elanelsystem:/app/staticfiles
       - media_volume_elanelsystem:/app/media
+    expose:
+      - "8000"
     networks:
-      - elanelsystem_net
+      - proxy-network
 
   nginx_elanelsystem:
     image: nginx:stable-alpine
     container_name: nginx_elanelsystem
     restart: always
-    ports:
-      - "81:80"
-      - "444:443"
+    # No mapeamos puertos al host
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - static_volume_elanelsystem:/app/staticfiles:ro
       - media_volume_elanelsystem:/app/media:ro
     depends_on:
       - web_elanelsystem
+    expose:
+      - "80"
     networks:
-      - elanelsystem_net
+      - proxy-network
 
 networks:
-  elanelsystem_net:
+  proxy-network:
+    external: true
 
 volumes:
   postgres_data_elanelsystem:
