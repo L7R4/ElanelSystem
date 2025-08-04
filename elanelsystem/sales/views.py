@@ -1,4 +1,3 @@
-
 import time
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404, render, redirect
@@ -36,7 +35,210 @@ from elanelsystem.utils import *
 
 import pandas as pd
 from django.core.files.storage import FileSystemStorage
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 
+#EndPoint graficos de torta
+class GraficosDashboard(TestLogin, PermissionRequiredMixin, generic.View):
+    """Vista para mostrar el dashboard de gráficos de torta"""
+    template_name = 'graficos_dashboard.html'
+    permission_required = "sales.my_ver_graficos"
+    
+    def get(self, request, *args, **kwargs):
+        lista_dict_agencias = [sucursal for sucursal in Sucursal.objects.all()]  
+        context = {
+            'agencias': lista_dict_agencias
+        }
+        return render(request, self.template_name, context)
+
+# Mantener la función para compatibilidad con URLs existentes
+def graficos_dashboard(request):
+    """Vista para mostrar el dashboard de gráficos de torta"""
+    return render(request, 'graficos_dashboard.html')
+
+@require_GET
+@csrf_exempt
+def ventas_analytics_api(request):
+    from collections import Counter
+    import datetime
+    from django.db.models import Q
+    # Filtros
+    fecha_inicial = request.GET.get('fecha_inicial')
+    fecha_final = request.GET.get('fecha_final')
+    colaborador = request.GET.get('colaborador')
+    tipo_colaborador = request.GET.get('tipo_colaborador', 'vendedor')
+    agencia = request.GET.get('agencia', '')
+
+    ventas = get_ventasBySucursal(agencia)
+    # Filtrar por rango de fechas
+    if fecha_inicial and fecha_final:
+        try:
+            # Convertir de YYYY-MM-DD a DD/MM/YYYY para comparar con el formato del modelo
+            fecha_inicial_obj = datetime.datetime.strptime(fecha_inicial, "%Y-%m-%d")
+            fecha_final_obj = datetime.datetime.strptime(fecha_final, "%Y-%m-%d")
+            
+            # Filtrar ventas que estén en el rango de fechas
+            ventas_filtradas = []
+            for venta in ventas:
+                try:
+                    fecha_venta = datetime.datetime.strptime(venta.fecha[:10], "%d/%m/%Y")
+                    if fecha_inicial_obj <= fecha_venta <= fecha_final_obj:
+                        ventas_filtradas.append(venta)
+                except:
+                    continue
+            ventas = ventas_filtradas
+        except ValueError:
+            pass  # Si las fechas no son válidas, ignora el filtro
+    
+    # Filtrar por colaborador
+    if colaborador:
+        if tipo_colaborador == 'supervisor':
+            ventas = [v for v in ventas if v.supervisor and colaborador.lower() in v.supervisor.nombre.lower()]
+        else:
+            ventas = [v for v in ventas if v.vendedor and colaborador.lower() in v.vendedor.nombre.lower()]
+    
+    ventas_por_mes = Counter()
+    for v in ventas:
+        try:
+            fecha = datetime.datetime.strptime(v.fecha[:10], "%d/%m/%Y")
+            key = fecha.strftime("%Y-%m")
+            ventas_por_mes[key] += 1
+        except Exception:
+            continue
+    labels = sorted(ventas_por_mes.keys())
+    data = [ventas_por_mes[l] for l in labels]
+    total = sum(data)
+    return JsonResponse({
+        "labels": labels,
+        "data": data,
+        "total": total
+    })
+    
+@require_GET
+@csrf_exempt
+def pagos_cannon_analytics_api(request):
+    from collections import Counter
+    import datetime
+
+    fecha_inicial = request.GET.get('fecha_inicial')
+    fecha_final = request.GET.get('fecha_final')
+    cobrador = request.GET.get('cobrador')
+    metodo_pago = request.GET.get('metodo_pago')
+    nro_cuota = request.GET.get('nro_cuota')
+    cliente = request.GET.get('cliente')
+    agencia = request.GET.get('agencia', '')
+    monto = request.GET.get('monto')
+    monto_op = request.GET.get('monto_op')  # 'gt' o 'lt'
+    pagos = PagoCannon.objects.all()
+    
+    # Filtrar por rango de fechas
+    if fecha_inicial and fecha_final:
+        try:
+            # Convertir de YYYY-MM-DD a DD/MM/YYYY para comparar con el formato del modelo
+            fecha_inicial_obj = datetime.datetime.strptime(fecha_inicial, "%Y-%m-%d")
+            fecha_final_obj = datetime.datetime.strptime(fecha_final, "%Y-%m-%d")
+            
+            # Filtrar pagos que estén en el rango de fechas
+            pagos_filtrados = []
+            for pago in pagos:
+                try:
+                    fecha_pago = datetime.datetime.strptime(pago.fecha[:10], "%d/%m/%Y")
+                    if fecha_inicial_obj <= fecha_pago <= fecha_final_obj:
+                        pagos_filtrados.append(pago)
+                except:
+                    continue
+            pagos = pagos_filtrados
+        except ValueError:
+            pass  # Si las fechas no son válidas, ignora el filtro
+    
+    # Aplicar otros filtros
+    if cobrador:
+        pagos = [p for p in pagos if p.cobrador and cobrador.lower() in p.cobrador.alias.lower()]
+    if metodo_pago:
+        pagos = [p for p in pagos if p.metodo_pago and metodo_pago.lower() in p.metodo_pago.alias.lower()]
+    if nro_cuota:
+        pagos = [p for p in pagos if p.nro_cuota == int(nro_cuota)]
+    if cliente:
+        pagos = [p for p in pagos if p.venta and p.venta.nro_cliente and cliente.lower() in p.venta.nro_cliente.nombre.lower()]
+    if monto:
+        try:
+            monto_val = float(monto)
+            if monto_op == 'gt':
+                pagos = [p for p in pagos if p.monto >= monto_val]
+            elif monto_op == 'lt':
+                pagos = [p for p in pagos if p.monto <= monto_val]
+        except ValueError:
+            pass
+
+    pagos_por_mes = Counter()
+    for p in pagos:
+        try:
+            fecha = datetime.datetime.strptime(p.fecha[:10], "%d/%m/%Y")
+            key = fecha.strftime("%Y-%m")
+            pagos_por_mes[key] += 1
+        except Exception:
+            continue
+    labels = sorted(pagos_por_mes.keys())
+    data = [pagos_por_mes[l] for l in labels]
+    total = sum(data)
+    return JsonResponse({
+        "labels": labels,
+        "data": data,
+        "total": total
+    })
+
+def graficos_pagos_cannon(request):
+    return render(request, 'graficos_cannon.html')
+
+@require_GET
+@csrf_exempt
+def graficos(request):
+    from collections import Counter
+    import datetime
+    from django.db.models import Q
+    
+    # Filtros
+    mes = request.GET.get('mes')
+    anio = request.GET.get('anio')
+    dia = request.GET.get('dia')
+    colaborador = request.GET.get('colaborador')
+    tipo_colaborador = request.GET.get('tipo_colaborador', 'vendedor')  # vendedor o supervisor
+
+    ventas = Ventas.objects.all()
+    
+    # Filtrar por año
+    if anio:
+        ventas = ventas.filter(fecha__regex=rf"{anio}$|/{anio} ")
+    # Filtrar por mes
+    if mes:
+        ventas = ventas.filter(fecha__regex=rf"/{mes}/")
+    # Filtrar por día
+    if dia:
+        ventas = ventas.filter(fecha__startswith=f"{dia}/")
+    # Filtrar por colaborador
+    if colaborador:
+        if tipo_colaborador == 'supervisor':
+            ventas = ventas.filter(supervisor__nombre__icontains=colaborador)
+        else:
+            ventas = ventas.filter(vendedor__nombre__icontains=colaborador)
+
+    # Agrupar por mes
+    ventas_por_mes = Counter()
+    for v in ventas:
+        try:
+            fecha = datetime.datetime.strptime(v.fecha[:10], "%d/%m/%Y")
+            key = fecha.strftime("%Y-%m")
+            ventas_por_mes[key] += 1
+        except Exception:
+            continue
+    labels = sorted(ventas_por_mes.keys())
+    data = [ventas_por_mes[l] for l in labels]
+    total = sum(data)
+    return JsonResponse({
+        "labels": labels,
+        "data": data,
+        "total": total
+    })
 
 class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
     permission_required = "sales.my_ver_resumen"
@@ -500,7 +702,7 @@ def build_aggregated_cuotas(id_venta,df_est,n_chances,plan):
          # Importe que llegó por fila en el Excel, multiplicado
         excel_amount = int(r['importe_cuotas']) * n_chances
 
-        # Definir importe “oficial” según q
+        # Definir importe "oficial" según q
         if q == 0:
             official = plan.suscripcion * n_chances
         elif q == 1:
