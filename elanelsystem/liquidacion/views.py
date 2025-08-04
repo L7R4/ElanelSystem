@@ -75,11 +75,11 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             request.session["ajustes_comisiones"] = [] # Reiniciar posibles ajustes de la comisiones que existan
             # print(len(Ventas.objects.all()))
             context["urlPDFLiquidacion"] = reverse_lazy("liquidacion:viewPDFLiquidacion")
-            context["defaultSucursal"] = Sucursal.objects.first()
+            # context["defaultSucursal"] = Sucursal.objects.first()
             context["sucursales"] = Sucursal.objects.all()
             context["campanias"] = getTodasCampaniasDesdeInicio()
             context["urlRequestColaboradores"] = reverse_lazy('liquidacion:requestColaboradoresWithComisiones')
-            usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor","Gerente sucursal"])
+            # usuarios = Usuario.objects.filter(rango__in=["Vendedor","Supervisor","Gerente sucursal"])
             return render(request, self.template_name, context)
     
     def post(self, request, *args, **kwargs):
@@ -875,4 +875,3 @@ def export_excel_detalle_comisionado(request):
         filename_prefix = f"Detalle de {user.nombre} _ {campania.replace(' ','')}"
         return exportar_excel2(sheets, filename_prefix)
     
-

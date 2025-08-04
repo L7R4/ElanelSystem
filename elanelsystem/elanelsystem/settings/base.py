@@ -11,8 +11,7 @@ environ.Env.read_env(os.path.join(ROOT_DIR, '.env'))
 
 # ——— Seguridad & debug ———
 SECRET_KEY = env('SECRET_KEY')
-DEBUG = env.bool('DEBUG', default=False)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', [])
 
 # ——— Apps & middleware ———
 INSTALLED_APPS = [
