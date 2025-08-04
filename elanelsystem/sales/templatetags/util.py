@@ -77,6 +77,7 @@ def seccionesPorPermisos(context):
         "Auditorías": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList"),"image": static("images/icons_sider/auditoria.svg")},
         "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users"),"image": static("images/icons_sider/colaboradores.svg")},
         "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel"),"image": static("images/icons_sider/liquidacion.svg")},
+        "Gráficos": {"permisos": ["sales.my_ver_graficos"], "url": reverse("sales:graficos"),"image": static("images/icons_sider/graficos.svg")},
         "Configuración": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin"),"image": static("images/icons_sider/configuracion.svg")},
     }
 
