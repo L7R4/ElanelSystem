@@ -1,7 +1,7 @@
 from .base import *
 
 # —— Producción —— 
-DEBUG = True
+DEBUG = False
 
 # BD real (Postgres, MySQL…)
 DATABASES = {
