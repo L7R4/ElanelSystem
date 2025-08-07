@@ -169,7 +169,8 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
             "campania": campania,
             "ajustes_comision": ajustes_usuario,
             "comisionTotal": comision_data["comision_total"],
-            "info_total_de_comision": comision_data
+            "info_total_de_comision": comision_data,
+            "egreso": 1 if item.fec_egreso else 0
         })
 
     totalDeComisiones = sum([user["comisionTotal"] for user in colaboradores_list])
