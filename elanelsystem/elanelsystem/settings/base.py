@@ -83,6 +83,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ——— Archivos estáticos y media ———
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [ROOT_DIR / 'static']
+STATIC_ROOT = ROOT_DIR.parent / 'staticfiles'
 MEDIA_URL = '/public/'
 MEDIA_ROOT = ROOT_DIR / 'media'
 
