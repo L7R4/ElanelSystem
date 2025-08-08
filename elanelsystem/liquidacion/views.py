@@ -196,6 +196,8 @@ def requestColaboradoresWithComisiones(request):
     request.session["liquidacion_data"] = colaboradores_list
     request.session.modified = True
 
+    colaboradores_list.sort(key=lambda x: x["egreso"])
+
     context = {"colaboradores_data": colaboradores_list,
         "totalDeComisiones": str(int(totalDeComisiones))}
 
@@ -372,6 +374,7 @@ def preViewPDFLiquidacion(request):
                 "fecha": datetime.date.today().strftime("%d-%m-%Y"),
                 "campania": item.get("campania"),
                 "nombre": item.get("nombre"),
+                "egreso_user": item.get("egreso"),
                 "info_total_de_comision": item.get("info_total_de_comision")
             })
     informeName = "Informe"

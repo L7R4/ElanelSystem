@@ -206,8 +206,12 @@
                                 {% endif %}
                             </div>
                             <div class="notaImportanteWrapper">
+                                {% if recibo.egreso_user == 1 %}
+                                <p><span>Finiquito Total</span>: Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito Total /Final .</p>
+                                {%else%}
                                 <p><span>Finiquito Parcial:</span>
                                 Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
+                                {% endif %}
                             </div>
                         </div>
                     
@@ -415,8 +419,12 @@
                                 {% endif %}
                             </div>
                             <div class="notaImportanteWrapper">
+                                {% if recibo.egreso_user == 1 %}
+                                <p><span>Finiquito Total</span>: Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito Total /Final .</p>
+                                {%else%}
                                 <p><span>Finiquito Parcial:</span>
                                 Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
+                                {% endif %}
                             </div>
                         </div>
                     
@@ -607,8 +615,12 @@
                                 <p>{{recibo.info_total_de_comision.comision_total|currency_ar}}</p>
                             </div>
                             <div class="notaImportanteWrapper">
+                                {% if recibo.egreso_user == 1 %}
+                                <p><span>Finiquito Total</span>: Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito Total /Final .</p>
+                                {%else%}
                                 <p><span>Finiquito Parcial:</span>
                                 Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
+                                {% endif %}
                             </div>
                         {% elif recibo.tipo_colaborador == "Vendedor" %}
                             <div class="detalle">
@@ -701,8 +713,12 @@
                                     <p>{{recibo.info_total_de_comision.comision_total|currency_ar}}</p>
                                 </div>
                                 <div class="notaImportanteWrapper">
-                                   <p><span>Finiquito Parcial:</span>
-                                    Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
+                                {% if recibo.egreso_user == 1 %}
+                                <p><span>Finiquito Total</span>: Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito Total /Final .</p>
+                                {%else%}
+                                <p><span>Finiquito Parcial:</span>
+                                Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
+                                {% endif %}
                                 </div>
                             </div>
                         {%endif%}
@@ -891,8 +907,12 @@
                                 <p>{{recibo.info_total_de_comision.comision_total|currency_ar}}</p>
                             </div>
                             <div class="notaImportanteWrapper">
+                                {% if recibo.egreso_user == 1 %}
+                                <p><span>Finiquito Total</span>: Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito Total /Final .</p>
+                                {%else%}
                                 <p><span>Finiquito Parcial:</span>
                                 Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
+                                {% endif %}
                             </div>
                         {% elif recibo.tipo_colaborador == "Vendedor" %}
                             <div class="detalle">
@@ -985,8 +1005,12 @@
                                     <p>{{recibo.info_total_de_comision.comision_total|currency_ar}}</p>
                                 </div>
                                 <div class="notaImportanteWrapper">
-                                   <p><span>Finiquito Parcial:</span>
-                                    Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
+                                {% if recibo.egreso_user == 1 %}
+                                <p><span>Finiquito Total</span>: Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito Total /Final .</p>
+                                {%else%}
+                                <p><span>Finiquito Parcial:</span>
+                                Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
+                                {% endif %}
                                 </div>
                             </div>
                         {%endif%}
