@@ -91,9 +91,9 @@
       <div class="filtro-grupo">
         <label><i class="fas fa-user-tie"></i> Sucursal</label>
         <select id="filtroAgencia">
+          <option value="">Todos</option>
           {% for a in agencias %}
-            <option default value="">Todos</option>
-            <option value="{{a.id}}">{{a.pseudonimo}}</option>
+          <option value="{{a.id}}">{{a.pseudonimo}}</option>
           {% endfor %}
         </select>
       </div>
@@ -582,6 +582,7 @@
         nro_cuota: document.getElementById("nro_cuota").value,
         cliente: document.getElementById("cliente").value,
         sucursal: document.getElementById("filtroAgencia").value,
+        agencia: document.getElementById("filtroAgencia").value,
         // Filtro de monto comentado temporalmente
         // monto: document.getElementById("monto").value,
         // monto_op: document.getElementById("monto_op").value,

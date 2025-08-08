@@ -119,6 +119,7 @@ def ventas_analytics_api(request):
 def pagos_cannon_analytics_api(request):
     from collections import Counter
     import datetime
+    from sales.utils import get_pagosCannonBySucursal
 
     fecha_inicial = request.GET.get('fecha_inicial')
     fecha_final = request.GET.get('fecha_final')
@@ -129,7 +130,7 @@ def pagos_cannon_analytics_api(request):
     agencia = request.GET.get('agencia', '')
     monto = request.GET.get('monto')
     monto_op = request.GET.get('monto_op')  # 'gt' o 'lt'
-    pagos = PagoCannon.objects.all()
+    pagos = get_pagosCannonBySucursal(agencia)
     
     # Filtrar por rango de fechas
     if fecha_inicial and fecha_final:
@@ -188,7 +189,12 @@ def pagos_cannon_analytics_api(request):
     })
 
 def graficos_pagos_cannon(request):
-    return render(request, 'graficos_cannon.html')
+    from users.models import Sucursal
+    agencias = Sucursal.objects.all()
+    context = {
+        'agencias': agencias,
+    }
+    return render(request, 'graficos_cannon.html', context)
 
 @require_GET
 @csrf_exempt
