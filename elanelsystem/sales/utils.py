@@ -619,6 +619,17 @@ def get_ventasBySucursal(sucursal=""):
         return Ventas.objects.filter(agencia__id__in=listaAgencias)
 
 
+def get_pagosCannonBySucursal(sucursal=""):
+    from sales.models import PagoCannon
+    from elanelsystem.views import convertirValoresALista
+
+    if sucursal == "":
+        return PagoCannon.objects.all()
+    else:
+        listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
+        return PagoCannon.objects.filter(venta__agencia__id__in=listaAgencias)
+
+
 def deleteFieldsInDataStructures(lista_dicts, campos_a_eliminar):
     # Iterar sobre cada diccionario en la lista
     for item in lista_dicts:
@@ -776,6 +787,7 @@ def preprocesar_excel_ventas(file_path):
     df_res['id_venta'] = df_res['id_venta'].astype(str)
     df_res['cod_cli'] = df_res['cod_cli'].astype(str)
     df_res['importe'] = df_res['importe'].fillna(0).astype(int)
+    print('importeeeeeeeeeeeeeeeeeeeeee')
     df_res['modalidad'] = df_res['modalidad'].astype(str)
     df_res['tasa_de_inte'] = df_res['tasa_de_inte'].astype(float)
     df_res['fecha_incripcion'] = df_res['fecha_incripcion'].astype(str)
@@ -798,8 +810,10 @@ def preprocesar_excel_ventas(file_path):
 
     # Preparamos ESTADOS
     df_est['id_venta']     = df_est['id_venta'].astype(int)
-    df_est['importe_cuotas']= df_est['importe_cuotas']\
-        .replace('[\$,]', '', regex=True).fillna(0).astype(int)
+    df_est['importe_cuotas']= df_est['importe_cuotas'].replace('[\$,]', '', regex=True).fillna(0).astype(float).astype(int)
+    print('importeeeeeeeeeeeeeeeeeeeeee2')
+    # df_est['importe_cuotas']= df_est['importe_cuotas']\
+        # .replace('[\$,]', '', regex=True).fillna(0).astype(int)
     df_est['cuota_num']    = df_est['cuotas']\
         .str.extract(r'(\d+)').astype(int)
     df_est['estado_norm']  = df_est['estado'].str.title()
