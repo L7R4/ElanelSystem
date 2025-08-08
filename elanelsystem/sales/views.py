@@ -733,9 +733,9 @@ def build_aggregated_cuotas(id_venta,df_est,n_chances,plan):
         if status == 'Pagado':
             pagos = [{
                 'monto': excel_amount,
-                'metodoPago': get_or_create_metodo_pago(r["medio_de_pago"].title()).id,
+                'metodoPago': get_or_create_metodo_pago(r["medio_de_pago"].title()).id if r["medio_de_pago"] else get_or_create_metodo_pago("Efectivo").id,
                 'fecha': fecha_pago,
-                'cobrador': get_or_create_cobrador(r["cobrador"].capitalize()).id,
+                'cobrador': get_or_create_cobrador(r["cobrador"].capitalize()).id if r["cobrador"] else get_or_create_cobrador("Oficina posadas").id,
                 'campaniaPago': r['campania_pago']
             }]
 

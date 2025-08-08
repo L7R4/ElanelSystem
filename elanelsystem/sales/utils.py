@@ -780,6 +780,7 @@ def preprocesar_excel_ventas(file_path):
 
     campos_int_res = ['importe','tasa_de_inte','id_venta','cod_cli','producto','vendedor','superv']
     errores_res = reportar_nans(df_res, campos_int_res, id_field='id_venta')
+
     if errores_res:
         # Aquí podrías loguearlo, devolverlo en la respuesta JSON, o lanzar excepción
         raise ValueError(f"⁉️ Errores en RESUMEN antes de conversión ⁉️:\n{errores_res}")

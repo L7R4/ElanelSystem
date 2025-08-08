@@ -169,7 +169,8 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
             "campania": campania,
             "ajustes_comision": ajustes_usuario,
             "comisionTotal": comision_data["comision_total"],
-            "info_total_de_comision": comision_data
+            "info_total_de_comision": comision_data,
+            "egreso": 1 if item.fec_egreso else 0
         })
 
     totalDeComisiones = sum([user["comisionTotal"] for user in colaboradores_list])
@@ -194,6 +195,8 @@ def requestColaboradoresWithComisiones(request):
     request.session["sucursal_notCommissionable"] = sucursalObject.id
     request.session["liquidacion_data"] = colaboradores_list
     request.session.modified = True
+
+    colaboradores_list.sort(key=lambda x: x["egreso"])
 
     context = {"colaboradores_data": colaboradores_list,
         "totalDeComisiones": str(int(totalDeComisiones))}
@@ -371,6 +374,7 @@ def preViewPDFLiquidacion(request):
                 "fecha": datetime.date.today().strftime("%d-%m-%Y"),
                 "campania": item.get("campania"),
                 "nombre": item.get("nombre"),
+                "egreso_user": item.get("egreso"),
                 "info_total_de_comision": item.get("info_total_de_comision")
             })
     informeName = "Informe"
@@ -419,7 +423,7 @@ def viewPDFLiquidacion(request, id):
 def reciboPDFLiquidacionEspecifico(request):
     informeName = "Informe"
     urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "liquidacion.pdf")
-    printPDF({},request.build_absolute_uri(),urlPDF,"pdf_liquidacion_especifico.html","static/css/pdf_liquidacion_especifico.css")
+    printPDF({},request.build_absolute_uri(),urlPDF,"pdf_finiquito_final.html","static/css/pdf_liquidacion_especifico.css")
 
     
     with open(urlPDF, 'rb') as pdf_file:

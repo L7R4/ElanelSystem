@@ -154,13 +154,14 @@ function actualizarResultadosColaboradores(resultados, contenedor) {
         <div class="wrapperComisionColaborador">
             <p>${formatMoney(item.comisionTotal)}</p>
         </div>
-        <div>
+        <div class="wrapperActionsColaborador">
             <button type="button" class="button-default-style ajusteComisionButton" onclick="modal_ajuste_comision(${item.id}, '${item.nombre}', ${item.comisionTotal})">Ajustar comision</button>
             <button type="button" class="iconInfoMore moreInfoComisionButton" onclick="modal_more_info_comision_by_id(${item.id})"><img src=${info_icon} alt=""></button>
             <button type="button" class="iconInfoMore moreInfoComisionButton" onclick="create_excel_detail_info(${item.id},'${inputCampania.value}',${inputSucursal.value})"><img src=${export_icon} alt=""></button>
+            ${item.egreso == 1 ? "<div class='status_egreso'></div>" : ""}
         </div>
         
-    </li>`;
+    </li > `;
         contenedor.insertAdjacentHTML("beforeend", divs)
 
     });
@@ -200,9 +201,9 @@ function update_textPreValues_to_values() {
 //#region Manejo de posibles mensajes
 
 function messageAlert(messaje, type) {
-    return `<a target="_blank" href="${urlVentasNoComisionables}" class="wrapperMessage ${type}">
-            <h3><strong>Alerta</strong> ${messaje} <span>(click para ver)</span></h3>
-        </a>`
+    return `< a target = "_blank" href = "${urlVentasNoComisionables}" class= "wrapperMessage ${type}" >
+    <h3><strong>Alerta</strong> ${messaje} <span>(click para ver)</span></h3>
+        </a > `
 }
 
 function toggleMessage(container, messageDOM) {
@@ -259,13 +260,13 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
 
     // Preparamos el HTML inicial
     let html = `
-      <div class="wrapperDetalleLiquidacion">
-      <div class="titleDetalleLiquidacion">
-        <h2>Detalle de ${user_name}</h2>
-        <p>${tipo_colaborador}</p>
-        <p>${dias_trabajados >= 30 ? "+" : ""}${dias_trabajados} dias</p>
+        <div class= "wrapperDetalleLiquidacion">
+        <div class="titleDetalleLiquidacion">
+            <h2>Detalle de ${user_name}</h2>
+            <p>${tipo_colaborador}</p>
+            <p>${dias_trabajados >= 30 ? "+" : ""}${dias_trabajados} dias</p>
 
-      </div>
+        </div>
     `;
 
     if (sucursalesKeys.length != 0) {
@@ -278,19 +279,19 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
             const sucName = vp_suc.suc_name || rp_suc.suc_name || key;
             const idSuc = vp_suc.suc_id || rp_suc.suc_id
 
-            html += `<div class="detalle_by_agencia"><h3>Sucursal ${sucName}</h3>`;
+            html += `<div class= "detalle_by_agencia" > <h3>Sucursal ${sucName}</h3>`;
             if (vp_suc == {}) {
                 html += `
-            <div class="subDetalleGroup">
+    <div class= "subDetalleGroup">
                 <h3>Ventas propias</h3>
                 <div>
                     <p class="messageBackground">No hubo ventas propias</p>
                 </div>
-            </div>
-            `
+            </div >
+        `
             } else {
                 html += `
-            <div class="subDetalleGroup">
+        <div class= "subDetalleGroup">
                 <h3>Ventas propias</h3>
                 <div>
                     <p>Ventas <strong>${vp_suc.cantidadVentas || 0}</strong></p>
@@ -306,15 +307,15 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
                         ""
                     }
                 </div>
-            </div>
-            `;
+            </div >
+        `;
 
             }
 
             if (tipo_colaborador.toLowerCase() === "supervisor") {
                 const r = detalle.info_total_de_comision.detalle.rol;
                 html += `
-            <div class="subDetalleGroup">
+        <div class= "subDetalleGroup">
                 <h3>Ventas del equipo</h3>
                 <div>
                     <p>Ventas <strong>${rp_suc.cantidad_ventas_x_equipo || 0}</strong></p>
@@ -324,11 +325,11 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
                     <p>Premio ventas equipo <strong>${formatMoney(rp_suc.comision_x_ventas_equipo || 0)}</strong></p>
                 </div>
             </div>
-          `;
+        `;
             }
             else if (tipo_colaborador.toLowerCase() === "gerente sucursal") {
                 html += `
-            <div class="subDetalleGroup">
+        <div class= "subDetalleGroup">
               <h3>Ventas de la agencia</h3>
               <div>
                 <p>Cuotas 0<strong>${rp_suc.suc_info.cantidad_cuotas_0 || 0}</strong></p>
@@ -342,19 +343,19 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
                 // sub‐total sucursal
                 html += `
                 <p class="subTotalAgenciaGerente">Sub‐total de sucursal<strong>${formatMoney(rp_suc.sub_total || 0)}</strong></p></div>
-                </div>`;
+                </div> `;
             }
 
-            html += `</div>`;
+            html += `</div> `;
         });
     } else {
         html += `
-        <div class="subDetalleGroup">
-            <div>
-                <p class="messageBackground">El ${tipo_colaborador} no tuvo movimientos</p>
-            </div>
+    <div class= "subDetalleGroup">
+    <div>
+        <p class="messageBackground">El ${tipo_colaborador} no tuvo movimientos</p>
+    </div>
         </div>
-    `;
+        `;
 
     }
 
@@ -364,23 +365,23 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
     // 4) Asegurado, ajustes y total final
     // --------------------------------------------------------
     html += `
-        <div class="subDetalleGroup">
-            <h3>Ajustes manuales</h3>`;
+        <div class= "subDetalleGroup">
+        <h3>Ajustes manuales</h3>`;
     if (ajustes.length === 0) {
-        html += `<p class="messageBackground">No se aplicaron ajustes</p>`;
+        html += `<p class= "messageBackground"> No se aplicaron ajustes</p > `;
     } else {
         ajustes.forEach(aj => {
             const signo = aj.ajuste_tipo === "positivo" ? "+" : "-";
-            html += `<p><strong>${signo}$${aj.dinero}</strong> – ${aj.observaciones || "Sin observaciones"}</p>`;
+            html += `<p> <strong>${signo}$${aj.dinero}</strong> – ${aj.observaciones || "Sin observaciones"}</p> `;
         });
-        html += `<p><strong>Total ajustes:</strong> $${total_ajuste}</p>`;
+        html += `<p> <strong>Total ajustes:</strong> $${total_ajuste}</p> `;
     }
     html += `</div>
-        <div class="resumenTotalComision">
-            <h3>Total comisión</h3>
-            <p>${formatMoney(comision_total)}</p>
-        </div>
-        </div>`;
+    <div class="resumenTotalComision">
+        <h3>Total comisión</h3>
+        <p>${formatMoney(comision_total)}</p>
+    </div>
+        </div> `;
 
     return html;
 }

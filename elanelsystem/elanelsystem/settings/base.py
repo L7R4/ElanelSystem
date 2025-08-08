@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 BASE_DIR = Path(__file__).resolve().parent.parent
 ROOT_DIR = BASE_DIR.parent
 env = environ.Env()
-environ.Env.read_env(os.path.join(ROOT_DIR, '.env'))
+environ.Env.read_env(os.path.join(ROOT_DIR.parent, '.env'))
 
 # ——— Seguridad & debug ———
 SECRET_KEY = env('SECRET_KEY')
@@ -83,6 +83,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ——— Archivos estáticos y media ———
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [ROOT_DIR / 'static']
+STATIC_ROOT = ROOT_DIR.parent / 'staticfiles'
 MEDIA_URL = '/public/'
 MEDIA_ROOT = ROOT_DIR / 'media'
 

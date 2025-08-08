@@ -35,7 +35,7 @@ class Command(BaseCommand):
         try:
             usuario_gerente = Usuario.objects.get(dni=dni_gerente)
         except Usuario.DoesNotExist:
-            raise CommandError(f"No existe ningún Usuario con DNI = '{dni_gerente}'.")
+            raise CommandError(f"No existe ningún Usuario con DNI = '{dni_gerente}'.") 
 
         # 2) Filtramos las Ventas según sucursal y (si se pasó) campaña
         if campania:

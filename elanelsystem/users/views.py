@@ -961,14 +961,16 @@ def importar_clientes(request):
         nuevos = 0
         with transaction.atomic():
             for _, row in df.iterrows():
+                nro_cliente = handle_nan(row['nro'])
                 dni = handle_nan(row['dni'])
+
                 # Saltar si ya existe DNI en cualquier cliente
-                if Cliente.objects.filter(dni=dni).exists():
-                    print(f"El cliente {dni} ya existe")
+                if Cliente.objects.filter(nro_cliente=nro_cliente, dni=dni).exists():
+                    print(f"El cliente {nro_cliente} ya existe")
                     continue
 
                 Cliente.objects.create(
-                    nro_cliente         = row['nro'],
+                    nro_cliente         = nro_cliente,
                     nombre              = handle_nan(row['cliente']),
                     dni                 = dni,
                     agencia_registrada  = sucursal,
