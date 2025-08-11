@@ -265,7 +265,7 @@ def dias_trabajados_en_campania(user, campania_str):
 
     return ultima_version, dias_trabajados_campania
 
-class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
+class ListaUsers(PermissionRequiredMixin,generic.ListView):
     model = Usuario
     template_name = "list_users.html"
     permission_required = "sales.my_ver_resumen"
@@ -286,26 +286,6 @@ class ListaUsers(TestLogin,PermissionRequiredMixin,generic.ListView):
             else:
                 print(f"{user.nombre}: no estuvo activo en {campania}")
 
-        
-
-        # Agregar colaboradores que corresponden a determinada campaña
-        # user_list = []
-        # for c in colaboradores:
-        #     print(f"\n--- Colaborador: {c.nombre} ---")
-        #     for h in c.history.all():
-        #         print(f"Id del history: {h.history_user_id}\n Fecha de egreso {h.fec_egreso}\n Suspendido: {h.suspendido}")
-                
-        #         campania_history = getCampaniaByFecha(parse_fecha(h.fec_egreso)) if (h.fec_egreso != "" and h.fec_egreso != None) else ""
-
-        #         if(h.suspendido and campania_history != campania):
-        #             continue
-        #         else:
-        #             user_list.append(c)
-        #             break
-        # print(f"\n\n COLABORADORES QUE ESTAN ACTIVOS EN CAMPAÑA {campania} \n")
-        # for c in user_list:
-        #     print(c.nombre)
-        #     # if () 
 
         campaniasDisponibles = getCampanasDisponibles()
         metodosPago = [{"id": metodo.id, "alias": metodo.alias } for metodo in MetodoPago.objects.all()]
