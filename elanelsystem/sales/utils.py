@@ -799,8 +799,9 @@ def preprocesar_excel_ventas(file_path):
 
     # Preparamos ESTADOS
     df_est['id_venta']     = df_est['id_venta'].astype(int)
-    df_est['importe_cuotas']= df_est['importe_cuotas']\
-        .replace('[\$,]', '', regex=True).fillna(0).astype(int)
+    # df_est['importe_cuotas']= df_est['importe_cuotas']\
+    #     .replace('[\$,]', '', regex=True).fillna(0).astype(int)
+    df_est['importe_cuotas']= df_est['importe_cuotas'].replace('[\$,]', '', regex=True).fillna(0).astype(float).astype(int)
     df_est['cuota_num']    = df_est['cuotas']\
         .str.extract(r'(\d+)').astype(int)
     df_est['estado_norm']  = df_est['estado'].str.title()

@@ -122,6 +122,8 @@ def get_detalle_comision_x_cantidad_ventasPropias(ventas):
         response["planes"][typePlan]["coeficiente_correspondiente"] = coeficienteSelected 
         response["planes"][typePlan]["comision"] += comision_venta
         response["planes"][typePlan]["cantidad_ventas"] += len(venta.cantidadContratos)
+        
+        # print
 
 
     comisionTotal_by_suc = 0
@@ -247,6 +249,7 @@ def comisiones_brutas_vendedor(usuario, campania, ventas):
     Devuelve la comision bruta del vendedor. 
     """
     comision_x_cantidad_ventas = get_detalle_comision_x_cantidad_ventasPropias(ventas)["comision"]
+    
     comision_x_cuotas1 = get_detalle_cuotas1(usuario, campania)["comision_total"]
     comision_x_productividad = get_premio_x_productividad_ventasPropias(ventas)
     
@@ -802,8 +805,7 @@ def detalle_liquidado_ventasPropias(usuario, campania):
     """
     ventas_qs = Ventas.objects.filter(vendedor= usuario, campania=campania, is_commissionable=True)
     comisiones_brutas_dict = comisiones_brutas_vendedor(usuario, campania, ventas_qs)
-    if(usuario.nombre == "Silva Joaquin Emanuel"):
-        print(comisiones_brutas_dict)
+    
         
     response ={
         **comisiones_brutas_dict,
@@ -836,6 +838,9 @@ def detalle_liquidado_ventasPropias(usuario, campania):
 
         # 3) Obtener detalle de comisiones por cantidad de ventas propias
         dict_comision_cant_ventas = get_detalle_comision_x_cantidad_ventasPropias(ventas)
+        if(usuario.nombre == "Cremonte Sofia Andrea "):
+            print(f"Cantidad de ventas -> {cantidad_ventas}")
+            print(dict_comision_cant_ventas)
         detalle_ventas_propias = dict_comision_cant_ventas["planes"]
         # coeficienteSelected = dict_comision_cant_ventas["coeficienteSelected"]
 
@@ -944,7 +949,7 @@ def detalle_liquidado_x_rol(usuario, campania, suc):
             "dinero_recadudado_cuotas_0": detalleRegion["dinero_recadudado_cuotas_0"],
             "detalle" : detalleRegion["detalleRegion"] 
         }
-        print(f"\n\n Detalle de region de gerente {usuario.nombre} -> \n{response} \n\n")
+        # print(f"\n\n Detalle de region de gerente {usuario.nombre} -> \n{response} \n\n")
 
         return response
 
