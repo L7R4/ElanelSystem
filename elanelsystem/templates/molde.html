@@ -45,13 +45,13 @@
                     <li>
                         <a href="{{data.url}}" id="{{seccion|lower}}">
                             <img src="{{data.image}}" alt="">
-                            <p>{{seccion}}</p> 
+                            <p>{{data.tag_name}}</p> 
                         </a>
                     </li>
                 {% endfor %}
                 
                 <li>
-                    <a href="{% url 'users:configurarPerfil'%}" id="close_session">
+                    <a href="{% url 'users:configurarPerfil'%}" id="perfil">
                         <img src="{% static 'images/icons_sider/perfil.svg' %}" alt="">
                         <p>Perfil</p> 
                     </a>

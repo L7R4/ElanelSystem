@@ -35,6 +35,7 @@ from django.utils.decorators import method_decorator
 import pandas as pd
 from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
+from django.core.paginator import Paginator
 #region Usuarios - - - - - - - - - - - - - - - - - - - -
 
 class ConfiguracionPerfil(TestLogin,generic.View):
@@ -272,20 +273,16 @@ class ListaUsers(PermissionRequiredMixin,generic.ListView):
 
 
     def get(self,request,*args, **kwargs):
-        sucursalObject = Sucursal.objects.get(pseudonimo='Formosa, Formosa')
-        campania = "Abril 2025"
-        colaboradores = (
-            Usuario.objects
-                .filter(sucursales__in=[sucursalObject])  
-        )
 
-        for user in colaboradores:
-            snap, dias = dias_trabajados_en_campania(user, campania)
-            if dias > 0: 
-                print(f"{user.nombre}: Trabajo {dias} días en la campaña {campania} ")
-            else:
-                print(f"{user.nombre}: no estuvo activo en {campania}")
+        page_number = request.GET.get('page', 1)
+        per_page = request.GET.get('per_page', 20)
 
+        userConnected = request.user
+        sucursal_ids = userConnected.sucursales.values_list('id', flat=True)
+        users_queryset = Usuario.objects.filter(sucursales__in=sucursal_ids).order_by('nombre')
+
+        paginator = Paginator(users_queryset, per_page)
+        page_obj = paginator.get_page(page_number)
 
         campaniasDisponibles = getCampanasDisponibles()
         metodosPago = [{"id": metodo.id, "alias": metodo.alias } for metodo in MetodoPago.objects.all()]
@@ -294,7 +291,7 @@ class ListaUsers(PermissionRequiredMixin,generic.ListView):
         ente_recaudadores = [{"id":cuenta.id,"alias":cuenta.alias} for cuenta in CuentaCobranza.objects.all()]
 
         users_data = []
-        for user in Usuario.objects.all():
+        for user in page_obj.object_list:
             # Obtén los pseudónimos de las sucursales asociadas a cada usuario
             sucursales_pseudonimos = [sucursal.pseudonimo for sucursal in user.sucursales.all()]
             # Agrega el diccionario con la información del usuario y sus sucursales
@@ -315,7 +312,8 @@ class ListaUsers(PermissionRequiredMixin,generic.ListView):
             "sucursalesDisponibles": json.dumps(sucursalesDisponibles),
             "sucursales": sucursales,
             "metodosDePago": json.dumps(metodosPago),
-            "ente_recaudadores": json.dumps(ente_recaudadores)
+            "ente_recaudadores": json.dumps(ente_recaudadores),
+            "page_obj": page_obj,
         }
         return render(request, self.template_name,context)
 
@@ -347,6 +345,11 @@ class ListaUsers(PermissionRequiredMixin,generic.ListView):
             # Si no hay búsqueda, solo aplicar los filtros
             usuarios = Usuario.objects.filter(**filters).distinct()
 
+        page_number = form.get('page', 1)
+        per_page = form.get('per_page', 20)
+        paginator = Paginator(usuarios, per_page)
+        page_obj = paginator.get_page(page_number)
+
         # Preparar los datos a enviar en la respuesta
         user_data = [
             {
@@ -361,7 +364,14 @@ class ListaUsers(PermissionRequiredMixin,generic.ListView):
             } for user in usuarios
         ]
         # Retornar los datos filtrados como JSON
-        return JsonResponse({"users": user_data, "status": True})
+        return JsonResponse({
+            "users": user_data, 
+            "status": True,
+            "num_pages": paginator.num_pages,
+            "current_page": page_obj.number,
+            "has_next": page_obj.has_next(),
+            "has_previous": page_obj.has_previous(),                     
+        })
 
 
 class DetailUser(TestLogin, generic.DetailView):
