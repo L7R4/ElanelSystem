@@ -84,7 +84,8 @@
       </thead>
       
       <tbody class="values">
-        {% for u in users %}
+        <div class="tableBody">
+          {% for u in users %}
             <tr class="user_item" data-url="{% url 'users:detailUser' u.id %}">
               <td class="nombreUser">{{ u.nombre }}</td>
               <td><p>{{ u.dni }}</p></td>
@@ -98,9 +99,22 @@
               <td><p>{{ u.rango }}</p></td>
             </tr>
         {% endfor %}
+        </div>
       </tbody>
     </table>
 
+    <!-- Controles de paginación -->
+    {% if page_obj %}
+    <div class="pagination" id="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        {% endif %}
+        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div> 
 
 

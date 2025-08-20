@@ -12,20 +12,22 @@ if (path_name.includes("resumen")) {
 }else if(path_name.includes("detalle_venta")){
     ClearClass()
     clientes.parentElement.classList.add("in_path")
-
 }
 else if(path_name.includes("administracion")){
     ClearClass()
-    panelAdmin.parentElement.classList.add("in_path")
+    configuracion.parentElement.classList.add("in_path")
 }
 else if(path_name.includes("caja")){
     ClearClass()
     caja.parentElement.classList.add("in_path")
-
-
-}else if(path_name.includes("usuario")){
+}
+else if(path_name.includes("configurar_perfil")){
     ClearClass()
-    colaboradores.parentElement.classList.add("in_path")
+    perfil.parentElement.classList.add("in_path")
+}
+else if(path_name.includes("usuario")){
+    ClearClass()
+    usuarios.parentElement.classList.add("in_path")
 }
 else if(path_name.includes("liquidaciones")){
     ClearClass()
@@ -39,6 +41,7 @@ else if(path_name.includes("postventas")){
     ClearClass()
     postVenta.parentElement.classList.add("in_path")
 }
+
 
 
 button_menu.addEventListener("click", ()=>{
