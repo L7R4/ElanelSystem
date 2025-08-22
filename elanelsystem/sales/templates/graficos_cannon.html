@@ -125,6 +125,9 @@
         <button type="button" id="btnLimpiar" class="btn btn-secondary">
           <i class="fas fa-eraser"></i> Limpiar
         </button>
+        <button type="button" id="btnExportar" class="btn btn-export">
+          <i class="fas fa-file-excel"></i> Exportar Excel
+        </button>
       </div>
     </div>
   </form>
@@ -173,6 +176,14 @@
       <div class="card-title">Total de Pagos</div>
       <div class="card-value" id="cardTotalPagos">-</div>
       <div class="card-subtitle">Registros encontrados</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">
+        <i class="fas fa-money-bill-wave"></i>
+      </div>
+      <div class="card-title">Recaudación</div>
+      <div class="card-value" id="cardTotalRecaudacion">$0</div>
+      <div class="card-subtitle">Monto total recaudado</div>
     </div>
   </div>
 
@@ -243,6 +254,33 @@
         if (params[key]) url.searchParams.append(key, params[key]);
       });
       return fetch(url).then((response) => response.json());
+    }
+
+    // Función para exportar a Excel
+    async function exportarPagosCannonExcel() {
+      const params = {
+        fecha_inicial: document.getElementById("fecha_inicial").value,
+        fecha_final: document.getElementById("fecha_final").value,
+        metodo_pago: document.getElementById("metodo_pago").value,
+        cobrador: document.getElementById("cobrador").value,
+        nro_cuota: document.getElementById("nro_cuota").value,
+        cliente: document.getElementById("cliente").value,
+        agencia: document.getElementById("filtroAgencia").value || "",
+      };
+
+      // Construir URL con parámetros
+      const queryString = new URLSearchParams(params).toString();
+      const url = `/api/exportar-pagos-cannon-excel/?${queryString}`;
+
+      // Crear enlace temporal y hacer clic
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `pagos_cannon_${params.fecha_inicial || "inicio"}_${
+        params.fecha_final || "fin"
+      }.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     function renderChart(labels, data) {
@@ -581,8 +619,7 @@
         cobrador: document.getElementById("cobrador").value,
         nro_cuota: document.getElementById("nro_cuota").value,
         cliente: document.getElementById("cliente").value,
-        sucursal: document.getElementById("filtroAgencia").value,
-        agencia: document.getElementById("filtroAgencia").value,
+        agencia: document.getElementById("filtroAgencia").value || "",
         // Filtro de monto comentado temporalmente
         // monto: document.getElementById("monto").value,
         // monto_op: document.getElementById("monto_op").value,
@@ -594,13 +631,18 @@
         if (data && data.labels && data.data && data.labels.length > 0) {
           renderChart(data.labels, data.data);
           document.getElementById("cardTotalPagos").textContent = data.total;
+          document.getElementById(
+            "cardTotalRecaudacion"
+          ).textContent = `$${data.total_recaudacion.toLocaleString()}`;
         } else {
           renderChart(["No hay datos"], [0]);
           document.getElementById("cardTotalPagos").textContent = "0";
+          document.getElementById("cardTotalRecaudacion").textContent = "$0";
         }
       } catch (error) {
         renderChart(["Error al cargar datos"], [0]);
         document.getElementById("cardTotalPagos").textContent = "Error";
+        document.getElementById("cardTotalRecaudacion").textContent = "$0";
 
         setTimeout(() => {
           if (chartLoader) {
@@ -625,6 +667,7 @@
         cobrador: document.getElementById("cobrador").value,
         nro_cuota: document.getElementById("nro_cuota").value,
         cliente: document.getElementById("cliente").value,
+        agencia: document.getElementById("filtroAgencia").value || "",
         // Filtro de monto comentado temporalmente
         // monto: document.getElementById("monto").value,
         // monto_op: document.getElementById("monto_op").value,
@@ -640,9 +683,10 @@
       document.getElementById("cobrador").value = "";
       document.getElementById("nro_cuota").value = "";
       document.getElementById("cliente").value = "";
+      document.getElementById("filtroAgencia").value = "";
       // Filtro de monto comentado temporalmente
       // document.getElementById("monto").value = "";
-      // document.getElementById("monto_op").value = "";
+      // monto_op: document.getElementById("monto_op").value;
 
       const chartLoader = document.getElementById("chartLoader");
       if (chartLoader) {
@@ -650,6 +694,10 @@
       }
 
       actualizarDashboard();
+    };
+
+    document.getElementById("btnExportar").onclick = function () {
+      exportarPagosCannonExcel();
     };
 
     document.querySelectorAll(".chart-btn").forEach((btn) => {
@@ -669,10 +717,17 @@
       });
     });
 
-    flatpickr("#fecha_inicial, #fecha_final", {
-      locale: "es",
+    // Inicializar Flatpickr
+    flatpickr("#fecha_inicial", {
       dateFormat: "Y-m-d",
-      maxDate: "today",
+      locale: "es",
+      defaultDate: [new Date().setDate(new Date().getDate() - 90)],
+    });
+
+    flatpickr("#fecha_final", {
+      dateFormat: "Y-m-d",
+      locale: "es",
+      defaultDate: [new Date()],
     });
 
     document.addEventListener("DOMContentLoaded", function () {
