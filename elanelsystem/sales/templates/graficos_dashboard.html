@@ -69,17 +69,20 @@
         <select id="filtroAgencia">
           <option default value="">Todos</option>
           {% for a in agencias %}
-            <option value="{{a.id}}">{{a.pseudonimo}}</option>
+          <option value="{{a.id}}">{{a.pseudonimo}}</option>
           {% endfor %}
         </select>
       </div>
-      
+
       <div class="filtro-grupo botones-filtros">
         <button type="button" id="btnFiltrar" class="btn btn-filter">
           <i class="fas fa-filter"></i> Filtrar
         </button>
         <button type="button" id="btnLimpiar" class="btn btn-secondary">
           <i class="fas fa-eraser"></i> Limpiar
+        </button>
+        <button type="button" id="btnExportar" class="btn btn-export">
+          <i class="fas fa-file-excel"></i> Exportar Excel
         </button>
       </div>
     </div>
@@ -134,6 +137,15 @@
       <div class="card-content">
         <div class="card-title">Total de Ventas</div>
         <div class="card-value" id="cardTotalVentas">0</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">
+        <i class="fas fa-file-invoice-dollar"></i>
+      </div>
+      <div class="card-content">
+        <div class="card-title">Facturación</div>
+        <div class="card-value" id="cardTotalFacturacion">$0</div>
       </div>
     </div>
   </div>
@@ -204,6 +216,31 @@
     return await response.json();
   }
 
+  // Función para exportar a Excel
+  async function exportarVentasExcel() {
+    const params = {
+      fecha_inicial: document.getElementById("filtroFechaInicial").value,
+      fecha_final: document.getElementById("filtroFechaFinal").value,
+      colaborador: document.getElementById("filtroColaborador").value,
+      tipo_colaborador: document.getElementById("filtroTipoColaborador").value,
+      agencia: document.getElementById("filtroAgencia").value || "",
+    };
+
+    // Construir URL con parámetros
+    const queryString = new URLSearchParams(params).toString();
+    const url = `/api/exportar-ventas-excel/?${queryString}`;
+
+    // Crear enlace temporal y hacer clic
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `ventas_${params.fecha_inicial || "inicio"}_${
+      params.fecha_final || "fin"
+    }.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   // Renderizar gráfico
   function renderChart(labels, data) {
     const chartDom = document.getElementById("ventasChart");
@@ -229,7 +266,7 @@
           tooltip: {
             trigger: "item",
             formatter: "{a} <br/>{b}: {c} ({d}%)",
-              backgroundColor: "rgba(0, 0, 0, 0.7)",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
             textStyle: {
               color: "#fff",
               fontSize: 12,
@@ -379,7 +416,7 @@
           ]),
           tooltip: {
             trigger: "axis",
-              backgroundColor: "rgba(0, 0, 0, 0.7)",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
             textStyle: {
               color: "#fff",
               fontSize: 12,
@@ -487,20 +524,27 @@
     };
 
     try {
-      const { labels, data, total } = await fetchVentasData(params);
+      const { labels, data, total, total_facturacion } = await fetchVentasData(
+        params
+      );
 
       if (labels && data && labels.length > 0) {
         renderChart(labels, data);
         document.getElementById("cardTotalVentas").textContent = total;
+        document.getElementById(
+          "cardTotalFacturacion"
+        ).textContent = `$${total_facturacion.toLocaleString()}`;
       } else {
         // Renderizar gráfico vacío
         renderChart([], []);
         document.getElementById("cardTotalVentas").textContent = "0";
+        document.getElementById("cardTotalFacturacion").textContent = "$0";
       }
     } catch (error) {
       // Renderizar gráfico vacío en caso de error
       renderChart([], []);
       document.getElementById("cardTotalVentas").textContent = "Error";
+      document.getElementById("cardTotalFacturacion").textContent = "$0";
 
       // En caso de error, asegurarse de ocultar el loader después de un tiempo
       setTimeout(() => {
@@ -522,7 +566,12 @@
     document.getElementById("filtroFechaFinal").value = "";
     document.getElementById("filtroColaborador").value = "";
     document.getElementById("filtroTipoColaborador").value = "vendedor";
+    document.getElementById("filtroAgencia").value = "";
     actualizarDashboard();
+  };
+
+  document.getElementById("btnExportar").onclick = () => {
+    exportarVentasExcel();
   };
 
   // Event listeners para cambio de tipo de gráfico
@@ -547,7 +596,7 @@
   flatpickr("#filtroFechaInicial", {
     dateFormat: "Y-m-d",
     locale: "es",
-    defaultDate: [new Date().setDate(new Date().getDate() - 365)],
+    defaultDate: [new Date().setDate(new Date().getDate() - 90)],
   });
 
   flatpickr("#filtroFechaFinal", {
