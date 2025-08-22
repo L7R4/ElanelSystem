@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "echarts": "^6.0.0",
     "ldcover": "^3.5.4"
   }
 }
