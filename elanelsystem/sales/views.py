@@ -1,4 +1,3 @@
-
 import time
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404, render, redirect
@@ -36,8 +35,541 @@ from elanelsystem.utils import *
 
 import pandas as pd
 from django.core.files.storage import FileSystemStorage
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
+from django.http import HttpResponse
+import io
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils.dataframe import dataframe_to_rows
 
+#EndPoint graficos de torta ---------------------------------------------------
+class GraficosDashboard(TestLogin, PermissionRequiredMixin, generic.View):
+    """Vista para mostrar el dashboard de gráficos de torta"""
+    template_name = 'graficos_dashboard.html'
+    permission_required = "sales.my_ver_graficos"
+    
+    def get(self, request, *args, **kwargs):
+        lista_dict_agencias = [sucursal for sucursal in Sucursal.objects.all()]  
+        context = {
+            'agencias': lista_dict_agencias
+        }
+        return render(request, self.template_name, context)
 
+# Mantener la función para compatibilidad con URLs existentes
+def graficos_dashboard(request):
+    """Vista para mostrar el dashboard de gráficos de torta"""
+    return render(request, 'graficos_dashboard.html')
+
+@require_GET
+@csrf_exempt
+def exportar_ventas_excel(request):
+    from collections import Counter
+    import datetime
+    from django.db.models import Q
+    from sales.models import PagoCannon
+    
+    # Filtros
+    fecha_inicial = request.GET.get('fecha_inicial')
+    fecha_final = request.GET.get('fecha_final')
+    colaborador = request.GET.get('colaborador')
+    tipo_colaborador = request.GET.get('tipo_colaborador', 'vendedor')
+    agencia = request.GET.get('agencia', '')
+    
+    ventas = get_ventasBySucursal(agencia)
+    
+    # Filtrar por rango de fechas
+    if fecha_inicial and fecha_final:
+        try:
+            fecha_inicial_obj = datetime.datetime.strptime(fecha_inicial, "%Y-%m-%d")
+            fecha_final_obj = datetime.datetime.strptime(fecha_final, "%Y-%m-%d")
+            
+            ventas_filtradas = []
+            for venta in ventas:
+                try:
+                    fecha_venta = datetime.datetime.strptime(venta.fecha[:10], "%d/%m/%Y")
+                    if fecha_inicial_obj <= fecha_venta <= fecha_final_obj:
+                        ventas_filtradas.append(venta)
+                except:
+                    continue
+            ventas = ventas_filtradas
+        except ValueError:
+            pass
+    
+    # Filtrar por colaborador
+    if colaborador:
+        if tipo_colaborador == 'supervisor':
+            ventas = [v for v in ventas if v.supervisor and colaborador.lower() in v.supervisor.nombre.lower()]
+        else:
+            ventas = [v for v in ventas if v.vendedor and colaborador.lower() in v.vendedor.nombre.lower()]
+    
+    # Crear datos para Excel
+    datos_excel = []
+    for venta in ventas:
+        # Calcular recaudación de esta venta
+        pagos_venta = PagoCannon.objects.filter(venta=venta)
+        total_recaudado = sum(p.monto for p in pagos_venta)
+        
+        datos_excel.append({
+            'Agencia': venta.agencia.pseudonimo if venta.agencia else 'Sin agencia',
+            'Cliente': venta.nro_cliente.nombre if venta.nro_cliente else 'Sin cliente',
+            'N° Operación': venta.nro_operacion,
+            'Fecha': venta.fecha,
+            'Monto Facturado': venta.importe,
+            'Monto Recaudado': total_recaudado,
+            'Diferencia': venta.importe - total_recaudado,
+            'Vendedor': venta.vendedor.nombre if venta.vendedor else 'Sin vendedor',
+            'Supervisor': venta.supervisor.nombre if venta.supervisor else 'Sin supervisor',
+            'Producto': venta.producto.nombre if venta.producto else 'Sin producto',
+            'Paquete': venta.paquete,
+            'Campania': venta.campania
+        })
+    
+    # Crear DataFrame
+    df = pd.DataFrame(datos_excel)
+    
+    # Calcular totales
+    total_ventas = len(df)
+    total_facturacion = df['Monto Facturado'].sum() if 'Monto Facturado' in df.columns else 0
+    
+    # Crear archivo Excel
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Ventas', index=False)
+        
+        # Obtener el workbook y worksheet
+        workbook = writer.book
+        worksheet = writer.sheets['Ventas']
+        
+        # Aplicar estilos
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        header_alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Aplicar estilos al header
+        for cell in worksheet[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+        
+        # Ajustar ancho de columnas
+        for column in worksheet.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+            
+        # Agregar fila de totales
+        last_row = worksheet.max_row + 2  # Dejamos una fila en blanco
+        
+        # Estilos para los totales
+        total_font = Font(bold=True, size=12)
+        total_fill = PatternFill(start_color="FFCC00", end_color="FFCC00", fill_type="solid")
+        total_border = Border(
+            left=Side(style='thin'), 
+            right=Side(style='thin'), 
+            top=Side(style='thin'), 
+            bottom=Side(style='thin')
+        )
+        
+        # Agregar título de totales
+        worksheet.cell(row=last_row, column=1, value="TOTALES").font = total_font
+        worksheet.cell(row=last_row, column=1).fill = total_fill
+        worksheet.cell(row=last_row, column=1).border = total_border
+        
+        # Agregar total de ventas
+        worksheet.cell(row=last_row, column=2, value=f"Total Ventas: {total_ventas}").font = total_font
+        worksheet.cell(row=last_row, column=2).fill = total_fill
+        worksheet.cell(row=last_row, column=2).border = total_border
+        
+        # Agregar total de facturación
+        worksheet.cell(row=last_row, column=4, value=f"Total Facturación: ${total_facturacion:,.2f}").font = total_font
+        worksheet.cell(row=last_row, column=4).fill = total_fill
+        worksheet.cell(row=last_row, column=4).border = total_border
+    
+    output.seek(0)
+    
+    # Crear respuesta HTTP
+    response = HttpResponse(
+        output.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="ventas_{fecha_inicial}_{fecha_final}.xlsx"'
+    
+    return response
+
+@require_GET
+@csrf_exempt
+def ventas_analytics_api(request):
+    from collections import Counter
+    import datetime
+    from django.db.models import Q
+    from sales.models import PagoCannon
+    # Filtros
+    fecha_inicial = request.GET.get('fecha_inicial')
+    fecha_final = request.GET.get('fecha_final')
+    colaborador = request.GET.get('colaborador')
+    tipo_colaborador = request.GET.get('tipo_colaborador', 'vendedor')
+    agencia = request.GET.get('agencia', '')
+
+    ventas = get_ventasBySucursal(agencia)
+    # Filtrar por rango de fechas
+    if fecha_inicial and fecha_final:
+        try:
+            # Convertir de YYYY-MM-DD a DD/MM/YYYY para comparar con el formato del modelo
+            fecha_inicial_obj = datetime.datetime.strptime(fecha_inicial, "%Y-%m-%d")
+            fecha_final_obj = datetime.datetime.strptime(fecha_final, "%Y-%m-%d")
+            
+            # Filtrar ventas que estén en el rango de fechas
+            ventas_filtradas = []
+            for venta in ventas:
+                try:
+                    fecha_venta = datetime.datetime.strptime(venta.fecha[:10], "%d/%m/%Y")
+                    if fecha_inicial_obj <= fecha_venta <= fecha_final_obj:
+                        ventas_filtradas.append(venta)
+                except:
+                    continue
+            ventas = ventas_filtradas
+        except ValueError:
+            pass  # Si las fechas no son válidas, ignora el filtro
+    
+    # Filtrar por colaborador
+    if colaborador:
+        if tipo_colaborador == 'supervisor':
+            ventas = [v for v in ventas if v.supervisor and colaborador.lower() in v.supervisor.nombre.lower()]
+        else:
+            ventas = [v for v in ventas if v.vendedor and colaborador.lower() in v.vendedor.nombre.lower()]
+    
+
+    
+    ventas_por_mes = Counter()
+    total_facturacion = 0
+    total_recaudacion = 0
+    
+    for v in ventas:
+        try:
+            fecha = datetime.datetime.strptime(v.fecha[:10], "%d/%m/%Y")
+            key = fecha.strftime("%Y-%m")
+            ventas_por_mes[key] += 1
+            
+            # Calcular facturación (importe de la venta)
+            total_facturacion += v.importe
+            
+            # Calcular recaudación (suma de todos los pagos cannon de esta venta)
+            pagos_venta = PagoCannon.objects.filter(venta=v)
+            for pago in pagos_venta:
+                total_recaudacion += pago.monto
+                
+        except Exception:
+            continue
+    
+    labels = sorted(ventas_por_mes.keys())
+    data = [ventas_por_mes[l] for l in labels]
+    total = sum(data)
+    
+    return JsonResponse({
+        "labels": labels,
+        "data": data,
+        "total": total,
+        "total_facturacion": total_facturacion,
+        "total_recaudacion": total_recaudacion
+    })
+    
+@require_GET
+@csrf_exempt
+def exportar_pagos_cannon_excel(request):
+    from collections import Counter
+    import datetime
+    from sales.utils import get_pagosCannonBySucursal
+    
+    fecha_inicial = request.GET.get('fecha_inicial')
+    fecha_final = request.GET.get('fecha_final')
+    cobrador = request.GET.get('cobrador')
+    metodo_pago = request.GET.get('metodo_pago')
+    nro_cuota = request.GET.get('nro_cuota')
+    cliente = request.GET.get('cliente')
+    agencia = request.GET.get('agencia', '')
+    monto = request.GET.get('monto')
+    monto_op = request.GET.get('monto_op')
+    
+    pagos = get_pagosCannonBySucursal(agencia)
+    
+    # Filtrar por rango de fechas
+    if fecha_inicial and fecha_final:
+        try:
+            fecha_inicial_obj = datetime.datetime.strptime(fecha_inicial, "%Y-%m-%d")
+            fecha_final_obj = datetime.datetime.strptime(fecha_final, "%Y-%m-%d")
+            
+            pagos_filtrados = []
+            for pago in pagos:
+                try:
+                    fecha_pago = datetime.datetime.strptime(pago.fecha[:10], "%d/%m/%Y")
+                    if fecha_inicial_obj <= fecha_pago <= fecha_final_obj:
+                        pagos_filtrados.append(pago)
+                except:
+                    continue
+            pagos = pagos_filtrados
+        except ValueError:
+            pass
+    
+    # Aplicar otros filtros
+    if cobrador:
+        pagos = [p for p in pagos if p.cobrador and cobrador.lower() in p.cobrador.alias.lower()]
+    if metodo_pago:
+        pagos = [p for p in pagos if p.metodo_pago and metodo_pago.lower() in p.metodo_pago.alias.lower()]
+    if nro_cuota:
+        pagos = [p for p in pagos if p.nro_cuota == int(nro_cuota)]
+    if cliente:
+        pagos = [p for p in pagos if p.venta and p.venta.nro_cliente and cliente.lower() in p.venta.nro_cliente.nombre.lower()]
+    if monto:
+        try:
+            monto_val = float(monto)
+            if monto_op == 'gt':
+                pagos = [p for p in pagos if p.monto >= monto_val]
+            elif monto_op == 'lt':
+                pagos = [p for p in pagos if p.monto <= monto_val]
+        except ValueError:
+            pass
+    
+    # Crear datos para Excel
+    datos_excel = []
+    for pago in pagos:
+        datos_excel.append({
+            'Agencia': pago.venta.agencia.pseudonimo if pago.venta and pago.venta.agencia else 'Sin agencia',
+            'Cliente': pago.venta.nro_cliente.nombre if pago.venta and pago.venta.nro_cliente else 'Sin cliente',
+            'N° Operación': pago.venta.nro_operacion if pago.venta else 'Sin venta',
+            'Fecha Pago': pago.fecha,
+            'N° Cuota': pago.nro_cuota,
+            'Monto': pago.monto,
+            'Método de Pago': pago.metodo_pago.alias if pago.metodo_pago else 'Sin método',
+            'Cobrador': pago.cobrador.alias if pago.cobrador else 'Sin cobrador',
+            'Producto': pago.venta.producto.nombre if pago.venta and pago.venta.producto else 'Sin producto',
+            'Paquete': pago.venta.paquete if pago.venta else 'Sin paquete',
+            'Campania': pago.venta.campania if pago.venta else 'Sin campaña'
+        })
+    
+    # Crear DataFrame
+    df = pd.DataFrame(datos_excel)
+    
+    # Crear archivo Excel
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Pagos_Cannon', index=False)
+        
+        # Obtener el workbook y worksheet
+        workbook = writer.book
+        worksheet = writer.sheets['Pagos_Cannon']
+        
+        # Aplicar estilos
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        header_alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Aplicar estilos al header
+        for cell in worksheet[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+        
+        # Ajustar ancho de columnas
+        for column in worksheet.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+            
+        # Calcular totales
+        total_pagos = len(df)
+        total_recaudacion = df['Monto'].sum() if 'Monto' in df.columns else 0
+        
+        # Agregar fila de totales
+        last_row = worksheet.max_row + 2  # Dejamos una fila en blanco
+        
+        # Estilos para los totales
+        total_font = Font(bold=True, size=12)
+        total_fill = PatternFill(start_color="FFCC00", end_color="FFCC00", fill_type="solid")
+        total_border = Border(
+            left=Side(style='thin'), 
+            right=Side(style='thin'), 
+            top=Side(style='thin'), 
+            bottom=Side(style='thin')
+        )
+        
+        # Agregar título de totales
+        worksheet.cell(row=last_row, column=1, value="TOTALES").font = total_font
+        worksheet.cell(row=last_row, column=1).fill = total_fill
+        worksheet.cell(row=last_row, column=1).border = total_border
+        
+        # Agregar total de pagos
+        worksheet.cell(row=last_row, column=2, value=f"Total Pagos: {total_pagos}").font = total_font
+        worksheet.cell(row=last_row, column=2).fill = total_fill
+        worksheet.cell(row=last_row, column=2).border = total_border
+        
+        # Agregar total de recaudación
+        worksheet.cell(row=last_row, column=4, value=f"Total Recaudación: ${total_recaudacion:,.2f}").font = total_font
+        worksheet.cell(row=last_row, column=4).fill = total_fill
+        worksheet.cell(row=last_row, column=4).border = total_border
+    
+    output.seek(0)
+    
+    # Crear respuesta HTTP
+    response = HttpResponse(
+        output.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="pagos_cannon_{fecha_inicial}_{fecha_final}.xlsx"'
+    
+    return response
+
+@require_GET
+@csrf_exempt
+def pagos_cannon_analytics_api(request):
+    from collections import Counter
+    import datetime
+    from sales.utils import get_pagosCannonBySucursal
+
+    fecha_inicial = request.GET.get('fecha_inicial')
+    fecha_final = request.GET.get('fecha_final')
+    cobrador = request.GET.get('cobrador')
+    metodo_pago = request.GET.get('metodo_pago')
+    nro_cuota = request.GET.get('nro_cuota')
+    cliente = request.GET.get('cliente')
+    agencia = request.GET.get('agencia', '')
+    monto = request.GET.get('monto')
+    monto_op = request.GET.get('monto_op')  # 'gt' o 'lt'
+    pagos = get_pagosCannonBySucursal(agencia)
+    
+    # Filtrar por rango de fechas
+    if fecha_inicial and fecha_final:
+        try:
+            # Convertir de YYYY-MM-DD a DD/MM/YYYY para comparar con el formato del modelo
+            fecha_inicial_obj = datetime.datetime.strptime(fecha_inicial, "%Y-%m-%d")
+            fecha_final_obj = datetime.datetime.strptime(fecha_final, "%Y-%m-%d")
+            
+            # Filtrar pagos que estén en el rango de fechas
+            pagos_filtrados = []
+            for pago in pagos:
+                try:
+                    fecha_pago = datetime.datetime.strptime(pago.fecha[:10], "%d/%m/%Y")
+                    if fecha_inicial_obj <= fecha_pago <= fecha_final_obj:
+                        pagos_filtrados.append(pago)
+                except:
+                    continue
+            pagos = pagos_filtrados
+        except ValueError:
+            pass  # Si las fechas no son válidas, ignora el filtro
+    
+    # Aplicar otros filtros
+    if cobrador:
+        pagos = [p for p in pagos if p.cobrador and cobrador.lower() in p.cobrador.alias.lower()]
+    if metodo_pago:
+        pagos = [p for p in pagos if p.metodo_pago and metodo_pago.lower() in p.metodo_pago.alias.lower()]
+    if nro_cuota:
+        pagos = [p for p in pagos if p.nro_cuota == int(nro_cuota)]
+    if cliente:
+        pagos = [p for p in pagos if p.venta and p.venta.nro_cliente and cliente.lower() in p.venta.nro_cliente.nombre.lower()]
+    if monto:
+        try:
+            monto_val = float(monto)
+            if monto_op == 'gt':
+                pagos = [p for p in pagos if p.monto >= monto_val]
+            elif monto_op == 'lt':
+                pagos = [p for p in pagos if p.monto <= monto_val]
+        except ValueError:
+            pass
+
+    pagos_por_mes = Counter()
+    total_recaudacion = 0
+    
+    for p in pagos:
+        try:
+            fecha = datetime.datetime.strptime(p.fecha[:10], "%d/%m/%Y")
+            key = fecha.strftime("%Y-%m")
+            pagos_por_mes[key] += 1
+            total_recaudacion += p.monto
+        except Exception:
+            continue
+    
+    labels = sorted(pagos_por_mes.keys())
+    data = [pagos_por_mes[l] for l in labels]
+    total = sum(data)
+    
+    return JsonResponse({
+        "labels": labels,
+        "data": data,
+        "total": total,
+        "total_recaudacion": total_recaudacion
+    })
+
+def graficos_pagos_cannon(request):
+    from users.models import Sucursal
+    agencias = Sucursal.objects.all()
+    context = {
+        'agencias': agencias,
+    }
+    return render(request, 'graficos_cannon.html', context)
+
+@require_GET
+@csrf_exempt
+def graficos(request):
+    from collections import Counter
+    import datetime
+    from django.db.models import Q
+    
+    # Filtros
+    mes = request.GET.get('mes')
+    anio = request.GET.get('anio')
+    dia = request.GET.get('dia')
+    colaborador = request.GET.get('colaborador')
+    tipo_colaborador = request.GET.get('tipo_colaborador', 'vendedor')  # vendedor o supervisor
+
+    ventas = Ventas.objects.all()
+    
+    # Filtrar por año
+    if anio:
+        ventas = ventas.filter(fecha__regex=rf"{anio}$|/{anio} ")
+    # Filtrar por mes
+    if mes:
+        ventas = ventas.filter(fecha__regex=rf"/{mes}/")
+    # Filtrar por día
+    if dia:
+        ventas = ventas.filter(fecha__startswith=f"{dia}/")
+    # Filtrar por colaborador
+    if colaborador:
+        if tipo_colaborador == 'supervisor':
+            ventas = ventas.filter(supervisor__nombre__icontains=colaborador)
+        else:
+            ventas = ventas.filter(vendedor__nombre__icontains=colaborador)
+
+    # Agrupar por mes
+    ventas_por_mes = Counter()
+    for v in ventas:
+        try:
+            fecha = datetime.datetime.strptime(v.fecha[:10], "%d/%m/%Y")
+            key = fecha.strftime("%Y-%m")
+            ventas_por_mes[key] += 1
+        except Exception:
+            continue
+    labels = sorted(ventas_por_mes.keys())
+    data = [ventas_por_mes[l] for l in labels]
+    total = sum(data)
+    return JsonResponse({
+        "labels": labels,
+        "data": data,
+        "total": total
+    })
 
 class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
     permission_required = "sales.my_ver_resumen"
@@ -501,7 +1033,7 @@ def build_aggregated_cuotas(id_venta,df_est,n_chances,plan):
          # Importe que llegó por fila en el Excel, multiplicado
         excel_amount = int(r['importe_cuotas']) * n_chances
 
-        # Definir importe “oficial” según q
+        # Definir importe "oficial" según q
         if q == 0:
             official = plan.suscripcion * n_chances
         elif q == 1:

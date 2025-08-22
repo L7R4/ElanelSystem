@@ -71,13 +71,14 @@ def seccionesPorPermisos(context):
     user = context['request'].user
     secciones = {
         # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
-        "clientes": {"tag_name":"Clientes","permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers"),"image": static("images/icons_sider/clientes.svg")},
-        "caja": {"tag_name":"Caja","permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja"),"image": static("images/icons_sider/caja.svg")},
+        "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers"),"image": static("images/icons_sider/clientes.svg")},
+        "Caja": {"permisos": ["sales.my_ver_caja"], "url": reverse("sales:caja"),"image": static("images/icons_sider/caja.svg")},
         # "Exportar datos": {"permisos": ["sales.my_ver_reportes"], "url": reverse("detallesNegocio")}, #Mover a a la vista de "Configuracion"
-        "auditorias": {"tag_name":"Auditorías","permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList"),"image": static("images/icons_sider/auditoria.svg")},
-        "usuarios": {"tag_name":"Usuarios","permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users"),"image": static("images/icons_sider/colaboradores.svg")},
-        "liquidaciones": {"tag_name":"Liquidaciones","permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel"),"image": static("images/icons_sider/liquidacion.svg")},
-        "configuracion": {"tag_name":"Configuración","permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin"),"image": static("images/icons_sider/configuracion.svg")},
+        "Auditorías": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList"),"image": static("images/icons_sider/auditoria.svg")},
+        "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users"),"image": static("images/icons_sider/colaboradores.svg")},
+        "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel"),"image": static("images/icons_sider/liquidacion.svg")},
+        "Gráficos": {"permisos": ["sales.my_ver_graficos"], "url": reverse("sales:graficos"),"image": static("images/icons_sider/graficos.svg")},
+        "Configuración": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin"),"image": static("images/icons_sider/configuracion.svg")},
     }
 
     secciones_permitidas = {}

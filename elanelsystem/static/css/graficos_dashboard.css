@@ -1,0 +1,612 @@
+/* ========================================
+   DASHBOARD DE VENTAS - ESTILOS ESENCIALES
+   ======================================== */
+
+/* ========================================
+   RESET Y BASE
+   ======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #2d3748;
+  line-height: 1.6;
+}
+
+/* ========================================
+   LAYOUT PRINCIPAL
+   ======================================== */
+/* Dashboard container ocupa al menos 60vh y es scrolleable */
+.dashboard-container {
+  max-width: 100%;
+  min-height: 60vh;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ========================================
+   HEADER
+   ======================================== */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: white;
+}
+
+.dashboard-header h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  font-weight: 300;
+}
+
+/* ========================================
+   FILTROS
+   ======================================== */
+.dashboard-filtros {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-filter {
+  background: linear-gradient(135deg, #0279e9 0%, #029be7 60%, #03d0e5 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.filtros-grid-horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 150px;
+  max-width: 200px;
+}
+
+.filtro-grupo label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filtro-grupo input,
+.filtro-grupo select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  background: white;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.filtro-grupo input:focus,
+.filtro-grupo select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filtro-grupo input::placeholder {
+  color: #a0aec0;
+}
+
+/* ========================================
+   BOTONES
+   ======================================== */
+.botones-filtros {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  min-width: auto;
+  max-width: none;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background: #f7fafc;
+  color: #4a5568;
+  border: 2px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+  background: #edf2f7;
+  border-color: #cbd5e0;
+}
+
+.btn-export {
+  background: linear-gradient(135deg, #10b981 0%, #059669 60%, #047857 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-export:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+/* ========================================
+   GRÁFICO
+   ======================================== */
+.chart-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px 20px 0 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: none;
+  box-sizing: border-box;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chart-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.chart-subtitle {
+  color: #205fbd;
+  font-size: 0.9rem;
+}
+
+/* Chart wrapper ocupa todo el espacio disponible */
+/* Desktop */
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 180px;
+  max-height: 600px;
+  display: flex;
+}
+
+#ventasChart,
+#pagosCannonChart {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+    min-height: 50vh;
+    height: 100vh;
+  }
+  .chart-wrapper {
+    height: 28vh;
+    min-height: 120px;
+    max-height: 300px;
+  }
+  #ventasChart,
+  #pagosCannonChart {
+    height: 100%;
+  }
+  #chartLoaderSpinner {
+    width: 2rem;
+    height: 2rem;
+    border-width: 0.8rem;
+  }
+
+  .dashboard-cards-horizontal {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .card {
+    min-width: 200px;
+    width: 100%;
+  }
+
+  .btn-left {
+    min-width: 200px;
+    width: 100%;
+  }
+}
+
+/* ========================================
+   CARD TOTAL
+   ======================================== */
+.dashboard-cards-horizontal {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* background degrade 3 colores */
+.btn-left {
+  background: linear-gradient(135deg, #0279e9 0%, #029be7 60%, #03d0e5 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  width: fit-content;
+  min-width: 250px;
+  height: 100%;
+  text-decoration: none;
+}
+
+.btn-left i {
+  font-size: 2rem;
+  color: #006cd1;
+}
+
+.btn-left div {
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.btn-left a {
+  color: white;
+}
+
+.btn-left:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 0 0 20px 20px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: none;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  width: fit-content;
+  min-width: 250px;
+  height: 100%;
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  color: #667eea;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 0.9rem;
+  color: #718096;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.card-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.card-subtitle {
+  font-size: 0.85rem;
+  color: #a0aec0;
+  font-weight: 400;
+}
+
+/* ========================================
+   FLATPICKR
+   ======================================== */
+.flatpickr-input {
+  cursor: pointer;
+}
+
+.flatpickr-input:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 1200px) {
+  .filtros-grid-horizontal {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filtro-grupo {
+    max-width: none;
+  }
+
+  .botones-filtros {
+    justify-content: center;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+    min-height: 50vh;
+  }
+
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+
+  .filtros-grid-horizontal {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .filtro-grupo {
+    min-width: auto;
+    max-width: none;
+  }
+
+  .dashboard-cards-horizontal {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .card,
+  .btn-left {
+    max-width: 100%;
+    min-width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .botones-filtros {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn-export {
+    order: 3;
+  }
+
+  .chart-container {
+    padding: 1.5rem;
+  }
+
+  .chart-wrapper {
+    min-height: 180px;
+    max-height: 350px;
+  }
+
+  #ventasChart,
+  #pagosCannonChart {
+    min-height: 120px;
+    max-height: 320px;
+  }
+
+  #chartLoaderSpinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-width: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  .card-value {
+    font-size: 2rem;
+  }
+
+  .chart-container {
+    padding: 1rem;
+  }
+
+  .chart-title {
+    font-size: 1.2rem;
+  }
+
+  .chart-wrapper {
+    height: 300px !important;
+    min-height: 300px;
+  }
+
+  #ventasChart,
+  #pagosCannonChart {
+    height: 300px !important;
+    min-height: 300px;
+  }
+
+  .filtro-grupo label {
+    font-size: 0.8rem;
+  }
+
+  .filtro-grupo input,
+  .filtro-grupo select {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* ========================================
+   CONTROLES DE GRÁFICO
+   ======================================== */
+.chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.chart-type-selector {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.25rem;
+  backdrop-filter: blur(10px);
+}
+
+.chart-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: inherit;
+}
+
+.chart-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.chart-btn.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-btn i {
+  font-size: 1rem;
+}
+
+/* Responsive para controles de gráfico */
+@media (max-width: 768px) {
+  .chart-controls {
+    margin-top: 1rem;
+    justify-content: center;
+  }
+
+  .chart-type-selector {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .chart-btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+/* ========================================
+   LOADER DEL GRÁFICO
+   ======================================== */
+#chartLoader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  border-radius: 16px;
+  transition: opacity 2.3s ease;
+}
+
+#chartLoaderSpinner {
+  border: 1.6rem solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  border-top: 1.6rem solid #006cd1;
+  border-right: 1.6rem solid rgba(0, 108, 209, 0.5);
+  width: 4rem;
+  height: 4rem;
+  animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+  box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

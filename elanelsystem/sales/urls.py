@@ -3,12 +3,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 from .views import *
 from .utils import exportar_excel  # Importa la función de exportación
+from .views import GraficosDashboard
+from .views import ventas_analytics_api, exportar_ventas_excel, exportar_pagos_cannon_excel
+from .views import graficos
 app_name="sales"
 
 urlpatterns = [
 
     path("resumen/",Resumen.as_view(),name="resumen"),
-    
+
     #region URLs Ventas ----------------------------------
     path("ventas/importar/",importVentas,name="importVentas"),
     path("ventas/cliente/<int:pk>/crear_venta/",CrearVenta.as_view(),name="create_sale"),
@@ -39,6 +42,13 @@ urlpatterns = [
     path('ventas/comisionables/',VentasComisionables.as_view(),name='ventas_comisionables'),
     # endpoint AJAX para toggle
     path('ventas/comisionable-toggle/',toggle_comisionable,name='toggle_comisionable'),
+    # endpoint para el dashboard de gráficos
+    path('graficos/', GraficosDashboard.as_view(), name='graficos'),
+    path('api/ventas-analytics/', ventas_analytics_api, name='ventas_analytics_api'),
+    path('api/pagos-cannon-analytics/', pagos_cannon_analytics_api, name='pagos_cannon_analytics_api'),
+    path('api/exportar-ventas-excel/', exportar_ventas_excel, name='exportar_ventas_excel'),
+    path('api/exportar-pagos-cannon-excel/', exportar_pagos_cannon_excel, name='exportar_pagos_cannon_excel'),
+    path('graficos/cannon/', graficos_pagos_cannon, name='graficos_cannon'),
     #endregion ----------------------------------------------------------
 
     #region URLs Caja -----------------------------------------------------
