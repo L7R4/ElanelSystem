@@ -1,0 +1,748 @@
+{% extends 'molde.html' %} {% load static %} {% block css %}
+<!-- ECharts -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+<!-- Flatpickr -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+
+<!-- Fonts & Icons -->
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="{% static 'css/graficos_dashboard.css' %}" />
+{% endblock css %} {% block content %}
+<div class="dashboard-container">
+  {% comment %}
+  <div class="dashboard-header">
+    <h1><i class="fas fa-chart-line"></i> Dashboard de Pagos Cannon</h1>
+    <p>Análisis y visualización de pagos en tiempo real</p>
+  </div>
+  {% endcomment %}
+
+  <form id="filtros" class="dashboard-filtros">
+    <div class="filtros-grid-horizontal">
+      <div class="filtro-grupo">
+        <label><i class="fas fa-calendar"></i> Fecha Inicial</label>
+        <input
+          type="text"
+          id="fecha_inicial"
+          name="fecha_inicial"
+          placeholder="Seleccionar fecha"
+        />
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-calendar-day"></i> Fecha Final</label>
+        <input
+          type="text"
+          id="fecha_final"
+          name="fecha_final"
+          placeholder="Seleccionar fecha"
+        />
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-credit-card"></i> Método de Pago</label>
+        <input
+          type="text"
+          id="metodo_pago"
+          name="metodo_pago"
+          placeholder="Alias método"
+        />
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-user-tie"></i> Cobrador</label>
+        <input
+          type="text"
+          id="cobrador"
+          name="cobrador"
+          placeholder="Alias cobrador"
+        />
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-hashtag"></i> N° de Cuota</label>
+        <input
+          type="number"
+          id="nro_cuota"
+          name="nro_cuota"
+          min="0"
+          placeholder="Ej: 1"
+        />
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-user"></i> Cliente</label>
+        <input
+          type="text"
+          id="cliente"
+          name="cliente"
+          placeholder="Nombre cliente"
+        />
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-user-tie"></i> Sucursal</label>
+        <select id="filtroAgencia">
+          <option value="">Todos</option>
+          {% for a in agencias %}
+          <option value="{{a.id}}">{{a.pseudonimo}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% comment %}
+      <div class="filtro-grupo">
+        <label><i class="fas fa-dollar-sign"></i> Monto</label>
+        <div style="display: flex; gap: 0.5rem">
+          <select id="monto_op" name="monto_op" style="flex: 1">
+            <option value="">--</option>
+            <option value="gt">≥ Mayor o igual</option>
+            <option value="lt">≤ Menor o igual</option>
+          </select>
+          <input
+            type="number"
+            id="monto"
+            name="monto"
+            min="0"
+            step="any"
+            placeholder="Ej: 10000"
+            style="flex: 2"
+          />
+        </div>
+      </div>
+      {% endcomment %}
+      <div class="filtro-grupo botones-filtros">
+        <button type="submit" class="btn btn-filter">
+          <i class="fas fa-filter"></i> Filtrar
+        </button>
+        <button type="button" id="btnLimpiar" class="btn btn-secondary">
+          <i class="fas fa-eraser"></i> Limpiar
+        </button>
+        <button type="button" id="btnExportar" class="btn btn-export">
+          <i class="fas fa-file-excel"></i> Exportar Excel
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <div class="chart-container">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Evolución de Pagos</div>
+        <div class="chart-subtitle">Distribución mensual de pagos cannon</div>
+      </div>
+      <div class="chart-controls">
+        <div class="chart-type-selector">
+          <button type="button" class="chart-btn active" data-type="bar">
+            <i class="fas fa-chart-bar"></i> Barras
+          </button>
+          <button type="button" class="chart-btn" data-type="line">
+            <i class="fas fa-chart-line"></i> Líneas
+          </button>
+          <button type="button" class="chart-btn" data-type="pie">
+            <i class="fas fa-chart-pie"></i> Circular
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrapper">
+      <div id="pagosCannonChart" style="min-height: 300px; height: 100%"></div>
+      <div id="chartLoader">
+        <span id="chartLoaderSpinner"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-cards-horizontal">
+    <!-- Botón para navegar a Dashboard de Ventas -->
+    <a href="{% url 'sales:graficos' %}" class="btn btn-left">
+      <div>
+        <i class="fas fa-chart-pie"></i>
+        <h2>Dashboard de Ventas</h2>
+      </div>
+    </a>
+
+    <div class="card">
+      <div class="card-icon">
+        <i class="fas fa-receipt"></i>
+      </div>
+      <div class="card-title">Total de Pagos</div>
+      <div class="card-value" id="cardTotalPagos">-</div>
+      <div class="card-subtitle">Registros encontrados</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">
+        <i class="fas fa-money-bill-wave"></i>
+      </div>
+      <div class="card-title">Recaudación</div>
+      <div class="card-value" id="cardTotalRecaudacion">$0</div>
+      <div class="card-subtitle">Monto total recaudado</div>
+    </div>
+  </div>
+
+  {% endblock content %} {% block js %}
+  <script>
+    let chartInstance = null;
+    let currentChartType = "bar";
+
+    const colors = [
+      new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 1, color: "#0279e9" },
+        { offset: 0.5, color: "#029be7" },
+        { offset: 0, color: "#03d0e5" },
+      ]),
+      new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 1, color: "#764ba2" },
+        { offset: 0.5, color: "#b86bff" },
+        { offset: 0, color: "#f093fb" },
+      ]),
+      new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 1, color: "#f5576c" },
+        { offset: 0.5, color: "#fa709a" },
+        { offset: 0, color: "#fda085" },
+      ]),
+      new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 1, color: "#43e97b" },
+        { offset: 0.5, color: "#38f9d7" },
+        { offset: 0, color: "#00f2fe" },
+      ]),
+      new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 1, color: "#667eea" },
+        { offset: 0.5, color: "#4facfe" },
+        { offset: 0, color: "#00f2fe" },
+      ]),
+      new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 1, color: "#fee140" },
+        { offset: 0.5, color: "#fda085" },
+        { offset: 0, color: "#fa709a" },
+      ]),
+      new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 1, color: "#764ba2" },
+        { offset: 0.5, color: "#667eea" },
+        { offset: 0, color: "#4facfe" },
+      ]),
+      new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 1, color: "#43e97b" },
+        { offset: 0.5, color: "#38f9d7" },
+        { offset: 0, color: "#4facfe" },
+      ]),
+      new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 1, color: "#f5576c" },
+        { offset: 0.5, color: "#f093fb" },
+        { offset: 0, color: "#b86bff" },
+      ]),
+      new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 1, color: "#fee140" },
+        { offset: 0.5, color: "#fda085" },
+        { offset: 0, color: "#f5576c" },
+      ]),
+    ];
+
+    async function fetchData(params = {}) {
+      const url = new URL(
+        "/api/pagos-cannon-analytics/",
+        window.location.origin
+      );
+      Object.keys(params).forEach((key) => {
+        if (params[key]) url.searchParams.append(key, params[key]);
+      });
+      return fetch(url).then((response) => response.json());
+    }
+
+    // Función para exportar a Excel
+    async function exportarPagosCannonExcel() {
+      const params = {
+        fecha_inicial: document.getElementById("fecha_inicial").value,
+        fecha_final: document.getElementById("fecha_final").value,
+        metodo_pago: document.getElementById("metodo_pago").value,
+        cobrador: document.getElementById("cobrador").value,
+        nro_cuota: document.getElementById("nro_cuota").value,
+        cliente: document.getElementById("cliente").value,
+        agencia: document.getElementById("filtroAgencia").value || "",
+      };
+
+      // Construir URL con parámetros
+      const queryString = new URLSearchParams(params).toString();
+      const url = `/api/exportar-pagos-cannon-excel/?${queryString}`;
+
+      // Crear enlace temporal y hacer clic
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `pagos_cannon_${params.fecha_inicial || "inicio"}_${
+        params.fecha_final || "fin"
+      }.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function renderChart(labels, data) {
+      const chartDom = document.getElementById("pagosCannonChart");
+      const chartLoader = document.getElementById("chartLoader");
+
+      if (chartLoader) {
+        chartLoader.style.display = "flex";
+      }
+
+      if (chartInstance) {
+        chartInstance.dispose();
+      }
+
+      if (chartDom.offsetWidth === 0 || chartDom.offsetHeight === 0) {
+        chartDom.style.width = "100%";
+        chartDom.style.height = "400px";
+      }
+
+      try {
+        chartInstance = echarts.init(chartDom);
+      } catch (error) {}
+
+      let option;
+
+      switch (currentChartType) {
+        case "pie":
+          option = {
+            color: colors,
+            tooltip: {
+              trigger: "item",
+              formatter: "{a} <br/>{b}: {c} ({d}%)",
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+              textStyle: {
+                color: "#fff",
+                fontSize: 12,
+                fontFamily: "Inter",
+              },
+            },
+            legend: {
+              orient: "vertical",
+              left: "left",
+              top: "middle",
+              textStyle: {
+                fontSize: 12,
+                fontFamily: "Inter",
+                color: "#fff",
+              },
+            },
+            series: [
+              {
+                name: "Pagos Cannon",
+                type: "pie",
+                radius: ["30%", "70%"],
+                center: ["50%", "50%"],
+                avoidLabelOverlap: false,
+                itemStyle: {
+                  borderRadius: 10,
+                },
+                label: {
+                  show: true,
+                  position: "outside",
+                  formatter: "{b}: {c}",
+                  fontSize: 12,
+                  fontFamily: "Inter",
+                  color: "#fff",
+                },
+                emphasis: {
+                  label: {
+                    show: true,
+                    fontSize: "14",
+                    fontWeight: "bold",
+                    fontFamily: "Inter",
+                    color: "#205fbd",
+                  },
+                },
+                labelLine: {
+                  show: true,
+                  length: 10,
+                  length2: 15,
+                  smooth: true,
+                  lineStyle: {
+                    color: "#999",
+                    width: 1,
+                  },
+                },
+                data: labels.map((label, index) => ({
+                  value: data[index],
+                  name: label,
+                })),
+              },
+            ],
+          };
+
+          if (!data.length || (data.length === 1 && data[0] === 0)) {
+            option.title = {
+              text: labels[0] || "No hay datos disponibles",
+              left: "center",
+              top: "middle",
+              textStyle: {
+                color: "#666",
+                fontSize: 16,
+                fontWeight: "normal",
+              },
+            };
+          }
+          break;
+
+        case "bar":
+          option = {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 1, color: "#0279e9" },
+              { offset: 0.5, color: "#029be7" },
+              { offset: 0, color: "#03d0e5" },
+            ]),
+            tooltip: {
+              trigger: "axis",
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+              axisPointer: {
+                type: "",
+              },
+              textStyle: {
+                color: "#ffffff",
+                fontSize: 12,
+                fontFamily: "Inter",
+              },
+            },
+            legend: {
+              data: ["Pagos Cannon"],
+              textStyle: {
+                fontSize: 12,
+                fontFamily: "Inter",
+                color: "#fff",
+              },
+            },
+            grid: {
+              left: "3%",
+              right: "4%",
+              bottom: "3%",
+              containLabel: true,
+            },
+            xAxis: {
+              type: "category",
+              data: labels,
+              axisLabel: {
+                color: "#fff",
+                fontSize: 12,
+                fontFamily: "Inter",
+              },
+              axisLine: {
+                lineStyle: {
+                  color: "#fff",
+                },
+              },
+            },
+            yAxis: {
+              type: "value",
+              axisLabel: {
+                color: "#fff",
+                fontSize: 12,
+                fontFamily: "Inter",
+              },
+              axisLine: {
+                lineStyle: {
+                  color: "#fff",
+                },
+              },
+              splitLine: {
+                lineStyle: {
+                  color: "rgba(255, 255, 255, 0.1)",
+                },
+              },
+            },
+            series: [
+              {
+                name: "Pagos Cannon",
+                type: "bar",
+                data: data,
+                itemStyle: {
+                  borderRadius: [4, 4, 0, 0],
+                },
+              },
+            ],
+          };
+
+          if (!data.length || (data.length === 1 && data[0] === 0)) {
+            option.title = {
+              text: labels[0] || "No hay datos disponibles",
+              left: "center",
+              top: "middle",
+              textStyle: {
+                color: "#666",
+                fontSize: 16,
+                fontWeight: "normal",
+              },
+            };
+          }
+          break;
+
+        case "line":
+          option = {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 1, color: "#0279e9" },
+              { offset: 0.5, color: "#029be7" },
+              { offset: 0, color: "#03d0e5" },
+            ]),
+            tooltip: {
+              trigger: "axis",
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+              textStyle: {
+                color: "#fff",
+                fontSize: 12,
+                fontFamily: "Inter",
+              },
+            },
+            legend: {
+              data: ["Pagos Cannon"],
+              textStyle: {
+                fontSize: 12,
+                fontFamily: "Inter",
+                color: "#fff",
+              },
+            },
+            grid: {
+              left: "3%",
+              right: "4%",
+              bottom: "3%",
+              containLabel: true,
+            },
+            xAxis: {
+              type: "category",
+              data: labels,
+              axisLabel: {
+                color: "#fff",
+                fontSize: 12,
+                fontFamily: "Inter",
+              },
+              axisLine: {
+                lineStyle: {
+                  color: "#fff",
+                },
+              },
+            },
+            yAxis: {
+              type: "value",
+              axisLabel: {
+                color: "#fff",
+                fontSize: 12,
+                fontFamily: "Inter",
+              },
+              axisLine: {
+                lineStyle: {
+                  color: "#fff",
+                },
+              },
+              splitLine: {
+                lineStyle: {
+                  color: "rgba(255, 255, 255, 0.1)",
+                },
+              },
+            },
+            series: [
+              {
+                name: "Pagos Cannon",
+                type: "line",
+                data: data,
+                smooth: true,
+                lineStyle: {
+                  width: 3,
+                },
+                areaStyle: {
+                  opacity: 0.3,
+                },
+              },
+            ],
+          };
+
+          if (!data.length || (data.length === 1 && data[0] === 0)) {
+            option.title = {
+              text: labels[0] || "No hay datos disponibles",
+              left: "center",
+              top: "middle",
+              textStyle: {
+                color: "#666",
+                fontSize: 16,
+                fontWeight: "normal",
+              },
+            };
+          }
+          break;
+      }
+
+      chartInstance.setOption(option);
+
+      setTimeout(() => {
+        const chartLoader = document.getElementById("chartLoader");
+        if (chartLoader) {
+          chartLoader.style.display = "none";
+        }
+      }, 100);
+
+      window.addEventListener("resize", function () {
+        if (chartInstance) {
+          chartInstance.resize();
+        } else {
+          const chartDom = document.getElementById("pagosCannonChart");
+          if (chartDom) {
+            setTimeout(() => {
+              actualizarDashboard();
+            }, 500);
+          }
+        }
+      });
+    }
+
+    async function actualizarDashboard() {
+      const chartLoader = document.getElementById("chartLoader");
+      if (chartLoader) {
+        chartLoader.style.display = "flex";
+      }
+
+      const chartDom = document.getElementById("pagosCannonChart");
+      if (!chartDom) {
+        return;
+      }
+
+      if (chartDom.offsetWidth === 0 || chartDom.offsetHeight === 0) {
+        chartDom.style.width = "100%";
+        chartDom.style.height = "400px";
+      }
+
+      const params = {
+        fecha_inicial: document.getElementById("fecha_inicial").value,
+        fecha_final: document.getElementById("fecha_final").value,
+        metodo_pago: document.getElementById("metodo_pago").value,
+        cobrador: document.getElementById("cobrador").value,
+        nro_cuota: document.getElementById("nro_cuota").value,
+        cliente: document.getElementById("cliente").value,
+        agencia: document.getElementById("filtroAgencia").value || "",
+        // Filtro de monto comentado temporalmente
+        // monto: document.getElementById("monto").value,
+        // monto_op: document.getElementById("monto_op").value,
+      };
+
+      try {
+        const data = await fetchData(params);
+
+        if (data && data.labels && data.data && data.labels.length > 0) {
+          renderChart(data.labels, data.data);
+          document.getElementById("cardTotalPagos").textContent = data.total;
+          document.getElementById(
+            "cardTotalRecaudacion"
+          ).textContent = `$${data.total_recaudacion.toLocaleString()}`;
+        } else {
+          renderChart(["No hay datos"], [0]);
+          document.getElementById("cardTotalPagos").textContent = "0";
+          document.getElementById("cardTotalRecaudacion").textContent = "$0";
+        }
+      } catch (error) {
+        renderChart(["Error al cargar datos"], [0]);
+        document.getElementById("cardTotalPagos").textContent = "Error";
+        document.getElementById("cardTotalRecaudacion").textContent = "$0";
+
+        setTimeout(() => {
+          if (chartLoader) {
+            chartLoader.style.display = "none";
+          }
+        }, 500);
+      }
+    }
+
+    document.getElementById("filtros").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const chartLoader = document.getElementById("chartLoader");
+      if (chartLoader) {
+        chartLoader.style.display = "flex";
+      }
+
+      const params = {
+        fecha_inicial: document.getElementById("fecha_inicial").value,
+        fecha_final: document.getElementById("fecha_final").value,
+        metodo_pago: document.getElementById("metodo_pago").value,
+        cobrador: document.getElementById("cobrador").value,
+        nro_cuota: document.getElementById("nro_cuota").value,
+        cliente: document.getElementById("cliente").value,
+        agencia: document.getElementById("filtroAgencia").value || "",
+        // Filtro de monto comentado temporalmente
+        // monto: document.getElementById("monto").value,
+        // monto_op: document.getElementById("monto_op").value,
+      };
+
+      actualizarDashboard();
+    });
+
+    document.getElementById("btnLimpiar").onclick = function () {
+      document.getElementById("fecha_inicial").value = "";
+      document.getElementById("fecha_final").value = "";
+      document.getElementById("metodo_pago").value = "";
+      document.getElementById("cobrador").value = "";
+      document.getElementById("nro_cuota").value = "";
+      document.getElementById("cliente").value = "";
+      document.getElementById("filtroAgencia").value = "";
+      // Filtro de monto comentado temporalmente
+      // document.getElementById("monto").value = "";
+      // monto_op: document.getElementById("monto_op").value;
+
+      const chartLoader = document.getElementById("chartLoader");
+      if (chartLoader) {
+        chartLoader.style.display = "flex";
+      }
+
+      actualizarDashboard();
+    };
+
+    document.getElementById("btnExportar").onclick = function () {
+      exportarPagosCannonExcel();
+    };
+
+    document.querySelectorAll(".chart-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        document
+          .querySelectorAll(".chart-btn")
+          .forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
+
+        currentChartType = this.getAttribute("data-type");
+        const chartLoader = document.getElementById("chartLoader");
+        if (chartLoader) {
+          chartLoader.style.display = "flex";
+        }
+
+        actualizarDashboard();
+      });
+    });
+
+    // Inicializar Flatpickr
+    flatpickr("#fecha_inicial", {
+      dateFormat: "Y-m-d",
+      locale: "es",
+      defaultDate: [new Date().setDate(new Date().getDate() - 90)],
+    });
+
+    flatpickr("#fecha_final", {
+      dateFormat: "Y-m-d",
+      locale: "es",
+      defaultDate: [new Date()],
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const chartDom = document.getElementById("pagosCannonChart");
+      setTimeout(() => {
+        actualizarDashboard();
+      }, 100);
+    });
+
+    // Eliminamos window.onload para evitar la doble renderización del gráfico
+    // window.onload = function () {
+    //   if (!chartInstance) {
+    //     actualizarDashboard();
+    //   }
+    // };
+  </script>
+  {% endblock js %}
+</div>
