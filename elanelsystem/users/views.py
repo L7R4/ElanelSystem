@@ -266,24 +266,57 @@ def dias_trabajados_en_campania(user, campania_str):
 
     return ultima_version, dias_trabajados_campania
 
-class ListaUsers(PermissionRequiredMixin,generic.ListView):
+class ListaUsers(PermissionRequiredMixin, generic.ListView):
     model = Usuario
     template_name = "list_users.html"
     permission_required = "sales.my_ver_resumen"
 
+    def wants_json(self, request):
+        return (
+            "application/json" in request.headers.get("Accept", "")
+            or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        )
 
-    def get(self,request,*args, **kwargs):
-
-        page_number = request.GET.get('page', 1)
-        per_page = request.GET.get('per_page', 20)
+    def get(self, request, *args, **kwargs):
+        page_number = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 30))
+        search = request.GET.get('search', '')
 
         userConnected = request.user
         sucursal_ids = userConnected.sucursales.values_list('id', flat=True)
         users_queryset = Usuario.objects.filter(sucursales__in=sucursal_ids).order_by('nombre')
 
-        paginator = Paginator(users_queryset, per_page)
+        if search:
+            users_queryset = users_queryset.filter(
+                Q(nombre__icontains=search) |
+                Q(dni__icontains=search) |
+                Q(email__icontains=search) |
+                Q(tel__icontains=search) |
+                Q(rango__icontains=search)
+            ).distinct()
+
+        paginator = Paginator(users_queryset, page_size)
         page_obj = paginator.get_page(page_number)
 
+        if self.wants_json(request):
+            users_data = []
+            for user in page_obj.object_list:
+                sucursales_pseudonimos = [sucursal.pseudonimo for sucursal in user.sucursales.all()]
+                users_data.append({
+                    "id": user.id,
+                    "nombre": user.nombre,
+                    "dni": user.dni,
+                    "email": user.email,
+                    "tel": user.tel,
+                    "rango": user.rango,
+                    "sucursales": sucursales_pseudonimos
+                })
+            return JsonResponse({
+                "users": users_data,
+                "total": paginator.count,  # Grid.js usa esto para paginación
+            })
+
+        # Render normal HTML
         campaniasDisponibles = getCampanasDisponibles()
         metodosPago = [{"id": metodo.id, "alias": metodo.alias } for metodo in MetodoPago.objects.all()]
         sucursales = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in Sucursal.objects.all() ]
