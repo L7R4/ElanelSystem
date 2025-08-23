@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="{% static 'css/list_customers.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet"/>
 
 {% endblock css %}
 
@@ -23,21 +24,7 @@
     {% csrf_token %}
     <div class="filtersActionWrapper">
 
-      {% comment %} Validar por permiso ------ {% endcomment %}
-      <div id="wrapperSucursal" class="inputWrapper">
-        <div class="containerInputAndOptions">
-            <img id="sucursalIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-            <input type="text" placeholder="Sucursal" readonly name="sucursal" id="sucursalInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
-            <ul class="list-select-custom options">
-              {% for s in sucursales %}
-                <li>{{s}}</li>
-              {% endfor %}
-            </ul>
-        </div>
-      </div>
-      {% comment %} ------------ {% endcomment %}
-
-      <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+      {% comment %} <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
         <h3 class="labelInput">Sucursal</h3>
         <div class="containerInputAndOptions">
           <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
@@ -51,15 +38,15 @@
             {% endfor %}
         </ul>
         </div>
-      </div>
-
+      </div> {% endcomment %}
+{% comment %} 
       <div class="searchActionWrapper">
         <input 
         type="text"
         class = "customer input-read-write-default"
         id="customer_search">
         <img src="{% static 'images/icons/search.svg' %}" alt="">
-      </div>
+      </div> {% endcomment %}
 
     </div>
     {% comment %} <button type="button" id="submitFilter" class="add-button-default">Filtrar</button> {% endcomment %}
@@ -72,7 +59,7 @@
 
 <div class="informationWrapper">
   <a href="{% url 'users:list_customers'%}" id="buttonCleanFilter">Limpiar filtros</a>
-  <table class="information">
+  {% comment %} <table class="information">
     <thead>
         <tr>
           <th>Nombre</th>
@@ -94,8 +81,8 @@
           </tr>
       {% endfor %}
     </tbody>
-  </table>
-
+  </table> {% endcomment %}
+  <div id="customers_table"></div>
 </div> 
 
 {% endblock content %}
@@ -125,5 +112,7 @@
 <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
 <script src="{% static 'js/importDataCliente.js' %}"></script>
-<script src="{% static 'js/x_filter_customers.js' %}"></script>
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gridjs/l10n/dist/l10n.umd.js"></script>
+<script type="module" src="{% static 'js/customers_table.js' %}"></script>
 {% endblock js %}
