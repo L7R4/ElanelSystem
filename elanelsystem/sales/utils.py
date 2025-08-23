@@ -608,7 +608,7 @@ def dataStructureClientes(sucursal=None):
 
 #region Other functions
 
-def get_ventasBySucursal(sucursal):
+def get_ventasBySucursal(sucursal=""):
     from sales.models import Ventas
     from elanelsystem.views import convertirValoresALista
 

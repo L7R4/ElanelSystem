@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Auditoria, PagoCannon, Ventas, MetodoPago,CoeficientesListadePrecios, ArqueoCaja, MovimientoExterno, CuentaCobranza
+from datetime import datetime
 # admin.site.register(Ventas)
 admin.site.register(ArqueoCaja)
 admin.site.register(MovimientoExterno)
@@ -42,6 +43,21 @@ class PagoCannonAdmin(admin.ModelAdmin):
 class CoeficientesAdmin(admin.ModelAdmin):
     list_display = ('valor_nominal', 'cuota', 'porcentage')
 
+# Filtro para años
+class YearFilter(admin.SimpleListFilter):
+    title = 'Año'
+    parameter_name = 'year'
+
+    def lookups(self, request, model_admin):
+        # Genera una lista de años desde 2022 hasta el año actual
+        current_year = datetime.now().year
+        return [(str(year), str(year)) for year in range(2022, current_year + 1)]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            # Busca fechas que tengan /AÑO en la posición correcta (DD/MM/YYYY)
+            return queryset.filter(fecha__regex=rf"\d{{2}}/\d{{2}}/{self.value()}")
+        return queryset
 
 @admin.register(Ventas)
 class VentasAdmin(admin.ModelAdmin):
@@ -55,7 +71,7 @@ class VentasAdmin(admin.ModelAdmin):
     search_fields = ('nro_operacion','nro_cliente__nombre', 'producto__nombre', 'fecha',"campania","nro_cuotas",)
     
     # Agregar filtros
-    list_filter = ('supervisor', "vendedor", "agencia","campania",)
+    list_filter = (YearFilter ,'supervisor', "vendedor", "agencia", "campania")
     
     # Mostrar más información en la vista de detalle
     # readonly_fields = ('nro_operacion', 'cuotas', 'adjudicado', 'deBaja', 'auditoria')

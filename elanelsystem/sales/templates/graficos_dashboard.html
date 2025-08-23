@@ -1,0 +1,564 @@
+{% extends 'molde.html' %} {% load static %} {% block css %}
+<!-- ECharts -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+<!-- Flatpickr -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+
+<!-- Fonts & Icons -->
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="{% static 'css/graficos_dashboard.css' %}" />
+{% endblock css %} {% block content %}
+<div class="dashboard-container">
+  <!-- Header -->
+  {% comment %}
+  <div class="dashboard-header">
+    <h1><i class="fas fa-chart-pie"></i> Grafico de Ventas</h1>
+    <p>Análisis y visualización de ventas en tiempo real</p>
+  </div>
+  {% endcomment %}
+
+  <!-- Filtros -->
+  <form id="filtros" class="dashboard-filtros">
+    <div class="filtros-grid-horizontal">
+      <div class="filtro-grupo">
+        <label><i class="fas fa-calendar"></i> Fecha Inicial</label>
+        <input
+          type="text"
+          id="filtroFechaInicial"
+          class="flatpickr-input"
+          placeholder="Seleccionar fecha"
+        />
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-calendar"></i> Fecha Final</label>
+        <input
+          type="text"
+          id="filtroFechaFinal"
+          class="flatpickr-input"
+          placeholder="Seleccionar fecha"
+        />
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-user"></i> Colaborador</label>
+        <input type="text" id="filtroColaborador" placeholder="Nombre" />
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-user-tie"></i> Tipo</label>
+        <select id="filtroTipoColaborador">
+          <option value="vendedor">Vendedor</option>
+          <option value="supervisor">Supervisor</option>
+        </select>
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-user-tie"></i> Sucursal</label>
+        <select id="filtroAgencia">
+          <option default value="">Todos</option>
+          {% for a in agencias %}
+            <option value="{{a.id}}">{{a.pseudonimo}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="filtro-grupo botones-filtros">
+        <button type="button" id="btnFiltrar" class="btn btn-filter">
+          <i class="fas fa-filter"></i> Filtrar
+        </button>
+        <button type="button" id="btnLimpiar" class="btn btn-secondary">
+          <i class="fas fa-eraser"></i> Limpiar
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Gráfico -->
+  <div class="chart-container">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Distribución de Ventas</div>
+        <div class="chart-subtitle">Ventas agrupadas por período</div>
+      </div>
+      <div class="chart-controls">
+        <div class="chart-type-selector">
+          <button
+            type="button"
+            class="chart-btn active"
+            data-type="nightingale"
+          >
+            <i class="fas fa-chart-pie"></i> Rosa
+          </button>
+          <button type="button" class="chart-btn" data-type="bar">
+            <i class="fas fa-chart-bar"></i> Barras
+          </button>
+          <button type="button" class="chart-btn" data-type="line">
+            <i class="fas fa-chart-line"></i> Líneas
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrapper">
+      <div id="ventasChart"></div>
+      <div id="chartLoader">
+        <span id="chartLoaderSpinner"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total y Navegación -->
+  <div class="dashboard-cards-horizontal">
+    <!-- Botón para navegar a Dashboard de Pagos Cannon -->
+    <a href="{% url 'sales:graficos_cannon' %}" class="btn btn-left">
+      <div>
+        <i class="fas fa-credit-card"></i>
+        <h2>Dashboard de Pagos Cannon</h2>
+      </div>
+    </a>
+    <div class="card">
+      <div class="card-icon">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="card-content">
+        <div class="card-title">Total de Ventas</div>
+        <div class="card-value" id="cardTotalVentas">0</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %} {% block js %}
+<script>
+  let chartInstance = null;
+  let currentChartType = "nightingale";
+
+  // Colores para el gráfico
+  const colors = [
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#0279e9" },
+      { offset: 0.5, color: "#029be7" },
+      { offset: 0, color: "#03d0e5" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#764ba2" },
+      { offset: 0.5, color: "#b86bff" },
+      { offset: 0, color: "#f093fb" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#f5576c" },
+      { offset: 0.5, color: "#fa709a" },
+      { offset: 0, color: "#fda085" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#43e97b" },
+      { offset: 0.5, color: "#38f9d7" },
+      { offset: 0, color: "#00f2fe" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#667eea" },
+      { offset: 0.5, color: "#4facfe" },
+      { offset: 0, color: "#00f2fe" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#fee140" },
+      { offset: 0.5, color: "#fda085" },
+      { offset: 0, color: "#fa709a" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#764ba2" },
+      { offset: 0.5, color: "#667eea" },
+      { offset: 0, color: "#4facfe" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#43e97b" },
+      { offset: 0.5, color: "#38f9d7" },
+      { offset: 0, color: "#4facfe" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#f5576c" },
+      { offset: 0.5, color: "#f093fb" },
+      { offset: 0, color: "#b86bff" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#fee140" },
+      { offset: 0.5, color: "#fda085" },
+      { offset: 0, color: "#f5576c" },
+    ]),
+  ];
+
+  // Fetch data from API
+  async function fetchVentasData(params) {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`/api/ventas-analytics/?${queryString}`);
+    return await response.json();
+  }
+
+  // Renderizar gráfico
+  function renderChart(labels, data) {
+    const chartDom = document.getElementById("ventasChart");
+    const chartLoader = document.getElementById("chartLoader");
+
+    // Mostrar loader del gráfico antes de cualquier operación
+    if (chartLoader) {
+      chartLoader.style.display = "flex";
+    }
+
+    if (chartInstance) {
+      chartInstance.dispose();
+    }
+
+    chartInstance = echarts.init(chartDom);
+
+    let option;
+
+    switch (currentChartType) {
+      case "nightingale":
+        option = {
+          color: colors,
+          tooltip: {
+            trigger: "item",
+            formatter: "{a} <br/>{b}: {c} ({d}%)",
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+            textStyle: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+          },
+          legend: {
+            orient: "vertical",
+            left: "left",
+            top: "middle",
+            textStyle: {
+              fontSize: 12,
+              fontFamily: "Inter",
+              color: "#fff",
+            },
+          },
+          series: [
+            {
+              name: "Ventas",
+              type: "pie",
+              radius: [50, 250],
+              center: ["50%", "50%"],
+              roseType: "area",
+              avoidLabelOverlap: false,
+              itemStyle: {
+                borderRadius: 10,
+              },
+              label: {
+                show: true,
+                position: "outside",
+                formatter: "{b}: {c}",
+                fontSize: 12,
+                fontFamily: "Inter",
+                color: "#fff",
+              },
+              emphasis: {
+                label: {
+                  show: true,
+                  fontSize: "14",
+                  fontWeight: "bold",
+                  fontFamily: "Inter",
+                  color: "#205fbd",
+                },
+              },
+              labelLine: {
+                show: true,
+                length: 10,
+                length2: 15,
+                smooth: true,
+                lineStyle: {
+                  color: "#999",
+                  width: 1,
+                },
+              },
+              data: labels.map((label, index) => ({
+                value: data[index],
+                name: label,
+              })),
+            },
+          ],
+        };
+        break;
+
+      case "bar":
+        option = {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 1, color: "#0279e9" },
+            { offset: 0.5, color: "#029be7" },
+            { offset: 0, color: "#03d0e5" },
+          ]),
+          tooltip: {
+            trigger: "axis",
+            axisPointer: {
+              type: "shadow",
+            },
+            textStyle: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+          },
+          legend: {
+            data: ["Ventas"],
+            textStyle: {
+              fontSize: 12,
+              fontFamily: "Inter",
+              color: "#fff",
+            },
+          },
+          grid: {
+            left: "3%",
+            right: "4%",
+            bottom: "3%",
+            containLabel: true,
+          },
+          xAxis: {
+            type: "category",
+            data: labels,
+            axisLabel: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#fff",
+              },
+            },
+          },
+          yAxis: {
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#fff",
+              },
+            },
+            splitLine: {
+              lineStyle: {
+                color: "rgba(255, 255, 255, 0.1)",
+              },
+            },
+          },
+          series: [
+            {
+              name: "Ventas",
+              type: "bar",
+              data: data,
+              itemStyle: {
+                borderRadius: [4, 4, 0, 0],
+              },
+            },
+          ],
+        };
+        break;
+
+      case "line":
+        option = {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 1, color: "#0279e9" },
+            { offset: 0.5, color: "#029be7" },
+            { offset: 0, color: "#03d0e5" },
+          ]),
+          tooltip: {
+            trigger: "axis",
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+            textStyle: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+          },
+          legend: {
+            data: ["Ventas"],
+            textStyle: {
+              fontSize: 12,
+              fontFamily: "Inter",
+              color: "#fff",
+            },
+          },
+          grid: {
+            left: "3%",
+            right: "4%",
+            bottom: "3%",
+            containLabel: true,
+          },
+          xAxis: {
+            type: "category",
+            data: labels,
+            axisLabel: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#fff",
+              },
+            },
+          },
+          yAxis: {
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#fff",
+              },
+            },
+            splitLine: {
+              lineStyle: {
+                color: "rgba(255, 255, 255, 0.1)",
+              },
+            },
+          },
+          series: [
+            {
+              name: "Ventas",
+              type: "line",
+              data: data,
+              smooth: true,
+              lineStyle: {
+                width: 3,
+              },
+              areaStyle: {
+                opacity: 0.3,
+              },
+            },
+          ],
+        };
+        break;
+    }
+
+    // Configurar el gráfico
+    chartInstance.setOption(option);
+
+    // Usar setTimeout para dar tiempo a que el gráfico se renderice completamente
+    // antes de ocultar el loader, permitiendo ver la animación
+    setTimeout(() => {
+      const chartLoader = document.getElementById("chartLoader");
+      if (chartLoader) {
+        chartLoader.style.display = "none";
+      }
+    }, 100);
+
+    // Responsive
+    window.addEventListener("resize", () => {
+      if (chartInstance) {
+        chartInstance.resize();
+      }
+    });
+  }
+
+  // Actualizar dashboard
+  async function actualizarDashboard() {
+    // Mostrar loader antes de iniciar la carga de datos
+    const chartLoader = document.getElementById("chartLoader");
+    if (chartLoader) {
+      chartLoader.style.display = "flex";
+    }
+
+    const params = {
+      fecha_inicial: document.getElementById("filtroFechaInicial").value,
+      fecha_final: document.getElementById("filtroFechaFinal").value,
+      colaborador: document.getElementById("filtroColaborador").value,
+      tipo_colaborador: document.getElementById("filtroTipoColaborador").value,
+      agencia: document.getElementById("filtroAgencia").value || "",
+    };
+
+    try {
+      const { labels, data, total } = await fetchVentasData(params);
+
+      if (labels && data && labels.length > 0) {
+        renderChart(labels, data);
+        document.getElementById("cardTotalVentas").textContent = total;
+      } else {
+        // Renderizar gráfico vacío
+        renderChart([], []);
+        document.getElementById("cardTotalVentas").textContent = "0";
+      }
+    } catch (error) {
+      // Renderizar gráfico vacío en caso de error
+      renderChart([], []);
+      document.getElementById("cardTotalVentas").textContent = "Error";
+
+      // En caso de error, asegurarse de ocultar el loader después de un tiempo
+      setTimeout(() => {
+        if (chartLoader) {
+          chartLoader.style.display = "none";
+        }
+      }, 500);
+    }
+  }
+
+  // Event listeners
+  document.getElementById("btnFiltrar").onclick = () => {
+    actualizarDashboard();
+  };
+
+  document.getElementById("btnLimpiar").onclick = () => {
+    console.log("Clear button clicked");
+    document.getElementById("filtroFechaInicial").value = "";
+    document.getElementById("filtroFechaFinal").value = "";
+    document.getElementById("filtroColaborador").value = "";
+    document.getElementById("filtroTipoColaborador").value = "vendedor";
+    actualizarDashboard();
+  };
+
+  // Event listeners para cambio de tipo de gráfico
+  document.querySelectorAll(".chart-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      // Remover clase active de todos los botones
+      document
+        .querySelectorAll(".chart-btn")
+        .forEach((b) => b.classList.remove("active"));
+      // Agregar clase active al botón clickeado
+      btn.classList.add("active");
+
+      // Cambiar tipo de gráfico
+      currentChartType = btn.getAttribute("data-type");
+
+      // Re-renderizar el gráfico con los datos actuales
+      actualizarDashboard();
+    });
+  });
+
+  // Inicializar Flatpickr
+  flatpickr("#filtroFechaInicial", {
+    dateFormat: "Y-m-d",
+    locale: "es",
+    defaultDate: [new Date().setDate(new Date().getDate() - 365)],
+  });
+
+  flatpickr("#filtroFechaFinal", {
+    dateFormat: "Y-m-d",
+    locale: "es",
+    defaultDate: [new Date()],
+  });
+
+  // Carga inicial
+  window.onload = () => {
+    actualizarDashboard();
+  };
+</script>
+{% endblock js %}
