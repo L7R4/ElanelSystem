@@ -15,7 +15,7 @@ body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
-  color: #2d3748;
+  color: var(--third-color);
   line-height: 1.6;
 }
 
@@ -33,6 +33,7 @@ body {
   overflow-y: auto;
   height: 100vh;
   box-sizing: border-box;
+  background: var(--blue-0);
 }
 
 /* ========================================
@@ -61,18 +62,17 @@ body {
    FILTROS
    ======================================== */
 .dashboard-filtros {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  background: var(--blue-2); /* Fondo filtros */
   border-radius: 20px;
   padding: 2rem;
   margin-bottom: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--white-color-800-80);
 }
 
 .btn-filter {
-  background: linear-gradient(135deg, #0279e9 0%, #029be7 60%, #03d0e5 100%);
+  background: var(--blue-3, #0279e9);
   color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(48, 67, 97, 0.15);
 }
 
 .filtros-grid-horizontal {
@@ -93,7 +93,7 @@ body {
 .filtro-grupo label {
   font-weight: 500;
   margin-bottom: 0.5rem;
-  color: #4a5568;
+  color: #babec4;
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -102,12 +102,13 @@ body {
 .filtro-grupo input,
 .filtro-grupo select {
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
+  border-color: var(--background-color);
   border-radius: 12px;
   font-size: 0.95rem;
-  background: white;
+  background: var(--blue-1);
   transition: all 0.3s ease;
   font-family: inherit;
+  color: #d3d8df;
 }
 
 .filtro-grupo input:focus,
@@ -118,7 +119,7 @@ body {
 }
 
 .filtro-grupo input::placeholder {
-  color: #a0aec0;
+  color: #d3d8df;
 }
 
 /* ========================================
@@ -158,9 +159,9 @@ body {
 }
 
 .btn-secondary {
-  background: #f7fafc;
-  color: #4a5568;
-  border: 2px solid #e2e8f0;
+  background: var(--background-color, #f7fafc);
+  color: var(--third-color, #4a5568);
+  border: 2px solid var(--blue-3, #e2e8f0);
 }
 
 .btn-secondary:hover {
@@ -183,12 +184,11 @@ body {
    GRÁFICO
    ======================================== */
 .chart-container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  background: var(--blue-2);
   border-radius: 20px 20px 0 20px;
-  padding: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--blue-2, #e2e8f0);
   border-bottom: none;
+  padding: 2rem;
   box-sizing: border-box;
 }
 
@@ -201,11 +201,11 @@ body {
 .chart-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--white-color-800-80);
 }
 
 .chart-subtitle {
-  color: #205fbd;
+  color: #a0aec0;
   font-size: 0.9rem;
 }
 
@@ -278,7 +278,9 @@ body {
 
 /* background degrade 3 colores */
 .btn-left {
-  background: linear-gradient(135deg, #0279e9 0%, #029be7 60%, #03d0e5 100%);
+  background: linear-gradient(135deg, #6689ea 10%, #c3c7d8 80%);
+  color: white;
+  border: 1px solid var(--blue-1, #e2e8f0);
   backdrop-filter: blur(10px);
   border-radius: 20px;
   display: flex;
@@ -286,7 +288,6 @@ body {
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin-top: 2rem;
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   text-align: center;
@@ -297,6 +298,7 @@ body {
   min-width: 250px;
   height: 100%;
   text-decoration: none;
+  margin-top: 0 !important;
 }
 
 .btn-left i {
@@ -320,10 +322,10 @@ body {
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--blue-2, #f7fafc);
+  border: 1px solid var(--blue-2, #e2e8f0);
   border-radius: 0 0 20px 20px;
   padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
   border-top: none;
   text-align: center;
   transition: all 0.3s ease;
@@ -332,6 +334,7 @@ body {
   width: fit-content;
   min-width: 250px;
   height: 100%;
+  margin-top: 0 !important;
 }
 
 .card-icon {
@@ -342,7 +345,7 @@ body {
 
 .card-title {
   font-size: 0.9rem;
-  color: #718096;
+  color: #bfc8d3;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -352,7 +355,7 @@ body {
 .card-value {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #2d3748;
+  color: #bfc8d3;
   margin-bottom: 0.5rem;
 }
 
@@ -581,7 +584,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(48, 67, 97, 0.15); /* Sombra azulada */
   backdrop-filter: blur(10px);
   display: none;
   justify-content: center;
@@ -609,4 +612,15 @@ body {
   100% {
     transform: rotate(360deg);
   }
+}
+
+/* Elimina margen superior de todas las cards y botones */
+.dashboard-cards-horizontal > .card,
+.dashboard-cards-horizontal > .btn-left {
+  margin-top: 0 !important;
+}
+
+/* Aplica margen solo al primer hijo si es el botón de dashboard */
+.dashboard-cards-horizontal > a.btn-dashboard-switch:first-child {
+  margin-top: 1rem !important;
 }

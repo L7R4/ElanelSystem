@@ -423,3 +423,101 @@ table.information tr>*:last-child {
 #pagination a:hover {
   background-color: var(--blue-4);
 }
+
+/* Contenedor general */
+.gridjs-wrapper {
+  border-radius: 1.2rem !important;
+}
+
+/* search */
+.gridjs-search {
+  margin-bottom: 1rem !important;
+  display: flex !important;
+  input {
+    font-size: 1.4rem !important;
+    border: 1px solid var(--grey-3) !important;
+    border-radius: 0.8rem !important;
+    outline: none !important;
+    width: 100% !important;
+    max-width: 300px !important;
+    background-color: var(--background-color) !important;
+    color: var(--third-color) !important;
+    font-family: "Raleway", sans-serif !important;
+    transition: border 0.2s !important;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='none' stroke='gray' stroke-width='2' viewBox='0 0 24 24' width='20' height='20' xmlns='http://www.w3.org/2000/svg'><circle cx='11' cy='11' r='8'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>") !important;
+    background-repeat: no-repeat !important;
+    background-position: 0.7rem center !important;
+    background-size: 1.5rem !important;
+    padding-left: 3.2rem !important; /* Espacio extra entre la lupa y el texto */
+  }
+}
+
+.gridjs-head {
+  display: flex !important;
+  justify-content: left !important;
+  align-items: center !important;
+}
+
+/* Encabezados */
+.gridjs-thead,
+th.gridjs-th {
+  border-left: 3px solid var(--blue-3) !important;
+  border-right: 3px solid var(--blue-3) !important;
+  background-color: var(--blue-3) !important;
+  color: white !important;
+  text-align: center !important;
+  font-weight: 600;
+}
+
+/* Celdas */
+.gridjs-tbody,
+td.gridjs-td {
+  background-color: var(--blue-0) !important;
+  color: var(--third-color) !important;
+  text-align: center !important;
+  border-bottom: 0.3px solid #172a3d !important;
+}
+
+/* Footer */
+.gridjs-footer {
+  background-color: transparent !important;
+  border-top: none !important;
+  box-shadow: none !important;
+}
+
+.gridjs-summary {
+  color: #fff !important;
+  font-size: medium !important;
+}
+
+/* Paginación */
+.gridjs-pages {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gridjs-pages button {
+  background: transparent !important;
+  color: var(--third-color) !important;
+  border: none !important;
+  border-radius: 0.4rem;
+  margin: 0 0.3rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.gridjs-pages button[aria-label="Anterior"],
+.gridjs-pages button[aria-label="Siguiente"] {
+  background: var(--blue-3) !important;
+  color: #fff !important;
+}
+
+.gridjs-pages button.active {
+  background: var(--primary-color) !important;
+  color: var(--blue-3) !important;
+  font-weight: bold !important;
+  opacity: 1;
+}

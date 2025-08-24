@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "echarts": "^6.0.0",
+    "gridjs": "^6.2.0",
     "ldcover": "^3.5.4"
   }
 }
