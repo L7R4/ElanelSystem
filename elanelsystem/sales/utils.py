@@ -612,23 +612,48 @@ def get_ventasBySucursal(sucursal=""):
     from sales.models import Ventas
     from elanelsystem.views import convertirValoresALista
 
+    qs = (Ventas.objects
+          .select_related("agencia", "vendedor", "supervisor", "nro_cliente", "producto")
+          .only(
+              "id", "fecha", "importe","cantidadContratos","nro_operacion",
+              "agencia__id", "agencia__pseudonimo",
+              "vendedor__nombre", "supervisor__nombre",
+              "nro_cliente__nombre","producto__nombre",
+              "paquete", "modalidad", "campania", 
+          ))
+
     if sucursal == "":
-        return Ventas.objects.all()
+        return qs
     else:
         listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
-        return Ventas.objects.filter(agencia__id__in=listaAgencias)
-
+        return qs.filter(agencia__id__in=listaAgencias)
 
 def get_pagosCannonBySucursal(sucursal=""):
     from sales.models import PagoCannon
     from elanelsystem.views import convertirValoresALista
 
+    qs = (
+        PagoCannon.objects
+        .select_related(
+            'venta',                 # FK
+            'venta__nro_cliente',    # FK del FK
+            'metodo_pago',
+            'cobrador',
+        )
+        .only(
+            'id', 'nro_cuota', 'fecha', 'monto',
+            'venta__cantidadContratos',
+            'venta__nro_cliente__nombre',
+            'metodo_pago__alias',
+            'cobrador__alias',
+        )
+    )
+
     if sucursal == "":
-        return PagoCannon.objects.all()
+        return qs
     else:
         listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
-        return PagoCannon.objects.filter(venta__agencia__id__in=listaAgencias)
-
+        return qs.filter(venta__agencia__id__in=listaAgencias)
 
 def deleteFieldsInDataStructures(lista_dicts, campos_a_eliminar):
     # Iterar sobre cada diccionario en la lista
