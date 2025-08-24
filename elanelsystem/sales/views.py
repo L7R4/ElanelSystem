@@ -28,7 +28,9 @@ from elanelsystem.views import filterMainManage, convertirValoresALista
 from django.forms.models import model_to_dict
 from django.templatetags.static import static
 from django.forms.models import model_to_dict
-
+from users.models import Usuario
+from sales.models import Ventas
+from django.http import JsonResponse
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
 from elanelsystem.utils import *
@@ -42,6 +44,7 @@ import io
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils.dataframe import dataframe_to_rows
+
 
 #EndPoint graficos de torta ---------------------------------------------------
 class GraficosDashboard(TestLogin, PermissionRequiredMixin, generic.View):
@@ -580,8 +583,6 @@ def pagos_cannon_analytics_api(request):
         "total_recaudacion": total_recaudacion
     })
 
-
-
 def graficos_pagos_cannon(request):
     from users.models import Sucursal
     agencias = Sucursal.objects.all()
@@ -639,6 +640,48 @@ def graficos(request):
         "data": data,
         "total": total
     })
+
+class DashboardColaboradores(TestLogin, generic.View):
+    template_name = 'dashboard_colaboradores.html'
+
+    def get(self, request, *args, **kwargs):
+        from users.models import Sucursal
+        context = {
+            'agencias': Sucursal.objects.all()
+        }
+        return render(request, self.template_name, context)
+
+def autocomplete_colaborador(request):
+    query = request.GET.get('query', '')
+    if len(query) < 1:
+        return JsonResponse([], safe=False)
+    
+    from users.models import Usuario
+    from django.db.models import Q
+    
+    # Buscar colaboradores por nombre que contenga la query
+    colaboradores = Usuario.objects.filter(
+        Q(nombre__icontains=query) & 
+        Q(rango__in=['Vendedor', 'Supervisor']) &
+        Q(is_active=True)
+    )[:10]  # Limitar a 10 resultados
+    
+    results = []
+    for colaborador in colaboradores:
+        results.append({
+            'id': colaborador.id,
+            'nombre': colaborador.nombre,
+            'rango': colaborador.rango,
+            'sucursales': [s.pseudonimo for s in colaborador.sucursales.all()]
+        })
+    
+    return JsonResponse(results, safe=False)
+
+@require_GET
+@csrf_exempt
+def ventas_colaborador(request):
+    # por un momento casi me funciono, pero se empezo a romper todo y me agarro un acv
+    return JsonResponse([], safe=False)
 
 class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
     permission_required = "sales.my_ver_resumen"
@@ -3342,7 +3385,7 @@ def build_aggregated_cuotas(id_venta,df_est,n_chances,plan):
          # Importe que llegó por fila en el Excel, multiplicado
         excel_amount = int(r['importe_cuotas']) * n_chances
 
-        # Definir importe “oficial” según q
+        # Definir importe "oficial" según q
         if q == 0:
             official = plan.suscripcion * n_chances
         elif q == 1:

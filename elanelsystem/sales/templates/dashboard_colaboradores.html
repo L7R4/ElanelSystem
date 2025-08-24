@@ -1,0 +1,1090 @@
+{% extends 'molde.html' %} {% load static %} {% block css %}
+<!-- ECharts -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+<!-- Flatpickr -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+
+<!-- Fonts & Icons -->
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="{% static 'css/graficos_dashboard.css' %}" />
+<link rel="stylesheet" href="{% static 'css/dashboard_colaboradores.css' %}" />
+{% endblock css %} {% block content %}
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h1><i class="fas fa-users"></i> Dashboard de Colaboradores</h1>
+    <p>Análisis y visualización de ventas por colaborador</p>
+  </div>
+
+  <!-- Filtros -->
+  <form id="filtros" class="dashboard-filtros">
+    <div class="filtros-grid-horizontal">
+      <div class="filtro-grupo">
+        <label><i class="fas fa-calendar"></i> Fecha Inicial</label>
+        <input
+          type="text"
+          id="filtroFechaInicial"
+          class="flatpickr-input"
+          placeholder="Seleccionar fecha"
+        />
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-calendar"></i> Fecha Final</label>
+        <input
+          type="text"
+          id="filtroFechaFinal"
+          class="flatpickr-input"
+          placeholder="Seleccionar fecha"
+        />
+      </div>
+      <div class="filtro-grupo">
+        <label><i class="fas fa-user"></i> Colaborador</label>
+        <div class="colaborador-input-container">
+          <input
+            type="text"
+            id="filtroColaborador"
+            placeholder="Escriba el nombre del colaborador"
+            autocomplete="off"
+          />
+          <input type="hidden" id="colaboradorId" />
+          <div id="sugerenciasColaborador" class="sugerencias"></div>
+        </div>
+      </div>
+
+      <div class="filtro-grupo botones-filtros">
+        <button type="button" id="btnFiltrar" class="btn btn-filter">
+          <i class="fas fa-filter"></i> Filtrar
+        </button>
+        <button type="button" id="btnLimpiar" class="btn btn-secondary">
+          <i class="fas fa-eraser"></i> Limpiar
+        </button>
+        <button type="button" id="btnExportar" class="btn btn-export">
+          <i class="fas fa-file-excel"></i> Exportar Excel
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Información del Colaborador -->
+  <div id="infoColaborador" class="info-colaborador" style="display: none">
+    <div class="colaborador-card">
+      <div class="colaborador-avatar">
+        <i class="fas fa-user-circle"></i>
+      </div>
+      <div class="colaborador-info">
+        <h3 id="colaboradorNombre"></h3>
+        <span id="colaboradorRango" class="rango-badge"></span>
+        <p id="colaboradorSucursales"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="charts-container">
+    <!-- Gráfico de Ventas Propias -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Ventas del Colaborador</div>
+          <div class="chart-subtitle">
+            Evolución de ventas en el período seleccionado
+          </div>
+        </div>
+        <div class="chart-controls">
+          <div class="chart-type-selector">
+            <button
+              type="button"
+              class="chart-btn active"
+              data-type="bar"
+              data-chart="propias"
+            >
+              <i class="fas fa-chart-bar"></i> Barras
+            </button>
+            <button
+              type="button"
+              class="chart-btn"
+              data-type="line"
+              data-chart="propias"
+            >
+              <i class="fas fa-chart-line"></i> Líneas
+            </button>
+            <button
+              type="button"
+              class="chart-btn"
+              data-type="pie"
+              data-chart="propias"
+            >
+              <i class="fas fa-chart-pie"></i> Circular
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <div id="ventasPropiasChart"></div>
+        <div id="chartLoaderPropias">
+          <span id="chartLoaderSpinnerPropias"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico de Ventas del Equipo (solo para supervisores) -->
+    <div
+      id="chartEquipoContainer"
+      class="chart-container"
+      style="display: none"
+    >
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Ventas del Equipo</div>
+          <div class="chart-subtitle">Rendimiento de vendedores a cargo</div>
+        </div>
+        <div class="chart-controls">
+          <div class="chart-type-selector">
+            <button
+              type="button"
+              class="chart-btn active"
+              data-type="bar"
+              data-chart="equipo"
+            >
+              <i class="fas fa-chart-bar"></i> Barras
+            </button>
+            <button
+              type="button"
+              class="chart-btn"
+              data-type="line"
+              data-chart="equipo"
+            >
+              <i class="fas fa-chart-line"></i> Líneas
+            </button>
+            <button
+              type="button"
+              class="chart-btn"
+              data-type="pie"
+              data-chart="equipo"
+            >
+              <i class="fas fa-chart-pie"></i> Circular
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <div id="ventasEquipoChart"></div>
+        <div id="chartLoaderEquipo">
+          <span id="chartLoaderSpinnerEquipo"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total y Navegación -->
+  <div class="dashboard-cards-horizontal">
+    <!-- Botón para navegar a Dashboard de Ventas -->
+    <a
+      href="{% url 'sales:graficos' %}"
+      class="btn btn-left btn-dashboard-switch"
+    >
+      <div>
+        <i class="fas fa-chart-pie"></i>
+        <h2>Dashboard de Ventas</h2>
+      </div>
+    </a>
+
+    <!-- Botón para navegar a Dashboard de Pagos Cannon -->
+    <a
+      href="{% url 'sales:graficos_cannon' %}"
+      class="btn btn-left btn-dashboard-switch"
+    >
+      <div>
+        <i class="fas fa-credit-card"></i>
+        <h2>Dashboard de Pagos Cannon</h2>
+      </div>
+    </a>
+
+    <div class="card">
+      <div class="card-icon">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="card-content">
+        <div class="card-title">Total de Ventas</div>
+        <div class="card-value" id="cardTotalVentas">0</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">
+        <i class="fas fa-file-invoice-dollar"></i>
+      </div>
+      <div class="card-content">
+        <div class="card-title">Facturación</div>
+        <div class="card-value" id="cardTotalFacturacion">$0</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %} {% block js %}
+<script>
+  let chartPropiasInstance = null;
+  let chartEquipoInstance = null;
+  let currentChartTypePropias = "bar";
+  let currentChartTypeEquipo = "bar";
+  let colaboradorActual = null;
+
+  // Colores para el gráfico
+  const colors = [
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#0279e9" },
+      { offset: 0.5, color: "#029be7" },
+      { offset: 0, color: "#03d0e5" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#764ba2" },
+      { offset: 0.5, color: "#b86bff" },
+      { offset: 0, color: "#f093fb" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#f5576c" },
+      { offset: 0.5, color: "#fa709a" },
+      { offset: 0, color: "#fda085" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#43e97b" },
+      { offset: 0.5, color: "#38f9d7" },
+      { offset: 0, color: "#00f2fe" },
+    ]),
+    new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 1, color: "#667eea" },
+      { offset: 0.5, color: "#4facfe" },
+      { offset: 0, color: "#00f2fe" },
+    ]),
+  ];
+
+  // Autocompletado de colaborador
+  document
+    .getElementById("filtroColaborador")
+    .addEventListener("input", async function () {
+      const query = this.value;
+      const sugerenciasContainer = document.getElementById(
+        "sugerenciasColaborador"
+      );
+
+      if (query.length < 2) {
+        sugerenciasContainer.innerHTML = "";
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/autocomplete-colaborador/?query=${encodeURIComponent(query)}`
+        );
+        const suggestions = await response.json();
+
+        sugerenciasContainer.innerHTML = "";
+
+        if (suggestions.length === 0) {
+          const div = document.createElement("div");
+          div.className = "sugerencia-item no-results";
+          div.textContent = "No se encontraron resultados";
+          sugerenciasContainer.appendChild(div);
+          return;
+        }
+
+        suggestions.forEach((colaborador) => {
+          const div = document.createElement("div");
+          div.className = "sugerencia-item";
+          div.innerHTML = `
+          <span class="nombre">${colaborador.nombre}</span>
+          <span class="rango ${colaborador.rango.toLowerCase()}">${
+            colaborador.rango
+          }</span>
+          <span class="sucursales">${colaborador.sucursales.join(", ")}</span>
+        `;
+
+          div.onclick = () => {
+            document.getElementById("filtroColaborador").value =
+              colaborador.nombre;
+            document.getElementById("colaboradorId").value = colaborador.id;
+            sugerenciasContainer.innerHTML = "";
+            colaboradorActual = colaborador;
+          };
+
+          sugerenciasContainer.appendChild(div);
+        });
+      } catch (error) {
+        console.error("Error en autocompletado:", error);
+      }
+    });
+
+  // Ocultar sugerencias al hacer clic fuera
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".colaborador-input-container")) {
+      document.getElementById("sugerenciasColaborador").innerHTML = "";
+    }
+  });
+
+  // Renderizar gráfico de ventas propias
+  function renderChartPropias(labels, data, chartType = "bar") {
+    console.log("renderChartPropias llamado con:", { labels, data, chartType });
+    const chartDom = document.getElementById("ventasPropiasChart");
+    const chartLoader = document.getElementById("chartLoaderPropias");
+
+    console.log("chartDom:", chartDom);
+    console.log("chartLoader:", chartLoader);
+
+    if (chartLoader) {
+      chartLoader.style.display = "flex";
+    }
+
+    if (chartPropiasInstance) {
+      chartPropiasInstance.dispose();
+    }
+
+    // Asegurar que el contenedor tenga dimensiones
+    if (chartDom.offsetWidth === 0 || chartDom.offsetHeight === 0) {
+      chartDom.style.width = "100%";
+      chartDom.style.height = "400px";
+    }
+
+    try {
+      chartPropiasInstance = echarts.init(chartDom);
+      console.log("Gráfico inicializado correctamente");
+    } catch (error) {
+      console.error("Error al inicializar el gráfico:", error);
+      return;
+    }
+
+    let option;
+
+    switch (chartType) {
+      case "pie":
+        option = {
+          color: colors,
+          tooltip: {
+            trigger: "item",
+            formatter: "{a} <br/>{b}: {c} ({d}%)",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            textStyle: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+          },
+          legend: {
+            orient: "vertical",
+            left: "left",
+            top: "middle",
+            textStyle: {
+              fontSize: 12,
+              fontFamily: "Inter",
+              color: "#fff",
+            },
+          },
+          series: [
+            {
+              name: "Ventas",
+              type: "pie",
+              radius: ["30%", "70%"],
+              center: ["50%", "50%"],
+              avoidLabelOverlap: false,
+              itemStyle: {
+                borderRadius: 10,
+              },
+              label: {
+                show: true,
+                position: "outside",
+                formatter: "{b}: {c}",
+                fontSize: 12,
+                fontFamily: "Inter",
+                color: "#fff",
+              },
+              emphasis: {
+                label: {
+                  show: true,
+                  fontSize: "14",
+                  fontWeight: "bold",
+                  fontFamily: "Inter",
+                  color: "#205fbd",
+                },
+              },
+              labelLine: {
+                show: true,
+                length: 10,
+                length2: 15,
+                smooth: true,
+                lineStyle: {
+                  color: "#999",
+                  width: 1,
+                },
+              },
+              data: labels.map((label, index) => ({
+                value: data[index],
+                name: label,
+              })),
+            },
+          ],
+        };
+        break;
+
+      case "bar":
+        option = {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 1, color: "#0279e9" },
+            { offset: 0.5, color: "#029be7" },
+            { offset: 0, color: "#03d0e5" },
+          ]),
+          tooltip: {
+            trigger: "axis",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            axisPointer: {
+              type: "shadow",
+            },
+            textStyle: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+          },
+          legend: {
+            data: ["Ventas"],
+            textStyle: {
+              fontSize: 12,
+              fontFamily: "Inter",
+              color: "#fff",
+            },
+          },
+          grid: {
+            left: "3%",
+            right: "4%",
+            bottom: "3%",
+            containLabel: true,
+          },
+          xAxis: {
+            type: "category",
+            data: labels,
+            axisLabel: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#fff",
+              },
+            },
+          },
+          yAxis: {
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#fff",
+              },
+            },
+            splitLine: {
+              lineStyle: {
+                color: "rgba(255, 255, 255, 0.1)",
+              },
+            },
+          },
+          series: [
+            {
+              name: "Ventas",
+              type: "bar",
+              data: data,
+              itemStyle: {
+                borderRadius: [4, 4, 0, 0],
+              },
+            },
+          ],
+        };
+        break;
+
+      case "line":
+        option = {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 1, color: "#0279e9" },
+            { offset: 0.5, color: "#029be7" },
+            { offset: 0, color: "#03d0e5" },
+          ]),
+          tooltip: {
+            trigger: "axis",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            textStyle: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+          },
+          legend: {
+            data: ["Ventas"],
+            textStyle: {
+              fontSize: 12,
+              fontFamily: "Inter",
+              color: "#fff",
+            },
+          },
+          grid: {
+            left: "3%",
+            right: "4%",
+            bottom: "3%",
+            containLabel: true,
+          },
+          xAxis: {
+            type: "category",
+            data: labels,
+            axisLabel: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#fff",
+              },
+            },
+          },
+          yAxis: {
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#fff",
+              },
+            },
+            splitLine: {
+              lineStyle: {
+                color: "rgba(255, 255, 255, 0.1)",
+              },
+            },
+          },
+          series: [
+            {
+              name: "Ventas",
+              type: "line",
+              data: data,
+              smooth: true,
+              lineStyle: {
+                width: 3,
+              },
+              areaStyle: {
+                opacity: 0.3,
+              },
+            },
+          ],
+        };
+        break;
+    }
+
+    chartPropiasInstance.setOption(option);
+
+    setTimeout(() => {
+      if (chartLoader) {
+        chartLoader.style.display = "none";
+      }
+    }, 100);
+
+    // Responsive
+    window.addEventListener("resize", () => {
+      if (chartPropiasInstance) {
+        chartPropiasInstance.resize();
+      }
+    });
+
+    console.log("Gráfico renderizado completamente");
+  }
+
+  // Renderizar gráfico de ventas del equipo
+  function renderChartEquipo(ventasEquipo, chartType = "bar") {
+    const chartDom = document.getElementById("ventasEquipoChart");
+    const chartLoader = document.getElementById("chartLoaderEquipo");
+
+    if (chartLoader) {
+      chartLoader.style.display = "flex";
+    }
+
+    if (chartEquipoInstance) {
+      chartEquipoInstance.dispose();
+    }
+
+    // Asegurar que el contenedor tenga dimensiones
+    if (chartDom.offsetWidth === 0 || chartDom.offsetHeight === 0) {
+      chartDom.style.width = "100%";
+      chartDom.style.height = "400px";
+    }
+
+    try {
+      chartEquipoInstance = echarts.init(chartDom);
+    } catch (error) {
+      console.error("Error al inicializar el gráfico del equipo:", error);
+      return;
+    }
+
+    let option;
+
+    switch (chartType) {
+      case "pie":
+        option = {
+          color: colors,
+          tooltip: {
+            trigger: "item",
+            formatter: "{a} <br/>{b}: {c} ventas (${d} recaudado)",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            textStyle: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+          },
+          legend: {
+            orient: "vertical",
+            left: "left",
+            top: "middle",
+            textStyle: {
+              fontSize: 12,
+              fontFamily: "Inter",
+              color: "#fff",
+            },
+          },
+          series: [
+            {
+              name: "Ventas del Equipo",
+              type: "pie",
+              radius: ["30%", "70%"],
+              center: ["50%", "50%"],
+              avoidLabelOverlap: false,
+              itemStyle: {
+                borderRadius: 10,
+              },
+              label: {
+                show: true,
+                position: "outside",
+                formatter: "{b}: {c}",
+                fontSize: 12,
+                fontFamily: "Inter",
+                color: "#fff",
+              },
+              emphasis: {
+                label: {
+                  show: true,
+                  fontSize: "14",
+                  fontWeight: "bold",
+                  fontFamily: "Inter",
+                  color: "#205fbd",
+                },
+              },
+              labelLine: {
+                show: true,
+                length: 10,
+                length2: 15,
+                smooth: true,
+                lineStyle: {
+                  color: "#999",
+                  width: 1,
+                },
+              },
+              data: ventasEquipo.map((item) => ({
+                value: item.total_ventas,
+                name: item.vendedor,
+                itemStyle: {
+                  color: colors[Math.floor(Math.random() * colors.length)],
+                },
+              })),
+            },
+          ],
+        };
+        break;
+
+      case "bar":
+        option = {
+          color: colors,
+          tooltip: {
+            trigger: "axis",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            axisPointer: {
+              type: "shadow",
+            },
+            textStyle: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+          },
+          legend: {
+            data: ["Cantidad de Ventas", "Monto Recaudado"],
+            textStyle: {
+              fontSize: 12,
+              fontFamily: "Inter",
+              color: "#fff",
+            },
+          },
+          grid: {
+            left: "3%",
+            right: "4%",
+            bottom: "3%",
+            containLabel: true,
+          },
+          xAxis: {
+            type: "category",
+            data: ventasEquipo.map((item) => item.vendedor),
+            axisLabel: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#fff",
+              },
+            },
+          },
+          yAxis: [
+            {
+              type: "value",
+              name: "Cantidad",
+              axisLabel: {
+                color: "#fff",
+                fontSize: 12,
+                fontFamily: "Inter",
+              },
+              axisLine: {
+                lineStyle: {
+                  color: "#fff",
+                },
+              },
+              splitLine: {
+                lineStyle: {
+                  color: "rgba(255, 255, 255, 0.1)",
+                },
+              },
+            },
+            {
+              type: "value",
+              name: "Monto ($)",
+              axisLabel: {
+                color: "#fff",
+                fontSize: 12,
+                fontFamily: "Inter",
+              },
+              axisLine: {
+                lineStyle: {
+                  color: "#fff",
+                },
+              },
+              splitLine: {
+                show: false,
+              },
+            },
+          ],
+          series: [
+            {
+              name: "Cantidad de Ventas",
+              type: "bar",
+              data: ventasEquipo.map((item) => item.total_ventas),
+              itemStyle: {
+                borderRadius: [4, 4, 0, 0],
+              },
+            },
+            {
+              name: "Monto Recaudado",
+              type: "line",
+              yAxisIndex: 1,
+              data: ventasEquipo.map((item) => item.total_monto),
+              lineStyle: {
+                width: 3,
+              },
+              symbol: "circle",
+              symbolSize: 8,
+            },
+          ],
+        };
+        break;
+
+      case "line":
+        option = {
+          color: colors,
+          tooltip: {
+            trigger: "axis",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            textStyle: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+          },
+          legend: {
+            data: ventasEquipo.map((item) => item.vendedor),
+            textStyle: {
+              fontSize: 12,
+              fontFamily: "Inter",
+              color: "#fff",
+            },
+          },
+          grid: {
+            left: "3%",
+            right: "4%",
+            bottom: "3%",
+            containLabel: true,
+          },
+          xAxis: {
+            type: "category",
+            data: ventasEquipo[0]?.labels || [],
+            axisLabel: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#fff",
+              },
+            },
+          },
+          yAxis: {
+            type: "value",
+            axisLabel: {
+              color: "#fff",
+              fontSize: 12,
+              fontFamily: "Inter",
+            },
+            axisLine: {
+              lineStyle: {
+                color: "#fff",
+              },
+            },
+            splitLine: {
+              lineStyle: {
+                color: "rgba(255, 255, 255, 0.1)",
+              },
+            },
+          },
+          series: ventasEquipo.map((item, index) => ({
+            name: item.vendedor,
+            type: "line",
+            data: item.data_cantidad,
+            smooth: true,
+            lineStyle: {
+              width: 3,
+            },
+            symbol: "circle",
+            symbolSize: 6,
+            itemStyle: {
+              color: colors[index % colors.length],
+            },
+          })),
+        };
+        break;
+    }
+
+    chartEquipoInstance.setOption(option);
+
+    setTimeout(() => {
+      if (chartLoader) {
+        chartLoader.style.display = "none";
+      }
+    }, 100);
+
+    // Responsive
+    window.addEventListener("resize", () => {
+      if (chartEquipoInstance) {
+        chartEquipoInstance.resize();
+      }
+    });
+  }
+
+  // Actualizar dashboard
+  async function actualizarDashboard() {
+    console.log("Actualizando dashboard...");
+    const colaboradorId = document.getElementById("colaboradorId").value;
+    if (!colaboradorId) {
+      alert("Por favor seleccione un colaborador");
+      return;
+    }
+
+    const params = {
+      fecha_inicial: document.getElementById("filtroFechaInicial").value,
+      fecha_final: document.getElementById("filtroFechaFinal").value,
+      colaborador_id: colaboradorId,
+    };
+
+    try {
+      const response = await fetch(
+        `/api/ventas-colaborador/?${new URLSearchParams(params)}`
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        // Mostrar información del colaborador
+        document.getElementById("infoColaborador").style.display = "block";
+        document.getElementById("colaboradorNombre").textContent =
+          data.colaborador.nombre;
+        document.getElementById("colaboradorRango").textContent =
+          data.colaborador.rango;
+        document.getElementById(
+          "colaboradorRango"
+        ).className = `rango-badge ${data.colaborador.rango.toLowerCase()}`;
+        document.getElementById("colaboradorSucursales").textContent =
+          data.colaborador.sucursales.join(", ");
+
+        // Actualizar gráfico de ventas propias
+        if (
+          data.ventas_propias.labels &&
+          data.ventas_propias.labels.length > 0
+        ) {
+          renderChartPropias(
+            data.ventas_propias.labels,
+            data.ventas_propias.data_cantidad,
+            currentChartTypePropias
+          );
+        } else {
+          renderChartPropias(["No hay datos"], [0], currentChartTypePropias);
+        }
+
+        // Actualizar gráfico del equipo si es supervisor
+        if (
+          data.colaborador.rango === "Supervisor" &&
+          data.ventas_equipo.length > 0
+        ) {
+          document.getElementById("chartEquipoContainer").style.display =
+            "block";
+          renderChartEquipo(data.ventas_equipo, currentChartTypeEquipo);
+        } else {
+          document.getElementById("chartEquipoContainer").style.display =
+            "none";
+        }
+
+        // Actualizar cards
+        document.getElementById("cardTotalVentas").textContent =
+          data.ventas_propias.total_ventas;
+        document.getElementById(
+          "cardTotalFacturacion"
+        ).textContent = `$${data.ventas_propias.total_monto.toLocaleString()}`;
+      } else {
+        console.error("Error en la respuesta:", data.error);
+        alert(
+          "Error al cargar los datos: " + (data.error || "Error desconocido")
+        );
+      }
+    } catch (error) {
+      console.error("Error al cargar datos:", error);
+      alert("Error al cargar los datos del colaborador");
+    }
+  }
+
+  // Event listeners
+  document.getElementById("btnFiltrar").onclick = () => {
+    actualizarDashboard();
+  };
+
+  document.getElementById("btnLimpiar").onclick = () => {
+    document.getElementById("filtroFechaInicial").value = "";
+    document.getElementById("filtroFechaFinal").value = "";
+    document.getElementById("filtroColaborador").value = "";
+    document.getElementById("colaboradorId").value = "";
+
+    document.getElementById("infoColaborador").style.display = "none";
+    document.getElementById("chartEquipoContainer").style.display = "none";
+
+    // Limpiar gráficos
+    if (chartPropiasInstance) {
+      chartPropiasInstance.dispose();
+      chartPropiasInstance = null;
+    }
+    if (chartEquipoInstance) {
+      chartEquipoInstance.dispose();
+      chartEquipoInstance = null;
+    }
+
+    // Resetear cards
+    document.getElementById("cardTotalVentas").textContent = "0";
+    document.getElementById("cardTotalFacturacion").textContent = "$0";
+  };
+
+  document.getElementById("btnExportar").onclick = () => {
+    if (!colaboradorActual) {
+      alert("Por favor seleccione un colaborador primero");
+      return;
+    }
+    // Implementar exportación a Excel
+    alert("Función de exportación en desarrollo");
+  };
+
+  // Event listeners para cambio de tipo de gráfico
+  document.querySelectorAll(".chart-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const chartType = btn.getAttribute("data-chart");
+      const newType = btn.getAttribute("data-type");
+
+      // Remover clase active de todos los botones del mismo gráfico
+      btn
+        .closest(".chart-type-selector")
+        .querySelectorAll(".chart-btn")
+        .forEach((b) => b.classList.remove("active"));
+      // Agregar clase active al botón clickeado
+      btn.classList.add("active");
+
+      if (chartType === "propias") {
+        currentChartTypePropias = newType;
+        // Re-renderizar el gráfico con los datos actuales
+        if (colaboradorActual) {
+          actualizarDashboard();
+        }
+      } else if (chartType === "equipo") {
+        currentChartTypeEquipo = newType;
+        // Re-renderizar el gráfico del equipo
+        if (colaboradorActual && colaboradorActual.rango === "Supervisor") {
+          actualizarDashboard();
+        }
+      }
+    });
+  });
+
+  // Inicializar Flatpickr
+  flatpickr("#filtroFechaInicial", {
+    dateFormat: "Y-m-d",
+    locale: "es",
+    defaultDate: [new Date().setDate(new Date().getDate() - 90)],
+  });
+
+  flatpickr("#filtroFechaFinal", {
+    dateFormat: "Y-m-d",
+    locale: "es",
+    defaultDate: [new Date()],
+  });
+
+  // Carga inicial
+  window.onload = () => {
+    // No cargar datos automáticamente, esperar a que el usuario seleccione un colaborador
+  };
+
+  // Evento de resize para redimensionar gráficos
+  window.addEventListener("resize", () => {
+    if (chartPropiasInstance) {
+      chartPropiasInstance.resize();
+    }
+    if (chartEquipoInstance) {
+      chartEquipoInstance.resize();
+    }
+  });
+</script>
+{% endblock js %}
