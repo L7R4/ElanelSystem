@@ -266,24 +266,57 @@ def dias_trabajados_en_campania(user, campania_str):
 
     return ultima_version, dias_trabajados_campania
 
-class ListaUsers(PermissionRequiredMixin,generic.ListView):
+class ListaUsers(PermissionRequiredMixin, generic.ListView):
     model = Usuario
     template_name = "list_users.html"
     permission_required = "sales.my_ver_resumen"
 
+    def wants_json(self, request):
+        return (
+            "application/json" in request.headers.get("Accept", "")
+            or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        )
 
-    def get(self,request,*args, **kwargs):
-
-        page_number = request.GET.get('page', 1)
-        per_page = request.GET.get('per_page', 20)
+    def get(self, request, *args, **kwargs):
+        page_number = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 30))
+        search = request.GET.get('search', '')
 
         userConnected = request.user
         sucursal_ids = userConnected.sucursales.values_list('id', flat=True)
         users_queryset = Usuario.objects.filter(sucursales__in=sucursal_ids).order_by('nombre')
 
-        paginator = Paginator(users_queryset, per_page)
+        if search:
+            users_queryset = users_queryset.filter(
+                Q(nombre__icontains=search) |
+                Q(dni__icontains=search) |
+                Q(email__icontains=search) |
+                Q(tel__icontains=search) |
+                Q(rango__icontains=search)
+            ).distinct()
+
+        paginator = Paginator(users_queryset, page_size)
         page_obj = paginator.get_page(page_number)
 
+        if self.wants_json(request):
+            users_data = []
+            for user in page_obj.object_list:
+                sucursales_pseudonimos = [sucursal.pseudonimo for sucursal in user.sucursales.all()]
+                users_data.append({
+                    "id": user.id,
+                    "nombre": user.nombre,
+                    "dni": user.dni,
+                    "email": user.email,
+                    "tel": user.tel,
+                    "rango": user.rango,
+                    "sucursales": sucursales_pseudonimos
+                })
+            return JsonResponse({
+                "users": users_data,
+                "total": paginator.count,  # Grid.js usa esto para paginación
+            })
+
+        # Render normal HTML
         campaniasDisponibles = getCampanasDisponibles()
         metodosPago = [{"id": metodo.id, "alias": metodo.alias } for metodo in MetodoPago.objects.all()]
         sucursales = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in Sucursal.objects.all() ]
@@ -814,70 +847,75 @@ def importar_usuarios(request):
 
 #region Clientes - - - - - - - - - - - - - - - - - - - - - - -
 class ListaClientes(TestLogin, generic.View):
+    template_name = "list_customers.html"
 
+    def get_queryset_base(self, request):
+        agencias_disponibles_user = request.user.sucursales.all()
+        return Cliente.objects.filter(agencia_registrada__in=agencias_disponibles_user)
 
-    model = Cliente
-    template_name= "list_customers.html"
+    def wants_json(self, request):
+        return (
+            "application/json" in request.headers.get("Accept", "")
+            or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        )
 
-    def get(self,request,*args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        agencias_disponibles_user = request.user.sucursales.all()
+        customers_disponibles = Cliente.objects.filter(agencia_registrada__in=agencias_disponibles_user)
+
         
+        if self.wants_json(request):
+            # -------- filtros --------
+            # sucursal = request.GET.get("sucursal")
+            search = request.GET.get("search")
+            if search:
+                customers_disponibles = customers_disponibles.filter(
+                    Q(nombre__icontains=search) |
+                    Q(dni__icontains=search) |
+                    Q(tel__icontains=search) |
+                    Q(prov__icontains=search) |
+                    Q(loc__icontains=search)
+                ).distinct()
 
-        customers = Cliente.objects.filter(agencia_registrada = request.user.sucursales.all()[0])
-        sucursalesObject = Sucursal.objects.all()
-        sucursales = [sucursal.pseudonimo for sucursal in sucursalesObject ]
+            # -------- paginación con Paginator (page/page_size) --------
+            try:
+                page = int(request.GET.get("page", 1))
+            except (TypeError, ValueError):
+                page = 1
+            try:
+                page_size = int(request.GET.get("page_size", 30))
+            except (TypeError, ValueError):
+                page_size = 10
 
+            paginator = Paginator(customers_disponibles.select_related("agencia_registrada").only("id", "nombre", "dni", "tel", "prov", "loc", "agencia_registrada__pseudonimo"), page_size)
+            page_obj = paginator.get_page(page)  # seguro (no lanza)
+
+            customer_data = [{
+                "id": c.id,
+                "nombre": c.nombre,
+                "dni": c.dni,
+                "tel": c.tel,
+                "prov": c.prov,
+                "loc": c.loc,
+                "sucursal": c.agencia_registrada.pseudonimo,
+                "url": reverse('users:cuentaUser', args=[c.id]),
+            } for c in page_obj.object_list]
+
+            return JsonResponse({
+                "customers": customer_data,
+                "total": paginator.count,          # <-- Grid.js lo usa
+            })
+
+        # -------- GET normal (HTML) --------
+        sucursales = list(Sucursal.objects.values_list("pseudonimo", flat=True))
         context = {
-            "customers": customers,
-            "importClientesURL" : reverse_lazy("users:importClientes"),
+            "importClientesURL": reverse_lazy("users:importClientes"),
             "sucursalesDisponiblesJSON": json.dumps(sucursales),
-            "sucursales": sucursales
-
+            "sucursales": sucursales,
         }
-        return render(request, self.template_name,context)
+        return render(request, self.template_name, context)
     
-    def post(self, request, *args, **kwargs):
-        # Cargar los filtros desde el body de la solicitud
-        form = json.loads(request.body)
-        
-        # Crear un diccionario para almacenar los filtros dinámicos
-        filters = {}
-        
-        # Filtrar por sucursal si se envía en el request
-        if "sucursal" in form and form["sucursal"]:
-            filters["agencia_registrada__pseudonimo"] = form["sucursal"]
 
-        # Aplicar el filtro general de búsqueda
-        if "search" in form and form["search"]:
-            search_value = form["search"]
-            # Usar Q objects para búsqueda en múltiples campos
-            search_filter = Q(nombre__icontains=search_value) | \
-                            Q(dni__icontains=search_value) | \
-                            Q(tel__icontains=search_value) | \
-                            Q(prov__icontains=search_value) | \
-                            Q(loc__icontains=search_value)
-            
-            # Filtrar clientes aplicando los filtros de búsqueda
-            customers = Cliente.objects.filter(**filters).filter(search_filter)
-        else:
-            # Si no hay búsqueda, solo aplicar los filtros
-            customers = Cliente.objects.filter(**filters)
-
-        # Preparar los datos a enviar en la respuesta
-        customer_data = [
-            {
-                "id": customer.id,
-                "nombre": customer.nombre,
-                "dni": customer.dni,
-                "tel": customer.tel,
-                "prov": customer.prov,
-                "loc": customer.loc,
-                "sucursal": customer.agencia_registrada.pseudonimo,
-                "url": reverse('users:cuentaUser', args=[customer.id])
-            } for customer in customers
-        ]
-
-        # Retornar los datos filtrados como JSON
-        return JsonResponse({"customers": customer_data, "status": True})
 
 # def importar_clientes(request):
 #     if request.method == "POST":
