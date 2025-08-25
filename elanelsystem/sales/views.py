@@ -35,6 +35,8 @@ from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
 from elanelsystem.utils import *
 
+from django.db.models import Count
+
 import pandas as pd
 from django.core.files.storage import FileSystemStorage
 from django.views.decorators.csrf import csrf_exempt
@@ -653,7 +655,7 @@ class DashboardColaboradores(TestLogin, generic.View):
 
 def autocomplete_colaborador(request):
     query = request.GET.get('query', '')
-    if len(query) < 1:
+    if len(query) < 2:
         return JsonResponse([], safe=False)
     
     from users.models import Usuario
@@ -663,7 +665,7 @@ def autocomplete_colaborador(request):
     colaboradores = Usuario.objects.filter(
         Q(nombre__icontains=query) & 
         Q(rango__in=['Vendedor', 'Supervisor']) &
-        Q(is_active=True)
+        Q(suspendido=False)
     )[:10]  # Limitar a 10 resultados
     
     results = []
@@ -680,8 +682,169 @@ def autocomplete_colaborador(request):
 @require_GET
 @csrf_exempt
 def ventas_colaborador(request):
-    
-    return JsonResponse([], safe=False)
+    from collections import Counter
+    import datetime as dt
+
+    if not request.GET:
+        return JsonResponse({"status": False, "message": "Faltan parámetros"}, status=400)
+
+    colaborador_id    = request.GET.get('colaborador_id')
+    fecha_inicial_str = request.GET.get('fecha_inicial')   # 'YYYY-MM-DD'
+    fecha_final_str   = request.GET.get('fecha_final')     # 'YYYY-MM-DD'
+
+    if not (colaborador_id and fecha_inicial_str and fecha_final_str):
+        return JsonResponse({"status": False, "message": "Completa todo, flaco 😅"}, status=400)
+
+    try:
+        f_ini = dt.datetime.strptime(fecha_inicial_str, "%Y-%m-%d").date()
+        f_fin = dt.datetime.strptime(fecha_final_str, "%Y-%m-%d").date()
+    except ValueError:
+        return JsonResponse({"status": False, "message": "Fechas inválidas"}, status=400)
+
+    user = get_object_or_404(Usuario, id=colaborador_id)
+
+    if user.rango == "Vendedor":
+        qs = Ventas.objects.filter(vendedor=user)
+
+        ids_en_rango = []
+        for row in qs.values('id', 'fecha').iterator(chunk_size=1000):
+            try:
+                d = dt.datetime.strptime((row['fecha'] or '')[:10], '%d/%m/%Y').date()
+            except Exception:
+                continue
+            if (not f_ini or d >= f_ini) and (not f_fin or d <= f_fin):
+                ids_en_rango.append(row['id'])
+
+        ventas = qs.filter(id__in=ids_en_rango).select_related('vendedor').only(
+            'id', 'fecha', 'importe', 'cantidadContratos',
+            'vendedor__id', 'vendedor__nombre',
+        )
+
+        periodo_counter = Counter()  # contratos por periodo (YYYY-MM)
+        total_facturacion = 0.0
+
+        for v in ventas.iterator(chunk_size=1000):
+            # periodo
+            try:
+                fecha = dt.datetime.strptime((v.fecha or '')[:10], '%d/%m/%Y').date()
+            except Exception:
+                continue
+            periodo = f"{fecha.year}-{fecha.month:02d}"
+
+            # contratos (si None o [] => 1)
+            contratos = v.cantidadContratos or []
+            try:
+                contracts_count = len(contratos) if len(contratos) > 0 else 1
+            except Exception:
+                contracts_count = 1
+
+            # acumular por periodo y facturación
+            periodo_counter[periodo] += contracts_count
+            total_facturacion += float(v.importe or 0)
+
+        labels = sorted(periodo_counter.keys())
+        data = [int(periodo_counter[k]) for k in labels]
+        total_contratos = sum(data)  
+
+
+        print(
+            {
+            "status": True,
+            "labels": labels,
+            "data": data,                              # contratos por periodo
+            "total_facturacion": total_facturacion,    # suma de importes (ya multiplicado por contratos)
+            "cantidad_total_ventas": total_contratos,  # ventas == contratos
+            }
+        )
+        return JsonResponse({
+            "status": True,
+            "labels": labels,
+            "data": data,                              # contratos por periodo
+            "total_facturacion": total_facturacion,    # suma de importes (ya multiplicado por contratos)
+            "cantidad_total_ventas": total_contratos,  # ventas == contratos
+        })
+
+
+        
+    elif user.rango == "Supervisor":
+        qs = Ventas.objects.filter(supervisor=user)
+        # Filtrado por fecha (fecha es string DD/MM/YYYY ...)
+        ids_en_rango = []
+        for row in qs.values('id', 'fecha').iterator(chunk_size=1000):
+            try:
+                d = dt.datetime.strptime((row['fecha'] or '')[:10], '%d/%m/%Y').date()
+            except Exception:
+                continue
+            if (not f_ini or d >= f_ini) and (not f_fin or d <= f_fin):
+                ids_en_rango.append(row['id'])
+
+        ventas = qs.filter(id__in=ids_en_rango).select_related('vendedor').only(
+            'id', 'fecha', 'importe', 'cantidadContratos',
+            'vendedor__id', 'vendedor__nombre', 'vendedor__suspendido'
+        )
+
+        periodo_counter = Counter()  # contratos por periodo (YYYY-MM)
+        total_facturacion = 0.0
+        vendedores = {}  # {vid: {id, nombre, suspendido, cantidad_ventas(=contratos), total_importe}}
+
+        for v in ventas.iterator(chunk_size=1000):
+            # periodo
+            try:
+                fecha = dt.datetime.strptime((v.fecha or '')[:10], '%d/%m/%Y').date()
+            except Exception:
+                continue
+            periodo = f"{fecha.year}-{fecha.month:02d}"
+
+            # contratos (si None o [] => 1)
+            contratos = v.cantidadContratos or []
+            try:
+                contracts_count = len(contratos) if len(contratos) > 0 else 1
+            except Exception:
+                contracts_count = 1
+
+            # acumular por periodo y facturación
+            periodo_counter[periodo] += contracts_count
+            total_facturacion += float(v.importe or 0)
+
+            # acumular por vendedor (ventas = contratos)
+            if v.vendedor_id:
+                bucket = vendedores.setdefault(v.vendedor_id, {
+                    "vendedor__id": v.vendedor_id,
+                    "vendedor__nombre": getattr(v.vendedor, 'nombre', 'Sin nombre'),
+                    "vendedor__suspendido": bool(getattr(v.vendedor, 'suspendido', False)),
+                    "cantidad_ventas": 0,   # aquí guardamos contratos
+                    "total_importe": 0.0,
+                })
+                bucket["cantidad_ventas"] += contracts_count
+                bucket["total_importe"] += float(v.importe or 0)
+
+        labels = sorted(periodo_counter.keys())
+        data = [int(periodo_counter[k]) for k in labels]
+        total_contratos = sum(data)  # == cantidad_total_ventas
+
+        vendedores_data = sorted(vendedores.values(), key=lambda x: x["vendedor__nombre"] or "")
+
+        print(
+            {
+            "status": True,
+            "labels": labels,
+            "data": data,                              # contratos por periodo
+            "total_facturacion": total_facturacion,    # suma de importes (ya multiplicado por contratos)
+            "cantidad_total_ventas": total_contratos,  # ventas == contratos
+            "vendedores": vendedores_data,             # cantidad_ventas = contratos por vendedor
+            }
+        )
+        return JsonResponse({
+            "status": True,
+            "labels": labels,
+            "data": data,                              # contratos por periodo
+            "total_facturacion": total_facturacion,    # suma de importes (ya multiplicado por contratos)
+            "cantidad_total_ventas": total_contratos,  # ventas == contratos
+            "vendedores": vendedores_data,             # cantidad_ventas = contratos por vendedor
+        })
+    else:
+        return JsonResponse({"status": False, "message": "Unicamente vendedores y supervisores"}, status=400)
+
 
 class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
     permission_required = "sales.my_ver_resumen"
