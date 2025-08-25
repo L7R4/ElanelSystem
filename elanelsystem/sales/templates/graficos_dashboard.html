@@ -53,6 +53,7 @@
           placeholder="Seleccionar fecha"
         />
       </div>
+      {% comment %}
       <div class="filtro-grupo">
         <label><i class="fas fa-user"></i> Colaborador</label>
         <input type="text" id="filtroColaborador" placeholder="Nombre" />
@@ -64,6 +65,7 @@
           <option value="supervisor">Supervisor</option>
         </select>
       </div>
+      {% endcomment %}
       <div class="filtro-grupo">
         <label><i class="fas fa-user-tie"></i> Sucursal</label>
         <select id="filtroAgencia">
@@ -124,7 +126,19 @@
   <!-- Total y Navegación -->
   <div class="dashboard-cards-horizontal">
     <!-- Botón para navegar a Dashboard de Pagos Cannon -->
-    <a href="{% url 'sales:graficos_cannon' %}" class="btn btn-left btn-dashboard-switch">
+    <a
+      href="{% url 'sales:graficos_cannon' %}"
+      class="btn btn-left btn-dashboard-switch"
+    >
+      <div>
+        <i class="fas fa-credit-card"></i>
+        <h2>Dashboard de Pagos Cannon</h2>
+      </div>
+    </a>
+    <a
+      href="{% url 'sales:dashboard_colaboradores' %}"
+      class="btn btn-left btn-dashboard-switch"
+    >
       <div>
         <i class="fas fa-credit-card"></i>
         <h2>Dashboard de Pagos Cannon</h2>
@@ -221,8 +235,6 @@
     const params = {
       fecha_inicial: document.getElementById("filtroFechaInicial").value,
       fecha_final: document.getElementById("filtroFechaFinal").value,
-      colaborador: document.getElementById("filtroColaborador").value,
-      tipo_colaborador: document.getElementById("filtroTipoColaborador").value,
       agencia: document.getElementById("filtroAgencia").value || "",
     };
 
@@ -518,8 +530,6 @@
     const params = {
       fecha_inicial: document.getElementById("filtroFechaInicial").value,
       fecha_final: document.getElementById("filtroFechaFinal").value,
-      colaborador: document.getElementById("filtroColaborador").value,
-      tipo_colaborador: document.getElementById("filtroTipoColaborador").value,
       agencia: document.getElementById("filtroAgencia").value || "",
     };
 
@@ -564,8 +574,6 @@
     console.log("Clear button clicked");
     document.getElementById("filtroFechaInicial").value = "";
     document.getElementById("filtroFechaFinal").value = "";
-    document.getElementById("filtroColaborador").value = "";
-    document.getElementById("filtroTipoColaborador").value = "vendedor";
     document.getElementById("filtroAgencia").value = "";
     actualizarDashboard();
   };

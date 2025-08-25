@@ -113,7 +113,7 @@ class Ventas(models.Model):
     importe = models.FloatField("Importe:",default=0)
     tasa_interes = models.FloatField("Tasa de Interes:",default=0)
     primer_cuota =models.FloatField("Primer cuota:",default=0)
-    anticipo =models.IntegerField("Cuota de Inscripcion:",default=0)
+    anticipo = models.IntegerField("Cuota de Inscripcion:",default=0)
     intereses_generados = models.FloatField("Intereses Gen:",default=0)
     importe_x_cuota = models.FloatField("Importe x Cuota:",default=0)
     total_a_pagar = models.FloatField("Total a pagar:",default=0)

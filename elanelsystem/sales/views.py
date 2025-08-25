@@ -680,7 +680,7 @@ def autocomplete_colaborador(request):
 @require_GET
 @csrf_exempt
 def ventas_colaborador(request):
-    # por un momento casi me funciono, pero se empezo a romper todo y me agarro un acv
+    
     return JsonResponse([], safe=False)
 
 class Resumen(TestLogin,PermissionRequiredMixin,generic.View):
