@@ -66,7 +66,6 @@ body {
   border-radius: 20px;
   padding: 2rem;
   margin-bottom: 2rem;
-  border: 1px solid var(--white-color-800-80);
 }
 
 .btn-filter {
@@ -87,7 +86,6 @@ body {
   flex-direction: column;
   flex: 1;
   min-width: 150px;
-  max-width: 200px;
 }
 
 .filtro-grupo label {
@@ -102,13 +100,13 @@ body {
 .filtro-grupo input,
 .filtro-grupo select {
   padding: 0.75rem 1rem;
-  border-color: var(--background-color);
   border-radius: 12px;
   font-size: 0.95rem;
   background: var(--blue-1);
   transition: all 0.3s ease;
   font-family: inherit;
   color: #d3d8df;
+  border: 1px solid var(--blue-1);
 }
 
 .filtro-grupo input:focus,
@@ -130,7 +128,15 @@ body {
   gap: 0.5rem;
   flex-shrink: 0;
   min-width: auto;
-  max-width: none;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .botones-filtros {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
 }
 
 .btn {
