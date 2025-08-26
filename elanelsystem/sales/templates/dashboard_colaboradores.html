@@ -25,11 +25,6 @@
 <link rel="stylesheet" href="{% static 'css/dashboard_colaboradores.css' %}" />
 {% endblock css %} {% block content %}
 <div class="dashboard-container">
-  <!-- Header -->
-  <div class="dashboard-header">
-    <h1><i class="fas fa-users"></i> Dashboard de Colaboradores</h1>
-    <p>Análisis y visualización de ventas por colaborador</p>
-  </div>
 
   <!-- Filtros -->
   <form id="filtros" class="dashboard-filtros">
@@ -158,22 +153,6 @@
             <button
               type="button"
               class="chart-btn active"
-              data-type="bar"
-              data-chart="equipo"
-            >
-              <i class="fas fa-chart-bar"></i> Barras
-            </button>
-            <button
-              type="button"
-              class="chart-btn"
-              data-type="line"
-              data-chart="equipo"
-            >
-              <i class="fas fa-chart-line"></i> Líneas
-            </button>
-            <button
-              type="button"
-              class="chart-btn"
               data-type="pie"
               data-chart="equipo"
             >
@@ -306,12 +285,10 @@
           const div = document.createElement("div");
           div.className = "sugerencia-item";
           div.innerHTML = `
-          <span class="nombre">${colaborador.nombre}</span>
-          <span class="rango ${colaborador.rango.toLowerCase()}">${
-            colaborador.rango
-          }</span>
-          <span class="sucursales">${colaborador.sucursales.join(", ")}</span>
-        `;
+    <span class="nombre" style="color:${colaborador.suspendido ? "red" : ""}">${colaborador.nombre}</span>
+    <span class="rango ${colaborador.rango.toLowerCase()}">${colaborador.rango}</span>
+    <span class="sucursales">${colaborador.sucursales.join(", ")}</span>
+  `;
 
           div.onclick = () => {
             document.getElementById("filtroColaborador").value =
@@ -414,7 +391,7 @@
                 label: {
                   show: true,
                   fontSize: "14",
-                  fontWeight: "bold",
+                  fontWeight: "medium",
                   fontFamily: "Inter",
                   color: "#205fbd",
                 },
@@ -615,7 +592,7 @@
   }
 
   // Renderizar gráfico de ventas del equipo
-  function renderChartEquipo(ventasEquipo, chartType = "bar") {
+  function renderChartEquipo(ventasEquipo, chartType = "pie") {
     const chartDom = document.getElementById("ventasEquipoChart");
     const chartLoader = document.getElementById("chartLoaderEquipo");
 
@@ -640,261 +617,81 @@
       return;
     }
 
-    let option;
-
-    switch (chartType) {
-      case "pie":
-        option = {
-          color: colors,
-          tooltip: {
-            trigger: "item",
-            formatter: "{a} <br/>{b}: {c} ventas (${d} recaudado)",
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            textStyle: {
-              color: "#fff",
-              fontSize: 12,
+    // Solo opción pie
+    let option = {
+      color: colors,
+      tooltip: {
+        trigger: "item",
+        formatter: function(params) {
+          // Si está suspendido, mostrar en rojo
+          if (params.data.suspendido) {
+            return `<span style="color:red">${params.data.name}</span>: <span style="color:red">${params.data.value} ventas (Suspendido)</span>`;
+          }
+          return `${params.data.name}: ${params.data.value} ventas`;
+        },
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        textStyle: {
+          color: "#fff",
+          fontSize: 12,
+          fontFamily: "Inter",
+        },
+      },
+      series: [
+        {
+          name: "Ventas del Equipo",
+          type: "pie",
+          radius: ["30%", "70%"],
+          center: ["50%", "50%"],
+          avoidLabelOverlap: false,
+          itemStyle: {
+            borderRadius: 10,
+          },
+          label: {
+            show: true,
+            position: "outside",
+            formatter: function(params) {
+              if (params.data.suspendido) {
+                return `{red|${params.data.name}: ${params.data.value}}`;
+              }
+              return `${params.data.name}: ${params.data.value}`;
+            },
+            rich: {
+              red: {
+                color: "red",
+                fontWeight: "bold"
+              }
+            }
+          },
+          emphasis: {
+            label: {
+              show: true,
+              fontSize: "14",
+              fontWeight: "bold",
               fontFamily: "Inter",
+              color: "#205fbd",
             },
           },
-          legend: {
-            orient: "vertical",
-            left: "left",
-            top: "middle",
-            textStyle: {
-              fontSize: 12,
-              fontFamily: "Inter",
-              color: "#fff",
-            },
-          },
-          series: [
-            {
-              name: "Ventas del Equipo",
-              type: "pie",
-              radius: ["30%", "70%"],
-              center: ["50%", "50%"],
-              avoidLabelOverlap: false,
-              itemStyle: {
-                borderRadius: 10,
-              },
-              label: {
-                show: true,
-                position: "outside",
-                formatter: "{b}: {c}",
-                fontSize: 12,
-                fontFamily: "Inter",
-                color: "#fff",
-              },
-              emphasis: {
-                label: {
-                  show: true,
-                  fontSize: "14",
-                  fontWeight: "bold",
-                  fontFamily: "Inter",
-                  color: "#205fbd",
-                },
-              },
-              labelLine: {
-                show: true,
-                length: 10,
-                length2: 15,
-                smooth: true,
-                lineStyle: {
-                  color: "#999",
-                  width: 1,
-                },
-              },
-              data: ventasEquipo.map((item) => ({
-                value: item.total_ventas,
-                name: item.vendedor,
-                itemStyle: {
-                  color: colors[Math.floor(Math.random() * colors.length)],
-                },
-              })),
-            },
-          ],
-        };
-        break;
-
-      case "bar":
-        option = {
-          color: colors,
-          tooltip: {
-            trigger: "axis",
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            axisPointer: {
-              type: "shadow",
-            },
-            textStyle: {
-              color: "#fff",
-              fontSize: 12,
-              fontFamily: "Inter",
-            },
-          },
-          legend: {
-            data: ["Cantidad de Ventas", "Monto Recaudado"],
-            textStyle: {
-              fontSize: 12,
-              fontFamily: "Inter",
-              color: "#fff",
-            },
-          },
-          grid: {
-            left: "3%",
-            right: "4%",
-            bottom: "3%",
-            containLabel: true,
-          },
-          xAxis: {
-            type: "category",
-            data: ventasEquipo.map((item) => item.vendedor),
-            axisLabel: {
-              color: "#fff",
-              fontSize: 12,
-              fontFamily: "Inter",
-            },
-            axisLine: {
-              lineStyle: {
-                color: "#fff",
-              },
-            },
-          },
-          yAxis: [
-            {
-              type: "value",
-              name: "Cantidad",
-              axisLabel: {
-                color: "#fff",
-                fontSize: 12,
-                fontFamily: "Inter",
-              },
-              axisLine: {
-                lineStyle: {
-                  color: "#fff",
-                },
-              },
-              splitLine: {
-                lineStyle: {
-                  color: "rgba(255, 255, 255, 0.1)",
-                },
-              },
-            },
-            {
-              type: "value",
-              name: "Monto ($)",
-              axisLabel: {
-                color: "#fff",
-                fontSize: 12,
-                fontFamily: "Inter",
-              },
-              axisLine: {
-                lineStyle: {
-                  color: "#fff",
-                },
-              },
-              splitLine: {
-                show: false,
-              },
-            },
-          ],
-          series: [
-            {
-              name: "Cantidad de Ventas",
-              type: "bar",
-              data: ventasEquipo.map((item) => item.total_ventas),
-              itemStyle: {
-                borderRadius: [4, 4, 0, 0],
-              },
-            },
-            {
-              name: "Monto Recaudado",
-              type: "line",
-              yAxisIndex: 1,
-              data: ventasEquipo.map((item) => item.total_monto),
-              lineStyle: {
-                width: 3,
-              },
-              symbol: "circle",
-              symbolSize: 8,
-            },
-          ],
-        };
-        break;
-
-      case "line":
-        option = {
-          color: colors,
-          tooltip: {
-            trigger: "axis",
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            textStyle: {
-              color: "#fff",
-              fontSize: 12,
-              fontFamily: "Inter",
-            },
-          },
-          legend: {
-            data: ventasEquipo.map((item) => item.vendedor),
-            textStyle: {
-              fontSize: 12,
-              fontFamily: "Inter",
-              color: "#fff",
-            },
-          },
-          grid: {
-            left: "3%",
-            right: "4%",
-            bottom: "3%",
-            containLabel: true,
-          },
-          xAxis: {
-            type: "category",
-            data: ventasEquipo[0]?.labels || [],
-            axisLabel: {
-              color: "#fff",
-              fontSize: 12,
-              fontFamily: "Inter",
-            },
-            axisLine: {
-              lineStyle: {
-                color: "#fff",
-              },
-            },
-          },
-          yAxis: {
-            type: "value",
-            axisLabel: {
-              color: "#fff",
-              fontSize: 12,
-              fontFamily: "Inter",
-            },
-            axisLine: {
-              lineStyle: {
-                color: "#fff",
-              },
-            },
-            splitLine: {
-              lineStyle: {
-                color: "rgba(255, 255, 255, 0.1)",
-              },
-            },
-          },
-          series: ventasEquipo.map((item, index) => ({
-            name: item.vendedor,
-            type: "line",
-            data: item.data_cantidad,
+          labelLine: {
+            show: true,
+            length: 10,
+            length2: 15,
             smooth: true,
             lineStyle: {
-              width: 3,
+              color: "#999",
+              width: 1,
             },
-            symbol: "circle",
-            symbolSize: 6,
+          },
+          data: ventasEquipo.map((item) => ({
+            value: item.total_ventas,
+            name: item.vendedor,
+            suspendido: !!item.suspendido, // Debe venir del backend
             itemStyle: {
-              color: colors[index % colors.length],
+              color: item.suspendido ? "red" : colors[Math.floor(Math.random() * colors.length)],
             },
           })),
-        };
-        break;
-    }
+        },
+      ],
+    };
 
     chartEquipoInstance.setOption(option);
 
@@ -933,61 +730,91 @@
       );
       const data = await response.json();
 
-      if (response.ok) {
-        // Mostrar información del colaborador
+      if (response.ok && data.status) {
+        // Mostrar información del colaborador (usa colaboradorActual del autocompletado)
         document.getElementById("infoColaborador").style.display = "block";
         document.getElementById("colaboradorNombre").textContent =
-          data.colaborador.nombre;
+          colaboradorActual?.nombre || "";
+        if (colaboradorActual?.suspendido) {
+          document.getElementById("colaboradorNombre").style.color = "red";
+        } else {
+          document.getElementById("colaboradorNombre").style.color = "";
+        }
         document.getElementById("colaboradorRango").textContent =
-          data.colaborador.rango;
+          colaboradorActual?.rango || "";
         document.getElementById(
           "colaboradorRango"
-        ).className = `rango-badge ${data.colaborador.rango.toLowerCase()}`;
+        ).className = `rango-badge ${colaboradorActual?.rango?.toLowerCase() || ""}`;
         document.getElementById("colaboradorSucursales").textContent =
-          data.colaborador.sucursales.join(", ");
+          (colaboradorActual?.sucursales || []).join(", ");
 
-        // Actualizar gráfico de ventas propias
-        if (
-          data.ventas_propias.labels &&
-          data.ventas_propias.labels.length > 0
-        ) {
-          renderChartPropias(
-            data.ventas_propias.labels,
-            data.ventas_propias.data_cantidad,
-            currentChartTypePropias
-          );
-        } else {
-          renderChartPropias(["No hay datos"], [0], currentChartTypePropias);
-        }
-
-        // Actualizar gráfico del equipo si es supervisor
-        if (
-          data.colaborador.rango === "Supervisor" &&
-          data.ventas_equipo.length > 0
-        ) {
-          document.getElementById("chartEquipoContainer").style.display =
-            "block";
-          renderChartEquipo(data.ventas_equipo, currentChartTypeEquipo);
-        } else {
-          document.getElementById("chartEquipoContainer").style.display =
-            "none";
-        }
+        // Ventas propias
+        renderChartPropias(
+          data.labels,
+          data.data,
+          currentChartTypePropias
+        );
 
         // Actualizar cards
         document.getElementById("cardTotalVentas").textContent =
-          data.ventas_propias.total_ventas;
+          data.cantidad_total_ventas || 0;
         document.getElementById(
           "cardTotalFacturacion"
-        ).textContent = `$${data.ventas_propias.total_monto.toLocaleString()}`;
+        ).textContent = `$${(data.total_facturacion || 0).toLocaleString()}`;
+
+        // Si es supervisor, mostrar ventas del equipo
+        if (
+          colaboradorActual?.rango === "Supervisor" &&
+          Array.isArray(data.vendedores) &&
+          data.vendedores.length > 0
+        ) {
+          document.getElementById("chartEquipoContainer").style.display = "block";
+          // Adaptar datos para el gráfico del equipo
+          const ventasEquipo = data.vendedores.map((v) => ({
+            vendedor: v.vendedor__nombre,
+            total_ventas: v.cantidad_ventas,
+            total_monto: v.total_importe,
+            suspendido: v.vendedor__suspendido,
+            labels: data.labels,
+            data_cantidad: [v.cantidad_ventas],
+          }));
+          renderChartEquipo(ventasEquipo, currentChartTypeEquipo);
+        } else {
+          document.getElementById("chartEquipoContainer").style.display = "none";
+        }
       } else {
-        console.error("Error en la respuesta:", data.error);
+        console.error("Error en la respuesta:", data.message || data.error);
         alert(
-          "Error al cargar los datos: " + (data.error || "Error desconocido")
+          "Error al cargar los datos: " +
+            (data.message || data.error || "Error desconocido")
         );
       }
     } catch (error) {
       console.error("Error al cargar datos:", error);
       alert("Error al cargar los datos del colaborador");
+    }
+
+    // Después de mostrar/ocultar los gráficos:
+    const chartsContainer = document.querySelector('.charts-container');
+    let graficosVisibles = 1;
+    if (
+      colaboradorActual?.rango === "Supervisor" &&
+      Array.isArray(data.vendedores) &&
+      data.vendedores.length > 0
+    ) {
+      document.getElementById("chartEquipoContainer").style.display = "block";
+      graficosVisibles = 2;
+      // ...renderChartEquipo...
+    } else {
+      document.getElementById("chartEquipoContainer").style.display = "none";
+      graficosVisibles = 1;
+    }
+
+    // Cambia la clase según la cantidad de gráficos
+    if (graficosVisibles > 1) {
+      chartsContainer.classList.add('dos-columnas');
+    } else {
+      chartsContainer.classList.remove('dos-columnas');
     }
   }
 
@@ -996,6 +823,7 @@
     actualizarDashboard();
   };
 
+  // Limpiar gráficos
   document.getElementById("btnLimpiar").onclick = () => {
     document.getElementById("filtroFechaInicial").value = "";
     document.getElementById("filtroFechaFinal").value = "";
@@ -1005,7 +833,6 @@
     document.getElementById("infoColaborador").style.display = "none";
     document.getElementById("chartEquipoContainer").style.display = "none";
 
-    // Limpiar gráficos
     if (chartPropiasInstance) {
       chartPropiasInstance.dispose();
       chartPropiasInstance = null;
@@ -1020,13 +847,35 @@
     document.getElementById("cardTotalFacturacion").textContent = "$0";
   };
 
+  // Exportar a Excel (función en desarrollo)
   document.getElementById("btnExportar").onclick = () => {
     if (!colaboradorActual) {
       alert("Por favor seleccione un colaborador primero");
       return;
     }
-    // Implementar exportación a Excel
-    alert("Función de exportación en desarrollo");
+    
+    const fecha_inicial = document.getElementById("filtroFechaInicial").value;
+    const fecha_final = document.getElementById("filtroFechaFinal").value;
+    const colaborador = colaboradorActual.nombre;
+    const tipo_colaborador = colaboradorActual.rango.toLowerCase(); // "vendedor" o "supervisor"
+
+    // Construir la URL de exportación
+    const params = new URLSearchParams({
+      fecha_inicial,
+      fecha_final,
+      colaborador,
+      tipo_colaborador
+    });
+
+    const url = `/api/exportar-ventas-excel/?${params.toString()}`;
+
+    // Crear enlace temporal y disparar la descarga
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `ventas_${colaborador}_${fecha_inicial}_${fecha_final}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Event listeners para cambio de tipo de gráfico

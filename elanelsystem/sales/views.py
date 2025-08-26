@@ -664,18 +664,18 @@ def autocomplete_colaborador(request):
     # Buscar colaboradores por nombre que contenga la query
     colaboradores = Usuario.objects.filter(
         Q(nombre__icontains=query) & 
-        Q(rango__in=['Vendedor', 'Supervisor']) &
-        Q(suspendido=False)
+        Q(rango__in=['Vendedor', 'Supervisor'])
     )[:10]  # Limitar a 10 resultados
     
     results = []
     for colaborador in colaboradores:
         results.append({
-            'id': colaborador.id,
-            'nombre': colaborador.nombre,
-            'rango': colaborador.rango,
-            'sucursales': [s.pseudonimo for s in colaborador.sucursales.all()]
-        })
+        'id': colaborador.id,
+        'nombre': colaborador.nombre,
+        'rango': colaborador.rango,
+        'sucursales': [s.pseudonimo for s in colaborador.sucursales.all()],
+        'suspendido': colaborador.suspendido,  # <-- Agrega esto
+    })
     
     return JsonResponse(results, safe=False)
 
