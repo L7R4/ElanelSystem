@@ -52,7 +52,7 @@
               {% for operacion in ventas %} 
                 <li class="operationItem">
                     <div class="nameStatus">
-                        <img class="iconProducto" src="{% static 'images/icons/moto_icon.svg' %}" alt="">
+                        <img class="iconProducto" src="{% static 'images/icons/motomoto.svg' %}" alt="">
 
                         <h1>{{operacion.producto.nombre}}</h1>
                         {% if  operacion.adjudicado.status%}
@@ -60,8 +60,10 @@
                             <h3>Adjudicado por {{operacion.adjudicado.tipo}}</h3>
                         {% else %}
                             {% if operacion.deBaja.status %}
-                            <div class="iconStatus baja"></div>
-                            <h3>De baja por {{operacion.deBaja.motivo}}</h3>
+                            <div class="badgeStatus baja">
+                                <div class="iconStatus baja"></div>
+                                <h3>De baja por {{operacion.deBaja.motivo}}</h3>
+                            </div>
                                 {% if operacion.deBaja.motivo == "cliente" %}
                                     <a href="{% url 'sales:bajaPDF' operacion.pk %}" target="_blank" id="downloadPDF">Descargar PDF</a>
                                 {% endif %}
@@ -71,11 +73,15 @@
                                 {% endif %}
                             {% else %}
                                 {% if operacion.suspendida %}
-                                    <div class="iconStatus suspendida"></div>
-                                    <h3>Suspendido</h3>
+                                    <div class="badgeStatus suspendida">
+                                        <div class="iconStatus suspendida"></div>
+                                        <h3>Suspendido</h3>
+                                    </div>
                                 {% else %}
-                                    <div class="iconStatus activo"></div>
-                                    <h3>Activo</h3>
+                                    <div class="badgeStatus activo">
+                                        <div class="iconStatus activo"></div>
+                                        <h3>Activo</h3>
+                                    </div>
                                 {% endif %}
                             {% endif %}
                         {% endif %}
