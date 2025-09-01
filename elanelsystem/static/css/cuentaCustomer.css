@@ -108,7 +108,7 @@
 
 .operationItem {
     border-radius: 1rem;
-    background: var(--third-color);
+    background: var(--blue-2);
     padding: 3rem;
     margin-bottom: 1.4rem;
 }
@@ -119,14 +119,14 @@
 .operationItem>.nameStatus > h1{
     font-size: clamp(2rem, 2vw, 3.5rem);
     font-family: raleway-bold;
-    color: var(--backgorund-color);
+    color: var(--third-color);
     margin-right: 1.5rem;
 }
 
 .operationItem>.nameStatus > h3{
     font-size: clamp(1.3rem, 1.3vw, 2rem);
     font-family: raleway-semibold;
-    color: var(--backgorund-color);
+    color: var(--third-color);
     margin-right: 1.5rem;
 }
 
@@ -138,6 +138,73 @@
     min-width: 5rem;
 }
 
+/* ===== Base ===== */
+.operationItem > .nameStatus > .badgeStatus {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .4rem .8rem;
+  border-radius: 1rem;
+  color: rgba(255, 255, 255, 0.911);
+  font-size: clamp(1rem, 1vw, 1.2rem);
+  font-family: raleway-semibold;
+  /* border: 2px solid transparent; */
+  background-clip: padding-box;
+
+  /* Fondo semitransparente + blur (necesita algo de alpha para “ver” el blur) */
+  background: var(--badge-bg, rgba(255, 255, 255, 0.10));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.operationItem > .nameStatus > .badgeStatus::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+
+  /* Degradé del borde + glow */
+  /* background: var(--badge-border, linear-gradient(90deg, #00f0ff, #ff00e0)); */
+  /* filter: var(--badge-glow, drop-shadow(0 0 10px #00f0ff) drop-shadow(0 0 20px #ff00e0)); */
+  pointer-events: none;
+
+  /* Truco para que solo se vea el borde (centro recortado) */
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+}
+
+/* ===== Estados ===== */
+/* Recomendado: poné la clase de estado en el MISMO elemento .badgeStatus */
+/* Ej: <div class="badgeStatus activo">Activo</div> */
+
+/* Activo (verde/azul) */
+.badgeStatus.activo,
+.badgeStatus:has(.activo) {
+  --badge-bg: rgba(0, 255, 128, 0.15);
+  --badge-border: linear-gradient(90deg, #00ff80, #00e0ff);
+  --badge-glow: drop-shadow(0 0 10px #00ff80) drop-shadow(0 0 20px #00e0ff);
+}
+
+/* Suspendida (amarillo/naranja) */
+.badgeStatus.suspendida,
+.badgeStatus:has(.suspendida) {
+  --badge-bg: rgba(255, 200, 0, 0.15);
+  --badge-border: linear-gradient(90deg, #ffcc00, #ff6600);
+  --badge-glow: drop-shadow(0 0 10px #ffcc00) drop-shadow(0 0 20px #ff6600);
+}
+
+/* Baja (rojo/rosa) */
+.badgeStatus.baja,
+.badgeStatus:has(.baja) {
+  --badge-bg: rgba(255, 0, 64, 0.329);
+  --badge-border: linear-gradient(90deg, #ff002b, #ff0000);
+  --badge-glow: drop-shadow(0 0 10px #ff0040) drop-shadow(0 0 20px #ff00aa);
+}
 
 .attributes {
     display: flex;
@@ -145,6 +212,7 @@
     gap: 2%;
     row-gap: 1.2rem;
     margin: 2rem 0rem;
+    color: var(--third-color);
 }
 
 .attributes>div.information {
@@ -174,13 +242,12 @@
 }
 
 .iconStatus {
-    width: 1vw;
-    height: 1vw;
+    width: .1vw;
+    height: .1vw;
     max-width: 2.3rem;
-    min-width: 1rem;
+    min-width: 1.5rem;
     max-height: 2.3rem;
-    min-height: 1rem;
-    margin-right: 1rem;
+    min-height: 1.5rem;
     border-radius: 50%;
 }
 
