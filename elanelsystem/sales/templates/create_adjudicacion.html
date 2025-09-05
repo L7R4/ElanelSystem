@@ -9,7 +9,7 @@
 {% endblock css %}
 
 {% block content %}
-    <div id="loader"></div>
+    {% comment %} <div id="loader"></div> {% endcomment %}
     <div class="wrapper_tittle">
         <h1>ADJUDICACION POR {{tipoDeAdjudicacion}}</h1>
     </div>
@@ -18,6 +18,22 @@
         
         {% csrf_token %}
 
+        <div id="wrapperTipoProducto" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Tipo de producto</h3>
+            <div class="containerInputAndOptions">
+              <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+              <input type="hidden" class="filterInput" name="tipo_producto" id="tipoProductoInput" placeholder="Seleccionar" autocomplete="off" readonly>
+              <div class="onlySelect pseudo-input-select-wrapper">
+                <h3></h3>
+              </div>
+              <ul id="contenedorTipo" class="list-select-custom options">
+                <li data-value="Moto">Moto</li>
+                <li data-value="Electrodomestico">Electrodomestico</li>
+                <li data-value="Prestamo">Prestamo</li>
+            </ul>
+            </div>
+        </div>
+{% comment %} 
         <div id="wrapperTipoProducto" class="inputWrapper">
             <label class="labelInput">Tipo de producto</label>
             <div class="containerInputAndOptions">
@@ -29,10 +45,10 @@
                     <li>Prestamo</li>
                 </ul>
             </div>
-        </div>
+        </div> {% endcomment %}
 
         
-        <div id="wrapperProducto" class="inputWrapper desactive">
+        {% comment %} <div id="wrapperProducto" class="inputWrapper desactive">
             <label class="labelInput">Producto</label>
             <div class="containerInputAndOptions">
                 <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
@@ -40,9 +56,37 @@
                 <ul class="list-select-custom options">
                 </ul>
             </div>
+        </div> {% endcomment %}
+
+        <div id="wrapperProducto" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Producto</h3>
+            <div class="containerInputAndOptions">
+              <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+              <input type="hidden" class="filterInput" name="producto" id="productoInput" placeholder="Seleccionar" autocomplete="off" readonly>
+              <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+              </div>
+              <ul id="contenedorProducto" class="list-select-custom options">
+              </ul>
+            </div>
+        </div>
+        <div id="wrapperNroSolicitud" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Contrato</h3>
+            <div class="containerInputAndOptions">
+              <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+              <input type="hidden" class="filterInput" name="nro_contrato" id="id_nro_contrato" maxlength="10" placeholder="Seleccionar" required autocomplete="off" readonly>
+              <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+              </div>
+              <ul id="contenedorTipo" class="list-select-custom options">
+                {% for contrato in venta.cantidadContratos %}
+                    <li data-value="{{contrato.nro_contrato}}">{{contrato.nro_contrato}}</li>
+                {% endfor %}
+            </ul>
+            </div>
         </div>
 
-        <div id="wrapperNroSolicitud" class="inputWrapper">
+        {% comment %} <div id="wrapperNroSolicitud" class="inputWrapper">
             <label class="labelInput">Contrato</label>
             <div class="containerInputAndOptions">
                 <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
@@ -53,7 +97,7 @@
                     {% endfor %}
                 </ul>
             </div>
-        </div>
+        </div> {% endcomment %}
 
         <div id="wrapperFecha">
             <label for="">Fecha</label>
@@ -126,7 +170,7 @@
             </div>
         </div>
         
-        <div id="wrapperAgencia" class="inputWrapper">
+        {% comment %} <div id="wrapperAgencia" class="inputWrapper">
             <label class="labelInput">Agencia</label>
             <div class="containerInputAndOptions">
                 <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
@@ -137,9 +181,24 @@
                     {% endfor %}
                 </ul>
             </div>
+        </div> {% endcomment %}
+        <div id="wrapperAgencia" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Agencia</h3>
+            <div class="containerInputAndOptions">
+              <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+              <input type="hidden" class="filterInput" name="agencia" id="id_agencia" maxlength="50" placeholder="Seleccionar" required autocomplete="off" readonly>
+              <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+              </div>
+              <ul id="contenedorAgencia" class="list-select-custom options">
+                {% for agencia in agencias %}
+                        <li data-value="{{agencia}}">{{agencia}}</li>
+                {% endfor %}
+            </ul>
+            </div>
         </div>
 
-        <div id="wrapperModalidad" class="inputWrapper">
+        {% comment %} <div id="wrapperModalidad" class="inputWrapper">
             <label class="labelInput">Modalidad</label>
             <div class="containerInputAndOptions">
                 <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
@@ -150,6 +209,23 @@
                     <li>Quincenal</li>
                     <li>Mensual</li>
                 </ul>
+            </div>
+        </div> {% endcomment %}
+
+        <div id="wrapperModalidad" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Modalidad</h3>
+            <div class="containerInputAndOptions">
+              <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+              <input type="hidden" class="filterInput" name="modalidad" id="id_modalidad" maxlength="30" placeholder="Seleccionar" required autocomplete="off" readonly>
+              <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+              </div>
+              <ul id="contenedorModalidad" class="list-select-custom options">
+                <li data-value="diario">Diario</li>
+                <li data-value="semanal">Semanal</li>
+                <li data-value="quincenal">Quincenal</li>
+                <li data-value="mensual">Mensual</li>
+              </ul>
             </div>
         </div>
         
@@ -197,7 +273,10 @@
         var urlRequestProductos = "{% url 'products:get_products' %}";
     </script>
 
-    <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+    {% comment %} <script src="{% static 'js/inputsSelectsOnly.js' %}"></script> {% endcomment %}
+    <script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+    <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
+
     <script src="{% static 'js/errorsFormManagement.js' %}"></script>
     <script src="{% static 'js/form_create_adju.js' %}"></script>
     

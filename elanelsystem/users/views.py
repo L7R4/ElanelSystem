@@ -862,7 +862,7 @@ class ListaClientes(TestLogin, generic.View):
     def get(self, request, *args, **kwargs):
         agencias_disponibles_user = request.user.sucursales.all()
         customers_disponibles = Cliente.objects.filter(agencia_registrada__in=agencias_disponibles_user)
-
+        print(Cliente.objects.last().id)
         
         if self.wants_json(request):
             # -------- filtros --------

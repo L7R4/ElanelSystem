@@ -523,7 +523,6 @@ class Ventas(models.Model):
         self.suspenderOperacion()
     
     def pagarCuota(self,nro_cuota,monto,metodoPago,cobrador,responsable_pago):
-
         # 1) Obtener el dict de esa cuota en self.cuotas
         cuota_label = f"Cuota {nro_cuota}"
         cuota = next((c for c in self.cuotas if c["cuota"] == cuota_label), None)
@@ -533,20 +532,24 @@ class Ventas(models.Model):
         if cuota["status"].lower() == "pagado" or cuota["bloqueada"]:
             raise ValueError("La cuota ya está pagada o bloqueada.")
         
+        print("Registrando pago...")
         # 2) Crear el PagoCannon de forma atómica
         with transaction.atomic():
             pago = PagoCannon(
                 venta            = self,
                 nro_cuota        = nro_cuota,
                 monto            = monto,
-                metodo_pago      = metodoPago,
-                cobrador         = cobrador,
+                metodo_pago      = MetodoPago.objects.filter(id=int(metodoPago)).first() if metodoPago else None,
+                cobrador         = CuentaCobranza.objects.filter(id=int(cobrador)).first() if cobrador else None,
                 responsable_pago = responsable_pago,
             )
+            print("Pago creado, guardando...")
             pago.save()  # aquí se genera el nro_recibo y campana_de_pago
+            print("Pago registrado:", pago)
 
             # 3) Referenciar el pago en el JSON
             cuota.setdefault("pagos", []).append(pago.id)
+
 
         # 4) Recalcular total abonado y estado
         total_pagado = (
@@ -601,9 +604,9 @@ class Ventas(models.Model):
         for i in range(0, len(self.cuotas)):
             cuota = self.cuotas[i]["fechaDeVencimiento"]
             if self.cuotas[i]["cuota"] != "Cuota 0":
+                print("ppppppppppppppppppppppppppp")
                 fechaVencimiento = datetime.datetime.strptime(cuota, "%d/%m/%Y %H:%M")
                 fechaActual = datetime.datetime.now()
-
                 if fechaActual > fechaVencimiento and not self.cuotas[i]['status'].lower() == "pagado":
                     self.cuotas[i]["status"] = "vencido"
                     diasDeRetraso = self.contarDias(fechaVencimiento)
@@ -791,9 +794,9 @@ class MovimientoExterno(models.Model):
 
 class PagoCannon(models.Model):
     
-
+    @staticmethod
     def now_formatted():
-        return timezone.now().strftime("%d/%m/%Y %H:%M")
+        return timezone.localtime(timezone.now()).strftime("%d/%m/%Y %H:%M")
 
     nro_recibo = models.CharField(
         "N° de comprobante",
@@ -884,7 +887,7 @@ class PagoCannon(models.Model):
     def save(self, *args, **kwargs):
         # si no vino explícito, lo genero aquí
         if not self.campana_de_pago:
-            self.campana_de_pago = obtenerCampaña_atraves_fecha(self.fecha)
+            self.campana_de_pago = obtenerCampaña_atraves_fecha((self.fecha or "")[:10])
 
 
         # PostgreSQL tiene un objeto nativo para esto: las sequences. Básicamente, un contador 

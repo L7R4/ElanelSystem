@@ -1,4 +1,4 @@
-const listProducto = document.querySelector('#wrapperProducto ul')
+const listProducto = document.querySelector('#wrapperProducto ul#contenedorProducto')
 const inputTipoDeProducto = document.querySelector('#tipoProductoInput')
 const inputProducto = document.querySelector('#productoInput')
 const submitAdjudicacionButton = document.querySelector('#enviar')
