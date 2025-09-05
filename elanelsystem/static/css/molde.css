@@ -7,7 +7,8 @@
 /* ASIDE ACTIVE*/
 aside.menu {
   width: 15vw;
-  min-width: 8rem;
+  min-width: 25rem;
+  max-height: 40rem;
   border-right: 1px solid var(--white-800-20);
 }
 

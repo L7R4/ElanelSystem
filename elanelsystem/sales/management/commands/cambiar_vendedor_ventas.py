@@ -23,5 +23,5 @@ class Command(BaseCommand):
         except Usuario.DoesNotExist:
             raise CommandError(f"No se encontró un usuario con DNI {dni_nuevo}")
 
-        ventas_actualizadas = Ventas.objects.filter(supervisor=vendedor_viejo).update(supervisor=vendedor_nuevo)
+        ventas_actualizadas = Ventas.objects.filter(vendedor=vendedor_viejo).update(vendedor=vendedor_nuevo)
         self.stdout.write(self.style.SUCCESS(f"✅ {ventas_actualizadas} venta(s) actualizadas del vendedor {dni_viejo} al vendedor {dni_nuevo}"))

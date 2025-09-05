@@ -1523,9 +1523,10 @@ def getUnaCuotaDeUnaVenta(request):
 def pagarCuota(request):
     if request.method == 'POST':
         try:
+            print("wepssss")
             data = json.loads(request.body)
+            # print(f"Data: {data}")
             venta = Ventas.objects.get(pk=int(data.get("ventaID")))
-
             cuotaRequest = data.get("cuota")
             metodoPago = data.get("metodoPago")
             formaPago = data.get("typePayment") # Si es parcial o total
@@ -1538,7 +1539,7 @@ def pagarCuota(request):
                 monto = cuota["total"]
             elif(formaPago =="parcial"):
                 monto = data.get('valorParcial')
-
+            print(cuotaRequest.split()[-1])
             venta.pagarCuota(cuotaRequest,int(monto),metodoPago,cobrador,request.user.nombre) #Funcion que paga parcialmente
                 
             return JsonResponse({"status": True,"message":f"Pago de {cuotaRequest.lower()} exitosa"}, safe=False)
@@ -3761,8 +3762,10 @@ def getUnaCuotaDeUnaVenta(request):
 
 # Pagar una cuota
 def pagarCuota(request):
+    print(request.method)
     if request.method == 'POST':
         try:
+            # print(request.body)
             data = json.loads(request.body)
             venta = Ventas.objects.get(pk=int(data.get("ventaID")))
 
@@ -3779,11 +3782,13 @@ def pagarCuota(request):
             elif(formaPago =="parcial"):
                 monto = data.get('valorParcial')
 
-            venta.pagarCuota(cuotaRequest,int(monto),metodoPago,cobrador,request.user.nombre) #Funcion que paga parcialmente
+            cuota_digit = cuotaRequest.split()[-1]
+            venta.pagarCuota(cuota_digit,int(monto),metodoPago,cobrador,request.user) #Funcion que paga parcialmente
                 
             return JsonResponse({"status": True,"message":f"Pago de {cuotaRequest.lower()} exitosa"}, safe=False)
         except Exception as error:
             print(error)
+            # print("sssssssssssssssss")
             return JsonResponse({"status": False,"message":f"Error en el pago de {cuotaRequest.lower()}","detalleError":str(error)}, safe=False)
 
 def solicitudBajaCuota(request):
@@ -4029,8 +4034,11 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
 
         # Suma las cuotas pagadas para calcular el total a adjudicar
         for cuota in cuotasPagadas_parciales:
-            pagos = cuota["pagos"]
-            sumaDePagos += sum([pago["monto"] for pago in pagos])
+            print("Cuota:")
+            print(cuota)
+            for pago_id in cuota["pagos"]:
+                pago_instance = PagoCannon.objects.get(id=pago_id)
+                sumaDePagos += pago_instance.monto
 
 
         tipoDeAdjudicacion = "NEGOCIACIÓN" if "negociacion" in url else "SORTEO"
@@ -4172,8 +4180,11 @@ class ChangePack(TestLogin,generic.DetailView):
 
         # Suma las cuotas pagadas para calcular el total a adjudicar
         for cuota in cuotasPagadas_parciales:
-            pagos = cuota["pagos"]
-            sumaDePagos += sum([pago["monto"] for pago in pagos])
+            print("Cuota:")
+            print(cuota)
+            for pago_id in cuota["pagos"]:
+                pago_instance = PagoCannon.objects.get(id=pago_id)
+                sumaDePagos += pago_instance.monto
 
         contratosAsociados = ""
         for contrato in self.object.cantidadContratos:

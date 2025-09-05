@@ -23,6 +23,7 @@ def ejecutar_acciones_al_crear_venta(sender, instance, created, **kwargs):
 @receiver(post_save, sender=PagoCannon)
 # @receiver(post_delete, sender=PagoCannon)
 def _on_pago_cannon_changed(sender, instance, **kwargs):
+    print("asddddddddddddddddddd")
     venta = instance.venta
     # sincronizar todas las cuotas de la venta
     venta.sync_estado_cuotas()
