@@ -4,6 +4,9 @@
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/create_sale.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'js/vanilla-calendar-pro/styles/index.css' %}">
+<link rel="stylesheet" href="{% static 'js/vanilla-calendar-pro/styles/customStyles.css' %}">
+
 {% endblock css %}
 
 {% block content %}
@@ -16,7 +19,7 @@
         <input type="hidden" name="csrfmiddlewaretoken" value="muXN2dHhDr0WwNi0AOAbzsAhQQRDoWQJkQGJfib1LjTggFOSHQ8CovDG0MNneL2J">
 
 
-        <div id="wrapperTipoProducto" class="inputWrapper">
+        {% comment %} <div id="wrapperTipoProducto" class="inputWrapper">
             <label class="labelInput">Tipo de producto</label>
             <div class="containerInputAndOptions">
                 <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
@@ -27,18 +30,40 @@
                     <li>Prestamo</li>
                 </ul>
             </div>
-        </div>
+        </div> {% endcomment %}
 
-
-        <div id="wrapperProducto" class="inputWrapper desactive">
-            <label class="labelInput">Producto</label>
+        <div id="tipoProductoWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Tipo de producto</h3>
             <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" readonly name="producto" id="productoInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
-                <ul class="list-select-custom options">
+                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="hidden" required class="filterInput" name="tipo_producto" id="tipoProductoInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+                </div>
+                <ul id="contenedorTipoProducto" class="list-select-custom options">
+                    <li data-value="Moto">Moto</li>
+                    <li data-value="Electrodomestico">Electrodomestico</li>
+                    <li data-value="Prestamo">Prestamo</li>
                 </ul>
             </div>
         </div>
+
+
+
+        <div id="productoWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Producto</h3>
+            <div class="containerInputAndOptions">
+                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="hidden" class="filterInput" name="producto" id="productoInput" placeholder="Seleccionar" autocomplete="off" readonly required>
+                <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+                </div>
+                <ul id="contenedorProductos" class="list-select-custom options">
+                </ul>
+            </div>
+        </div>
+
+
         <div id="wrapperChances" class="inputWrapper">
             <div class="wrapperChanceItem">
                 <div class="chanceItem">
@@ -59,12 +84,12 @@
         </div>
 
         <div id="wrapperFecha">
-            <label for="">Fecha</label>
-            <input type="text" name="fecha" maxlength="10" class="input-read-write-default" required id="id_fecha">
+            <label>Fecha</label>
+            <input type="text" name="fecha" maxlength="10" class="input-read-write-default" required id="id_fecha" readonly>
         </div>
 
         <div id="wrapperNroCuotas">
-            <label for="">Nro cuotas</label>
+            <label>Nro cuotas</label>
             <input type="number" class="input-read-write-default eventInput" name="nro_cuotas" required id="id_nro_cuotas">
         </div>
 
@@ -127,74 +152,90 @@
         </div>
 
         <div id="wrapperPaquete">
-            <label for="">Paquete</label>
-            <input type="text" name="paquete" class="not_ed input-read-write-default" readonly required id="id_paquete">
+            <label>Paquete</label>
+            <div class="containerIcon_Input">
+                <input type="text" name="paquete" class="not_ed input-read-write-default" readonly required id="id_paquete">
+            </div>
         </div>
-        
-        
-        <div id="wrapperAgencia" class="inputWrapper">
-            <label class="labelInput">Agencias</label>
+
+
+        <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Agencia</h3>
             <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" readonly name="agencia" id="id_agencia" required autocomplete="off" maxlength="30" value="{{agenciaActual}}" class="input-select-custom onlySelect">
-                <ul class="list-select-custom options">
+                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="hidden" class="filterInput" required name="agencia" id="id_agencia" placeholder="Seleccionar" autocomplete="off" readonly>
+                <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+                </div>
+                <ul id="contenedorSucursal" class="list-select-custom options">
                     {% for agencia in agencias %}
-                        <li>{{agencia}}</li>
+                    <li data-value={{agencia.id}}>{{agencia}}</li>
                     {% endfor %}
-                    
                 </ul>
             </div>
         </div>
 
-
-        <div id="wrapperModalidad" class="inputWrapper">
-            <label class="labelInput">Modalidad</label>
+        
+        <div id="modalidadWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Modalidad</h3>
             <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" readonly name="modalidad" id="id_modalidad" required autocomplete="off" maxlength="30" class="input-select-custom onlySelect">
-                <ul class="list-select-custom options">
-                    <li>Diario</li>
-                    <li>Semanal</li>
-                    <li>Quincenal</li>
-                    <li>Mensual</li>
+                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="hidden" class="filterInput" required name="modalidad" id="id_modalidad" placeholder="Seleccionar" autocomplete="off" readonly>
+                <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+                </div>
+                <ul id="contenedorModalidad" class="list-select-custom options">
+                    <li data-value="Diario">Diario</li>
+                    <li data-value="Semanal">Semanal</li>
+                    <li data-value="Quincenal">Quincenal</li>
+                    <li data-value="Mensual">Mensual</li>
                 </ul>
             </div>
         </div>
         
 
-        <div id="wrapperVendedor" class="inputWrapper">
-            <label class="labelInput">Vendedor</label>
+        <div id="vendedorWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Vendedor</h3>
             <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" name="vendedor" readonly class="input-select-custom onlySelect" required id="id_vendedor">
-                <ul class="list-select-custom options">
-                    {% for vendedor in vendedores %}
-                        <li data-value="{{vendedor}}">{{vendedor}}</li>
-                    {% endfor %}
+                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="hidden" class="filterInput" name="vendedor" required id="id_vendedor" placeholder="Seleccionar" autocomplete="off" readonly>
+                <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+                </div>
+                <ul id="contenedorVendedor" class="list-select-custom options">
+                    {% comment %} {% for vendedor in vendedores %}
+                        <li data-value="{{vendedor.id}}">{{vendedor}}</li>
+                    {% endfor %} {% endcomment %}
                 </ul>
             </div>
         </div>
 
 
-        <div id="wrapperSupervisor" class="inputWrapper">
-            <label class="labelInput">Supervisor</label>
+        <div id="supervisorWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Supervisor</h3>
             <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" name="supervisor" readonly class="input-select-custom onlySelect" required="" id="id_supervisor">
-                <ul class="list-select-custom options">
-                    {% for supervisor in supervisores %}
-                        <li data-value="{{supervisor}}">{{supervisor}}</li>
-                    {% endfor %}
+                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="hidden" class="filterInput" name="supervisor" required id="id_supervisor" placeholder="Seleccionar" autocomplete="off" readonly>
+                <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+                </div>
+                <ul id="contenedorSupervisor" class="list-select-custom options">
+                    {% comment %} {% for supervisor in supervisores %}
+                        <li data-value="{{supervisor.id}}">{{supervisor}}</li>
+                    {% endfor %} {% endcomment %}
                 </ul>
             </div>
         </div>
 
-        <div id="wrapperCampania" class="inputWrapper">
-            <label class="labelInput">Campaña</label>
+        <div id="campanaWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Campaña</h3>
             <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" name="campania" value="{{campaniasDisponibles.0}}" readonly class="input-select-custom onlySelect" required id="id_campania">
-                <ul class="list-select-custom options">
+                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                <input type="hidden" class="filterInput" name="campania" required id="id_campania" placeholder="Seleccionar" autocomplete="off" readonly>
+                <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+                </div>
+                <ul id="contenedorCampana" class="list-select-custom options">
                     {% for campania in campaniasDisponibles %}
                         <li data-value="{{campania}}">{{campania}}</li>
                     {% endfor %}
@@ -215,19 +256,33 @@
 
 {% endblock content %}
 {% block js %}
-    <script>
-        document.getElementById('id_fecha').addEventListener('input', function (e) {
-        var input = e.target;
-        var val = input.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,2})(\d{0,4})/);
-        input.value = !val[2] ? val[1] : val[1] + '/' + val[2] + (val[3] ? '/' + val[3] : '');
+    <script src="{% static 'js/vanilla-calendar-pro/index.js' %}"></script>
+    {% comment %} <script src="{% static 'js/vanilla-calendar-pro/calendarSingle-input.js' %}"></script> {% endcomment %}
+
+    <script type="module">
+        import { initInputCalendar } from "{% static 'js/vanilla-calendar-pro/calendarSingle-input.js' %}";
+        window.addEventListener('DOMContentLoaded', () => {
+            initInputCalendar('#id_fecha', {
+            locale: 'es-AR',
+            autoClose: true,
+            todayLabel: 'Hoy',
+            clearLabel: 'Limpiar',
+            scrollContainer: '#form_create_sale',   // <- clave
+            popupMinWidth: 260,                     // opcional
+            offsetY: 6                              // opcional
+            });
         });
+        
+    </script>
+    
+    <script>
         var urlRequestProductos = "{% url 'products:get_products' %}";
         var urlRequestVendedoresSupervisores = "{% url 'sales:requestVendedores_Supervisores' %}";
-
     </script>
-
+    
     <script src="{% static 'js/form_create_sale.js' %}"></script>
     <script src="{% static 'js/seleccionarChances.js' %}"></script>
-    <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+    <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
+    <script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
     <script src="{% static 'js/errorsFormManagement.js' %}"></script>
 {% endblock js %}

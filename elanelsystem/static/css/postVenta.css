@@ -1,19 +1,40 @@
 .wrapper_content {
-    padding: 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 /* #region filtros */
 .filters {
+    display: flex;
+    /* justify-content: space-between; */
+    /* gap: 1rem; */
+    box-sizing: border-box;
+    flex-direction: column;
+    padding: 2rem 3.5rem;
+    flex: 0 0 auto;
+    background-color: var(--blue-1);
+    border-bottom: 1px solid var(--white-800-20);
+}
+.titleHeader {
+    font-size: clamp(3rem, 1.6vw, 5rem);
+    font-family: raleway-bold;
+    color: var(--white-color-800);
+    letter-spacing: .06rem;
+    padding: .5rem 0;
+}
+.filters>form#formFilterVentas{
     width: 100%;
-    padding-bottom: 2rem;
-    height: 12%;
 }
 
 .filters>form#formFilterVentas>div {
     display: flex;
     width: 100%;
-    justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
+    gap: 2rem;
+}
+.filters>form#formFilterVentas> div > .inputWrapper{
+    width: 20%;
 }
 
 
@@ -47,6 +68,13 @@
     font-family: raleway-semibold;
     color: var(--third-color);
 }
+.filters .labelInput{
+    font-size: clamp(1rem, 1vw, 1.3rem);
+    font-family: raleway;
+    color: var(--white-800-50);
+    margin-bottom: .5rem;
+    padding-left: .3rem;
+} 
 
 .filters>form#formFilterVentas .wrapperSearchFilter {
     width: 30%;
@@ -65,9 +93,9 @@
 
 
 .filters>form#formFilterVentas .wrapperSearchFilter>div>input {
-    padding: 1rem;
-    color: var(--third-color);
+    color: var(--white-800-80);
     z-index: 2;
+    font-family: raleway-semibold;
     width: 100%;
 }
 
@@ -102,14 +130,16 @@
 .accountWrapper {
     display: flex;
     column-gap: 2rem;
-    height: 80%;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 1rem 3.5rem;
 }
 
 .operations {
     width: 75%;
     height: 100%;
     overflow-y: auto;
-
+    position: relative;
 }
 
 .actionsWrapper {
@@ -124,7 +154,7 @@
 .buttonsWrapper>#makeInforme {
     font-size: clamp(1rem, 1vw, 1.5rem);
     font-family: raleway-semibold;
-    background-color: var(--primary-color);
+    background-color: var(--blue-accent-color);
     color: white;
     text-decoration: none;
     min-width: fit-content;
@@ -132,7 +162,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--primary-color);
+    border: 2px solid var(--blue-accent-color);
     border-radius: 0.6rem;
     margin-bottom: .7rem;
 }
@@ -160,34 +190,77 @@
     width: fit-content;
     padding: .3rem .8rem;
     border-radius: .5rem;
-    background-color: var(--primary-color);
+    background-color: var(--blue-accent-color);
     margin: 0 auto;
     margin-top: .3rem;
 }
-
+.operationsWrapper{
+    padding-right: .7rem;
+}
 .ventaWrapper {
     position: relative;
     width: 100%;
-    background-color: #fff;
-    border-radius: .7rem;
+    display: flex;
+    flex-direction: column;
+    gap: .8rem;
+    background-color: var(--blue-1);
+    border: 1px solid var(--white-800-20);
     padding: 1.5rem;
     box-sizing: border-box;
+    border-radius: .6rem;
 }
 .ventaWrapper > .statusWrapperShortInfo{
     display: flex;
     align-items: center;
     gap: 1rem;
+    background: var(--badge-bg, rgba(255, 255, 255, 0.10));
+    backdrop-filter: blur(12px);
+    border-radius: 1rem;
+    width: fit-content;
+    padding: .4rem .8rem;
 }
 
-.ventaWrapper > .statusWrapperShortInfo > img{
-    width: 2vw;
-    min-width: 2.5rem;
-    max-width: 5rem;
-}
 
 .ventaWrapper > .statusWrapperShortInfo > p{
     font-family: raleway-semibold;
     font-size: clamp(1.1rem, 1.2vw, 1.5rem);
+    color: var(--white-color-800);
+}
+.ventaWrapper > .statusWrapperShortInfo.a{
+    background-color: var(--success-color-20);
+    backdrop-filter: blur(10px);
+}
+
+.ventaWrapper > .statusWrapperShortInfo > .iconStatus{
+    width: .1vw;
+    height: .1vw;
+    max-width: 2.3rem;
+    min-width: 1.5rem;
+    max-height: 2.3rem;
+    min-height: 1.5rem;
+    border-radius: 50%;
+}
+.ventaWrapper > .statusWrapperShortInfo > .iconStatus.a{
+    background-color: var(--success-color);
+}
+
+
+.ventaWrapper > .statusWrapperShortInfo.d{
+    background-color: var(--danger-color-50);
+    backdrop-filter: blur(10px);
+}
+
+.ventaWrapper > .statusWrapperShortInfo > .iconStatus.d{
+    background-color: var(--danger-color);
+}
+
+.ventaWrapper > .statusWrapperShortInfo.p{
+    background-color: var(--warning-color-50);
+    backdrop-filter: blur(10px);
+}
+
+.ventaWrapper > .statusWrapperShortInfo > .iconStatus.p{
+    background-color: var(--warning-color);
 }
 
 .atributtes {
@@ -199,7 +272,7 @@
 .wrapperShortInfo {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 2rem;
     box-sizing: border-box;
 }
 
@@ -209,7 +282,7 @@
     transition: .1s all ease-out;
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 2rem;
     opacity: 0;
     visibility: hidden;
 }
@@ -233,7 +306,7 @@
 }
 
 .wrapperInfoAtributte>h1 {
-    color: var(--background-color);
+    color: var(--white-800-80);
     font-size: clamp(1.3rem, 1.2vw, 2rem);
     font-family: raleway-semibold;
 }
@@ -241,21 +314,25 @@
 .wrapperInfoAtributte>h4 {
     font-size: clamp(1rem, 1vw, 1.7rem);
     font-family: raleway-bold;
-    color: var(--primary-color);
+    color: var(--blue-accent-color);
+    padding: .4rem 0;
 }
 
 .displayDetailInfoButton {
-    background-color: var(--third-color);
+    background-color: transparent;
     position: absolute;
     right: 1rem;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 3.2rem;
+    height: 3.2rem;
     outline: none;
     border-color: transparent;
-    border-radius: .4rem;
+    border-radius: .6rem;
+    padding: .2rem;
     cursor: pointer;
 }
-
+.displayDetailInfoButton:hover{
+    background-color: var(--white-800-20);
+}
 /* .wrapperButtonsGrade {
     box-sizing: border-box;
     padding: 1rem;
@@ -289,7 +366,7 @@
 }
 
 .displayDetailInfoButton>img {
-    filter: invert(1);
+    /* filter: invert(1); */
     width: 100%;
     transform: rotate(90deg);
 }
@@ -305,6 +382,26 @@
 .operationsList {
     list-style: none;
 }
+.inline-loader{
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    z-index: 3;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(2px);
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.inline-loader.inline-loader--hidden{
+    display: none;
+}
+.inline-loader--success{
+    display: none;
+}
 
 .statusWrapper {
     display: flex;
@@ -313,7 +410,7 @@
 }
 
 #containerModularForm > h2{
-    color: var(--background-color);
+    color: var(--white-color-800);
     font-size: clamp(1.6rem, 1.3vw, 2rem);
     font-family: raleway-semibold;
     text-align: center;
@@ -327,7 +424,6 @@
     display: flex;
     gap: .8rem;
     justify-content: center;
-    margin-top: 1.2rem;
 }
 .buttonsWrapper>button.auditarButton{
     font-size: clamp(1.1rem, 1.1vw, 1.4rem);
@@ -363,7 +459,7 @@
     padding: .8rem 1.5rem;
     border-radius: .6rem;
     cursor: pointer;
-    color: var(--background-color);
+    color: var(--white-800-80);
     font-size: clamp(1.1rem, 1.1vw, 1.3rem);
     font-family: raleway-semibold;
     display: block;
@@ -375,42 +471,38 @@
     opacity: .5;
     pointer-events: none;
 }
+.operationsList .atributtes .buttonsWrapper>button{
+    padding: .6rem 1.5rem;
+}
 
-
-label#desaprobarLabel {
-    /* background-color: rgba(237, 20, 20); */
-    outline: 1.3px solid rgba(237, 20, 20);
+label.desaprobarLabel {
+    border: 1.3px solid var(--danger-color);
 
 }
 
-label#desaprobarLabel:hover {
-    background-color: rgba(237, 20, 20);
-    box-shadow: 0 0 5px rgba(237, 20, 20, 0.9);
+label.desaprobarLabel:hover {
+    background-color: var(--danger-color);
+}
+
+.buttonsWrapper>input.desaprobarI:checked~label.desaprobarLabel {
+    background-color: var(--danger-color);
     color: var(--third-color);
+    border: 1px solid var(--danger-color);
 }
 
-.buttonsWrapper>input#desaprobarI:checked~label#desaprobarLabel {
-    background-color: rgba(237, 20, 20);
+
+label.aprobarLabel {
+    border: 1.3px solid  var(--blue-accent-color);
+}
+
+label.aprobarLabel:hover {
+    background-color: var(--blue-accent-color);
+}
+
+.buttonsWrapper>input.aprobarI:checked~label.aprobarLabel {
+    background-color: var(--blue-accent-color);
     color: var(--third-color);
-
-    /* box-shadow: 0 0 5px rgba(237, 20, 20, 0.9); */
-}
-
-
-label#aprobarLabel {
-    outline: 1.3px solid rgba(61, 123, 216, 0.85);
-}
-
-label#aprobarLabel:hover {
-    background-color: rgba(61, 123, 216);
-    box-shadow: 0 0 5px rgba(61, 123, 216, 0.9);
-    color: var(--third-color);
-}
-
-.buttonsWrapper>input#aprobarI:checked~label#aprobarLabel {
-    background-color: rgba(61, 123, 216);
-    color: var(--third-color);
-    /* box-shadow: 0 0 5px rgba(61, 123, 216, 0.9); */
+    border: 1px solid var(--blue-accent-color);
 }
 
 .wrapperInputComent{
@@ -491,13 +583,14 @@ button#cancelarGrade {
 .wrapperInputComent>label {
     font-size: clamp(1.1rem, 1.2vw, 1.4rem);
     font-family: raleway-semibold;
+    color: var(--white-800-80);
     display: block;
     margin-bottom: .3rem;
     margin-top: .8rem;
     text-align: center;
 }
 
-.wrapperInputComent>textarea#comentarioInput {
+/* .wrapperInputComent>textarea#comentarioInput {
     outline: none;
     width: 80%;
     box-sizing: border-box;
@@ -506,7 +599,7 @@ button#cancelarGrade {
     font-family: raleway-semibold;
     border-radius: .6rem;
     border: #25242475 1px solid;
-}
+} */
 
 .wrapperMessage {
     margin: .6rem 0;
@@ -576,14 +669,17 @@ button#cancelarGrade {
 
 .containerHistorialAuditorias {
     width: 100%;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .containerHistorialAuditorias>.infoCheckWrapper {
-    box-sizing: border-box;
     padding: 1rem;
-    border: var(--third-color) 1px solid;
+    border: var(--white-800-20) 1px solid;
     border-radius: .6rem;
-    margin-bottom: .7rem;
+    /* margin-bottom: .7rem; */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -612,15 +708,16 @@ button#cancelarGrade {
     background: #304361;
     border-radius: 1rem;
 }
-
-.containerHistorialAuditorias>.infoCheckWrapper>div:first-child>p {
+/* 
+.containerHistorialAuditorias>.infoCheckWrapper>div>p {
     word-wrap: break-word;
     font-size: clamp(1rem, 1.1vw, 1.3rem);
-    font-family: raleway;
-}
+    font-family: raleway-semibold;
+} */
 
 .containerHistorialAuditorias>.infoCheckWrapper>div>p {
     word-wrap: break-word;
+    color: var(--white-800-80);
     font-size: clamp(1rem, 1.1vw, 1.3rem);
     font-family: raleway-semibold;
 }
@@ -632,18 +729,15 @@ button#cancelarGrade {
 }
 
 .containerHistorialAuditorias>.infoCheckWrapper>div.wrapperUltimo {
-    position: absolute;
     width: fit-content;
-    top: 1rem;
-    right: 1rem;
 }
 
 .containerHistorialAuditorias>.infoCheckWrapper>div.wrapperUltimo>p {
     font-family: raleway-semibold;
     font-size: clamp(1.2rem, 1.2vw, 1.5rem);
-    color: var(--third-color);
+    color: var(--blue-accent-color);
     text-decoration: underline;
-    text-decoration-color: var(--third-color);
+    text-decoration-color: var(--blue-accent-color);
 }
 
 
@@ -666,4 +760,10 @@ button#cancelarGrade {
     font-size: clamp(1.4rem, 1.3vw, 2rem);
     font-family: 'raleway-semibold';
     color: var(--background-color);
+}
+.vt-empty{
+    font-size: clamp(1.2rem, 1.2vw, 1.7rem);
+    font-family: 'raleway-semibold';
+    color: var(--white-800-80);
+    text-align: center;
 }

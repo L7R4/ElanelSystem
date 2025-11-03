@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="{% static 'css/vanilla_table.css' %}" />
 
 {% endblock css %}
 
@@ -15,74 +16,16 @@
 </div>
 
 <div class="filters">
+  <h1 class="titleHeader">CLIENTES</h1>
   <div class="buttonsActionsWrapper">
     <a href="{% url 'users:create_customer' %}" class="add-button-default" id="create_customer">Agregar</a>
     <button type="button" id="showModalImport" class="button-default-style" onclick="newModalImport()">Importar</button>
   </div>
-
-  <form method="POST" id="formFilter">
-    {% csrf_token %}
-    <div class="filtersActionWrapper">
-
-      {% comment %} <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
-        <h3 class="labelInput">Sucursal</h3>
-        <div class="containerInputAndOptions">
-          <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-          <input type="hidden" class="filterInput" name="sucursal" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
-          <div class="onlySelect pseudo-input-select-wrapper">
-                <h3></h3>
-          </div>
-          <ul id="contenedorSucursal" class="list-select-custom options">
-            {% for sucursal in sucursales %}
-                <li data-value={{sucursal.id}}>{{sucursal}}</li>
-            {% endfor %}
-        </ul>
-        </div>
-      </div> {% endcomment %}
-{% comment %} 
-      <div class="searchActionWrapper">
-        <input 
-        type="text"
-        class = "customer input-read-write-default"
-        id="customer_search">
-        <img src="{% static 'images/icons/search.svg' %}" alt="">
-      </div> {% endcomment %}
-
-    </div>
-    {% comment %} <button type="button" id="submitFilter" class="add-button-default">Filtrar</button> {% endcomment %}
-    
-  </form>   
-
 </div>
 
-
-
 <div class="informationWrapper">
-  <a href="{% url 'users:list_customers'%}" id="buttonCleanFilter">Limpiar filtros</a>
-  {% comment %} <table class="information">
-    <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>DNI</th>
-          <th>Telefono</th>
-          <th>Localidad</th>
-          <th>Provincia</th>
-        </tr>
-    </thead>
-    
-    <tbody class="values">
-      {% for customer in customers %}
-          <tr class="customer_item" data-url="{% url 'users:cuentaUser' customer.id %}">
-            <td><p>{{customer.nombre}}</p></td>
-            <td><p>{{customer.dni}}</p></td>
-            <td><p>{{customer.tel}}</p></td>
-            <td><p>{{customer.loc}}</p></td>
-            <td><p>{{customer.prov}}</p></td>
-          </tr>
-      {% endfor %}
-    </tbody>
-  </table> {% endcomment %}
-  <div id="customers_table"></div>
+  <div id=""></div>
+  <div id="customers_table" class="vt-sticky"></div>
 </div> 
 
 {% endblock content %}
@@ -90,29 +33,20 @@
 <script>
   var csrf_token = '{%csrf_token%}'
   var urlImportData = "{% url 'users:importClientes' %}"
-  var sucursalesDisponibles = {{ sucursalesDisponiblesJSON|safe }};
+  var sucursalesDisponibles = {{ sucursalesDisponibles|safe }};
   var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
-
+  var imgNext = "{% static 'images/icons/arrowDown.png' %}";
 </script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Selecciona todos los <tr> con la clase 'user_item'
-    document.querySelectorAll('.customer_item').forEach(row => {
-      row.addEventListener('click', function() {
-        // Redirecciona a la URL almacenada en el atributo 'data-url' del <tr>
-        window.location.href = row.getAttribute('data-url');
-      });
-    });
-  });
+  var detailUrlZero = "{% url 'users:cuentaUser' 0 %}";
 </script>
 
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
-<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
 <script src="{% static 'js/importDataCliente.js' %}"></script>
-<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gridjs/l10n/dist/l10n.umd.js"></script>
 <script type="module" src="{% static 'js/customers_table.js' %}"></script>
+
+
 {% endblock js %}

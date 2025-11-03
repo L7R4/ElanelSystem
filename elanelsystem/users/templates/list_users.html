@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="{% static 'css/list_colaboradores.css' %}" />
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}" />
 <link rel="stylesheet" href="{% static 'css/loader.css' %}" />
+<link rel="stylesheet" href="{% static 'css/vanilla_table.css' %}" />
 
 <link
   rel="stylesheet"
@@ -13,8 +14,6 @@
   href="{% static 'js/vanilla-calendar-pro/styles/index.css' %}"
   rel="stylesheet"
 />
-<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet"/>
-
 <script src="{% static 'js/vanilla-calendar-pro/index.js' %}" defer></script>
 {% endblock css %} {% block content %}
 <div id="wrapperLoader">
@@ -51,6 +50,7 @@
 </div>
 
 <div class="filters">
+  <h1 class="titleHeader">USUARIOS</h1>
   <div class="buttonsActionsWrapper">
     <a
       href="{% url 'users:create_user' %}"
@@ -68,65 +68,12 @@
     </button>
   </div>
 
-  <form method="POST" id="formFilter">
-    {% csrf_token %}
-    <div class="filtersActionWrapper">
-      {% comment %} Validar por permiso ------ {% endcomment %}
-      <div id="wrapperSucursal" class="inputWrapper">
-        <div class="containerInputAndOptions">
-          <img
-            id="sucursalIconDisplay"
-            class="iconDesplegar"
-            src="{% static 'images/icons/arrowDown.png' %}"
-            alt=""
-          />
-          <input
-            type="text"
-            placeholder="Sucursal"
-            readonly
-            name="sucursal"
-            id="sucursalInput"
-            required
-            autocomplete="off"
-            maxlength="50"
-            class="input-select-custom onlySelect"
-          />
-          <ul class="list-select-custom options">
-            {% for s in sucursales %}
-            <li>{{s.pseudonimo}}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-      {% comment %} ------------ {% endcomment %}
-      <div class="searchActionWrapper">
-        <input
-          type="text"
-          class="user input-read-write-default"
-          id="user_search"
-        />
-        <img src="{% static 'images/icons/search.svg' %}" alt="" />
-      </div>
-    </div>
-  </form>
 </div>
 
 <div class="informationWrapper">
-  <a href="{% url 'users:list_users'%}" id="buttonCleanFilter">Limpiar filtros</a>
-  <div id="users_table"></div>
-  <!-- Elimina o comenta la tabla HTML tradicional -->
+  <div id="users_table" class="vt-sticky"></div>
 </div>
-
-{% comment %}
-<button
-  type="submit"
-  id="confirmDescuento"
-  class="add-button-default"
-  form="formNewDescuento"
->
-  Confirmar
-</button>
-{% endcomment %} {% endblock content %} {% block js %}
+{% endblock content %} {% block js %}
 
 <script>
   var csrf_token = '{%csrf_token%}'
@@ -155,19 +102,15 @@
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'id_cover/index.js' %}"></script>
 
-<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
 <script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
 <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
 
 <script src="{% static 'js/importDataUsers.js' %}"></script>
-<script src="{% static 'js/x_filter_users.js' %}"></script>
 <script
   src="{% static 'js/vanilla-calendar-pro/singleCalendarWithTime.js' %}"
   defer
 ></script>
 <script src="{% static 'js/menuContextCreateDescuentoUser.js' %}"></script>
 <script src="{% static 'js/modalCreateDescuento.js' %}"></script>
-<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gridjs/l10n/dist/l10n.umd.js"></script>
 <script type="module" src="{% static 'js/users_table.js' %}"></script>
 {% endblock js %}

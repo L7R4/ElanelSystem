@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "gridjs": "^6.2.0",
-    "ldcover": "^3.5.4"
+    "ldcover": "^3.5.4",
+    "vanilla-calendar-pro": "^3.0.5"
   }
 }

@@ -68,12 +68,13 @@ urlpatterns = [
     path("ventas/pdf/arqueo/<int:pk>/",viewPDFArqueo,name="arqueoPDF"),
     path('ventas/pdf/informe/', viewsPDFInforme, name='informePDF'),
     path('ventas/pdf/informesend/', viewPDFInformeAndSend, name='informeSend'),
-    path('ventas/detalle_venta/obtener-recibo-cuota/', viewPDFReciboCuota, name='getReciboCuota'),
+    path('ventas/detalle_venta/recibo/pago/<int:pk>/', viewPDFReciboCuota, name='getReciboCuota'),
     #endregion ---------------------------------------------------------
         
     #region URLs PostVentas --------------------------------------------
-    path('ventas/postventas/', PostVenta.as_view(), name='postVentaList'),
-    path('ventas/postventas/filtrar/', filtroVentasAuditoria, name='postVentaListFiltered'),
+    path("ventas/postventas/", PostVenta.as_view(), name="postVentaList"),
+    path("ventas/auditorias/api/", auditorias_api, name="auditorias_api"),
+    path("ventas/auditorias/crear/", crear_auditoria, name="crear_auditoria"),
     path('ventas/postventas/informe/', viewsPDFInformePostVenta, name='postVentaPDF'),
     #endregion ---------------------------------------------------------
     

@@ -1,4 +1,4 @@
-const listProducto = document.querySelector('#wrapperProducto ul')
+const listProducto = document.querySelector('#productoWrapper ul')
 const inputTipoDeProducto = document.querySelector('#tipoProductoInput')
 const inputProducto = document.querySelector('#productoInput')
 const submitCreateSaleButton = document.querySelector('#submitCreateSaleButton')
@@ -62,6 +62,7 @@ async function requestProductos() {
 // Cuando se selecciona un tipo de producto se filtran los productos
 inputTipoDeProducto.addEventListener("input", async () => {
     productos = await requestProductos();
+    console.log(productos)
 
     listProducto.innerHTML = "" // Limpia la lista de productos
     listProducto.previousElementSibling.value = "" // Limpia el input de producto en caso de que se haya seleccionado un producto
@@ -70,9 +71,9 @@ inputTipoDeProducto.addEventListener("input", async () => {
         inputProducto.parentElement.parentElement.classList.remove("desactive") // Desbloquea el input de producto
 
         productos.forEach(product => {
-            createLiHTMLElement(listProducto, product["nombre"]);
+            createLiHTMLElement(listProducto, product.id, product.nombre);
         });
-        updateListOptions(listProducto, inputProducto); // Actualiza los listeners de la lista de productos
+        // updateListOptions(listProducto, inputProducto); // Actualiza los listeners de la lista de productos
     } else {
         inputProducto.parentElement.parentElement.classList.add("desactive") // Bloquea el input de producto
         productoHandled = null // Resetea la variable productoHandled
@@ -89,7 +90,7 @@ inputTipoDeProducto.addEventListener("input", async () => {
 // Cuando se selecciona un producto se guarda en la variable productoHandled
 inputProducto.addEventListener("input", async () => {
     if (productos != null) {
-        productoHandled = productos.filter((item) => item["nombre"] == inputProducto.value)[0];
+        productoHandled = productos.filter((item) => item["id"] == inputProducto.value)[0];
     }
 
 
@@ -167,10 +168,10 @@ document.addEventListener('keydown', function (e) {
 
 
 // Crear un elemento li para el producto
-function createLiHTMLElement(contenedor, li) {
+function createLiHTMLElement(contenedor, li_id, li_name) {
     let stringForHTML = "";
 
-    stringForHTML = `<li data-value="${li}">${li}</li>`;
+    stringForHTML = `<li data-value="${li_id}">${li_name}</li>`;
     contenedor.insertAdjacentHTML('afterbegin', stringForHTML);
 }
 
@@ -188,20 +189,19 @@ id_agencia.addEventListener("input", async () => {
         id_supervisor.value = ""
 
     }
-    document.querySelector('#wrapperVendedor ul.options').innerHTML = ""
+    document.querySelector('#vendedorWrapper ul.options').innerHTML = ""
     vendedores.forEach(element => {
-        createLiHTMLElement(document.querySelector('#wrapperVendedor ul.options'), element)
-
+        createLiHTMLElement(document.querySelector('#vendedorWrapper ul.options'), element.id, element.name)
     });
 
-    document.querySelector('#wrapperSupervisor ul.options').innerHTML = ""
+    document.querySelector('#supervisorWrapper ul.options').innerHTML = ""
     supervisores.forEach(element => {
-        createLiHTMLElement(document.querySelector('#wrapperSupervisor ul.options'), element)
+        createLiHTMLElement(document.querySelector('#supervisorWrapper ul.options'), element.id, element.name)
     });
 
     // Actualiza los listeners de la lista de vendedores y supervisores
-    updateListOptions(document.querySelector('#wrapperVendedor ul.options'), id_vendedor);
-    updateListOptions(document.querySelector('#wrapperSupervisor ul.options'), id_supervisor);
+    // updateEventsLisOptions(id_vendedor, document.querySelector('#vendedorWrapper ul.options') );
+    // updateEventsLisOptions(id_supervisor, document.querySelector('#supervisorWrapper ul.options'));
 
 
 })
@@ -231,26 +231,62 @@ submitCreateSaleButton.addEventListener("click", async () => {
 })
 
 // Función para verificar si todos los inputs requeridos están completos
+// function checkInputs() {
+//     const requiredInputs = form_create_sale.querySelectorAll('input[required]');
+//     let allInputsCompleted = true;
+
+//     requiredInputs.forEach(input => {
+//         if (input.value.trim() === '') {
+//             allInputsCompleted = false;
+//         }
+//     });
+
+//     if (allInputsCompleted) {
+//         submitCreateSaleButton.disabled = false;
+//     } else {
+//         submitCreateSaleButton.disabled = true;
+//     }
+// }
+
+function setSubmitEnabled(enabled) {
+  submitCreateSaleButton.disabled = !enabled;
+  // Evitá que CSS lo deje “muerto”
+  if (enabled) {
+    submitCreateSaleButton.removeAttribute('disabled');
+    submitCreateSaleButton.classList.remove('blocked');
+    submitCreateSaleButton.setAttribute('aria-disabled', 'false');
+  } else {
+    submitCreateSaleButton.setAttribute('disabled', '');
+    submitCreateSaleButton.classList.add('blocked'); // opcional si usás estilo
+    submitCreateSaleButton.setAttribute('aria-disabled', 'true');
+  }
+}
+
 function checkInputs() {
-    const requiredInputs = form_create_sale.querySelectorAll('input[required]');
-    let allInputsCompleted = true;
+  // Tomamos TODOS los requeridos (inputs, textareas, selects)
+  let requiredFields = Array.from(
+    form_create_sale.querySelectorAll('input[required]')
+  );
 
-    requiredInputs.forEach(input => {
-        if (input.value.trim() === '') {
-            allInputsCompleted = false;
-        }
-    });
+  // Ignorá requeridos que estén dentro de un bloque desactivado
+  requiredFields = requiredFields.filter(el => !el.closest('.desactive'));
 
-    if (allInputsCompleted) {
-        submitCreateSaleButton.disabled = false;
-    } else {
-        submitCreateSaleButton.disabled = true;
-    }
+  const allInputsCompleted = requiredFields.every(input => input.value.trim() !== '');
+  setSubmitEnabled(allInputsCompleted);
 }
 
 // Agregar evento de input a los inputs requeridos
 const requiredInputs = form_create_sale.querySelectorAll('input[required]');
 requiredInputs.forEach(input => {
-    input.addEventListener('input', checkInputs);
+    input.addEventListener('input', () =>{
+        checkInputs();
+        debugMissing();
+    });
 });
 
+function debugMissing() {
+  const req = Array.from(form_create_sale.querySelectorAll('input[required]'))
+                   .filter(el => !el.closest('.desactive'))
+                   .filter(el => el.value.trim() === '');
+  console.table(req.map(el => ({ id: el.id, name: el.name, value: el.value })));
+}

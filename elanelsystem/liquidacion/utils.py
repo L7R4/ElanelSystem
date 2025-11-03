@@ -303,8 +303,11 @@ def get_premio_x_cantidad_ventas_equipo(ventas):
     No hace falta ceil, pues dineroAsegurado es un entero. 
     Igual, por seguridad, podría hacerse math.ceil.
     """
-    asegurado = Asegurado.objects.get(dirigido="Supervisor")
-    dineroAsegurado = asegurado.dinero
+    # asegurado = Asegurado.objects.get(dirigido="Supervisor")
+    # dineroAsegurado = asegurado.dinero
+
+    dineroAsegurado = 200000 # fijo por ahora - - - - - - - - - - - - - - - - - - - - - - -
+    
     cantidad_ventas_x_equipo = calcular_ventas_supervisor(ventas)
     
     if cantidad_ventas_x_equipo >= 80:
@@ -429,7 +432,10 @@ def get_detalle_cuotas_02(pagos_sucursal):
     """
 
     pagos0 = [p for p in pagos_sucursal if p.nro_cuota == 0]
-
+    for p in pagos0:
+        cliente_nombre = p.venta.nro_cliente.nombre if p.venta.nro_cliente else None
+        if "cabral belen" in cliente_nombre.lower():
+            print(f"\n Nro: {p.venta.nro_operacion}, Cliente: {cliente_nombre}\n")
     cantidad_cuotas_0 = sum(len(p.venta.cantidadContratos) for p in pagos0)
     dinero_recaudado_cuotas_0 = sum(p.monto for p in pagos0)
 
@@ -934,7 +940,8 @@ def detalle_liquidado_x_rol(usuario, campania, suc):
                 "productividad_x_equipo": productividad_x_equipo,
             }
 
-
+        if usuario.nombre == "Benitez Brian Ezequiel":
+            print(f"\n\n Detalle de supervisor {usuario.nombre} -> \n{response} \n\n")
         return response
 
     elif rango_lower == "gerente sucursal":
@@ -994,6 +1001,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
     elif rango_lower == "supervisor":
         comision_bruta_inicial = rol_dict["comision_total"]
     elif rango_lower == "gerente sucursal":
+        print(f"USUARIO : {usuario.nombre}DETALLE KEYS: {list((rol_dict.get('detalle') or {}).keys())}")
         suc_clean = agencia.pseudonimo.replace(" ", "").replace(",", "").lower()
         comision_bruta_inicial = rol_dict["detalle"][suc_clean]["sub_total"]
 

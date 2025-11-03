@@ -18,22 +18,7 @@
 
 <div class="wrapperButtonManageVenta">
     <div class="deleteSale">
-        <button id="showDeleteWrapper" class="delete-button-default">Eliminar venta</button>
-        <div class="wrapperFormDeleteSale">
-            <form method="POST" id="formDeleteSale">
-                {% csrf_token %}
-                <h1>¿Estas seguro que quieres eliminar este contrato?</h1>
-
-                <div class="inputClaveWrapper">
-                    <p>Ingrese el <strong>N° de operación</strong> para confirmar</p>
-                    <input name="nro_orden_delete" class="input-read-write-default" type="text" id="input_confirm_delete">
-                </div>
-                <div class="confirmClaveWrapperButtons">
-                    <button id="confirmDelete" class="delete-button-default" type="button">Confirmar</button>
-                    <button id="notConfirmDelete" class="add-button-default" type="button">Cancelar</button>
-                </div>
-            </form>
-        </div>
+        <button id="showDeleteWrapper" class="delete-button-default" onclick="openModalDeleteVenta()">Eliminar venta</button>
     </div>
     {% if not object.adjudicado.status %}
     <div class="selectAdjudicacion">
@@ -127,22 +112,7 @@
 {% else %}
 <div class="wrapperButtonManageVenta">
     <div class="deleteSale">
-        <button id="showDeleteWrapper" class="delete-button-default">Eliminar venta</button>
-        <div class="wrapperFormDeleteSale">
-            <form method="POST" id="formDeleteSale">
-                {% csrf_token %}
-                <h1>¿Estas seguro que quieres eliminar este contrato?</h1>
-
-                <div class="inputClaveWrapper">
-                    <p>Ingrese el <strong>N° de orden</strong> para confirmar</p>
-                    <input name="nro_orden_delete" class="input-read-write-default" type="text" id="input_confirm_delete">
-                </div>
-                <div class="confirmClaveWrapperButtons">
-                    <button id="confirmDelete" class="delete-button-default" type="button">Confirmar</button>
-                    <button id="notConfirmDelete" class="add-button-default" type="button">Cancelar</button>
-                </div>
-            </form>
-        </div>
+        <button id="showDeleteWrapper" class="delete-button-default" onclick="modalDeleteVenta()">Eliminar venta</button>
     </div>
 </div>
 
@@ -359,22 +329,22 @@
                                     <div class="marca bloqueado" style="background-image: url('{% static 'images/icons/iconBloqueado.png' %}')">
                                     </div>
                                 {% else %}
-                                <div id="{{cuota.cuota}}" class ="cuota {{cuota.status|lower}}">
+                                <div id="{{cuota.cuota}}" class ="cuota {{cuota.status}}">
 
                                     {% if cuota.status|lower == "vencido" %}
-                                        <div class="marca {{cuota.status|lower}}"></div>
+                                        <div class="marca {{cuota.status}}"></div>
                                     {% endif %}
 
                                     {% if cuota.status|lower == "parcial" %}
-                                        <div class="marca {{cuota.status|lower}}"></div>
+                                        <div class="marca {{cuota.status}}"></div>
                                     {% endif %}
 
                                     {% if cuota.status|lower == "pagado" %}
-                                        <div class="marca {{cuota.status|lower}}"></div>
+                                        <div class="marca {{cuota.status}}"></div>
                                     {% endif %}
 
                                     {% if cuota.status|lower == "pendiente" %}
-                                        <div class="marca {{cuota.status|lower}}"></div>
+                                        <div class="marca {{cuota.status}}"></div>
                                     {% endif %}
 
                                 {% endif %}
@@ -393,7 +363,6 @@
                         <input type="hidden" class="notForm" name="cuota" id="cuotaID">
 
                         <div class="buttonsActions">
-                            <button type="button" class="" id="btnDescuentoCuota"><img src="{% static 'images/icons/descuentoIcon.png' %}" alt=""></button>
                             <button type="button" id="closeFormCuota"><img src="{% static 'images/icons/close.svg' %}" alt=""></button>
                         </div>
 
@@ -473,6 +442,7 @@
                         </div>
 
                         <div class="wrapperButtonPayCuota">
+                            {% comment %} <button type="button" class="" id="btnDescuentoCuota">Aplicar descuento</button> {% endcomment %}
                             <button type="button" name="sendPayment" form="payCuotaForm"id="sendPayment" class="add-button-default blocked">Abonar</button>      
                         </div>
                     </form>
@@ -516,19 +486,21 @@
     var deleteSaleUrl = "{{deleteSaleUrl}}"
     var solicitudAnulacionCuotaUrl = "{{solicitudAnulacionCuotaUrl}}"
     var confirmacionAnulacionCuotaUrl = "{{confirmacionAnulacionCuotaUrl}}"
-    var obtenerReciboCuotaUrl = "{{obtenerReciboCuotaUrl}}"
+    var cantidadCuotas = {{object.nro_cuotas}}
 
     var crsf_token = '{%csrf_token%}'
 </script>
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
-<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
-<script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+{% comment %} <script src="{% static 'js/inputsSelectsOnly.js' %}"></script> {% endcomment %}
 
-<script src="{% static 'js/manejoCuotas.js' %}"></script>
+{% comment %} <script src="{% static 'js/async_ui.js' %}"></script> {% endcomment %}
+
+<script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+<script type="module" src="{% static 'js/manejoCuotas.js' %}"></script>
 <script src="{% static 'js/selectAdjudicacion.js' %}"></script>
-<script src="{% static 'js/buttonBaja.js' %}"></script>
+<script type="module" src="{% static 'js/baja_venta.js' %}"></script>
 <script src="{% static 'js/redirectBajaPDF.js' %}"></script>
-<script src="{% static 'js/delete_sale.js' %}"></script>
+<script type="module" src="{% static 'js/delete_sale.js' %}"></script>
 
 {% endblock js %}

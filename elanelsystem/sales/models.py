@@ -42,6 +42,36 @@ class Ventas(models.Model):
         )['max_op'] or 0
         return max_n + 1
 
+    def _armar_cuota(self, index: int, fecha_venc) -> dict:
+        """
+        Construye el dict de una cuota con la misma forma que usabas antes.
+        - index: 0 = anticipo (según tu _calcular_total_oficial), 1 = primer_cuota, 2+ = importe_x_cuota (+ anualizado).
+        - fecha_venc: datetime.date o datetime.datetime. Para index 0 se deja vacío, como antes.
+        """
+
+        # Normalizamos fecha a datetime (por si viene como date)
+        if isinstance(fecha_venc, datetime.date) and not isinstance(fecha_venc, datetime.datetime):
+            fecha_venc = datetime.datetime.combine(fecha_venc, datetime.time.min)
+
+        # Formato de fecha igual al histórico
+        fecha_str = "" if index == 0 else fecha_venc.strftime('%d/%m/%Y %H:%M')
+
+        cuota_dict = {
+            "cuota": f"Cuota {index}",
+            "nro_operacion": getattr(self, "nro_operacion", None),
+            "status": "Pendiente",
+            "bloqueada": True,                           # la 0 se desbloquea afuera en crearCuotas()
+            "total": int(self._calcular_total_oficial(index)),
+            "fechaDeVencimiento": fecha_str,
+            "descuento": {"autorizado": "", "monto": 0},
+            "diasRetraso": 0,
+            "interesPorMora": 0,
+            "autorizada_para_anular":False,
+            "totalFinal": 0,
+            "pagos": [],
+        }
+        return cuota_dict
+
     def _siguiente_fecha_venc(self, fecha_base, index):
         """Calcula la fecha de vencimiento para la cuota `index`."""
         if self.modalidad == 'Mensual':
@@ -89,6 +119,7 @@ class Ventas(models.Model):
 
         self.cuotas = cuotas
         self.save()
+
 
     # Modalidades de tiempo de pago
     MODALIDADES = (
@@ -464,6 +495,9 @@ class Ventas(models.Model):
     #region CuotasManagement
     def desbloquearCuota(self,cuota):
         for i in range(0,int(self.nro_cuotas)):
+            # Si encontramos una cuota pendiente antes de la que buscamos, salimos porque no se puede segui desbloqueando cuotas si la anterior no se paga
+            if self.cuotas[i]["status"] in ["Pendiente", "Parcial"] and cuota != self.cuotas[i]["cuota"]:
+                break
             if (cuota == self.cuotas[i]["cuota"]):
                 self.cuotas[i+1]["bloqueada"] = False
                 break
@@ -585,8 +619,12 @@ class Ventas(models.Model):
         cuota["autorizada_para_anular"] = False
 
         idx = self.cuotas.index(cuota)
-        if idx + 1 < len(self.cuotas):
-            self.cuotas[idx+1]["bloqueada"] = True
+        for i in range(idx+1, len(self.cuotas)):
+            if self.cuotas[i]["status"].lower() == "pendiente":
+                self.cuotas[i]["bloqueada"] = True
+                self.cuotas[i]["status"] = "Pendiente"
+                self.cuotas[i]["pagos"] = []
+                self.cuotas[i]["autorizada_para_anular"] = False
 
         self.save()
 
@@ -604,7 +642,6 @@ class Ventas(models.Model):
         for i in range(0, len(self.cuotas)):
             cuota = self.cuotas[i]["fechaDeVencimiento"]
             if self.cuotas[i]["cuota"] != "Cuota 0":
-                print("ppppppppppppppppppppppppppp")
                 fechaVencimiento = datetime.datetime.strptime(cuota, "%d/%m/%Y %H:%M")
                 fechaActual = datetime.datetime.now()
                 if fechaActual > fechaVencimiento and not self.cuotas[i]['status'].lower() == "pagado":
@@ -876,6 +913,20 @@ class PagoCannon(models.Model):
         verbose_name = "Pago Cannon"
         verbose_name_plural = "Pagos Cannon"
 
+    def json(self):
+        return {
+            "id": self.id,
+            "nro_recibo": self.nro_recibo,
+            "venta_id": self.venta.id,
+            "nro_cuota": self.nro_cuota,
+            "fecha": self.fecha,
+            "campana_de_pago": self.campana_de_pago,
+            "monto": self.monto,
+            "metodo_pago": self.metodo_pago.alias if self.metodo_pago else None,
+            "cobrador": self.cobrador.alias if self.cobrador else None,
+            "responsable_pago": self.responsable_pago.nombre if self.responsable_pago else None,
+        }
+
     def clean(self):
         # 1) Asegurarse de que la cuota exista en la venta
         if self.nro_cuota > self.venta.nro_cuotas:
@@ -896,7 +947,7 @@ class PagoCannon(models.Model):
         if not self.nro_recibo:
             with connection.cursor() as cursor:
                 cursor.execute("SELECT nextval('recibo_seq')")
-                next_num = cursor.fetchone()[0] + 2
+                next_num = cursor.fetchone()[0] + 3
             # formatea a tu gusto, p.e. RC-000001
             self.nro_recibo = f"RC-{next_num:06d}"
         super().save(*args, **kwargs)

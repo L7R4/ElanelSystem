@@ -1,0 +1,241 @@
+:root {
+  --vt-border: #e5e7eb;
+  --vt-bg: #0b0b0b;
+  --vt-bg-soft: #121212;
+  --vt-text: #e5e7eb;
+  --vt-muted: #9ca3af;
+  --vt-accent: #60a5fa;
+}
+.vt-wrapper {
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+    Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
+  color: var(--vt-text);
+  background: transparent;
+}
+.vt-toolbar {
+  display: flex;
+  align-items: center;
+  /* justify-content: space-between; */
+  gap: 1.5rem;
+  margin-bottom: 12px;
+}
+.vt-search-wrap{
+    width: 100%;
+}
+.vt-left {
+  display: flex;
+  align-items: center;
+  width: 30%;
+  min-width: 200px;
+  max-width: 500px;
+  gap: 12px;
+}
+.vt-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 70%;
+}
+.vt-extra{
+    width: 100%;
+}
+/* .vt-search {
+  padding: 8px 10px;
+  border: 1px solid var(--vt-border);
+  border-radius: 8px;
+  background: #0f0f0f;
+  color: var(--vt-text);
+  min-width: 220px;
+} */
+.vt-columns {
+  position: relative;
+}
+.vt-columns-btn {
+  padding: 8px 10px;
+  border: 1px solid var(--vt-border);
+  border-radius: 8px;
+  background: #0f0f0f;
+  color: var(--vt-text);
+  cursor: pointer;
+}
+.vt-columns-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  background: #0f0f0f;
+  border: 1px solid var(--vt-border);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  width: 220px;
+  z-index: 20;
+}
+.vt-columns-menu[hidden] {
+  display: none;
+}
+.vt-col-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.vt-col-actions button {
+  background: #111;
+  border: 1px solid var(--vt-border);
+  border-radius: 6px;
+  color: var(--vt-text);
+  padding: 6px 8px;
+  cursor: pointer;
+}
+.vt-col-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 14px;
+  color: var(--vt-muted);
+}
+
+.vt-table-wrap {
+  position: relative;
+  border: 1px solid var(--white-800-20);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--blue-1);
+}
+.vt-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.vt-table thead th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--white-800-80);
+  background: var(--blue-2);
+  padding: 10px 12px;
+}
+.vt-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.06);
+  font-size: 14px;
+}
+.vt-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.vt-empty {
+  text-align: center;
+  color: var(--vt-muted);
+  padding: 28px;
+}
+
+.vt-pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 10px 4px;
+  color: var(--vt-muted);
+}
+.vt-page-info{
+    font: clamp(1rem, 1vw, 1.3rem) 'raleway-semibold';
+    color: var(--white-800-50);
+    font-feature-settings: "pnum" on, "lnum" on;
+}
+.vt-pagination button {
+    padding: .6rem 1rem;
+    border: 1px solid var(--white-800-20);
+    border-radius: .6rem;
+    background: var(--blue-1);
+    color: var(--white-800-80);
+    cursor: pointer;
+}
+.vt-pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.vt-page-size {
+  padding: 6px 10px;
+  border: 1px solid var(--vt-border);
+  border-radius: 8px;
+  background: #0f0f0f;
+  color: var(--vt-text);
+}
+
+.vt-loader {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.06);
+}
+.vt-spinner {
+  width: 26px;
+  height: 26px;
+  border: 3px solid transparent;
+  border-top-color: var(--vt-accent);
+  border-left-color: var(--vt-accent);
+  border-radius: 50%;
+  animation: vt-spin 0.8s linear infinite;
+}
+.vt-loading-text {
+  font: clamp(1rem, 1vw, 1.3rem) 'raleway-semibold';
+  color: var(--white-800-80);
+  letter-spacing: 0.04em;
+}
+@keyframes vt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ——— Layout “sticky” del módulo ——— */
+.vt-wrapper.vt-sticky{
+  /* El módulo se vuelve un “card” con 3 filas:
+     toolbar (auto) + contenido scrolleable (1fr) + paginación (auto) */
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  /* altura máxima del card (editable): */
+  /* max-height: var(--vt-max-height, 70vh); */
+  /* evita que el scroll se “escape” del card */
+  width: 100%;
+  overflow: hidden;
+}
+
+/* el área que scrollea será solo el interior de la tabla */
+.vt-wrapper.vt-sticky .vt-table-wrap{
+  /* IMPORTANTE: permitir que el hijo scrollee dentro de grid */
+  min-height: 0;
+  /* tu CSS tenía overflow:hidden; lo reemplazamos por auto */
+  overflow: auto;
+}
+
+/* Header pegado arriba dentro del área scrolleable */
+.vt-wrapper.vt-sticky .vt-table thead th{
+  position: sticky;
+  top: 0;
+  /* z-index: 2; que quede por encima de las celdas al hacer scroll */
+}
+
+/* Paginación pegada abajo del card (visible siempre) */
+.vt-wrapper.vt-sticky .vt-pagination{
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  /* sin colores nuevos; si necesitás opacar el fondo, podés usar el mismo
+     que tu card, pero lo dejo sin cambios para respetar tu paleta */
+}
+
+/* Opcional (recomendado): cuando hay scrollbar interno, asegura buen alineado */
+.vt-wrapper.vt-sticky .vt-table{
+  border-collapse: separate; /* evita pequeños saltos con sticky */
+  border-spacing: 0;
+}
