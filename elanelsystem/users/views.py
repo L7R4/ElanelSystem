@@ -36,6 +36,7 @@ import pandas as pd
 from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.contrib.auth.hashers import check_password
 #region Usuarios - - - - - - - - - - - - - - - - - - - -
 
 class ConfiguracionPerfil(TestLogin,generic.View):
@@ -279,12 +280,16 @@ class ListaUsers(PermissionRequiredMixin, generic.ListView):
 
     def get(self, request, *args, **kwargs):
         page_number = int(request.GET.get('page', 1))
-        page_size = int(request.GET.get('page_size', 30))
-        search = request.GET.get('search', '')
+        page_size   = int(request.GET.get('page_size', 30))
+        search      = request.GET.get('search', '')          
+        sucursal_id = request.GET.get('sucursal_id')
 
         userConnected = request.user
         sucursal_ids = userConnected.sucursales.values_list('id', flat=True)
         users_queryset = Usuario.objects.filter(sucursales__in=sucursal_ids).order_by('nombre')
+
+        if sucursal_id:
+            users_queryset = users_queryset.filter(sucursales__id=sucursal_id)
 
         if search:
             users_queryset = users_queryset.filter(
@@ -301,7 +306,7 @@ class ListaUsers(PermissionRequiredMixin, generic.ListView):
         if self.wants_json(request):
             users_data = []
             for user in page_obj.object_list:
-                sucursales_pseudonimos = [sucursal.pseudonimo for sucursal in user.sucursales.all()]
+                sucursales_pseudonimos = [s.pseudonimo for s in user.sucursales.all()]
                 users_data.append({
                     "id": user.id,
                     "nombre": user.nombre,
@@ -312,8 +317,8 @@ class ListaUsers(PermissionRequiredMixin, generic.ListView):
                     "sucursales": sucursales_pseudonimos
                 })
             return JsonResponse({
-                "users": users_data,
-                "total": paginator.count,  # Grid.js usa esto para paginación
+                "results": users_data,
+                "total": paginator.count,
             })
 
         # Render normal HTML
@@ -860,116 +865,74 @@ class ListaClientes(TestLogin, generic.View):
         )
 
     def get(self, request, *args, **kwargs):
-        agencias_disponibles_user = request.user.sucursales.all()
-        customers_disponibles = Cliente.objects.filter(agencia_registrada__in=agencias_disponibles_user)
-        print(Cliente.objects.last().id)
-        
+        page_number = int(request.GET.get('page', 1))
+        page_size   = int(request.GET.get('page_size', 30))
+        search      = request.GET.get('search', '')          
+        sucursal_id = request.GET.get('sucursal_id')
+
+        userConnected = request.user
+        sucursal_ids = userConnected.sucursales.values_list('id', flat=True)
+        customer_queryset = Cliente.objects.filter(agencia_registrada__in=sucursal_ids).order_by('nombre')
+
+        if sucursal_id:
+            customer_queryset = customer_queryset.filter(agencia_registrada_id=sucursal_id)
+
+        if search:
+            customer_queryset = customer_queryset.filter(
+                Q(nro_cliente__icontains=search) |
+                Q(nombre__icontains=search) |
+                Q(dni__icontains=search) |
+                Q(prov__icontains=search) |
+                Q(loc__icontains=search) |
+                Q(tel__icontains=search) 
+            ).distinct()
+
+        paginator = Paginator(customer_queryset, page_size)
+        page_obj = paginator.get_page(page_number)
+
         if self.wants_json(request):
-            # -------- filtros --------
-            # sucursal = request.GET.get("sucursal")
-            search = request.GET.get("search")
-            if search:
-                customers_disponibles = customers_disponibles.filter(
-                    Q(nombre__icontains=search) |
-                    Q(dni__icontains=search) |
-                    Q(tel__icontains=search) |
-                    Q(prov__icontains=search) |
-                    Q(loc__icontains=search)
-                ).distinct()
-
-            # -------- paginación con Paginator (page/page_size) --------
-            try:
-                page = int(request.GET.get("page", 1))
-            except (TypeError, ValueError):
-                page = 1
-            try:
-                page_size = int(request.GET.get("page_size", 30))
-            except (TypeError, ValueError):
-                page_size = 10
-
-            paginator = Paginator(customers_disponibles.select_related("agencia_registrada").only("id", "nombre", "dni", "tel", "prov", "loc", "agencia_registrada__pseudonimo"), page_size)
-            page_obj = paginator.get_page(page)  # seguro (no lanza)
-
-            customer_data = [{
-                "id": c.id,
-                "nombre": c.nombre,
-                "dni": c.dni,
-                "tel": c.tel,
-                "prov": c.prov,
-                "loc": c.loc,
-                "sucursal": c.agencia_registrada.pseudonimo,
-                "url": reverse('users:cuentaUser', args=[c.id]),
-            } for c in page_obj.object_list]
-
+            customers_data = []
+            for customer in page_obj.object_list:
+                customers_data.append({
+                    "id": customer.id,
+                    "nro_cliente": customer.nro_cliente,
+                    "nombre": customer.nombre,
+                    "dni": customer.dni,
+                    "loc": customer.loc,
+                    "prov": customer.prov,
+                    "tel": customer.tel,
+                })
             return JsonResponse({
-                "customers": customer_data,
-                "total": paginator.count,          # <-- Grid.js lo usa
+                "results": customers_data,
+                "total": paginator.count,
             })
 
-        # -------- GET normal (HTML) --------
-        sucursales = list(Sucursal.objects.values_list("pseudonimo", flat=True))
-        context = {
-            "importClientesURL": reverse_lazy("users:importClientes"),
-            "sucursalesDisponiblesJSON": json.dumps(sucursales),
-            "sucursales": sucursales,
-        }
-        return render(request, self.template_name, context)
-    
+        # Render normal HTML
+        campaniasDisponibles = getCampanasDisponibles()
+        sucursales = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in Sucursal.objects.all() ]
+        sucursalesDisponibles = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in request.user.sucursales.all()]
 
-
-# def importar_clientes(request):
-#     if request.method == "POST":
-
-#         # Recibir el archivo y el dato adicional 'agencia'
-#         uploaded_file = request.FILES['file']
-#         agencia = request.POST.get('agencia')
-
-#         fs = FileSystemStorage()
-#         filename = fs.save(uploaded_file.name, uploaded_file)
-#         file_path = fs.path(filename)
-#         new_number_rows_cont = 0
-
-#         try:
-#             # Leer y formatear la hoja "CLIENTES" del archivo Excel
-#             df = formatear_columnas(file_path, sheet_name="CLIENTES")
+        customers_data = []
+        for customer in page_obj.object_list:
+            # Agrega el diccionario con la información del usuario y sus sucursales
+            customers_data.append({
+                "id": customer.id,
+                "nro_cliente": customer.nro_cliente,
+                "nombre": customer.nombre,
+                "dni": customer.dni,
+                "loc": customer.loc,
+                "prov": customer.prov,
+                "tel": customer.tel,
+            })
             
-#             # Procesar cada fila
-#             for _, row in df.iterrows():
-
-#                 dni=handle_nan(row['dni'].astype(str))
-#                 cliente_existente = Cliente.objects.filter(dni=dni).first()
-                
-#                 if not cliente_existente:
-#                     new_number_rows_cont +=1
-#                     Cliente.objects.create(
-#                         nro_cliente = row['nro'],
-#                         nombre=handle_nan(row['cliente']),
-#                         dni= dni if handle_nan(row['dni']) != "" else "",
-#                         agencia_registrada = Sucursal.objects.get(pseudonimo = agencia),
-#                         domic=handle_nan(row['domic']) ,
-#                         loc = handle_nan(row["loc"]) ,
-#                         prov = handle_nan(row["prov"]) ,
-#                         cod_postal = str(int(float(row["cod_pos"]))) if handle_nan(row["cod_pos"]) != "" else "",
-#                         tel= str(int(float(row['tel_1']))) if handle_nan(row['tel_1']) != "" else "" ,
-#                         # fec_nacimiento = format_date(handle_nan(row["fecha_de_nac"])),
-#                         estado_civil = handle_nan(row["estado_civil"]),
-#                         ocupacion = handle_nan(row["ocupacion"]) 
-#                     )
-                
-
-#             # Eliminar el archivo después de procesar
-#             fs.delete(filename)
-
-#             iconMessage = "/static/images/icons/checkMark.svg"
-#             message= f"Datos importados correctamente. Se agregaron {new_number_rows_cont} clientes nuevos"
-#             return JsonResponse({"message": message,"iconMessage": iconMessage, "status": True})
-
-#         except Exception as e:
-#             print(f"Error al importar: {e}")
-
-#             iconMessage = "/static/images/icons/error_icon.svg"
-#             message= "Error al procesar el archivo"
-#             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": False})
+        context = {
+            "customers": customers_data,
+            "campaniasDisponibles": json.dumps(campaniasDisponibles),
+            "sucursalesDisponibles": json.dumps(sucursalesDisponibles),
+            "sucursales": sucursales,
+            "page_obj": page_obj,
+        }
+        return render(request, self.template_name,context)
 
 
 def importar_clientes(request):
@@ -1029,7 +992,6 @@ def importar_clientes(request):
             "iconMessage": "/static/images/icons/error_icon.svg"
         })
     
-
 
 class CrearCliente(TestLogin, generic.CreateView):
     model = Cliente
@@ -1235,18 +1197,26 @@ def deleteGrupo(request):
 
 
 def requestKey(request):
-    if request.method =="POST":
-        keyPassaword = json.loads(request.body)["pass"]
-        motivo = json.loads(request.body)["motivo"]
-        key = Key.objects.get(motivo = motivo)
+    try:
+        data = json.loads(request.body or "{}")
+        raw_pass = data.get("pass", "")
+        motivo   = data.get("motivo", "baja")  # si querés seguir recibiéndolo
 
-        if(key.password == int(keyPassaword)): 
-            request.session["statusKeyPorcentajeBaja"] = True
-            return JsonResponse({'status': True, 'message': 'Contraseña correcta'},safe=False)
-        else:
-            request.session["statusKeyPorcentajeBaja"] = False
-            return JsonResponse({'status': False, 'message': 'Contraseña incorrecta'},safe=False)
-            
+        if not raw_pass:
+            return JsonResponse({'status': False, 'message': 'Contraseña requerida'}, status=400)
+
+        user = request.user
+        # Si tu User extiende AbstractBaseUser, podés usar: ok = user.check_password(raw_pass)
+        ok = check_password(raw_pass, user.password)
+
+        request.session["statusKeyPorcentajeBaja"] = bool(ok)
+
+        if ok:
+            return JsonResponse({'status': True, 'message': 'Contraseña correcta'})
+        return JsonResponse({'status': False, 'message': 'Contraseña incorrecta'}, status=401)
+
+    except Exception as e:
+        return JsonResponse({'status': False, 'message': str(e)}, status=500)
 
 #endregion  - - - - - - - - - - - - - - - - - - - - - - - - - 
 

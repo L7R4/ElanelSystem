@@ -8,6 +8,8 @@ function initCustomSingleSelects(preValues = {}) {
 
 // Configurar un select personalizado
 function initSingleSelect(selectWrapper, preValues = {}) {
+    if (selectWrapper.dataset._inited === "1") return;   // ← evita doble init
+        selectWrapper.dataset._inited = "1";                 // ← marca como inicializado
     let iconDisplay = selectWrapper.parentElement.querySelector(".iconDesplegar"); // Icono desplegable
     let hiddenInput = selectWrapper.previousElementSibling; // Input hidden
     let displayText = selectWrapper.querySelector("h3"); // H3 que muestra la opción seleccionada
@@ -63,20 +65,47 @@ function initSingleSelect(selectWrapper, preValues = {}) {
 
 
 // Función para limpiar los inputs
-function clearInputs(inputs) {
-    inputs.forEach(input => input.value = "");
-    let pseudo_input = document.querySelectorAll(".pseudo-input-select-wrapper > h3");
-    pseudo_input.forEach(input => {
-        input.textContent = ""
-        setPlaceholder(input, input.parentElement.previousElementSibling);
-    });
+// function clearInputs(inputs) {
+//     console.log(inputs)
+//     inputs.forEach(input => input.value = "");
+//     let pseudo_input = document.querySelectorAll(".pseudo-input-select-wrapper > h3");
+//     pseudo_input.forEach(input => {
+//         input.textContent = ""
+//         setPlaceholder(input, input.parentElement.previousElementSibling);
+//     });
 
-    inputs.forEach(element => {
-        let options = element.parentElement.parentElement.querySelector(".options");
-        options.querySelectorAll("li.selected").forEach(el => el.classList.remove("selected"));
-    });
+//     inputs.forEach(element => {
+//         let options = element.parentElement.querySelector(".options");
+//         console.log(options)
+//         options.querySelectorAll("li.selected").forEach(el => el.classList.remove("selected"));
+//     });
 
+// }
+
+function clearInputs(inputs, scope = document) {
+  // 1) limpiar valores de inputs pasados
+  console.log("aaaaaaaaa")
+  console.log(inputs)
+
+  inputs.forEach(input => { input.value = ""; });
+
+  // 2) limpiar selects custom dentro del scope
+  scope.querySelectorAll(".containerInputAndOptions").forEach(container => {
+    const hidden  = container.querySelector("input[type='hidden']");
+    const h3      = container.querySelector(".pseudo-input-select-wrapper > h3");
+    const options = container.querySelector(".options");
+
+    // a) quitar selección visual de las opciones
+    if (options) options.querySelectorAll("li.selected").forEach(li => li.classList.remove("selected"));
+
+    // b) resetear placeholder del pseudo input
+    if (h3 && hidden) setPlaceholder(h3, hidden);
+
+    // c) asegurar que el hidden quede vacío
+    if (hidden) hidden.value = "";
+  });
 }
+window.clearInputs = clearInputs;
 
 
 // Función para establecer placeholder
@@ -85,6 +114,8 @@ function setPlaceholder(displayText, hiddenInput) {
     displayText.textContent = placeholderText;
     displayText.classList.add("placeholder");
 }
+window.setPlaceholder = setPlaceholder;
+
 
 // Función para abrir/cerrar la lista de opciones
 function toggleOptionsList(optionsList, iconDisplay, forceOpen = false) {
@@ -114,6 +145,7 @@ function toggleOption_singleSelect(hiddenInput, displayText, option, optionsList
         hiddenInput.value = "";
         setPlaceholder(displayText, hiddenInput);
     } else {
+        console.log("weps")
         optionsList.querySelectorAll("li.selected").forEach(el => el.classList.remove("selected"));
         option.classList.add("selected");
         hiddenInput.value = selectedValue;
@@ -127,3 +159,15 @@ function toggleOption_singleSelect(hiddenInput, displayText, option, optionsList
 
 // Ejecutar la función en la carga del DOM
 document.addEventListener("DOMContentLoaded", initCustomSingleSelects);
+
+function updateEventsLisOptions(input, optionsList) {
+    let options = optionsList.querySelectorAll("li");
+    // toggleOptionsList(input, optionsList);
+
+    options.forEach(option => {
+        option.addEventListener("click", () => {
+            let displayText = optionsList.previousElementSibling.querySelector("h3");
+            toggleOption_singleSelect(input, displayText, option, optionsList);
+        });
+    });
+}

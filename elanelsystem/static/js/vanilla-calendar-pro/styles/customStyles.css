@@ -1,0 +1,20 @@
+.vc-week__day{
+    font-size: clamp(10px, 1.1vw, 13px) !important;
+    font-family: raleway-semibold !important;
+}
+.vc-date button{
+    font-size: clamp(9px, 1vw, 12px) !important;
+    font-family: raleway !important;
+}
+.vc{
+    gap:.6rem;
+    border: 1px solid var(--blue-2);
+}
+.vc-month, .vc-year{
+    font-size: clamp(11px, 1vw, 13px) !important;
+    font-family: raleway-semibold !important;
+}
+.button-default-style{
+    font-size: clamp(7px, 1vw, 10px) !important;
+    padding: .5rem .7rem !important;
+}

@@ -2,7 +2,7 @@ import random
 import string
 from django.template.loader import get_template
 from weasyprint import HTML,CSS
-import elanelsystem.settings as settings
+import elanelsystem.settings.base as settings
 import os
 import pandas as pd
 import logging
@@ -40,7 +40,7 @@ from products.models import Products, Plan
 def printPDFBaja(data,url,productoName):
     template = get_template("pdfForBaja.html")
     html_template = template.render(data)
-    css_url = os.path.join(settings.BASE_DIR, "static/css/pdfForBaja.css")
+    css_url = os.path.join(settings.ROOT_DIR, "static/css/pdfForBaja.css")
     if not os.path.exists(settings.PDF_STORAGE_DIR):
         os.makedirs(settings.PDF_STORAGE_DIR)
     HTML(string=html_template,base_url=url).write_pdf(target=productoName, stylesheets = [CSS(css_url)])
@@ -50,7 +50,7 @@ def printPDFtitularidad(data,url,productoName):
     template = get_template("pdfForTitu.html")
     context = data
     html_template = template.render(context)
-    css_url = os.path.join(settings.BASE_DIR, "static/css/pdfForTitu.css")
+    css_url = os.path.join(settings.ROOT_DIR, "static/css/pdfForTitu.css")
     if not os.path.exists(settings.PDF_STORAGE_DIR):
         os.makedirs(settings.PDF_STORAGE_DIR)
     pdf = HTML(string=html_template,base_url=url).write_pdf(target=productoName, stylesheets = [CSS(css_url)])
@@ -61,7 +61,7 @@ def printPDFarqueo(data,url,productoName):
     template = get_template("pdfForArqueo.html")
     context = data
     html_template = template.render(context)
-    css_url = os.path.join(settings.BASE_DIR, "static/css/pdfArqueo.css")
+    css_url = os.path.join(settings.ROOT_DIR, "static/css/pdfArqueo.css")
     if not os.path.exists(settings.PDF_STORAGE_DIR):
         os.makedirs(settings.PDF_STORAGE_DIR)
     pdf = HTML(string=html_template,base_url=url).write_pdf(target=productoName, stylesheets = [CSS(css_url)])
@@ -72,7 +72,7 @@ def printPDFinforme(data,url,productoName):
     template = get_template("pdfForInforme.html")
     context = data
     html_template = template.render(context)
-    css_url = os.path.join(settings.BASE_DIR, "static/css/pdfInforme.css")
+    css_url = os.path.join(settings.ROOT_DIR, "static/css/pdfInforme.css")
     if not os.path.exists(settings.PDF_STORAGE_DIR):
         os.makedirs(settings.PDF_STORAGE_DIR)
     pdf = HTML(string=html_template,base_url=url).write_pdf(target=productoName, stylesheets = [CSS(css_url)])
@@ -83,7 +83,7 @@ def printPDFinformePostVenta(data,url,productoName):
     template = get_template("pdfPostVentaInforme.html")
     context = data
     html_template = template.render(context)
-    css_url = os.path.join(settings.BASE_DIR, "static/css/pdfPostVentaInforme.css")
+    css_url = os.path.join(settings.ROOT_DIR, "static/css/pdfPostVentaInforme.css")
     if not os.path.exists(settings.PDF_STORAGE_DIR):
         os.makedirs(settings.PDF_STORAGE_DIR)
     pdf = HTML(string=html_template,base_url=url).write_pdf(target=productoName, stylesheets = [CSS(css_url)])

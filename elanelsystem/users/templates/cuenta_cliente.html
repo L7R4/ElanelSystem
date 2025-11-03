@@ -27,15 +27,19 @@
                 
                 <img src="{% static 'images/icons/search.svg' %}" alt="">
             </div>
-            <div id="productoWrapper" class="inputWrapper">
+            <div id="productoWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+                <h3 class="labelInput">Producto</h3>
                 <div class="containerInputAndOptions">
-                    <img id="tipoComprobanteIconDisplay" class="iconDesplegar" src="/static/images/icons/arrowDown.png" alt="">
-                    <input type="text" readonly="" placeholder = "Producto" name="producto" id="productoInput" required="required" autocomplete="off" maxlength="50" class="input-read-write-default onlySelect">
-                    <ul id="contenedorProducto" class="list-select-custom options">
-                        {% for producto in productoDelCliente %}
-                            <li data-value="{{producto}}">{{producto}}</li>
-                        {% endfor %}
-                    </ul>
+                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                  <input type="hidden" class="filterInput" name="producto" id="productoInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                  </div>
+                  <ul id="contenedorProducto" class="list-select-custom options">
+                      {% for producto in productoDelCliente %}
+                          <li data-value="{{producto}}">{{producto}}</li>
+                      {% endfor %}
+                  </ul>
                 </div>
             </div>
             <button type="button" id="submitSearchVenta" disabled class="add-button-default">Buscar</button>
@@ -202,6 +206,8 @@
 {% endblock content %}
 
 {% block js %}
-<script src="{% static 'js/input_search_operation.js' %}"></script>
-<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
+<script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+<script src="{% static 'js/z_index_orders_selects.js' %}"></script>
+<script type="module" src="{% static 'js/async_ui.js' %}"></script>
+<script src="{% static 'js/operation.js' %}"></script>
 {% endblock js %}

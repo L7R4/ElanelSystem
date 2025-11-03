@@ -1,15 +1,16 @@
 .wrapper_content {
-    padding-left: 5rem;
-    overflow-x: hidden;
+    /* padding-left: 5rem; */
+    overflow: hidden;
     padding: 5rem;
     display: flex;
+    gap: 2rem;
     flex-flow: column;
 }
 
 .not_ed {
-    background-color: #3f4653d4 !important;
+    background-color: var(--white-800-20) !important;
     pointer-events: none;
-    border: 2px solid #1c2d45b8 !important;
+    /* border: 2px solid #1c2d45b8 !important; */
 }
 
 .input-select-custom {
@@ -33,7 +34,7 @@ p.iconValueInput {
 }
 
 .wrapper_tittle {
-    padding-bottom: 3rem;
+    flex:0 0 auto ;
 }
 
 .wrapper_tittle>h1 {
@@ -47,7 +48,15 @@ p.iconValueInput {
     grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
     gap: 2rem;
     position: relative;
-    padding: 3rem 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1rem;
+}
+/* El calendario que se inserta dentro del form */
+#form_create_sale .vc {
+  position: absolute !important;
+  z-index: 9999; /* que quede por encima de inputs/modales */
 }
 
 #form_create_sale>div {
@@ -78,11 +87,6 @@ p.iconValueInput {
     border-radius: 0.6rem;
 }
 
-#form_create_sale>div>input {
-    color: var(--third-color);
-    height: 3.3rem;
-    background-color: #1B1A27;
-}
 
 #form_create_sale div.containerIcon_Input>input {
     color: var(--third-color);
@@ -93,96 +97,15 @@ p.iconValueInput {
     filter: invert(1);
 }
 
-/* #region Z-INDEX de los inputs selects*/
-
-#form_create_sale>#wrapperTipoProducto .iconDesplegar {
-    z-index: 21;
+#productoWrapper{
+    grid-column: 2 / -2;
 }
-
-#form_create_sale>#wrapperTipoProducto #tipoProductoInput {
-    z-index: 20;
+#vendedorWrapper{
+    grid-column: 1 / span 2;
 }
-
-#form_create_sale>#wrapperTipoProducto .options {
-    z-index: 19;
+#supervisorWrapper{
+    grid-column: 3 / span 2;
 }
-
-#form_create_sale>#wrapperProducto .iconDesplegar {
-    z-index: 18;
-}
-
-#form_create_sale>#wrapperProducto #productoInput {
-    z-index: 17;
-}
-
-#form_create_sale>#wrapperProducto .options {
-    z-index: 16;
-}
-
-
-#form_create_sale>#wrapperAgencia .iconDesplegar {
-    z-index: 15;
-}
-
-#form_create_sale>#wrapperAgencia #id_agencia {
-    z-index: 14;
-}
-
-#form_create_sale>#wrapperAgencia .options {
-    z-index: 13;
-}
-
-
-#form_create_sale>#wrapperModalidad .iconDesplegar {
-    z-index: 12;
-}
-
-#form_create_sale>#wrapperModalidad #id_modalidad {
-    z-index: 11;
-}
-
-#form_create_sale>#wrapperModalidad .options {
-    z-index: 10;
-}
-
-#form_create_sale>#wrapperVendedor .iconDesplegar {
-    z-index: 9;
-}
-
-#form_create_sale>#wrapperVendedor #id_vendedor {
-    z-index: 8;
-}
-
-#form_create_sale>#wrapperVendedor .options {
-    z-index: 7;
-}
-
-#form_create_sale>#wrapperSupervisor .iconDesplegar {
-    z-index: 6;
-}
-
-#form_create_sale>#wrapperSupervisor #id_supervisor {
-    z-index: 5;
-}
-
-#form_create_sale>#wrapperSupervisor .options {
-    z-index: 4;
-}
-
-#form_create_sale>#wrapperCampania .iconDesplegar {
-    z-index: 3;
-}
-
-#form_create_sale>#wrapperCampania #id_campania {
-    z-index: 2;
-}
-
-#form_create_sale>#wrapperCampania .options {
-    z-index: 1;
-}
-
-/* #endregion */
-
 
 #form_create_sale>div>textarea.input-read-write-default {
     padding: 1.2rem;
@@ -196,7 +119,7 @@ p.iconValueInput {
 #form_create_sale>div>label {
     font-size: clamp(1.4rem, 1.3vw, 1.5rem);
     font-family: raleway-semibold;
-    color: var(--third-color);
+    color: var(--white-800-80);
     width: fit-content;
     padding-left: 0.5rem;
     padding-bottom: 0.3rem;
@@ -303,19 +226,13 @@ button#submitCreateSaleButton:disabled {
     pointer-events: none;
     border: 2px solid #1c2d45b8 !important;
 }
-
-#id_importe,
-#id_tasa_interes,
-#id_intereses_generados,
-#id_importe_x_cuota,
-#id_paquete,
-#id_total_a_pagar,
-#id_primer_cuota,
-#id_anticipo,
-#id_nro_orden {
-    background-color: #3f4653d4 !important;
-    pointer-events: none;
-    border: 2px solid #1c2d45b8 !important;
+.labelInput{
+    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+    font-family: raleway-semibold;
+    color: var(--white-800-80);
+    margin-bottom: .5rem;
+    padding-bottom: 0.3rem;
+    width: fit-content;
 }
 
 /* #region Multiples chances */

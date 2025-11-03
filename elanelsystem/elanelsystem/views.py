@@ -170,7 +170,7 @@ class DetallesNegocioView(generic.View):
 
     def get(self, request, tipo_slug):
         # Obtén los datos del modelo basado en el slug
-        sucursal = request.GET.get("agencia") if request.GET.get("agencia") else "Sucursal central"
+        sucursal = request.GET.get("agencia") if request.GET.get("agencia") else "Resistencia, Chaco"
 
         MODELOS = {
             'cannons': dataStructureCannons(sucursal),
@@ -236,7 +236,7 @@ class DetallesNegocioView(generic.View):
                 'tipo': tipo_slug,
                 'data': data_paginated,
                 'sucursales': Sucursal.objects.all(),
-                'sucursalDefault': Sucursal.objects.get(pseudonimo="Sucursal central"),
+                'sucursalDefault': Sucursal.objects.get(pseudonimo="Resistencia, Chaco"),
             }
         )
     

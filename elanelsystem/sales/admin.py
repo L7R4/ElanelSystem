@@ -1,6 +1,9 @@
 from django.contrib import admin
 from .models import Auditoria, PagoCannon, Ventas, MetodoPago,CoeficientesListadePrecios, ArqueoCaja, MovimientoExterno, CuentaCobranza
 from datetime import datetime
+from django.db import connection
+from django.db.models import Q, TextField
+from django.db.models.functions import Cast
 # admin.site.register(Ventas)
 admin.site.register(ArqueoCaja)
 admin.site.register(MovimientoExterno)
@@ -59,24 +62,20 @@ class YearFilter(admin.SimpleListFilter):
             return queryset.filter(fecha__regex=rf"\d{{2}}/\d{{2}}/{self.value()}")
         return queryset
 
+CONTRACT_KEYS = ("nroContrato", "nro_contrato", "numero", "nro", "contrato")
+
 @admin.register(Ventas)
 class VentasAdmin(admin.ModelAdmin):
-    # Mostrar columnas específicas en el listado
-    list_display = ('nro_operacion', 'get_cliente', 'get_producto','campania','fecha',"vendedor","supervisor", "importe",)
-    
-    # Hacer algunas columnas editables directamente desde el listado
-    # list_editable = ('modalidad', 'importe', 'total_a_pagar')
-    
-    # Agregar opciones de búsqueda
-    search_fields = ('nro_operacion','nro_cliente__nombre', 'producto__nombre', 'fecha',"campania","nro_cuotas",)
-    
-    # Agregar filtros
-    list_filter = (YearFilter ,'supervisor', "vendedor", "agencia", "campania")
-    
-    # Mostrar más información en la vista de detalle
-    # readonly_fields = ('nro_operacion', 'cuotas', 'adjudicado', 'deBaja', 'auditoria')
-    
-    # Personalizar títulos de relaciones para mostrar nombres
+    list_display = (
+        'nro_operacion', 'get_cliente', 'get_producto', 'campania', 'fecha',
+        'vendedor', 'supervisor', 'importe', 'get_contratos'  # 👈 muestra contratos
+    )
+    search_fields = (
+        'nro_operacion', 'nro_cliente__nombre', 'producto__nombre',
+        'fecha', 'campania', 'nro_cuotas',
+    )
+    list_filter = ('supervisor', "vendedor", "agencia", "campania")
+
     def get_cliente(self, obj):
         return obj.nro_cliente.nombre
     get_cliente.short_description = 'Cliente'
@@ -84,3 +83,71 @@ class VentasAdmin(admin.ModelAdmin):
     def get_producto(self, obj):
         return obj.producto.nombre
     get_producto.short_description = 'Producto'
+
+    def get_contratos(self, obj):
+        """
+        Muestra números de contrato detectados dentro de `cantidadContratos`
+        aceptando lista de ints/strings, lista de dicts o dict plano.
+        """
+        data = obj.cantidadContratos or []
+        found = []
+
+        def push(val):
+            if val is None:
+                return
+            try:
+                found.append(str(val).strip())
+            except Exception:
+                pass
+
+        if isinstance(data, list):
+            for el in data:
+                if isinstance(el, (int, str)):
+                    push(el)
+                elif isinstance(el, dict):
+                    for k in CONTRACT_KEYS:
+                        if k in el:
+                            push(el[k]); break
+        elif isinstance(data, dict):
+            for k in CONTRACT_KEYS:
+                if k in data:
+                    push(data[k])
+
+        return ", ".join([f for f in found if f]) or "—"
+    get_contratos.short_description = "Nº contrato(s)"
+
+    # 🔎 Inyecta búsqueda por contrato dentro del JSON desde el cuadro "Buscar"
+    def get_search_results(self, request, queryset, search_term):
+        qs, use_distinct = super().get_search_results(request, queryset, search_term)
+        term = (search_term or "").strip()
+        if not term:
+            return qs, use_distinct
+
+        # admitimos "12345" y también "0012345"
+        values_to_try = [term]
+        if term.isdigit():
+            values_to_try.append(int(term))  # exact match numérico
+
+        if connection.vendor == "postgresql":
+            extra = Q()
+
+            # Caso A: lista de ints/strings -> [12345] / ["12345"]
+            for v in values_to_try:
+                extra |= Q(cantidadContratos__contains=[v])
+
+            # Caso B: lista de objetos -> [{"nroContrato": 12345}], etc.
+            for key in CONTRACT_KEYS:
+                for v in values_to_try:
+                    extra |= Q(**{"cantidadContratos__contains": [{key: v}]})
+
+            # Caso C: objeto plano -> {"nroContrato": 12345}
+            for key in CONTRACT_KEYS:
+                for v in values_to_try:
+                    extra |= Q(**{"cantidadContratos__contains": {key: v}})
+
+            qs = qs | queryset.filter(extra)
+        else:
+            # Fallback genérico (SQLite/MySQL): buscar como texto
+            qs = qs | queryset.filter(Cast('cantidadContratos', TextField()).icontains(term))
+
+        return qs, use_distinct

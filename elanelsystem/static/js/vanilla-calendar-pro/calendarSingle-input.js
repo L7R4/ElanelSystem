@@ -1,0 +1,169 @@
+// calendarSingle-input.js (ESM)
+export function initInputCalendar(selector, options = {}) {
+  const VC = window.VanillaCalendarPro;
+  if (!VC?.Calendar) throw new Error('VanillaCalendarPro no está cargado');
+
+  const inputEl = document.querySelector(selector);
+  if (!inputEl) return null;
+
+  // --- Config contenedor scrolleable (por defecto: el form) ---
+  const scrollContainer =
+    (typeof options.scrollContainer === 'string'
+      ? document.querySelector(options.scrollContainer)
+      : options.scrollContainer) ||
+    inputEl.closest('#form_create_sale') ||
+    inputEl.closest('form') ||
+    document.body;
+
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const isoFromDate = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  const formatToInput =
+    options.formatToInput ||
+    ((iso) => {
+      if (!iso) return '';
+      const [y, m, d] = iso.split('-');
+      return `${pad2(d)}/${pad2(m)}/${y}`; // dd/MM/yyyy
+    });
+
+  // --- Ubicar el popup dentro del contenedor y alinearlo al input ---
+  const getPopupEl = () => {
+    // Suponemos un único calendario visible; tomamos el último .vc
+    const list = document.querySelectorAll('.vc');
+    return list.length ? list[list.length - 1] : null;
+  };
+
+  const mountPopupInsideContainer = (popup) => {
+    if (!popup || !scrollContainer) return;
+    if (popup.parentElement !== scrollContainer) {
+      scrollContainer.appendChild(popup);
+    }
+    // Forzamos posicionamiento absoluto relativo al contenedor
+    popup.style.position = 'absolute';
+  };
+
+  const positionPopupUnderInput = () => {
+    const popup = getPopupEl();
+    if (!popup || !scrollContainer || !inputEl) return;
+
+    const iRect = inputEl.getBoundingClientRect();
+    const cRect = scrollContainer.getBoundingClientRect();
+
+    const offsetY = options.offsetY ?? 6;
+    const left = iRect.left - cRect.left + scrollContainer.scrollLeft;
+    const top = iRect.top - cRect.top + scrollContainer.scrollTop + inputEl.offsetHeight + offsetY;
+
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
+    if (options.popupMinWidth) popup.style.minWidth = `${options.popupMinWidth}px`;
+  };
+
+  const schedulePositioning = () => {
+    // esperamos a que la lib inserte el DOM del calendario
+    requestAnimationFrame(() => {
+      const popup = getPopupEl();
+      if (!popup) return;
+      mountPopupInsideContainer(popup);
+      positionPopupUnderInput();
+    });
+  };
+
+  const cal = new VC.Calendar(selector, {
+    inputMode: true,
+    positionToInput: options.positionToInput ?? 'auto', // queda, pero nosotros forzamos la posición
+    firstWeekday: options.firstWeekday ?? 1,
+    locale: options.locale ?? 'es-AR',
+
+    onChangeToInput(self) {
+      const iso = self.context?.selectedDates?.[0] || '';
+      inputEl.value = formatToInput(iso);
+      options.calendar?.onChangeToInput?.(self);
+      // por si el tamaño del calendario cambia (mes distinto), reubicar
+      positionPopupUnderInput();
+    },
+
+    onClickDate(self) {
+      const iso = self.context?.selectedDates?.[0] || '';
+      inputEl.value = formatToInput(iso);
+      if (options.autoClose !== false) self.hide();
+      options.onSelect?.(iso, inputEl, self);
+      options.calendar?.onClickDate?.(self);
+    },
+
+    layouts: {
+      default: `
+        <div class="\${self.styles.header}" data-vc="header" role="toolbar" aria-label="\${self.labels.navigation}">
+          <#ArrowPrev [month] />
+          <div class="\${self.styles.headerContent}" data-vc-header="content">
+            <#Month /><#Year />
+          </div>
+          <#ArrowNext [month] />
+        </div>
+
+        <div class="buttonsCustom" style="display:flex;gap:.5rem;justify-content:flex-end;">
+          <button type="button" class="vc-btn button-default-style" data-vc-btn="today">${options.todayLabel ?? 'Hoy'}</button>
+          <button type="button" class="vc-btn button-default-style" data-vc-btn="clear">${options.clearLabel ?? 'Limpiar'}</button>
+        </div>
+
+        <div class="\${self.styles.wrapper}" data-vc="wrapper">
+          <#WeekNumbers />
+          <div class="\${self.styles.content}" data-vc="content">
+            <#Week />
+            <#Dates />
+            <#DateRangeTooltip />
+          </div>
+        </div>
+        <#ControlTime />
+      `,
+    },
+
+    onInit(self) {
+      // Reposicionar cuando se abre: foco y click en el input
+      const hookOpen = () => schedulePositioning();
+      inputEl.addEventListener('focus', hookOpen);
+      inputEl.addEventListener('click', hookOpen);
+
+      // Reposicionar al scrollear el contenedor y al redimensionar
+      const onScroll = () => positionPopupUnderInput();
+      const onResize = () => positionPopupUnderInput();
+      scrollContainer.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onResize);
+
+      // Botones Hoy / Limpiar
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-vc-btn]');
+        if (!btn || !btn.closest('.vc')) return;
+
+        if (btn.dataset.vcBtn === 'today') {
+          const now = new Date();
+          const iso = isoFromDate(now);
+          self.selectedDates = [iso];
+          self.selectedYear = now.getFullYear();
+          self.selectedMonth = now.getMonth() + 1;
+          inputEl.value = formatToInput(iso);
+          self.update({ dates: true, month: true, year: true });
+          if (options.autoClose !== false) self.hide();
+          options.onSelect?.(iso, inputEl, self);
+        }
+
+        if (btn.dataset.vcBtn === 'clear') {
+          self.selectedDates = [];
+          inputEl.value = '';
+          self.update({ dates: true });
+          if (options.autoClose !== false) self.hide();
+          options.onClear?.(inputEl, self);
+        }
+      });
+
+      // Si el calendario ya se mostró por algún motivo, forzar posicionamiento
+      schedulePositioning();
+
+      // Propagamos callback custom si existe
+      options.calendar?.onInit?.(self);
+    },
+
+    ...options.calendar,
+  });
+
+  cal.init();
+  return cal;
+}

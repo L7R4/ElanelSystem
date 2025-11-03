@@ -1,78 +1,80 @@
-const url = window.location.pathname;
+import VanillaTable from "./vanilla_table_module.js";
 
-function updateQuery(prev, params) {
-  const u = new URL(prev, window.location.origin);
-  Object.entries(params).forEach(([k, v]) => {
-    if (v === undefined || v === null || v === "") u.searchParams.delete(k);
-    else u.searchParams.set(k, v);
-  });
-  return u.pathname + u.search;
-}
-
-const grid = new gridjs.Grid({
+const table = new VanillaTable(document.getElementById("users_table"), {
   columns: [
-    "Nombre",
-    "DNI",
-    "Correo",
-    "Sucursal",
-    "Teléfono",
-    "Rango",
+    { id: "nombre",     label: "Nombre",   accessor: "nombre" },
+    { id: "dni",        label: "DNI",      accessor: "dni" },
+    { id: "email",      label: "Correo",   accessor: "email" },
+    { id: "sucursales", label: "Sucursal", accessor: (row) => (row.sucursales || []).join(", ") },
+    { id: "tel",        label: "Teléfono", accessor: "tel" },
+    { id: "rango",      label: "Rango",    accessor: "rango" },
   ],
-  fixedHeader: true,
-  resizable: true,
-  search: {
-    server: {
-      url: (prev, keyword) => updateQuery(prev, { search: keyword, page: 1 }),
-    },
+  pageSize: 20,
+  remoteSearch: true,
+  columnPicker: false,
+  pageSizeControl: false, // 👈 oculta el selector de cantidad por página
+  seleccionMultiple: false,
+  rowId: "id",
+
+  // Inyectamos tu select custom en el header (lado derecho)
+  renderExtraFilters(el, api) {
+    el.innerHTML = `
+      <div id="selectWrapperAgencia" class="wrapperInput wrapperSelectCustom">
+          <h3 class="labelInput">Agencia</h3>
+          <div class="containerInputAndOptions">
+              <img id="tipoMonedaIconDisplay" class="iconDesplegar" src="${imgNext}" alt="">
+              <input type="hidden" name="agencia" id="agenciaInput" placeholder ="Seleccionar" autocomplete="off">
+              
+              <div class="onlySelect pseudo-input-select-wrapper">
+                  <h3></h3>
+              </div>
+              <ul class="list-select-custom options">
+                  ${sucursalesDisponibles.map(sd => `
+                      <li data-value="${sd.id}">${sd.pseudonimo}</li>
+                  `).join('')}
+              </ul>
+          </div>
+      </div>
+    `;
+
+    const input = el.querySelector("#selectWrapperAgencia .onlySelect");
+    initSingleSelect(input);
+
+    const hidden = el.querySelector("#agenciaInput");
+    hidden.addEventListener("input", () => {
+      console.log("as")
+      api.setFilter("sucursal_id", hidden.value);
+      api.goToPage(1, { force: true });
+    });
+    
   },
-  pagination: {
-    limit: 30,
-    server: {
-      url: (prev, page, limit) =>
-        updateQuery(prev, { page: page + 1, page_size: limit }),
-    },
-  },
-  server: {
-    url,
-    headers: {
-      Accept: "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-    },
-    handle: (res) => {
-      if (res.ok) return res.json();
-      return res.text().then((t) => {
-        throw new Error(`[${res.status}] ${t.slice(0, 200)}`);
-      });
-    },
-    then: (data) =>
-      data.users.map((u) => [
-        u.nombre,
-        u.dni,
-        u.email,
-        u.sucursales.join(", "),
-        u.tel,
-        u.rango,
-      ]),
-    total: (data) => data.total,
-  },
-  language: gridjs.l10n.esES,
-  style: {
-    table: {
-      "font-family": "'Raleway', sans-serif",
-      "font-size": "1.4rem",
-    },
-    th: {
-      "background-color": "var(--blue-3)",
-      color: "white",
-      border: "none",
-      "text-align": "center",
-    },
-    td: {
-      "text-align": "center",
-      border: "none",
-    },
+
+  async fetchData({ page, pageSize, query, filters, signal }) {
+    const qs = new URLSearchParams({ page, page_size: pageSize });
+    if (query) qs.set("search", query);           // tu view usa 'search'
+    if (filters?.sucursal_id) qs.set("sucursal_id", filters.sucursal_id); // 👈 enviamos filtro
+
+    const url = `/usuario/lista_usuarios/?${qs.toString()}`;
+    const res = await fetch(url, {
+      signal,
+      credentials: "include",
+      headers: { "Accept": "application/json" },
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status} ${res.statusText}. Body: ${text.slice(0,120)}`);
+    }
+    const ct = res.headers.get("content-type") || "";
+    if (!ct.includes("application/json")) {
+      const text = await res.text();
+      throw new Error(`Esperaba JSON pero recibí ${ct}. Respuesta: ${text.slice(0,120)}`);
+    }
+
+    const j = await res.json();
+    return {
+      data:  j.results ?? j.data ?? j ?? [],
+      total: j.total   ?? j.count ?? 0
+    };
   },
 });
-
-grid.render(document.getElementById("users_table"));
-

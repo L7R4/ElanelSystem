@@ -14,119 +14,74 @@
     <span id="loader"></span>
 </div>
 <div class="filters">
+    <h1 class="titleHeader">AUDITORIAS</h1>
+    
     <form method="POST" id="formFilterVentas">
         {% csrf_token %}
         <div>
             <div class="wrapperSearchFilter">
-                <label class="labelInput">Buscar</label>
+                {% comment %} <label class="labelInput">Buscar</label> {% endcomment %}
                 <div>
                     <input
                         type="text"
                         class="input-read-write-default inputFilterVentas"
                         id="inputSearch"
-                        placeholder="Nro Venta, DNI, Nombre, Telefono, Producto, Fecha"
+                        placeholder="Buscar..."
                     />
                     <img src="{% static 'images/icons/search.svg' %}" alt="" />
                 </div>
             </div>
 
-            {% comment %} <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
-                <label class="labelInput">Sucursal</label>
-                <div class="containerInputAndOptions">
-                    <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                    <input
-                        type="text"
-                        name="sucursal"
-                        class="onlySelect input-select-custom inputFilterVentas"
-                        id="inputSucursal"
-                        autocomplete="off"
-                        readonly=""
-                        value="{{sucursalDefault.pseudonimo}}"
-                    />
-                    <ul class="list-select-custom options">
-                        {% for sucursal in sucursales %}
-                        <li data-value="{{sucursal.pseudonimo}}">{{sucursal.pseudonimo}}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div> {% endcomment %}
-            <div id="selectWrapperSelectAgencia" class="wrapperTypeFilter wrapperSelectCustom wrapperSelectFilter">
+            <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
                 <h3 class="labelInput">Sucursal</h3>
                 <div class="containerInputAndOptions">
                   <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                  <input
-                        type="hidden"
-                        name="sucursal"
-                        class="onlySelect filterInput input-select-custom inputFilterVentas"
-                        id="inputSucursal"
-                        autocomplete="off"
-                        readonly=""
-                        value="{{sucursalDefault.pseudonimo}}"
-                        placeholder="Seleccionar"
-                    />
+                  <input type="hidden" class="filterInput" name="sucursal" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
                   <div class="onlySelect pseudo-input-select-wrapper">
-                        <h3>{{sucursalDefault.pseudonimo}}</h3>
+                        <h3></h3>
                   </div>
-                  <ul class="list-select-custom options">
+                  <ul id="contenedorSucursal" class="list-select-custom options">
                     {% for sucursal in sucursales %}
-                        <li data-value="{{sucursal.id}}">{{sucursal.pseudonimo}}</li>
+                        <li data-value={{sucursal.id}}>{{sucursal}}</li>
                     {% endfor %}
                 </ul>
                 </div>
             </div>
-
-            <div id="selectWrapperSelectEstado"class="inputWrapper wrapperSelectFilter">
-                <label class="labelInput">Estado</label>
+            
+            <div id="campaniaWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+                <h3 class="labelInput">Campaña</h3>
                 <div class="containerInputAndOptions">
-                    <img
-                        id="tipoComprobanteIconDisplay"
-                        class="iconDesplegar"
-                        src="{% static 'images/icons/arrowDown.png' %}"
-                        alt=""
-                    />
-                    <input
-                        type="text"
-                        name="estado"
-                        value=""
-                        readonly
-                        class="input-select-custom onlySelect inputFilterVentas"
-                        required
-                        id="inputEstado"
-                    />
-                    <ul class="list-select-custom options">
-                        <li data-value="r">Realizadas</li>
-                        <li data-value="p">Pendientes</li>
-                        <li data-value="a">Aprobadas</li>
-                        <li data-value="d">Desaprobadas</li>
-                    </ul>
+                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                  <input type="hidden" class="filterInput" name="campania" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                  </div>
+                  <ul id="contenedorCampania" class="list-select-custom options">
+                    {% for campania in campanias %}
+                         <li data-value="{{campania}}">{{campania}}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+            </div>
+            <div id="campaniaWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+                <h3 class="labelInput">Estado</h3>
+                <div class="containerInputAndOptions">
+                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                  <input type="hidden" name="estado" value="" readonly class="input-select-custom onlySelect inputFilterVentas filterInput" required id="inputEstado" />
+                 
+                  <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                  </div>
+
+                  <ul id="contenedorCampania" class="list-select-custom options">
+                    <li data-value="r">Realizadas</li>
+                    <li data-value="p">Pendientes</li>
+                    <li data-value="a">Aprobadas</li>
+                    <li data-value="d">Desaprobadas</li>
+                </ul>
                 </div>
             </div>
             
-            <div id="selectWrapperSelectCampania"class="inputWrapper wrapperSelectFilter">
-                <label class="labelInput">Campaña</label>
-                <div class="containerInputAndOptions">
-                    <img
-                        id="tipoComprobanteIconDisplay"
-                        class="iconDesplegar"
-                        src="{% static 'images/icons/arrowDown.png' %}"
-                        alt=""
-                    />
-                    <input
-                        type="text"
-                        name="campania"
-                        value="{{campania_actual}}"
-                        readonly
-                        class="input-select-custom onlySelect inputFilterVentas"
-                        required
-                        id="inputCampania"
-                    />
-                    <ul class="list-select-custom options">
-                        {% for campania in campaniasDisponibles %}
-                        <li data-value="{{campania}}">{{campania}}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
         </div>
     </form>
 </div>
@@ -135,119 +90,7 @@
     <div class="operations">
         <div class="operationsWrapper">
             <ul class="operationsList">
-                {% for venta in ventas %} 
-                    {% with ultima_auditoria=venta.auditoria|postVenta_getLastAuditoria %}
-                        <li class="operationItem">
-                            <div class="ventaWrapper" id="v{{venta.id}}">
-                                <div class="statusWrapperShortInfo">
-                                    <img src="${statusIcon}" alt="" />
-                                    <p>${statusText}</p>
-                                </div>
-                                <div class="atributtes">
-                                    <button
-                                        type="button"
-                                        class="displayDetailInfoButton"
-                                    >
-                                        <img
-                                            src="{% static 'images/icons/nextSinBackground.png' %}"
-                                            alt=""
-                                        />
-                                    </button>
-
-                                    <div class="wrapperShortInfo">
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>Cliente</h4>
-                                            <h1>{{venta.nro_cliente.nombre}}</h1>
-                                        </div>
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>DNI</h4>
-                                            <h1>{{venta.nro_cliente.dni|formato_moneda}}</h1>
-                                        </div>
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>Nro Orden</h4>
-                                            <h1>{{venta.nro_orden}}</h1>
-                                        </div>
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>Fecha de inscripcion</h4>
-                                            <h1>{{venta.fecha|format_dd_mm_yyyy}}</h1>
-                                        </div>
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>Telefono</h4>
-                                            <h1>{{venta.nro_cliente.tel}}</h1>
-                                        </div>
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>CP</h4>
-                                            <h1>{{venta.nro_cliente.cod_postal}}</h1>
-                                        </div>
-                                    </div>
-                                    <div class="wrapperDetailInfo">
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>Localidad</h4>
-                                            <h1>{{venta.nro_cliente.loc}}</h1>
-                                        </div>
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>Provincia</h4>
-                                            <h1>{{venta.nro_cliente.prov}}</h1>
-                                        </div>
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>Direccion</h4>
-                                            <h1>{{venta.nro_cliente.domic}}</h1>
-                                        </div>
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>Vendedor</h4>
-                                            <h1>{{venta.vendedor.nombre}}</h1>
-                                        </div>
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>Supervisor</h4>
-                                            <h1>{{venta.supervisor.nombre}}</h1>
-                                        </div>
-                                        <div class="wrapperInfoAtributte">
-                                            <h4>Campaña</h4>
-                                            <h1>{{venta.campania}}</h1>
-                                        </div>
-                                        {% if ultima_auditoria.realizada %}
-                                        <div class="containerHistorialAuditorias">
-                                            {% for auditoria in venta.auditoria %}
-                                            <div class="infoCheckWrapper">
-                                                <div class="wrapperComentarios">
-                                                    <h4>Comentarios</h4>
-                                                    <p>{{auditoria.comentarios}}</p>
-                                                </div>
-                                                <div class="wrapperFechaHora">
-                                                    <p>{{auditoria.fecha_hora}}</p>
-                                                </div>
-                                                <div class="wrapperGrade">
-                                                    {% if auditoria.grade %}
-                                                    <p>Aprobada</p>
-                                                    {%else%}
-                                                    <p>Desaprobada</p>
-                                                    {% endif %}
-                                                </div>
-                                                {% if forloop.last %}
-                                                <div class="wrapperUltimo">
-                                                    <p>Último</p>
-                                                </div>
-                                                {% endif %}
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                        {% endif %}
-                                    </div>
-
-                                    <div class="statusWrapper">
-                                        <div class="buttonsWrapper">
-                                            {% if ultima_auditoria.realizada %}
-                                                <button id="editarButton" onclick="modalForm(v{{venta.id}})">Editar</button>
-                                            {% else %}
-                                                <button id="auditarButton" onclick="modalForm(v{{venta.id}})">Auditar</button>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    {% endwith %} 
-                {% endfor %}
+               
             </ul>
         </div>
     </div>
@@ -290,20 +133,16 @@
     </div>
 </div>
 
-{% endblock content %} {% block js %}
-<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
-
+{% endblock content %} 
+{% block js %}
 <script>
     var CSRF_TOKEN = '{% csrf_token %}';
     var imgNext = "{% static 'images/icons/nextSinBackground.png' %}";
     var campania_actual = "{{campania_actual}}";
 </script>
-{% comment %} <script src="{% static 'js/filtersPostVenta.js' %}"></script> {% endcomment %}
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
 <script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
-
-<script src="{% static 'js/postVenta.js' %}"></script>
-<script src="{% static 'js/input_search_postventa.js' %}"></script>
-{% comment %} <script src="{% static 'js/input_select_create_user.js' %}"></script> {% endcomment %}
+<script type="module" src="{% static 'js/async_ui.js' %}"></script>
+<script type="module" src="{% static 'js/postVenta.js' %}"></script>
 {% endblock js %}

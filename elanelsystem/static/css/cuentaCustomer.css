@@ -1,5 +1,7 @@
 .wrapper_content {
     padding: 4rem;
+    display: flex;
+    flex-direction: column;
 }
 /* #region Filtros */
 .filters {
@@ -8,6 +10,7 @@
     align-items: center;
     gap: 2rem;
     padding-bottom: 3rem;
+    flex: 0 0 auto;
 }
 .filters > form{
     width: 100%;
@@ -87,12 +90,15 @@
 .accountWrapper {
     display: flex;
     width: 100%;
+    /* flex: 1 1 auto;
+    min-height: 0; */
+    overflow: auto;
 }
 
 .operations {
     height: 100%;
     width: 70%;
-    overflow-y: auto;
+    /* overflow-y: auto; */
 }
 
 .operationsWrapper {
@@ -230,7 +236,7 @@
 #downloadPDF {
     font-size: clamp(1rem, 1vw, 1.2rem);
     font-family: raleway-semibold;
-    color: #000;
+    color: var(--white-800-80);
     margin-left: 1rem;
 }
 
@@ -315,7 +321,7 @@
 .informationUser{
     height: 100%;
     width: 30%;
-    overflow-y: auto;
+    /* overflow-y: auto; */
     padding: 1rem;
     padding-top: 0;
 }

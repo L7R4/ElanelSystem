@@ -165,7 +165,9 @@ def requestProducts(request):
         productos_list = []
         for producto in productos:
             productos_list.append(
-                {"nombre": producto.nombre, 
+                {
+                "id": producto.id,
+                "nombre": producto.nombre, 
                 "paquete": producto.tipodePlan,
                 "primer_cuota": producto.plan.primer_cuota,
                 "suscripcion": producto.plan.suscripcion,

@@ -11,8 +11,7 @@
 {% endblock css %}
 
 {% block content %}
-    <div id="loader"></div>
-    <div class="wrapper_tittle">
+c    <div class="wrapper_tittle">
         <h1>CAMBIO DE PACK N° {{venta.nro_operacion}}</h1>
     </div>
     
@@ -20,27 +19,33 @@
         
         {% csrf_token %}
 
-        <div id="wrapperTipoProducto" class="inputWrapper">
-            <label class="labelInput">Tipo de producto</label>
+        <div id="wrapperTipoProducto" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Tipo de producto</h3>
             <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" readonly name="tipo_producto" id="tipoProductoInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
-                <ul class="list-select-custom options">
-                    <li>Moto</li>
-                    <li>Electrodomestico</li>
-                    <li>Prestamo</li>
-                </ul>
+              <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+              <input type="hidden" class="filterInput" name="tipo_producto" id="tipoProductoInput" placeholder="Seleccionar" autocomplete="off" readonly>
+              <div class="onlySelect pseudo-input-select-wrapper">
+                <h3></h3>
+              </div>
+              <ul id="contenedorTipo" class="list-select-custom options">
+                <li data-value="Moto">Moto</li>
+                <li data-value="Electrodomestico">Electrodomestico</li>
+                <li data-value="Prestamo">Prestamo</li>
+            </ul>
             </div>
         </div>
 
         
-        <div id="wrapperProducto" class="inputWrapper desactive">
-            <label class="labelInput">Producto</label>
+        <div id="wrapperProducto" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Producto</h3>
             <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" readonly name="producto" id="productoInput" required autocomplete="off" maxlength="50" class="input-select-custom onlySelect">
-                <ul class="list-select-custom options">
-                </ul>
+              <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+              <input type="hidden" class="filterInput" name="producto" id="productoInput" placeholder="Seleccionar" autocomplete="off" readonly>
+              <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+              </div>
+              <ul id="contenedorProducto" class="list-select-custom options">
+              </ul>
             </div>
         </div>
 
@@ -154,17 +159,20 @@
             </div>
         </div>
         
-        <div id="wrapperModalidad" class="inputWrapper">
-            <label class="labelInput">Modalidad</label>
+        <div id="wrapperModalidad" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+            <h3 class="labelInput">Modalidad</h3>
             <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                <input type="text" readonly name="modalidad" id="id_modalidad" required autocomplete="off" maxlength="30" class="input-select-custom input-read-write-default onlySelect">
-                <ul class="list-select-custom options">
-                    <li>Diario</li>
-                    <li>Semanal</li>
-                    <li>Quincenal</li>
-                    <li>Mensual</li>
-                </ul>
+              <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+              <input type="hidden" class="filterInput" name="modalidad" id="id_modalidad" maxlength="30" placeholder="Seleccionar" required autocomplete="off" readonly>
+              <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+              </div>
+              <ul id="contenedorModalidad" class="list-select-custom options">
+                <li data-value="diario">Diario</li>
+                <li data-value="semanal">Semanal</li>
+                <li data-value="quincenal">Quincenal</li>
+                <li data-value="mensual">Mensual</li>
+              </ul>
             </div>
         </div>
         
@@ -213,8 +221,10 @@
         var urlRequestProductos = "{% url 'products:get_products' %}";
         var cantidadChances = {{venta.cantidadContratos|length}};
     </script>
+    
+    <script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+    <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
 
-    <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
     <script src="{% static 'js/errorsFormManagement.js' %}"></script>
     <script src="{% static 'js/seleccionarChances.js' %}"></script>
 
