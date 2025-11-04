@@ -25,9 +25,12 @@ export function initInputCalendar(selector, options = {}) {
       return `${pad2(d)}/${pad2(m)}/${y}`; // dd/MM/yyyy
     });
 
-  // --- Ubicar el popup dentro del contenedor y alinearlo al input ---
+  const todayISO = isoFromDate(new Date());
+  const disableFuture = !!options.disableFuture;
+  const disablePast = !!options.disablePast;
+
+  // --- Helpers de popup ---
   const getPopupEl = () => {
-    // Suponemos un único calendario visible; tomamos el último .vc
     const list = document.querySelectorAll('.vc');
     return list.length ? list[list.length - 1] : null;
   };
@@ -37,7 +40,6 @@ export function initInputCalendar(selector, options = {}) {
     if (popup.parentElement !== scrollContainer) {
       scrollContainer.appendChild(popup);
     }
-    // Forzamos posicionamiento absoluto relativo al contenedor
     popup.style.position = 'absolute';
   };
 
@@ -57,32 +59,89 @@ export function initInputCalendar(selector, options = {}) {
     if (options.popupMinWidth) popup.style.minWidth = `${options.popupMinWidth}px`;
   };
 
+  // --- Deshabilitar fechas (DOM) ---
+  const applyDateDisablers = () => {
+    const popup = getPopupEl();
+    if (!popup) return;
+
+    // La lib pinta cada día con data-vc-date="YYYY-MM-DD"
+    const cells = popup.querySelectorAll('[data-vc-date]');
+    cells.forEach((cell) => {
+      const iso = cell.getAttribute('data-vc-date');
+      let disabled = false;
+      if (disableFuture && iso > todayISO) disabled = true;
+      if (disablePast && iso < todayISO) disabled = true;
+
+      if (disabled) {
+        cell.classList.add('is-disabled');
+        cell.setAttribute('aria-disabled', 'true');
+        cell.tabIndex = -1;
+        cell.style.pointerEvents = 'none';
+      } else {
+        cell.classList.remove('is-disabled');
+        cell.removeAttribute('aria-disabled');
+        cell.style.pointerEvents = '';
+      }
+    });
+  };
+
+  let observer = null;
+  const observePopup = (popup) => {
+    if (!popup) return;
+    if (observer) observer.disconnect();
+    observer = new MutationObserver(() => {
+      // Cada vez que cambia el mes o se re-renderiza, re-aplico
+      applyDateDisablers();
+      positionPopupUnderInput();
+    });
+    observer.observe(popup, { childList: true, subtree: true });
+  };
+
   const schedulePositioning = () => {
-    // esperamos a que la lib inserte el DOM del calendario
     requestAnimationFrame(() => {
       const popup = getPopupEl();
       if (!popup) return;
       mountPopupInsideContainer(popup);
       positionPopupUnderInput();
+      applyDateDisablers();
+      observePopup(popup);
     });
   };
 
   const cal = new VC.Calendar(selector, {
     inputMode: true,
-    positionToInput: options.positionToInput ?? 'auto', // queda, pero nosotros forzamos la posición
+    positionToInput: options.positionToInput ?? 'auto',
     firstWeekday: options.firstWeekday ?? 1,
     locale: options.locale ?? 'es-AR',
 
     onChangeToInput(self) {
-      const iso = self.context?.selectedDates?.[0] || '';
+      let iso = self.context?.selectedDates?.[0] || '';
+
+      // Barrera lógica por si algo se escapa
+      if ((disableFuture && iso > todayISO) || (disablePast && iso < todayISO)) {
+        iso = '';
+        self.selectedDates = [];
+        self.update({ dates: true });
+      }
+
       inputEl.value = formatToInput(iso);
       options.calendar?.onChangeToInput?.(self);
-      // por si el tamaño del calendario cambia (mes distinto), reubicar
       positionPopupUnderInput();
+      applyDateDisablers();
     },
 
     onClickDate(self) {
       const iso = self.context?.selectedDates?.[0] || '';
+
+      // Barrera lógica
+      if ((disableFuture && iso > todayISO) || (disablePast && iso < todayISO)) {
+        // cancelar selección visual
+        self.selectedDates = [];
+        self.update({ dates: true });
+        applyDateDisablers();
+        return;
+      }
+
       inputEl.value = formatToInput(iso);
       if (options.autoClose !== false) self.hide();
       options.onSelect?.(iso, inputEl, self);
@@ -117,12 +176,10 @@ export function initInputCalendar(selector, options = {}) {
     },
 
     onInit(self) {
-      // Reposicionar cuando se abre: foco y click en el input
       const hookOpen = () => schedulePositioning();
       inputEl.addEventListener('focus', hookOpen);
       inputEl.addEventListener('click', hookOpen);
 
-      // Reposicionar al scrollear el contenedor y al redimensionar
       const onScroll = () => positionPopupUnderInput();
       const onResize = () => positionPopupUnderInput();
       scrollContainer.addEventListener('scroll', onScroll, { passive: true });
@@ -136,6 +193,13 @@ export function initInputCalendar(selector, options = {}) {
         if (btn.dataset.vcBtn === 'today') {
           const now = new Date();
           const iso = isoFromDate(now);
+
+          // Si "hoy" está bloqueado por disablePast/disableFuture, no hacemos nada
+          if (
+            (disableFuture && iso > todayISO) ||
+            (disablePast && iso < todayISO)
+          ) return;
+
           self.selectedDates = [iso];
           self.selectedYear = now.getFullYear();
           self.selectedMonth = now.getMonth() + 1;
@@ -154,10 +218,7 @@ export function initInputCalendar(selector, options = {}) {
         }
       });
 
-      // Si el calendario ya se mostró por algún motivo, forzar posicionamiento
       schedulePositioning();
-
-      // Propagamos callback custom si existe
       options.calendar?.onInit?.(self);
     },
 
