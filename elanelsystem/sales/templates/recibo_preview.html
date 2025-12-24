@@ -1,0 +1,176 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vista Previa del Recibo</title>
+    <link rel="stylesheet" href="{% static 'css/recibo_styles.css' %}" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  </head>
+  <body>
+    <div class="preview-controls">
+      <button id="btnGenerarPDF" class="btn-control">Descargar PDF</button>
+      <button id="btnImprimir" class="btn-control">Imprimir</button>
+      <button id="btnCerrar" class="btn-control">Cerrar</button>
+    </div>
+
+    <div id="reciboContainer" class="recibo-container"></div>
+    <script>
+      // === PLANTILLA DEL RECIBO ===
+      function crearReciboHTML(tipo) {
+        return `
+          <div class="recibo-copia">
+            <div class="copia-header">{{ tipo|upper }}</div>
+
+            <div class="recibo">
+              <div class="header">
+                <div class="header-left">
+                  <img src="{% static 'images/logoElanelPDF.png' %}" alt="Logo ELANEL" class="logo-elanel" />
+                  <div class="empresa-datos">
+                    <p>{{ context.empresa.direccion }} | Cel: {{ context.empresa.telefono }}</p>
+                    <p>{{ context.empresa.pseudonimo }}</p>
+                    <p>{{ context.empresa.email }}</p>
+                    <p class="regimen"><strong>{{ context.empresa.regimen }}</strong></p>
+                  </div>
+                </div>
+
+                <div class="header-center">
+                  <p class="x">x</p>
+                </div>
+
+                <div class="header-right">
+                  <div class="titulo-numero">
+                    <p class="titulo">RECIBO</p>
+                    <p class="numero">Nº {{ context.recibo.numero_recibo }}</p>
+                  </div>
+                  <div class="fecha">
+                    <div class="fecha-box"><span>DÍA</span><div class="fecha-line">{{ context.recibo.fecha_dia }}</div></div>
+                    <div class="fecha-box"><span>MES</span><div class="fecha-line">{{ context.recibo.fecha_mes }}</div></div>
+                    <div class="fecha-box"><span>AÑO</span><div class="fecha-line">{{ context.recibo.fecha_anio }}</div></div>
+                  </div>
+                  <p class="leyenda">{{ context.empresa.leyenda }}</p>
+                </div>
+              </div>
+
+              <div class="info-cliente">
+                <div class="fila">
+                  <span>Señor (es):</span>
+                  <div class="linea">{{ context.cliente.nombre }}</div>
+                </div>
+
+                <div class="fila">
+                  <span>Domicilio:</span><div class="linea">{{ context.cliente.domicilio }}</div>
+                  <span>Localidad:</span><div class="linea">{{ context.cliente.localidad }}</div>
+                </div>
+
+                <div class="recuadros-cliente">
+                  <div class="fila-recuadro">
+
+                    <div class="fila iva">
+                      <span>IVA</span>
+                      <label><input type="checkbox" {% if context.cliente.iva == "RI" %}checked{% endif %}> Resp. Inscripto</label>
+                      <label><input type="checkbox" {% if context.cliente.iva == "EX" %}checked{% endif %}> Exento</label>
+                      <label><input type="checkbox" {% if context.cliente.iva == "RM" %}checked{% endif %}> Resp. Monot.</label>
+                      <label><input type="checkbox" {% if context.cliente.iva == "CF" %}checked{% endif %}> Cons. Final</label>
+                      <label><input type="checkbox" {% if context.cliente.iva == "MS" %}checked{% endif %}> Monot. Social</label>
+                    </div>
+
+                    <div class="fila condiciones">
+                      <span>CONDICIONES DE VENTA</span>
+                      <label><input type="checkbox" {% if context.recibo.condicion == "contado" %}checked{% endif %}> CONTADO</label>
+                      <label><input type="checkbox" {% if context.recibo.condicion == "cc" %}checked{% endif %}> CUENTA CORRIENTE</label>
+                    </div>
+
+                  </div>
+
+                  <div class="recuadro-cuit">
+                    <span class="cuit-label">C.U.I.T. Nº:</span>
+                    <div class="linea-cuit">{{ context.cliente.cuit }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="importe">
+                <p class="importe-label">Recibí la suma de pesos:</p>
+                <div class="linea-larga">{{ context.recibo.importe_letras }}</div>
+              </div>
+
+              <div class="concepto">
+                <p class="concepto-label">En concepto de:</p>
+                <div class="area-concepto">
+                  <p>{{ context.recibo.concepto }}</p>
+                </div>
+              </div>
+
+              <div class="pagos">
+                <div class="fila-pago">
+                  <span>Efectivo:</span><span>c/Banco</span><div class="linea-pago"></div><span>${{ context.recibo.efectivo }}</span>
+                </div>
+
+                {% if context.cheques and context.cheques|length %}
+                  {% for c in context.cheques %}
+                    <div class="fila-pago">
+                      <span>Cheque Nº {{ c.numero }}:</span>
+                      <span>{{ c.banco }}</span>
+                      <div class="linea-pago"></div>
+                      <span>${{ c.importe }}</span>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="fila-pago"><span>Cheque Nº:</span><span>c/Banco</span><div class="linea-pago"></div><span>$</span></div>
+                  <div class="fila-pago"><span>Cheque Nº:</span><span>c/Banco</span><div class="linea-pago"></div><span>$</span></div>
+                {% endif %}
+
+                <div class="total">
+                  <strong>TOTAL $</strong>
+                  <div class="linea-total">{{ context.recibo.total }}</div>
+                </div>
+              </div>
+
+              <div class="firma">
+                <p>FIRMA:</p><div class="linea-firma"></div>
+              </div>
+            </div>
+          </div>`
+      }
+
+      // === INICIALIZAR VISTA ===
+      function inicializarVistaPrevia() {
+        const container = document.getElementById("reciboContainer");
+
+        container.innerHTML = `
+          <div class="recibo-copia-wrapper">
+            ${crearReciboHTML("Original")}
+          </div>
+          <div class="recibo-separador"></div>
+          <div class="recibo-copia-wrapper">
+            ${crearReciboHTML("Duplicado")}
+          </div>
+        `;
+      }
+
+      // === BOTONES ===
+      document.addEventListener("DOMContentLoaded", inicializarVistaPrevia);
+
+      document.getElementById("btnGenerarPDF").addEventListener("click", () => {
+        const element = document.getElementById("reciboContainer");
+        const opt = {
+          margin: 0,
+          filename: "recibo.pdf",
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
+        };
+        html2pdf().set(opt).from(element).save();
+      });
+
+      document
+        .getElementById("btnImprimir")
+        .addEventListener("click", () => window.print());
+      document
+        .getElementById("btnCerrar")
+        .addEventListener("click", () => window.close());
+    </script>
+  </body>
+</html>

@@ -23,7 +23,7 @@ class Plan(models.Model):
         errors = {}
         validation_methods = [
             self.validation_valor_nominal,
-            self.validation_c24_porcentage,
+            # self.validation_c24_porcentage,
             self.validation_c30_porcentage,
             self.validation_c48_porcentage,
             self.validation_c60_porcentage,
@@ -93,7 +93,10 @@ class Products(models.Model):
     tipo_de_producto = models.CharField(max_length=20,choices=TIPO_PRODUCTO)
     nombre = models.CharField(max_length=100)
     plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, related_name="plan_producto", null=True, blank=True)
+    activo = models.BooleanField(default=True)
 
+    def __str__(self):
+        return f"{self.nombre} - {self.plan.valor_nominal} - {self.tipo_de_producto}"
 
     #region Validaciones
     def clean(self):

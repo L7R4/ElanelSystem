@@ -666,11 +666,11 @@ def deleteFieldsInDataStructures(lista_dicts, campos_a_eliminar):
 
 
 def getEstadoVenta(venta):
-    if(venta.deBaja["status"]):
+    if(venta.deBaja != {}):
         return f"De baja por {venta.deBaja['motivo']}"
     elif(venta.suspendida):
         return "Suspendida"
-    elif(venta.adjudicado["status"]):
+    elif(venta.adjudicado != {}):
         return f"Adjudicada por {venta.adjudicado['tipo']}"
     else:
         return "Activo"

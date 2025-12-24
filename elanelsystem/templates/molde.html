@@ -59,7 +59,7 @@
                 </li>
 
                 <li>
-                    <a href="{% url 'logout' %}" id="close_session">
+                    <a data-logout href="{% url 'logout' %}" id="close_session">
                         <img src="{% static 'images/icons_sider/logout.svg' %}" alt="">
                         <p>Cerrar sesion</p> 
                     </a>
@@ -75,8 +75,35 @@
 
     </div>
     
-    <script src="{% static 'js/menu.js' %}"></script>
-
+    <script src="{% static 'js/vanilla_components/menu.js' %}"></script>
+    <script src="{% static 'js/auth/permGate.js' %}" defer></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.PERM_GATE) PERM_GATE.init();
+        });
+        document.querySelectorAll("[data-logout]").forEach(el => {
+            el.addEventListener("click", () => {
+                try { sessionStorage.removeItem("perm-cache-v1"); } catch(_) {}
+                try { localStorage.setItem("perm-broadcast", "logout:" + Date.now()); } catch(_) {}
+            });
+        });
+    </script>
+    {% if not request.user.is_authenticated %}
+    <script>
+    try { sessionStorage.removeItem("perm-cache-v1"); } catch(_) {}
+    try { localStorage.setItem("perm-broadcast", "logout:" + Date.now()); } catch(_) {}
+    </script>
+    <script>
+    window.addEventListener("storage", (e) => {
+    if (e.key === "perm-broadcast" && String(e.newValue || "").startsWith("logout:")) {
+        try { sessionStorage.removeItem("perm-cache-v1"); } catch(_) {}
+        if (window.PERM_GATE && typeof PERM_GATE.refresh === "function") {
+        PERM_GATE.refresh().catch(() => {});
+        }
+    }
+    });
+    </script>
+    {% endif %}
     {% block js %}
     {% endblock js %}
 

@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Recibo {{ recibo.numero_formateado|default:"0007-00000000" }} (Original y Duplicado)</title>
+  <link rel="stylesheet" href="{% static 'css/pdfReciboCuota.css' %}">
+</head>
+<body>
+  <div class="sheet-a4">
+    <div class="copies">
+
+      <!-- ===== COPIA ORIGINAL ===== -->
+      <section class="receipt copy-original">
+        <div class="copy-badge">ORIGINAL</div>
+
+        <header class="r-header">
+          <div class="r-brand">
+            <div class="logo-text">ELANEL</div>
+            <div class="brand-sub">Servicios S.R.L.</div>
+            <div class="brand-meta">
+              <div>24 de Septiembre 579 | Cel: 3854 - 713900</div>
+              <div>(4200) Santiago del Estero - Capital</div>
+              <div>C.U.I.T./D.G.R: 30-71804533-5 &nbsp;&nbsp; INICIO ACT.: 05/2023</div>
+              <div class="meta-warn">DOCUMENTO NO VÁLIDO COMO FACTURA</div>
+              <div class="meta-small">RESPONSABLE MONOTRIBUTO</div>
+            </div>
+          </div>
+
+          <div class="r-badge">
+            <div class="badge-x">X</div>
+          </div>
+
+          <div class="r-numdate">
+            <div class="recibo-title">RECIBO</div>
+            <div class="recibo-nro">Nº <span>{{ recibo.numero_formateado|default:"0007-00000696" }}</span></div>
+            <div class="date-box">
+              <div class="date-grid">
+                <div class="date-cell"><div class="lbl">DÍA</div><div class="box">{{ fecha|date:"d"|default:"" }}</div></div>
+                <div class="date-cell"><div class="lbl">MES</div><div class="box">{{ fecha|date:"m"|default:"" }}</div></div>
+                <div class="date-cell"><div class="lbl">AÑO</div><div class="box">{{ fecha|date:"Y"|default:"" }}</div></div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section class="r-block r-client">
+          <div class="row">
+            <div class="label">Señor (es):</div>
+            <div class="line flex-1">{{ cliente.nombre|default:"" }}</div>
+          </div>
+          <div class="row">
+            <div class="label">Domicilio:</div>
+            <div class="line w-60">{{ cliente.domicilio|default:"" }}</div>
+            <div class="label">Localidad:</div>
+            <div class="line w-20">{{ cliente.localidad|default:"" }}</div>
+            <div class="label">C.U.I.T. Nº:</div>
+            <div class="line w-20">{{ cliente.cuit|default:"" }}</div>
+          </div>
+
+          <div class="row row-compact">
+            <div class="label">CONDICIONES</div>
+            <div class="check"><span class="cbox">{% if cliente.iva == "RI" %}✓{% endif %}</span> IVA / Resp. Inscripto</div>
+            <div class="check"><span class="cbox">{% if cliente.iva == "RM" %}✓{% endif %}</span> Resp. Monot.</div>
+            <div class="check"><span class="cbox">{% if cliente.iva == "CF" %}✓{% endif %}</span> Cons. Final</div>
+            <div class="check"><span class="cbox">{% if cliente.iva == "MS" %}✓{% endif %}</span> Monot. Social</div>
+            <div class="spacer"></div>
+            <div class="label">DE VENTA</div>
+            <div class="check"><span class="cbox">{% if recibo.condicion == "contado" %}✓{% endif %}</span> CONTADO</div>
+            <div class="check"><span class="cbox">{% if recibo.condicion == "cc" %}✓{% endif %}</span> CUENTA CORRIENTE</div>
+          </div>
+
+          <div class="row">
+            <div class="label">Recibí la suma de pesos:</div>
+            <div class="line flex-1 upper">{{ recibo.importe_letras|default:"" }}</div>
+          </div>
+        </section>
+
+        <section class="r-block">
+          <div class="label">En concepto de:</div>
+          <div class="concept-box">{{ recibo.concepto|default:"" }}</div>
+        </section>
+
+        <section class="r-block r-payments">
+          <div class="pay-row">
+            <div class="label">Efectivo:</div>
+            <div class="line flex-1"></div>
+            <div class="label">$</div>
+            <div class="line w-15 tr">{{ recibo.efectivo|default:"" }}</div>
+          </div>
+          <div class="pay-row">
+            <div class="label">Cheque N°:</div>
+            <div class="line w-30">{{ recibo.cheque1_numero|default:"" }}</div>
+            <div class="label">c/Banco</div>
+            <div class="line flex-1">{{ recibo.cheque1_banco|default:"" }}</div>
+            <div class="label">$</div>
+            <div class="line w-15 tr">{{ recibo.cheque1_importe|default:"" }}</div>
+          </div>
+          <div class="pay-row">
+            <div class="label">Cheque N°:</div>
+            <div class="line w-30">{{ recibo.cheque2_numero|default:"" }}</div>
+            <div class="label">c/Banco</div>
+            <div class="line flex-1">{{ recibo.cheque2_banco|default:"" }}</div>
+            <div class="label">$</div>
+            <div class="line w-15 tr">{{ recibo.cheque2_importe|default:"" }}</div>
+          </div>
+          <div class="pay-row">
+            <div class="label">Cheque N°:</div>
+            <div class="line w-30">{{ recibo.cheque3_numero|default:"" }}</div>
+            <div class="label">c/Banco</div>
+            <div class="line flex-1">{{ recibo.cheque3_banco|default:"" }}</div>
+            <div class="label">$</div>
+            <div class="line w-15 tr">{{ recibo.cheque3_importe|default:"" }}</div>
+          </div>
+        </section>
+
+        <section class="r-total-sign">
+          <div class="total-box">
+            <div class="ttl">TOTAL $</div>
+            <div class="amount">{{ recibo.total|default:"" }}</div>
+          </div>
+          <div class="sign">
+            <div class="label">FIRMA:</div>
+            <div class="sign-line"></div>
+          </div>
+        </section>
+
+        <footer class="r-footer">
+          <div class="printer">
+            LAIMPRENTA de JUAN GIMBA · Av. Belgrano 383 · Cel: 362 154-126411 · CUIT: 20-17497401-3 · IND. COM.: 31909 ·
+            F/HAB. 03-92 · F/Imp.: 12/2024 · N° 0007-00000001 AL N° 0007-00000750 · ORIGINAL BLANCO · DUPLICADO COLOR
+          </div>
+        </footer>
+      </section>
+
+      <!-- Línea de corte -->
+      <div class="cut-line" aria-hidden="true">────────────  cortar por aquí  ────────────</div>
+
+      <!-- ===== COPIA DUPLICADO ===== -->
+      <section class="receipt copy-duplicate">
+        <div class="copy-badge">DUPLICADO</div>
+
+                <header class="r-header">
+          <div class="r-brand">
+            <div class="logo-text">ELANEL</div>
+            <div class="brand-sub">Servicios S.R.L.</div>
+            <div class="brand-meta">
+              <div>24 de Septiembre 579 | Cel: 3854 - 713900</div>
+              <div>(4200) Santiago del Estero - Capital</div>
+              <div>C.U.I.T./D.G.R: 30-71804533-5 &nbsp;&nbsp; INICIO ACT.: 05/2023</div>
+              <div class="meta-warn">DOCUMENTO NO VÁLIDO COMO FACTURA</div>
+              <div class="meta-small">RESPONSABLE MONOTRIBUTO</div>
+            </div>
+          </div>
+
+          <div class="r-badge">
+            <div class="badge-x">X</div>
+          </div>
+
+          <div class="r-numdate">
+            <div class="recibo-title">RECIBO</div>
+            <div class="recibo-nro">Nº <span>{{ recibo.numero_formateado|default:"0007-00000696" }}</span></div>
+            <div class="date-box">
+              <div class="date-grid">
+                <div class="date-cell"><div class="lbl">DÍA</div><div class="box">{{ fecha|date:"d"|default:"" }}</div></div>
+                <div class="date-cell"><div class="lbl">MES</div><div class="box">{{ fecha|date:"m"|default:"" }}</div></div>
+                <div class="date-cell"><div class="lbl">AÑO</div><div class="box">{{ fecha|date:"Y"|default:"" }}</div></div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section class="r-block r-client">
+          <div class="row">
+            <div class="label">Señor (es):</div>
+            <div class="line flex-1">{{ cliente.nombre|default:"" }}</div>
+          </div>
+          <div class="row">
+            <div class="label">Domicilio:</div>
+            <div class="line w-60">{{ cliente.domicilio|default:"" }}</div>
+            <div class="label">Localidad:</div>
+            <div class="line w-20">{{ cliente.localidad|default:"" }}</div>
+            <div class="label">C.U.I.T. Nº:</div>
+            <div class="line w-20">{{ cliente.cuit|default:"" }}</div>
+          </div>
+
+          <div class="row row-compact">
+            <div class="label">CONDICIONES</div>
+            <div class="check"><span class="cbox">{% if cliente.iva == "RI" %}✓{% endif %}</span> IVA / Resp. Inscripto</div>
+            <div class="check"><span class="cbox">{% if cliente.iva == "RM" %}✓{% endif %}</span> Resp. Monot.</div>
+            <div class="check"><span class="cbox">{% if cliente.iva == "CF" %}✓{% endif %}</span> Cons. Final</div>
+            <div class="check"><span class="cbox">{% if cliente.iva == "MS" %}✓{% endif %}</span> Monot. Social</div>
+            <div class="spacer"></div>
+            <div class="label">DE VENTA</div>
+            <div class="check"><span class="cbox">{% if recibo.condicion == "contado" %}✓{% endif %}</span> CONTADO</div>
+            <div class="check"><span class="cbox">{% if recibo.condicion == "cc" %}✓{% endif %}</span> CUENTA CORRIENTE</div>
+          </div>
+
+          <div class="row">
+            <div class="label">Recibí la suma de pesos:</div>
+            <div class="line flex-1 upper">{{ recibo.importe_letras|default:"" }}</div>
+          </div>
+        </section>
+
+        <section class="r-block">
+          <div class="label">En concepto de:</div>
+          <div class="concept-box">{{ recibo.concepto|default:"" }}</div>
+        </section>
+
+        <section class="r-block r-payments">
+          <div class="pay-row">
+            <div class="label">Efectivo:</div>
+            <div class="line flex-1"></div>
+            <div class="label">$</div>
+            <div class="line w-15 tr">{{ recibo.efectivo|default:"" }}</div>
+          </div>
+          <div class="pay-row">
+            <div class="label">Cheque N°:</div>
+            <div class="line w-30">{{ recibo.cheque1_numero|default:"" }}</div>
+            <div class="label">c/Banco</div>
+            <div class="line flex-1">{{ recibo.cheque1_banco|default:"" }}</div>
+            <div class="label">$</div>
+            <div class="line w-15 tr">{{ recibo.cheque1_importe|default:"" }}</div>
+          </div>
+          <div class="pay-row">
+            <div class="label">Cheque N°:</div>
+            <div class="line w-30">{{ recibo.cheque2_numero|default:"" }}</div>
+            <div class="label">c/Banco</div>
+            <div class="line flex-1">{{ recibo.cheque2_banco|default:"" }}</div>
+            <div class="label">$</div>
+            <div class="line w-15 tr">{{ recibo.cheque2_importe|default:"" }}</div>
+          </div>
+          <div class="pay-row">
+            <div class="label">Cheque N°:</div>
+            <div class="line w-30">{{ recibo.cheque3_numero|default:"" }}</div>
+            <div class="label">c/Banco</div>
+            <div class="line flex-1">{{ recibo.cheque3_banco|default:"" }}</div>
+            <div class="label">$</div>
+            <div class="line w-15 tr">{{ recibo.cheque3_importe|default:"" }}</div>
+          </div>
+        </section>
+
+        <section class="r-total-sign">
+          <div class="total-box">
+            <div class="ttl">TOTAL $</div>
+            <div class="amount">{{ recibo.total|default:"" }}</div>
+          </div>
+          <div class="sign">
+            <div class="label">FIRMA:</div>
+            <div class="sign-line"></div>
+          </div>
+        </section>
+
+        <footer class="r-footer">
+          <div class="printer">
+            LAIMPRENTA de JUAN GIMBA · Av. Belgrano 383 · Cel: 362 154-126411 · CUIT: 20-17497401-3 · IND. COM.: 31909 ·
+            F/HAB. 03-92 · F/Imp.: 12/2024 · N° 0007-00000001 AL N° 0007-00000750 · ORIGINAL BLANCO · DUPLICADO COLOR
+          </div>
+        </footer>
+
+      </section>
+
+    </div>
+  </div>
+
+  {# Parcial con el contenido del recibo (igual al de arriba) #}
+  {% comment %}
+  Guardá lo siguiente como templates/recibos/_recibo_contenido.html para evitar duplicar HTML.
+  Si preferís, podés duplicar manualmente el bloque de la copia original y reemplazar esta línea.
+  {% endcomment %}
+</body>
+</html>

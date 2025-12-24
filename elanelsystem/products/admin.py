@@ -3,7 +3,9 @@ from .models import Plan, Products
 
 @admin.register(Products)
 class ProductsAdmin(admin.ModelAdmin):
-    list_display = ("tipo_de_producto","tipodePlan","nombre","plan")
+    list_display = ("tipo_de_producto","tipodePlan","nombre","plan","activo")
+    list_editable = ("activo",)
+    search_fields = ("nombre","tipo_de_producto","tipodePlan")
 
 @admin.register(Plan)
 class PlansAdmin(admin.ModelAdmin):

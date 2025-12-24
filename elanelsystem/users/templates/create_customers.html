@@ -4,11 +4,17 @@
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/create_customer.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'js/vanilla-calendar-pro/styles/index.css' %}">
+<link rel="stylesheet" href="{% static 'js/vanilla-calendar-pro/styles/customStyles.css' %}">
 {% endblock css %}
     
 {% block content %}
-    <div class="wrapper_tittle">
+    {% comment %} <div class="wrapper_tittle">
         <h1>NUEVO CLIENTE</h1>
+    </div> {% endcomment %}
+    <div class="titleHeaderWrapper">
+        <img src="{% static 'images/icons/new_user.svg' %}" alt="">
+        <h1 class="titleHeader">NUEVO CLIENTE</h1>
     </div>
 
     <form method="post" id="form_create_customer" autocomplete="off">
@@ -16,7 +22,7 @@
 
             <div class="inputWrapper" id="wrapperNroCliente">
                 <label for="">Nro Cliente</label>
-                <input type="text" name="nro_cliente" value="{{customer_number}}" class="input-read-write-default" readonly="readonly" maxlength="15" required id="id_nro_cliente">
+                <input type="text" readonly value="{{customer_number}}" class="input-read-write-default" maxlength="15" id="id_nro_cliente">
             </div>
          
             <div class="inputWrapper" id="wrapperNombre">
@@ -56,7 +62,7 @@
          
             <div class="inputWrapper" id="wrapperFecNacimiento">
                 <label for="">Fecha de Nacimiento</label>
-                <input type="text" name="fec_nacimiento" class="input-read-write-default" maxlength="10" required id="id_fec_nacimiento">
+                <input type="text" name="fec_nacimiento" class="input-read-write-default" maxlength="10" required readonly id="id_fec_nacimiento">
             </div>
          
             <div class="inputWrapper" id="wrapperEstadoCivil">
@@ -80,14 +86,25 @@
 
 
 {% block js %}
-    <script>
-        document.getElementById('id_fec_nacimiento').addEventListener('input', function (e) {
-        var input = e.target;
-        var val = input.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,2})(\d{0,4})/);
-        input.value = !val[2] ? val[1] : val[1] + '/' + val[2] + (val[3] ? '/' + val[3] : '');
+    <script src="{% static 'js/vanilla-calendar-pro/index.js' %}"></script>
+
+    <script type="module">
+        import { initInputCalendar } from "{% static 'js/vanilla-calendar-pro/calendarSingle-input.js' %}";
+        window.addEventListener('DOMContentLoaded', () => {
+            initInputCalendar('#id_fec_nacimiento', {
+            locale: 'es-AR',
+            autoClose: true,
+            todayLabel: 'Hoy',
+            clearLabel: 'Limpiar',
+            scrollContainer: '#form_create_customer',   // <- clave
+            popupMinWidth: 260,                     // opcional
+            offsetY: 6,                         // opcional
+            disableFuture: true,    // 👈 bloquea futuras
+            });
         });
+        
     </script>
-    <script src="{% static 'js/errorsFormManagement.js' %}"></script>
-    <script src="{% static 'js/redirectNewCustomer.js' %}"></script>
+    <script src="{% static 'js/vanilla_components/errorsFormManagement.js' %}"></script>
+    <script src="{% static 'js/users/redirectNewCustomer.js' %}"></script>
 
 {% endblock js %}

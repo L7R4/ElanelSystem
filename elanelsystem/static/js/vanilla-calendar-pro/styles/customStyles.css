@@ -9,6 +9,7 @@
 .vc{
     gap:.6rem;
     border: 1px solid var(--blue-2);
+    z-index: 9999;
 }
 .vc-month, .vc-year{
     font-size: clamp(11px, 1vw, 13px) !important;
@@ -23,4 +24,9 @@
   opacity: .45;
   pointer-events: none;
   filter: grayscale(1);
+}
+.vc-years__year,.vc-months__month
+{
+    font-size: clamp(11px, 1vw, 13px) !important;
+    font-family: raleway-semibold !important;
 }

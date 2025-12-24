@@ -11,6 +11,11 @@ from sales.utils import exportar_excel
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
+# Error en la suma de valor de cirugia
+# 45
+# calcular_valor.php - obitene el valor filtrando la especieilidad del doctor con respecto a los codigos que puede ocupar
+# todo eso lo guarda en valor cirugia
+
 class IndexLoginView(LoginView):
     template_name = "index.html"
     redirect_authenticated_user = True
@@ -31,6 +36,7 @@ def redireccionar_por_permisos(usuario):
     #     "Administracion": {"permisos": ["users.my_ver_administracion"], "url": reverse("users:panelAdmin")},
     #     "Planes suspendidos": {"permisos": ["sales.my_ver_planes_suspendidos"], "url": reverse("sales:ventasSuspendidas")},
     # }
+
     secciones = {
         # "Resumen": {"permisos": ["sales.my_ver_resumen"], "url": reverse("sales:resumen")},
         "Clientes": {"permisos": ["users.my_ver_clientes"], "url": reverse("users:list_customers")},
@@ -41,10 +47,13 @@ def redireccionar_por_permisos(usuario):
         "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
         "Configuración": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},
     }
+
     # allPermissions = [perm for perm in Permission.objects.all() if perm.codename.startswith('my_')]
     
     secciones_permitidas = {}
     for k, v in secciones.items():
+        print("wepss")
+        print(usuario.get_all_permissions())
         if any(usuario.has_perm(perm) for perm in v['permisos']):
             secciones_permitidas[k] = v
 

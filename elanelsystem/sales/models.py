@@ -464,16 +464,20 @@ class Ventas(models.Model):
     
     def acreditarCuotasPorAnticipo(self, dineroAFavor,responsable):
         cantidad_cuotas = len(self.cuotas) - 1
-            # Un for que reccorra de la ultima cuota hasta la cuota 1
+        ##########################################
+        # ES MUY IMPORTANTE CREAR ESTE METODO DE PAGO PARA PODER ACREDITAR LAS CUOTAS
+        ##########################################
+        metodoPagoCredito = MetodoPago.objects.filter(alias="Credito").first().id
+
         for i in range(cantidad_cuotas,0,-1):
             cuota = self.cuotas[i]
             if dineroAFavor >= cuota["total"]:
                 cuota["bloqueada"] = False # Desbloquea la cuota para que se pueda pagar
-                self.pagarCuota(cuota["cuota"],cuota["total"],"Credito","",responsable)
+                self.pagarCuota(cuota["cuota"].split()[-1],cuota["total"],metodoPagoCredito,"",responsable)
                 dineroAFavor -= cuota["total"]
             elif dineroAFavor > 0:
                 cuota["bloqueada"] = False # Desbloquea la cuota para que se pueda pagar
-                self.pagarCuota(cuota["cuota"],dineroAFavor,"Credito","",responsable)
+                self.pagarCuota(cuota["cuota"].split()[-1],dineroAFavor,metodoPagoCredito,"",responsable)
                 cuota["bloqueada"] = True # Se vuelve a bloquear la cuota para que no se pueda acceder hasta que haya completado las cuotas anteriores
                 dineroAFavor = 0
             else:
@@ -567,6 +571,7 @@ class Ventas(models.Model):
             raise ValueError("La cuota ya está pagada o bloqueada.")
         
         print("Registrando pago...")
+
         # 2) Crear el PagoCannon de forma atómica
         with transaction.atomic():
             pago = PagoCannon(
@@ -577,9 +582,8 @@ class Ventas(models.Model):
                 cobrador         = CuentaCobranza.objects.filter(id=int(cobrador)).first() if cobrador else None,
                 responsable_pago = responsable_pago,
             )
-            print("Pago creado, guardando...")
-            pago.save()  # aquí se genera el nro_recibo y campana_de_pago
-            print("Pago registrado:", pago)
+            
+            pago.save() 
 
             # 3) Referenciar el pago en el JSON
             cuota.setdefault("pagos", []).append(pago.id)
@@ -828,12 +832,12 @@ class MovimientoExterno(models.Model):
                 raise ValidationError({'tipoMoneda': 'Tipo de moneda no válida'})
 #endregion
 
+def now_formatted():
+    return timezone.localtime(timezone.now()).strftime("%d/%m/%Y %H:%M")
 
 class PagoCannon(models.Model):
     
-    @staticmethod
-    def now_formatted():
-        return timezone.localtime(timezone.now()).strftime("%d/%m/%Y %H:%M")
+    
 
     nro_recibo = models.CharField(
         "N° de comprobante",

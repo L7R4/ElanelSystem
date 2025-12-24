@@ -32,7 +32,7 @@
         </ul>
     </div>
 
-    <div class="buttonDeBaja">
+    {% comment %} <div class="buttonDeBaja">
         <button type="button" id="bajaBtn"> Dar baja </button>
         <div class="formConfirmBajaWrapper">
             <div class="formsContainer">
@@ -97,24 +97,24 @@
             
         </div>
         
-    </div>
+    </div> {% endcomment %}
     
     {% endif %}
     
-    <div class="buttonChangePack button-default-style">
+    {% comment %} <div class="buttonChangePack button-default-style">
         <a href="{% url 'sales:cambioPack' object.id %}">Cambiar pack</a>
     </div>
     
     <div class="buttonChangeTitularidad button-default-style">
         <a href="{% url 'sales:changeTitu' object.pk %}">Cambiar titularidad</a>
-    </div>
-</div>
+    </div> {% endcomment %}
+</div> 
 {% else %}
-<div class="wrapperButtonManageVenta">
+{% comment %} <div class="wrapperButtonManageVenta">
     <div class="deleteSale">
         <button id="showDeleteWrapper" class="delete-button-default" onclick="modalDeleteVenta()">Eliminar venta</button>
     </div>
-</div>
+</div> {% endcomment %}
 
 {% endif %}
 
@@ -216,7 +216,7 @@
                 <h2>Monto x Cuota</h2>
                 <div>
                     {% language 'de' %}
-                        <h3>{{object.importe_x_cuota|floatformat:0}}</h3>
+                        <h3>$ {{object.importe_x_cuota|formato_moneda}}</h3>
                     {% endlanguage %}
 
                 </div>
@@ -226,7 +226,7 @@
                 <h2>Total a pagar</h2>
                 <div>
                     {% language 'de' %}
-                        <h3>{{object.total_a_pagar|floatformat:0}}</h3>
+                        <h3>$ {{object.total_a_pagar|formato_moneda}}</h3>
                     {% endlanguage %}
                 </div>
             </div>
@@ -235,7 +235,7 @@
                 <h2>Cuota de inscripcion</h2>
                 <div>
                     {% language 'de' %}
-                        <h3>{{object.anticipo|floatformat:0}}</h3>
+                        <h3>$ {{object.anticipo|formato_moneda}}</h3>
                     {% endlanguage %}
                 </div>
             </div>
@@ -244,7 +244,7 @@
                 <h2>Primer cuota</h2>
                 <div>
                     {% language 'de' %}
-                        <h3>{{object.primer_cuota|floatformat:0}}</h3>
+                        <h3>$ {{object.primer_cuota|formato_moneda}}</h3>
                     {% endlanguage %}
                 </div>
             </div>
@@ -274,8 +274,12 @@
                     <h3>{{object.supervisor}}</h3>
                 </div>
             </div>
-            
-
+            <div class="inputs" id="observaciones">
+                <h2>Observaciones</h2>
+                <div>
+                    <h3>{{object.observaciones}}</h3>
+                </div>
+            </div>
         </div>
 
         {% if object.cambioTitularidadField %}
@@ -329,10 +333,10 @@
                                     <div class="marca bloqueado" style="background-image: url('{% static 'images/icons/iconBloqueado.png' %}')">
                                     </div>
                                 {% else %}
-                                <div id="{{cuota.cuota}}" class ="cuota {{cuota.status}}">
+                                <div id="{{cuota.cuota}}" class ="cuota {{cuota.status | capfirst }}">
 
                                     {% if cuota.status|lower == "vencido" %}
-                                        <div class="marca {{cuota.status}}"></div>
+                                        <div class="marca {{cuota.status | capfirst }}"></div>
                                     {% endif %}
 
                                     {% if cuota.status|lower == "parcial" %}
@@ -385,11 +389,11 @@
 
                         <div class="pickedAmount">
                             <h4>Monto a abonar</h4>
-                            <input type="text" class="input-select-custom" name="amountParcial" id="amountParcial" placeholder="Ingrese el dinero">
+                            <input type="text" class="input-select-custom inputValidation" name="amountParcial" id="amountParcial" placeholder="Ingrese el dinero">
                             <p id="dineroRestante"></p>
                         </div>
 
-                        <div id="selectWrapperSelectCobrador" class="wrapperSelectFilter wrapperInput">
+                        {% comment %} <div id="selectWrapperSelectCobrador" class="wrapperSelectFilter wrapperInput">
                             <label class="labelInput">Cobrador</label>
                             <div class="containerInputAndOptions">
                                 <img id="cobradorIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""/>
@@ -406,28 +410,38 @@
                                     {% endfor %}
                                 </ul>
                             </div>
-                        </div>
+                        </div> {% endcomment %}
 
-
-                        {% comment %} <div id="selectWrapperSelectTypePayments" class="wrapperSelect">
-                            <h3 class="labelInput">Metodo de pago</h3>
+                        <div id="selectWrapperSelectCobrador" class="select-search wrapperTypeFilter wrapperSelectFilter wrapperInput">
+                            <h3 class="labelInput">Cobrador</h3>
                             <div class="containerInputAndOptions">
-                                <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                                <input type="text" value="" name="metodoPago" class = "input-select-custom onlySelect" id="metodoPago" placeholder ="Elija el metodo de pago" autocomplete="off" readonly>
+                                <img
+                                    class="iconDesplegar"
+                                    id="cobradorIconDisplay"
+                                    src="{% static 'images/icons/arrowDown.png' %}"
+                                    alt=""
+                                />
+
+                                <input type="hidden" name="cobrador" readonly required="" autocomplete="off" maxlength="100" class="input-cobrador inputValidation">
+
+                                <div class="onlySelect pseudo-input-select-wrapper">
+                                    <h3></h3>
+                                </div>
                                 <ul class="list-select-custom options">
-                                    {% for metodo in metodosDePagos %}
-                                        <li data-value="{{metodo.id}}">{{metodo.alias}}</li>
+                                    {% for cobrador in cobradores %}
+                                    <li data-value="{{cobrador.id}}">{{cobrador.alias}}</li>
                                     {% endfor %}
                                 </ul>
                             </div>
-                        </div> {% endcomment %}
+                        </div>
 
-                        <div id="selectWrapperSelectTypePayments" class="wrapperSelectFilter wrapperInput">
+                        
+                        <div id="selectWrapperSelectTypePayments" class="select-search wrapperTypeFilter wrapperSelectFilter wrapperInput">
                             <label class="labelInput">Metodo de pago</label>
                             <div class="containerInputAndOptions">
                                 <img id="metodoPagoIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""/>
                                 
-                                <input type="hidden" name="metodoPago" required="" autocomplete="off" maxlength="100" class="input-metodoPago">
+                                <input type="hidden" name="metodoPago" required="" autocomplete="off" maxlength="100" class="input-metodoPago inputValidation">
                                 
                                 <div class="onlySelect pseudo-input-select-wrapper">
                                     <h3></h3>
@@ -491,16 +505,23 @@
     var crsf_token = '{%csrf_token%}'
 </script>
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
-<script src="{% static 'js/z_index_orders_selects.js' %}"></script>
-{% comment %} <script src="{% static 'js/inputsSelectsOnly.js' %}"></script> {% endcomment %}
+<script src="{% static 'js/vanilla_components/vanilla_components/z_index_orders_selects.js.js' %}"></script>
 
-{% comment %} <script src="{% static 'js/async_ui.js' %}"></script> {% endcomment %}
+<script src="{% static 'js/sales/reciboGenerator.js' %}"></script>
+<script type="module" src="{% static 'js/sales/manejoCuotas.js' %}"></script>
+<script src="{% static 'js/sales/selectAdjudicacion.js' %}"></script>
+<script type="module" src="{% static 'js/sales/baja_venta.js' %}"></script>
+<script src="{% static 'js/sales/redirectBajaPDF.js' %}"></script>
+<script type="module" src="{% static 'js/sales/delete_sale.js' %}"></script>
+<script src="{% static 'js/vanilla_components/inputSelectOnly.js' %}"></script>
 
-<script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
-<script type="module" src="{% static 'js/manejoCuotas.js' %}"></script>
-<script src="{% static 'js/selectAdjudicacion.js' %}"></script>
-<script type="module" src="{% static 'js/baja_venta.js' %}"></script>
-<script src="{% static 'js/redirectBajaPDF.js' %}"></script>
-<script type="module" src="{% static 'js/delete_sale.js' %}"></script>
+<script>
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) {
+      // recarga dura solo si volvió desde bfcache
+      location.reload();
+    }
+  });
+</script>
 
 {% endblock js %}

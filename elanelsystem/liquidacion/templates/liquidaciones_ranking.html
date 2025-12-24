@@ -194,10 +194,10 @@
     
 {% endblock content %}
 {% block js %}
-<script src="{% static 'js/displayItemsRanking.js' %}"></script>
-<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
-<script src="{% static 'js/filterRanking.js' %}"></script>
-<script src="{% static 'js/iconFIlterEvent.js' %}"></script>
+{% comment %} <script src="{% static 'js/displayItemsRanking.js' %}"></script> {% endcomment %}
+<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
+{% comment %} <script src="{% static 'js/filterRanking.js' %}"></script> {% endcomment %}
+<script src="{% static 'js/vanilla_components/iconFIlterEvent.js' %}"></script>
 
 
 
