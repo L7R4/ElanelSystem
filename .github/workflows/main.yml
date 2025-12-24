@@ -1,0 +1,80 @@
+name: Deploy ElanelSystem (3 pasos)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ElanelSystem/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/deploy-elanelsystem.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-elanelsystem
+  cancel-in-progress: true
+
+env:
+  REPO_DIR: "/home/projects/ElanelSystem"        # repo de ElanelSystem en el VPS
+  COMPOSE_FILE: "/home/projects/docker-compose.yml"
+  SERVICE: "elanelsystem_web"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Preparación SSH (necesario para los 3 pasos remotos)
+      - name: Start ssh-agent and add key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Add VPS to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${{ secrets.VPS_PORT }}" "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      # 1) Verificar que el VPS está OK (conexión, docker y compose disponibles, compose en ruta)
+      - name: (1) Healthcheck VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          ssh -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "bash -lc '
+            set -e
+            echo Connected to: \$(hostname)
+            test -f \"$COMPOSE_FILE\"            # existe docker-compose.yml
+            docker version >/dev/null
+            docker compose version >/dev/null
+            echo Docker OK && echo Compose OK
+          '"
+
+      # 2) git fetch/reset del repo de ElanelSystem en el VPS
+      - name: (2) Actualizar código (git fetch)
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          ssh -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "bash -lc '
+            set -e
+            git -C \"$REPO_DIR\" fetch --all --prune
+            git -C \"$REPO_DIR\" checkout main
+            git -C \"$REPO_DIR\" reset --hard origin/main
+          '"
+
+      # 3) Rebuild + restart SOLO el contenedor de ElanelSystem para tomar los cambios
+      - name: (3) Reiniciar contenedor (build + up --no-deps)
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          ssh -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "bash -lc '
+            set -e
+            docker compose -f \"$COMPOSE_FILE\" build \"$SERVICE\"
+            docker compose -f \"$COMPOSE_FILE\" up -d --no-deps \"$SERVICE\"
+            docker compose -f \"$COMPOSE_FILE\" ps
+          '"
