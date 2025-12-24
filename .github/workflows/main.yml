@@ -3,10 +3,6 @@ name: Deploy ElanelSystem (3 pasos)
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'ElanelSystem/**'
-      - 'docker-compose.yml'
-      - '.github/workflows/deploy-elanelsystem.yml'
   workflow_dispatch:
 
 concurrency:
