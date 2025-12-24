@@ -1,60 +1,61 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  db_elanelsystem:
+  db:
     image: postgres:17
-    container_name: db_elanelsystem
+    container_name: elanel_prod_db
+    restart: unless-stopped
+    env_file:
+      - .env.server
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    restart: unless-stopped
-    env_file:
-      - ./.env
     volumes:
-      - postgres_data_elanelsystem:/var/lib/postgresql/data
-    networks:
-      - proxy-network
+      - pg_data:/var/lib/postgresql/data
 
-  web_elanelsystem:
+  web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: web_elanelsystem
-    restart: always
+    container_name: elanel_prod_web
+    restart: unless-stopped
     env_file:
-      - ./.env
+      - .env.server
+    environment:
+      # manage.py ya apunta a prod, no hace falta: DJANGO_SETTINGS_MODULE
+      # Ajustá si querés forzar:
+      # DJANGO_SETTINGS_MODULE: elanelsystem.settings.prod
     depends_on:
-      - db_elanelsystem
+      - db
     volumes:
-      - static_volume_elanelsystem:/app/staticfiles
-      - media_volume_elanelsystem:/app/media
+      - static_data:/app/staticfiles # STATIC_ROOT => /app/staticfiles
+      - media_data:/app/elanelsystem/media # MEDIA_ROOT  => /app/elanelsystem/media
     expose:
       - "8000"
-    networks:
-      - proxy-network
 
-  nginx_elanelsystem:
-    image: nginx:stable-alpine
-    container_name: nginx_elanelsystem
-    restart: always
-    # No mapeamos puertos al host
+  caddy:
+    image: caddy:2-alpine
+    container_name: elanel_prod_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # solo para notificaciones de Let's Encrypt
+      CADDY_EMAIL: ${CADDY_EMAIL}
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - static_volume_elanelsystem:/app/staticfiles:ro
-      - media_volume_elanelsystem:/app/media:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - static_data:/var/www/staticfiles:ro
+      - media_data:/var/www/media:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
-      - web_elanelsystem
-    expose:
-      - "80"
-    networks:
-      - proxy-network
-
-networks:
-  proxy-network:
-    external: true
+      - web
 
 volumes:
-  postgres_data_elanelsystem:
-  static_volume_elanelsystem:
-  media_volume_elanelsystem:
+  pg_data:
+  static_data:
+  media_data:
+  caddy_data:
+  caddy_config:

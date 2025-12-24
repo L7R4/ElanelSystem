@@ -2,298 +2,160 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Recibo</title>
+  <meta charset="utf-8" />
+  <title>Recibo {{ recibo.numero_formateado|default:"0007-00000000" }}</title>
+  <link rel="stylesheet" href="{% static 'css/recibo.css' %}">
 </head>
 <body>
-  <div class="recibo-container">
-    <div class="recibo-header">
-        <div class="recibo-header-image">
-            <img src="{% static 'images/logoElanelPDF.png' %}" alt="">
+  <div class="receipt-a5">
+
+    <!-- HEADER -->
+    <header class="r-header">
+      <div class="r-brand">
+        <!-- Si tenés logo, reemplazá por <img src="{% static 'images/logo-elanel.png' %}" alt="ELANEL"> -->
+        <div class="logo-text">ELANEL</div>
+        <div class="brand-sub">Servicios S.R.L.</div>
+
+        <div class="brand-meta">
+          <div>24 de Septiembre 579 | Cel: 3854 - 713900</div>
+          <div>(4200) Santiago del Estero - Capital</div>
+          <div>C.U.I.T./D.G.R: 30-71804533-5 &nbsp;&nbsp; INICIO ACT.: 05/2023</div>
+          <div class="meta-warn">DOCUMENTO NO VÁLIDO COMO FACTURA</div>
+          <div class="meta-small">RESPONSABLE MONOTRIBUTO</div>
         </div>
-
-      
-      <div class="recibo-header-numero">
-        <h1>Recibo</h1>
-        <h1>N° {{numero_recibo}}</h1>
-
       </div>
-    </div>
 
-    <div class="recibo-sub_header">
-        <div class="recibo-sub_header-sucursal_info">
-            <h4>{{direcc_agencia}}</h4>
-            <h4>{{tel_agencia}}</h4>
-            <h4>{{email_agencia}}</h4> 
-        </div>
-
-        <div class="recibo-sub_header-type_receipt">
-            <h1>X</h1>
-            <h6>Documento no valido como factura</h6>
-        </div>
-
-        <div class="recibo-sub_header-date_cuit">
-            <h4>CUIT/DGR: 30-71804533-5</h4>
-
-            <div class="recibo-sub_header-date_cuit-date_wrapper">
-                <h3>Fecha</h3>
-                <h2>{{fecha}}</h2>
-            </div>
-        </div>
-      
-    </div>
-
-    <div class="recibo-info_cliente">
-        <div class="recibo-info_cliente-nombres">
-            <h3>Señor (es):</h3>
-            <p>{{nombre_cliente}}</p>
-        </div>
-
-        <div class="recibo-info_cliente-domicilio">
-            <h3>Domicilio:</h3>
-            <p>{{domicilio_cliente}}</p>
-        </div>
-
-        <div class="recibo-info_cliente-localidad">
-            <h3>Localidad:</h3>
-            <p>{{localidad_cliente}}</p>
-        </div>
-        
-    </div>
-
-    <div class="recibo-categoria_fiscal-cuit_wrapper">
-        <div class="recibo-categoria_fiscal">
-
-            <div class="recibo-categoria_fiscal-type">
-                <h3>IVA |</h3>
-                <div class="recibo-categoria_fiscal-type-item">
-                    <h6>Resp. inscrip.</h6>
-                    <div></div>
-                </div>
-                <div class="recibo-categoria_fiscal-type-item">
-                    <h6>Exento</h6>
-                    <div></div>
-                </div>
-                <div class="recibo-categoria_fiscal-type-item">
-                    <h6>Resp. Monot.</h6>
-                    <div></div>
-                </div>
-                <div class="recibo-categoria_fiscal-type-item">
-                    <h6>Cons. Final.</h6>
-                    <div></div>
-                </div>
-                <div class="recibo-categoria_fiscal-type-item">
-                    <h6>Monot. Social</h6>
-                    <div></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="recibo-cuit_wrapper">
-            <h3>CUIT N°:</h3>
-        </div>
-    </div>
-
-    <div class="recibo-info_dinero">
-        <h5>Recibí la suma de:</h5>
-        <p>{{ monto_en_letras }} ( ${{ monto_numero }} )</p>
-        <div></div>
-        <div></div>
-    </div>
-
-    <div class="recibo-info_concepto">
-        <h5>En concepto de:</h5>
-        <p>{{ concepto_recibo }}</p>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-    </div>
-
-    <div class="recibo-forma_de_pago">
-       <div class="recibo-forma_de_pago-item">
-           <h5>Efectivo</h5>
-           <div class="checkbox"></div>
-       </div>
-       
-       <div class="recibo-forma_de_pago-item cheque">
-            <h5>Cheque N°:</h5>
-            <div></div>
-        </div>
-        <div class="recibo-forma_de_pago-item">
-            <h5>Banco</h5>
-            <div class="checkbox"></div>
-        </div>
-        <div class="recibo-forma_de_pago-item">
-            <h5>Transferencia</h5>
-           <div class="checkbox"></div>
-        </div>
-        <div class="recibo-forma_de_pago-item">
-            <h5>Deposito</h5>
-            <div class="checkbox"></div>
-        </div>
-
-    </div>
-
-    <div class="recibo-total-firma">
-        <div class="recibo-total">
-            <h2>TOTAL $</h2>
-            <h1>{{monto_numero}}</h1>
-        </div>
-        <div class="recibo-firma">
-            <h3>FIRMA Y ACLARACION</h3>
-            <div></div>
-        </div>
-    </div>
-  </div>
-
-  <div class="recibo-container" style="page-break-before: always;">
-    <div class="recibo-header">
-        <div class="recibo-header-image">
-            <img src="{% static 'images/logoElanelPDF.png' %}" alt="">
-        </div>
-
-      
-      <div class="recibo-header-numero">
-        <h1>Recibo</h1>
-        <h1>N° {{numero_recibo}}</h1>
-
+      <div class="r-badge">
+        <div class="badge-x">X</div>
+        <div class="badge-label">&nbsp;</div>
       </div>
-    </div>
 
-    <div class="recibo-sub_header">
-        <div class="recibo-sub_header-sucursal_info">
-            <h4>Obligado 800</h4>
-            <h4>3624643544</h4>
-            <h4>agenciresitencia@gmail.com</h4>
-            {% comment %} <h4>{{agencia_direccion}}</h4>
-            <h4>{{agencia_tel}}</h4>
-            <h4>{{agencia_email}}</h4> {% endcomment %}
+      <div class="r-numdate">
+        <div class="recibo-title">RECIBO</div>
+        <div class="recibo-nro">
+          Nº <span>{{ recibo.numero_formateado|default:"0007-00000696" }}</span>
         </div>
 
-        <div class="recibo-sub_header-type_receipt">
-            <h1>X</h1>
-            <h6>Documento no valido como factura</h6>
-        </div>
-
-        <div class="recibo-sub_header-date_cuit">
-            <h4>CUIT/DGR: 30-71804533-5</h4>
-
-            <div class="recibo-sub_header-date_cuit-date_wrapper">
-                <h3>Fecha</h3>
-                <h2>{{fecha}}</h2>
+        <div class="date-box">
+          <div class="date-grid">
+            <div class="date-cell">
+              <div class="lbl">DÍA</div>
+              <div class="box">{{ fecha|date:"d"|default:"" }}</div>
             </div>
-        </div>
-      
-    </div>
-
-    <div class="recibo-info_cliente">
-        <div class="recibo-info_cliente-nombres">
-            <h3>Señor (es):</h3>
-            <p></p>
-        </div>
-
-        <div class="recibo-info_cliente-domicilio">
-            <h3>Domicilio:</h3>
-            <p></p>
-        </div>
-
-        <div class="recibo-info_cliente-localidad">
-            <h3>Localidad:</h3>
-            <p></p>
-        </div>
-        
-    </div>
-
-    <div class="recibo-categoria_fiscal-cuit_wrapper">
-        <div class="recibo-categoria_fiscal">
-
-            <div class="recibo-categoria_fiscal-type">
-                <h3>IVA |</h3>
-                <div class="recibo-categoria_fiscal-type-item">
-                    <h6>Resp. inscrip.</h6>
-                    <div></div>
-                </div>
-                <div class="recibo-categoria_fiscal-type-item">
-                    <h6>Exento</h6>
-                    <div></div>
-                </div>
-                <div class="recibo-categoria_fiscal-type-item">
-                    <h6>Resp. Monot.</h6>
-                    <div></div>
-                </div>
-                <div class="recibo-categoria_fiscal-type-item">
-                    <h6>Cons. Final.</h6>
-                    <div></div>
-                </div>
-                <div class="recibo-categoria_fiscal-type-item">
-                    <h6>Monot. Social</h6>
-                    <div></div>
-                </div>
+            <div class="date-cell">
+              <div class="lbl">MES</div>
+              <div class="box">{{ fecha|date:"m"|default:"" }}</div>
             </div>
+            <div class="date-cell">
+              <div class="lbl">AÑO</div>
+              <div class="box">{{ fecha|date:"Y"|default:"" }}</div>
+            </div>
+          </div>
         </div>
+      </div>
+    </header>
 
-        <div class="recibo-cuit_wrapper">
-            <h3>CUIT N°:</h3>
-        </div>
-    </div>
+    <!-- CLIENTE -->
+    <section class="r-block r-client">
+      <div class="row">
+        <div class="label">Señor (es):</div>
+        <div class="line flex-1">{{ cliente.nombre|default:"" }}</div>
+      </div>
+      <div class="row">
+        <div class="label">Domicilio:</div>
+        <div class="line w-60">{{ cliente.domicilio|default:"" }}</div>
+        <div class="label">Localidad:</div>
+        <div class="line w-20">{{ cliente.localidad|default:"" }}</div>
+        <div class="label">C.U.I.T. Nº:</div>
+        <div class="line w-20">{{ cliente.cuit|default:"" }}</div>
+      </div>
 
-    <div class="recibo-info_dinero">
-        <h5>Recibí la suma de:</h5>
-        <p>{{ monto_en_letras }} ( ${{ monto_numero }} )</p>
-        <div></div>
-        <div></div>
+      <div class="row row-compact">
+        <div class="label">CONDICIONES</div>
 
-    </div>
+        <div class="check"><span class="cbox">{% if cliente.iva == "RI" %}✓{% endif %}</span> IVA / Resp. Inscripto</div>
+        <div class="check"><span class="cbox">{% if cliente.iva == "RM" %}✓{% endif %}</span> Resp. Monot.</div>
+        <div class="check"><span class="cbox">{% if cliente.iva == "CF" %}✓{% endif %}</span> Cons. Final</div>
+        <div class="check"><span class="cbox">{% if cliente.iva == "MS" %}✓{% endif %}</span> Monot. Social</div>
 
-    <div class="recibo-info_concepto">
-        <h5>En concepto de:</h5>
-        <p>{{ concepto_recibo }}</p>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-    </div>
+        <div class="spacer"></div>
 
-    <div class="recibo-forma_de_pago">
-       <div class="recibo-forma_de_pago-item">
-           <h5>Efectivo</h5>
-           <div class="checkbox"></div>
-       </div>
-       
-       <div class="recibo-forma_de_pago-item cheque">
-            <h5>Cheque N°:</h5>
-            <div></div>
-        </div>
-        <div class="recibo-forma_de_pago-item">
-            <h5>Banco</h5>
-            <div class="checkbox"></div>
-        </div>
-        <div class="recibo-forma_de_pago-item">
-            <h5>Transferencia</h5>
-           <div class="checkbox"></div>
-        </div>
-        <div class="recibo-forma_de_pago-item">
-            <h5>Deposito</h5>
-            <div class="checkbox"></div>
-        </div>
+        <div class="label">DE VENTA</div>
+        <div class="check"><span class="cbox">{% if recibo.condicion == "contado" %}✓{% endif %}</span> CONTADO</div>
+        <div class="check"><span class="cbox">{% if recibo.condicion == "cc" %}✓{% endif %}</span> CUENTA CORRIENTE</div>
+      </div>
 
-    </div>
+      <div class="row">
+        <div class="label">Recibí la suma de pesos:</div>
+        <div class="line flex-1 upper">{{ recibo.importe_letras|default:"" }}</div>
+      </div>
+    </section>
 
-    <div class="recibo-total-firma">
-        <div class="recibo-total">
-            <h2>TOTAL $</h2>
-            <h1>{{monto_numero}}</h1>
-        </div>
-        <div class="recibo-firma">
-            <h3>FIRMA Y ACLARACION</h3>
-            <div></div>
-        </div>
-    </div>
+    <!-- CONCEPTO -->
+    <section class="r-block">
+      <div class="label">En concepto de:</div>
+      <div class="concept-box">
+        {{ recibo.concepto|default:"" }}
+      </div>
+    </section>
+
+    <!-- PAGOS -->
+    <section class="r-block r-payments">
+      <div class="pay-row">
+        <div class="label">Efectivo:</div>
+        <div class="line flex-1"></div>
+        <div class="label">$</div>
+        <div class="line w-15 tr">{{ recibo.efectivo|default:"" }}</div>
+      </div>
+
+      <div class="pay-row">
+        <div class="label">Cheque N°:</div>
+        <div class="line w-30">{{ recibo.cheque1_numero|default:"" }}</div>
+        <div class="label">c/Banco</div>
+        <div class="line flex-1">{{ recibo.cheque1_banco|default:"" }}</div>
+        <div class="label">$</div>
+        <div class="line w-15 tr">{{ recibo.cheque1_importe|default:"" }}</div>
+      </div>
+
+      <div class="pay-row">
+        <div class="label">Cheque N°:</div>
+        <div class="line w-30">{{ recibo.cheque2_numero|default:"" }}</div>
+        <div class="label">c/Banco</div>
+        <div class="line flex-1">{{ recibo.cheque2_banco|default:"" }}</div>
+        <div class="label">$</div>
+        <div class="line w-15 tr">{{ recibo.cheque2_importe|default:"" }}</div>
+      </div>
+
+      <div class="pay-row">
+        <div class="label">Cheque N°:</div>
+        <div class="line w-30">{{ recibo.cheque3_numero|default:"" }}</div>
+        <div class="label">c/Banco</div>
+        <div class="line flex-1">{{ recibo.cheque3_banco|default:"" }}</div>
+        <div class="label">$</div>
+        <div class="line w-15 tr">{{ recibo.cheque3_importe|default:"" }}</div>
+      </div>
+    </section>
+
+    <!-- TOTAL / FIRMA -->
+    <section class="r-total-sign">
+      <div class="total-box">
+        <div class="ttl">TOTAL $</div>
+        <div class="amount">{{ recibo.total|default:"" }}</div>
+      </div>
+      <div class="sign">
+        <div class="label">FIRMA:</div>
+        <div class="sign-line"></div>
+      </div>
+    </section>
+
+    <!-- FOOTER IMPRENTA -->
+    <footer class="r-footer">
+      <div class="printer">
+        LAIMPRENTA de JUAN GIMBA · Av. Belgrano 383 · Cel: 362 154-126411 · CUIT: 20-17497401-3 · IND. COM.: 31909 <br>
+        F/HAB. 03-92 · F/Imp.: 12/2024 · N° 0007-00000001 AL N° 0007-00000750 · ORIGINAL BLANCO · DUPLICADO COLOR
+      </div>
+    </footer>
   </div>
-</div>
 </body>
 </html>
 

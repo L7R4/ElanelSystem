@@ -1,147 +1,195 @@
 .wrapper_content {
-    padding: 4rem;
-    display: flex;
-    flex-direction: column;
+  gap: 2.5rem;
+  display: flex;
+  flex-direction: column;
 }
 /* #region Filtros */
 .filters {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    padding-bottom: 3rem;
-    flex: 0 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
+  flex: 0 0 auto;
 }
-.filters > form{
-    width: 100%;
-    border: 1px solid #ffffff48;
-    padding: 1rem;
-    border-radius: .6rem;
-
+.titleAccountWrapper {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  background-color: var(--blue-1);
+  padding: 2rem 3.5rem;
+  border-bottom: 1px solid var(--white-800-20);
 }
-.filters > form >div{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
+.titleAccountWrapper h2 {
+  font-size: clamp(3rem, 1.6vw, 5rem);
+  font-family: raleway-bold;
+  color: var(--white-color-800);
+  letter-spacing: 0.06rem;
+  padding: 0.5rem 0;
 }
-
-.filters > form > div>div{
-    width: 30%;
-    display: flex;
-    align-items: center;
+.titleAccountWrapper img {
+  width: 3vw;
+  height: 3vw;
+  min-width: 3.5rem;
+  min-height: 3.5rem;
+  max-width: 6rem;
+  max-height: 6rem;
 }
-
+.operations > h2 {
+  font-size: clamp(1.6rem, 1.6vw, 2.5rem);
+  font-family: raleway-bold;
+  color: var(--third-color);
+}
+.filters > form {
+  width: 70%;
+  border-radius: 0.6rem;
+}
+.filters > form > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: end;
+}
+.labelInput {
+  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
+  width: fit-content;
+}
+.filters > form > div > div {
+  width: 45%;
+  display: flex;
+  align-items: center;
+}
+.filters > form > div > div#productoWrapper {
+  display: unset;
+}
 .searchFilter {
-    position: relative;
+  position: relative;
 }
 
-.filters .searchFilter>input#operation {
-    color: var(--third-color);
-    z-index: 2;
+.filters .searchFilter > input#operation {
+  color: var(--third-color);
+  z-index: 2;
 }
-#formFilterVentas input{
-    padding: .6rem;
+#formFilterVentas input {
+  padding: 0.6rem;
 }
 
-.searchFilter>img {
-    position: absolute;
-    filter: invert(1);
-    width: 1.8rem;
-    right: 2rem;
-    z-index: 6;
+.searchFilter > img {
+  position: absolute;
+  filter: invert(1);
+  width: 1.8rem;
+  right: 2rem;
+  z-index: 6;
 }
 
 .filters #productoWrapper .iconDesplegar {
-    z-index: 3;
-    filter: invert(1);
+  z-index: 3;
+  filter: invert(1);
 }
 
 .filters #productoWrapper #productoInput {
-    z-index: 2;
-    background-color: var(--background-color);
-    color: var(--third-color);
+  z-index: 2;
+  background-color: var(--background-color);
+  color: var(--third-color);
 }
 
 .filters #productoWrapper .options {
-    z-index: 1;
+  z-index: 1;
 }
-#formFilterVentas #submitSearchVenta{
-    padding: .8rem 1.2rem;
+#formFilterVentas #submitSearchVenta {
+  padding: 0.8rem 1.2rem;
 }
-#submitSearchVenta:disabled{
-    opacity: .5;
-    pointer-events: none;
+#submitSearchVenta:disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
-#resetFiltros{
-    font-size: clamp(1rem, 1vw, 1.6rem);
-    font-family: raleway-semibold;
-    color: var(--third-color);
-    text-decoration: underline;
+#resetFiltros {
+  font-size: clamp(1rem, 1vw, 1.6rem);
+  font-family: raleway-semibold;
+  color: var(--third-color);
+  text-decoration: underline;
 }
 /* #endregion */
 
 #create_customer {
-    color: var(--third-color);
-    font-size: 1.6rem;
-    padding: 1rem 3rem;
+  color: var(--third-color);
+  font-size: 1.6rem;
+  padding: 1rem 3rem;
+  display: flex;
+  align-items: center;
+  padding-left: 2rem;
+  gap: 0.3rem;
 }
 
 .accountWrapper {
-    display: flex;
-    width: 100%;
-    /* flex: 1 1 auto;
-    min-height: 0; */
-    overflow: auto;
+  display: flex;
+  width: 100%;
+  padding: 0rem 3.5rem;
+  overflow: hidden;
+  gap: 3rem;
+  flex: 1 1 auto;
+  padding-bottom: 3.5rem;
 }
 
 .operations {
-    height: 100%;
-    width: 70%;
-    /* overflow-y: auto; */
+  height: 100%;
+  width: 65%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  gap: 1rem;
 }
 
 .operationsWrapper {
-    width: 100%;
+  width: 100%;
+  margin-top: 1rem;
+  overflow: auto;
+  padding-right: 1rem;
+  position: relative;
 }
 
 .operationsList {
-    width: 100%;
-    height: 100%;
-    list-style: none;
-    border-radius: 1rem;
+  width: 100%;
+  height: 100%;
+  list-style: none;
+  border-radius: 1rem;
 }
 
 .operationItem {
-    border-radius: 1rem;
-    background: var(--blue-2);
-    padding: 3rem;
-    margin-bottom: 1.4rem;
+  border-radius: 1rem;
+  background: var(--blue-2);
+  padding: 3rem;
+  margin-bottom: 1.4rem;
 }
-.operationItem>.nameStatus {
-    display: flex;
-    align-items: center;
+.operationItem > .nameStatus {
+  display: flex;
+  align-items: center;
 }
-.operationItem>.nameStatus > h1{
-    font-size: clamp(2rem, 2vw, 3.5rem);
-    font-family: raleway-bold;
-    color: var(--third-color);
-    margin-right: 1.5rem;
-}
-
-.operationItem>.nameStatus > h3{
-    font-size: clamp(1.3rem, 1.3vw, 2rem);
-    font-family: raleway-semibold;
-    color: var(--third-color);
-    margin-right: 1.5rem;
+.operationItem > .nameStatus > h1 {
+  font-size: clamp(2rem, 2vw, 3.5rem);
+  font-family: raleway-bold;
+  color: var(--third-color);
+  margin-right: 1.5rem;
 }
 
+.operationItem > .nameStatus > h3 {
+  font-size: clamp(1.3rem, 1.3vw, 2rem);
+  font-family: raleway-semibold;
+  color: var(--third-color);
+  margin-right: 1.5rem;
+}
 
-.operationItem>.nameStatus>.iconProducto {
-    width: 10%;
-    margin-right: 1.5rem;
-    max-width: 9rem;
-    min-width: 5rem;
+.operationItem > .nameStatus > .iconProducto {
+  width: 10%;
+  margin-right: 1.5rem;
+  max-width: 9rem;
+  min-width: 5rem;
 }
 
 /* ===== Base ===== */
@@ -149,8 +197,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: .6rem;
-  padding: .4rem .8rem;
+  gap: 0.6rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 1rem;
   color: rgba(255, 255, 255, 0.911);
   font-size: clamp(1rem, 1vw, 1.2rem);
@@ -159,7 +207,7 @@
   background-clip: padding-box;
 
   /* Fondo semitransparente + blur (necesita algo de alpha para “ver” el blur) */
-  background: var(--badge-bg, rgba(255, 255, 255, 0.10));
+  background: var(--badge-bg, rgba(255, 255, 255, 0.1));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -177,9 +225,7 @@
   pointer-events: none;
 
   /* Truco para que solo se vea el borde (centro recortado) */
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: destination-out;
   mask-composite: exclude;
 }
@@ -213,149 +259,189 @@
 }
 
 .attributes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2%;
-    row-gap: 1.2rem;
-    margin: 2rem 0rem;
-    color: var(--third-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2%;
+  row-gap: 1.2rem;
+  margin: 2rem 0rem;
+  color: var(--third-color);
 }
 
-.attributes>div.information {
-    display: flex;
-    justify-content: space-between;
-    padding: 1.1rem;
-    width: 45%;
-    border-radius: .6rem;
-    align-items: center;
-    border: 2px solid var(--secundary-color);
+.attributes > div.information {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.1rem;
+  width: 45%;
+  border-radius: 0.6rem;
+  align-items: center;
+  border: 2px solid var(--secundary-color);
 }
-
-
 
 #downloadPDF {
-    font-size: clamp(1rem, 1vw, 1.2rem);
-    font-family: raleway-semibold;
-    color: var(--white-800-80);
-    margin-left: 1rem;
+  font-size: clamp(1rem, 1vw, 1.2rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
+  margin-left: 1rem;
 }
 
-.attributes>div.information>h3,
-.attributes>div.information>h2 {
-    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-    color: var(--backgorund-color);
-    font-family: raleway-semibold;
+.attributes > div.information > h3,
+.attributes > div.information > h2 {
+  font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+  color: var(--backgorund-color);
+  font-family: raleway-semibold;
 }
 
 .iconStatus {
-    width: .1vw;
-    height: .1vw;
-    max-width: 2.3rem;
-    min-width: 1.5rem;
-    max-height: 2.3rem;
-    min-height: 1.5rem;
-    border-radius: 50%;
+  width: 0.1vw;
+  height: 0.1vw;
+  max-width: 2.3rem;
+  min-width: 1.5rem;
+  max-height: 2.3rem;
+  min-height: 1.5rem;
+  border-radius: 50%;
 }
 
 .iconStatus.activo {
-    background-color: rgb(20, 180, 20);
+  background-color: rgb(20, 180, 20);
 }
 .iconStatus.adjudicada {
-    background-color: var(--primary-color);
+  background-color: var(--primary-color);
 }
-.iconStatus.suspendida{
-    background-color: rgb(227, 153, 16);
+.iconStatus.suspendida {
+  background-color: rgb(227, 153, 16);
 }
 .iconStatus.baja {
-    background-color: rgb(203, 14, 14);
+  background-color: rgb(203, 14, 14);
 }
 
-.ordenesWrapper{
-    display: flex;
-    gap: 1rem;
+.ordenesWrapper {
+  display: flex;
+  gap: 1rem;
 }
-.ordenesWrapper>h3{
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-    font-family: raleway-semibold;
-    background-color: var(--background-color);
-    padding: .4rem;
-    border-radius: .5rem;
+.ordenesWrapper > h3 {
+  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+  color: var(--third-color);
+  font-family: raleway-semibold;
+  background-color: var(--background-color);
+  padding: 0.4rem;
+  border-radius: 0.5rem;
 }
 
-.ordenesWrapper>h3.adjudicadoTag{
-    background-color: var(--secundary-color);   
+.ordenesWrapper > h3.adjudicadoTag {
+  background-color: var(--secundary-color);
 }
 
 .buttonMore {
-
-    display: flex;
-    gap: 0.2rem;
-    padding: 1rem 1.5rem;
-    background-color: var(--primary-color);
-    text-decoration: none;
-    border-radius: 1rem;
-    width: fit-content;
+  display: flex;
+  gap: 0.2rem;
+  padding: 1rem 1.5rem;
+  background-color: var(--primary-color);
+  text-decoration: none;
+  border-radius: 1rem;
+  width: fit-content;
 }
 
-.buttonMore>div {
-    display: flex;
-    gap: 0.4rem;
-    align-items: center;
+.buttonMore > div {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
 }
 
-.buttonMore>div>h3 {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway;
-    color: white;
+.buttonMore > div > h3 {
+  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+  font-family: raleway;
+  color: white;
 }
 
-.buttonMore>div>img {
-    margin-top: .1rem;
-    /* transform: rotate(-90deg); */
-    width: 1.5rem;
-    /* height: .8rem; */
+.buttonMore > div > img {
+  margin-top: 0.1rem;
+  /* transform: rotate(-90deg); */
+  width: 1.5rem;
+  /* height: .8rem; */
 }
 
 /* USER INFORMATION STYLES */
-.informationUser{
-    height: 100%;
-    width: 30%;
-    /* overflow-y: auto; */
-    padding: 1rem;
-    padding-top: 0;
+.informationUser {
+  height: 100%;
+  width: 35%;
+  padding-top: 0;
 }
-.informationUserWrapper > h2{
-    font-size: clamp(1.6rem, 1.6vw, 2.5rem);
-    font-family: raleway-bold;
-    color: var(--third-color);
-    margin-bottom: 1rem;
-    text-align: center;
+.informationUserWrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.informationUserWrapper > h2 {
+  font-size: clamp(1.6rem, 1.6vw, 2.5rem);
+  font-family: raleway-bold;
+  color: var(--third-color);
+  margin-bottom: 1rem;
+  flex: 0 0 auto;
+  /* text-align: center; */
 }
 .data {
-    list-style: none;
-    border-radius: .6rem;
-    border: 2px solid var(--primary-color);
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  flex: 1 1 auto;
+  list-style: none;
+  border-radius: 0.6rem;
+  overflow-y: auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background-color: var(--blue-1);
+  /* padding: 2rem 3.5rem; */
+  border: 1px solid var(--white-800-20);
 }
 
 /* .data>li{
     background-color: #98CCFD;
 } */
-.data>li>h2 {
-    font-size: clamp(1.2rem, 1.2vw, 2rem);
-    font-family: raleway-bold;
-    margin-bottom: .4rem;
-    color: white;
-
+.data > li > h2 {
+  font-size: clamp(1.2rem, 1.2vw, 2rem);
+  font-family: raleway-bold;
+  margin-bottom: 0.4rem;
+  color: white;
 }
 
-.data>li>h3 {
-    font-size: clamp(1.2rem, 1.2vw, 1.6rem);
-    font-family: raleway-semibold;
-    color: rgba(255, 255, 255, 0.88);
+.data > li > h3 {
+  font-size: clamp(1.2rem, 1.2vw, 1.6rem);
+  font-family: raleway-semibold;
+  color: rgba(255, 255, 255, 0.88);
+}
 
+/* Overlay asíncrono para cuenta_cliente */
+.async-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 10;
+}
+.async-overlay.hidden {
+  display: none;
+}
+.async-panel {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+.async-panel .msg {
+  font-size: clamp(1.2rem, 1.2vw, 1.6rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
+}
+.async-panel .inline-loader__spinner {
+  border: 2px solid var(--white-800-80);
+  border-top-color: transparent;
+}
+
+div.vt-empty h3 {
+  font-size: clamp(1.2rem, 1.2vw, 1.6rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
 }

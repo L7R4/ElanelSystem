@@ -6,6 +6,8 @@ from .views import *
 app_name="users"
 
 urlpatterns = [
+    path("usuario/api/me/", me, name="me"),
+
     path("usuario/crear_usuario/",CrearUsuario.as_view(),name="create_user"),
     path("usuario/search/",requestUsuarios2,name="searchUsers"),
 

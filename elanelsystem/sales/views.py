@@ -1,3 +1,4 @@
+from decimal import Decimal
 import time
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404, render, redirect
@@ -12,11 +13,14 @@ from users.models import Cliente, Sucursal,Usuario
 from .models import Ventas,PagoCannon
 from products.models import Products,Plan
 import datetime
+from django.views.decorators.vary import vary_on_headers
 import os,re
 from django.db.models.functions import Coalesce
 from django.db.models import (
     Q, F, Count, Sum, OuterRef, Subquery, IntegerField, Value, Prefetch, Func
 )
+from django.utils.timezone import make_aware
+from django.utils.timezone import localtime
 import json
 from django.shortcuts import reverse
 from dateutil.relativedelta import relativedelta
@@ -32,7 +36,7 @@ from django.forms.models import model_to_dict
 from users.models import Usuario
 from sales.models import Ventas
 from django.http import JsonResponse
-from django.views.decorators.cache import cache_control
+from django.views.decorators.cache import cache_control,never_cache
 from django.utils.decorators import method_decorator
 from elanelsystem.utils import *
 from django.contrib.auth.decorators import login_required
@@ -875,7 +879,7 @@ class CrearVenta(TestLogin,generic.DetailView):
     def get(self,request,*args, **kwargs):
         self.object = self.get_object()
 
-        products = Products.objects.all()
+        products = Products.objects.filter(activo=True).order_by('nombre')
 
         campaniasDisponibles = getCampanasDisponibles()
 
@@ -1366,70 +1370,94 @@ def build_aggregated_cuotas(id_venta,df_est,n_chances,plan):
     return cuotas
 
 
+
 def requestVendedores_Supervisores(request):
-    request = json.loads(request.body)
-    print(request)
-    sucursal_id = request["agencia"] if request["agencia"] else ""
-    sucursal = Sucursal.objects.get(id = int(sucursal_id)) if sucursal_id != "" else None
-    print(sucursal_id)
+    payload = json.loads(request.body or '{}')
+
+    sucursal_id = payload.get("agencia") or ""
+    sucursal = Sucursal.objects.filter(id=int(sucursal_id)).first() if sucursal_id else None
+
+    vendedores_qs = Usuario.objects.none()
+    supervisores_qs = Usuario.objects.none()
+
+    if sucursal:
+        vendedores_qs = Usuario.objects.filter(
+            sucursales__in=[sucursal],
+            rango__in=["Vendedor", "Supervisor"],
+            suspendido=False
+        ).distinct()
+
+        supervisores_qs = Usuario.objects.filter(
+            sucursales__in=[sucursal],
+            rango="Supervisor",
+            suspendido=False
+        ).distinct()
+
+    # Armamos vendedores incluyendo, si existe, su supervisor
     vendedores = []
-    supervisores = []
+    for v in vendedores_qs:
+        supervisor_a_cargo = v.supervisores_a_cargo
+        sup_id = supervisor_a_cargo.id if supervisor_a_cargo else None
+        sup_nombre = supervisor_a_cargo.nombre if supervisor_a_cargo else None
+        
+        vendedores.append({
+            "id": v.id,
+            "name": v.nombre,
+            "supervisor_id": sup_id,
+            "supervisor_name": sup_nombre
+        })
 
-    if request["agencia"] !="":
-        vendedores = Usuario.objects.filter(sucursales__in=[sucursal], rango__in=["Vendedor","Supervisor"], suspendido=False)
-        print(vendedores)
-        supervisores = Usuario.objects.filter(sucursales__in=[sucursal], rango="Supervisor", suspendido=False)
-    
-    vendedores = [{"id":vendedor.id, "name":vendedor.nombre} for vendedor in vendedores]
-    supervisores = [{"id":supervisor.id, "name":supervisor.nombre} for supervisor in supervisores]
+    supervisores = [{"id": s.id, "name": s.nombre} for s in supervisores_qs]
 
- 
-
-    return JsonResponse({"vendedores":vendedores,"supervisores":supervisores}, safe=False)
-
+    return JsonResponse({"vendedores": vendedores, "supervisores": supervisores})
 
 #region Detalle de ventas y funciones de ventas
-class DetailSale(TestLogin,generic.DetailView):
+@method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch')
+@method_decorator(vary_on_headers('Cookie'), name='dispatch')
+class DetailSale(TestLogin, generic.DetailView):
     model = Ventas
     template_name = "detail_sale.html"
 
-    def get(self,request,*args,**kwargs):
-        context ={}
+    def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        request.session["ventaPK"] = self.object.pk
-        sale_target = Ventas.objects.get(pk=self.object.id)
+
+        # 1) Primero recalculá/actualizá estados
         self.object.testVencimientoCuotas()
+        # Si testVencimientoCuotas() hace .save() o persiste algo, refrescá
+        try:
+            self.object.refresh_from_db()
+        except Exception:
+            pass
+
+        sale = self.object  # UNA sola instancia coherente
+
+        request.session["ventaPK"] = sale.pk
         request.session["statusKeyPorcentajeBaja"] = False
+        if sale.adjudicado:
+            sale.addPorcentajeAdjudicacion()
 
-        if(self.object.adjudicado):
-            self.object.addPorcentajeAdjudicacion()
-        context["changeTitularidad"] = list(reversed(self.object.cambioTitularidadField))
-        context['cuotas'] = sale_target.cuotas
-        context['cobradores'] = CuentaCobranza.objects.all()
-        context['metodosDePagos'] = MetodoPago.objects.all()
+        context = {
+            "object": sale,
+            "changeTitularidad": list(reversed(sale.cambioTitularidadField)),
+            "cuotas": sale.cuotas,
+            "cobradores": CuentaCobranza.objects.all(),
+            "metodosDePagos": MetodoPago.objects.all(),
+            "nro_cuotas": sale.nro_cuotas,
+            "urlRedirectPDF": reverse("sales:bajaPDF", args=[sale.pk]),
+            "urlUser": reverse("users:cuentaUser", args=[sale.pk]),
+            "deleteSaleUrl": reverse("sales:delete_sale", args=[sale.pk]),
+            "solicitudAnulacionCuotaUrl": reverse("sales:solicitudAnulacionCuota"),
+            "confirmacionAnulacionCuotaUrl": reverse("sales:darBajaCuota"),
+        }
 
-        context["object"] = self.object
-        context["nro_cuotas"] = sale_target.nro_cuotas
-        context["urlRedirectPDF"] = reverse("sales:bajaPDF",args=[self.object.pk])
-        context['urlUser'] = reverse("users:cuentaUser", args=[self.object.pk])
-        context['deleteSaleUrl'] = reverse("sales:delete_sale", args=[self.object.pk])
-        context['solicitudAnulacionCuotaUrl'] = reverse("sales:solicitudAnulacionCuota")
-        context['confirmacionAnulacionCuotaUrl'] = reverse("sales:darBajaCuota")
-
-
-        request.session["venta"] = model_to_dict(self.object)
+        request.session["venta"] = model_to_dict(sale)
 
         try:
-            if len(self.object.cuotas_pagadas()) >= 6:
-                context["porcetageDefault"] = 50
-            else:
-                context["porcetageDefault"] = 0
-        except IndexError as e:
+            context["porcetageDefault"] = 50 if len(sale.cuotas_pagadas()) >= 6 else 0
+        except IndexError:
             context["porcetageDefault"] = 0
-        
-        
-        return render(request,self.template_name,context)
 
+        return render(request, self.template_name, context)
 
 # Eliminar una venta
 def eliminarVenta(request,pk):
@@ -1492,6 +1520,7 @@ def aplicarDescuentoCuota(request):
 
 
 # Obtenemos una cuota
+@never_cache
 def getUnaCuotaDeUnaVenta(request):
     if request.method == 'POST':
         # try:
@@ -1499,7 +1528,7 @@ def getUnaCuotaDeUnaVenta(request):
             venta = Ventas.objects.get(pk=int(data.get("ventaID")))
             cuotas = venta.cuotas
             cuotaRequest = data.get("cuota")
-            print(data)
+            # print(data)
             bloqueado_path = static('images/icons/iconBloqueado.png')
             permisosUser = request.user.get_all_permissions()
             buttonDescuentoCuota = f'<button type="button" id="btnDescuentoCuota" onclick="openModalDescuento()" class="buttonDescuentoCuota">Aplicar descuento</button>'
@@ -1512,6 +1541,7 @@ def getUnaCuotaDeUnaVenta(request):
             
             for cuota in cuotas:
                 if cuota["cuota"] == cuotaRequest:
+                    # print("CUOTA ENCONTRADA:", cuota)
                     pagos = PagoCannon.objects.filter(venta=venta, nro_cuota=int(cuotaRequest.split()[-1]))
                     cuota["pagos"] = [{"id":pago.id, "monto": pago.monto, "metodoPago": pago.metodo_pago.alias, "fecha": pago.fecha, "cobrador": pago.cobrador.alias, "nro_recibo": pago.nro_recibo} for pago in pagos]
 
@@ -1519,8 +1549,8 @@ def getUnaCuotaDeUnaVenta(request):
                     if len(lista_cuotasPagadasSinCredito) != 0 and lista_cuotasPagadasSinCredito[-1]["cuota"] == cuota["cuota"] and "sales.my_anular_cuotas" in permisosUser:
                         cuota["buttonAnularCuota"] = buttonAnularCuota
                     
-                    if (cuota["status"] == "Pagado" or cuota["status"] == "Parcial") and not cuota["autorizada_para_anular"]:
-                        cuota["buttonCancelacionDePago"] = buttonSolicitudDeCancelacionPago
+                    # if (cuota["status"] == "Pagado" or cuota["status"] == "Parcial") and not cuota["autorizada_para_anular"]:
+                    #     cuota["buttonCancelacionDePago"] = buttonSolicitudDeCancelacionPago
                     elif(cuota["status"] == "Pagado" or cuota["status"] =="Parcial") and cuota["autorizada_para_anular"]:
                         cuota["buttonAnularCuota"] = buttonConfirmacionDeCancelacionPago
                         
@@ -1529,10 +1559,88 @@ def getUnaCuotaDeUnaVenta(request):
                         cuota["buttonDescuentoCuota"] = buttonDescuentoCuota
                         print("asdasdsadasadsa")
 
-                    return JsonResponse(cuota, safe=False)
+                    resp = JsonResponse(cuota, safe=False)
+                    resp["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+                    resp["Pragma"] = "no-cache"
+                    resp["Expires"] = "0"
+                    return resp
 
         # except Exception as error:
         #     return JsonResponse({"status": False,"message":"Error al obtener la cuota","detalleError":str(error)}, safe=False)
+
+@login_required
+@require_GET
+def recibo_pago_json(request, pk: int):
+    pago = get_object_or_404(PagoCannon, pk=pk)
+    data = pago.json() if hasattr(pago, "json") and callable(pago.json) else None
+    print("DATA RECIBO:", data)
+    if data and "venta_id" in data:
+        venta = get_object_or_404(
+            Ventas.objects.select_related("agencia", "nro_cliente"),
+            id=int(data["venta_id"])
+        )
+        fecha_str  = str(data.get("fecha",""))[:10]
+        dia_mes_ano = fecha_str.split("/")
+        nro_recibo = str(data.get("nro_recibo") or "")
+        monto      = data.get("monto") or 0
+        nro_cuota  = data.get("nro_cuota") or ""
+    else:
+        venta = getattr(pago, "venta", None) or get_object_or_404(Ventas, id=pago.venta_id)
+        dt = getattr(pago, "fecha", None)
+        fecha_str  = localtime(dt).strftime("%Y-%m-%d") if dt else datetime.now().strftime("%Y-%m-%d")
+        nro_recibo = getattr(pago, "nro_recibo", "") or ""
+        monto      = getattr(pago, "monto", 0) or 0
+        nro_cuota  = getattr(pago, "nro_cuota", "") or ""
+
+    cliente = venta.nro_cliente
+    agencia = venta.agencia
+    iva = (getattr(cliente, "iva", None) or "RM").strip().upper()
+
+    ctx = {
+        "empresa": {
+            "nombre": "ELANEL",
+            "sub": "Servicios S.R.L.",
+            "direccion": getattr(agencia, "direccion", ""),
+            "telefono": getattr(agencia, "tel_ref", ""),
+            "pseudonimo": getattr(agencia, "pseudonimo", ""),
+            "email": getattr(agencia, "email_ref", ""),
+            "cuit": "C.U.I.T./D.G.R: 30-71804533-5",
+            # "inicio": "INICIO ACT.: 05/2023",
+            "leyenda": "DOCUMENTO NO VÁLIDO COMO FACTURA",
+            "regimen": "RESPONSABLE MONOTRIBUTO",
+        },
+        "recibo": {
+            "numero_formateado": nro_recibo,
+            # "condicion": "contado",
+            "fecha_dia": dia_mes_ano[0],
+            "fecha_mes": dia_mes_ano[1],
+            "fecha_anio": dia_mes_ano[2],   
+            "importe_letras": convertir_moneda_a_texto(monto) ,
+            "efectivo": f"{Decimal(monto):,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+            "cheque1_numero": "", "cheque1_banco": "", "cheque1_importe": "",
+            "cheque2_numero": "", "cheque2_banco": "", "cheque2_importe": "",
+            "cheque3_numero": "", "cheque3_banco": "", "cheque3_importe": "",
+            "total": f"{Decimal(monto):,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+            "concepto": f"Pago de cuota N°{nro_cuota}",
+        },
+        "cliente": {
+            "nombre": getattr(cliente, "nombre", "") or "",
+            "domicilio": getattr(cliente, "domic", "") or "",
+            "localidad": getattr(cliente, "loc", "") or "",
+            "cuit": getattr(cliente, "cuit", "") or "",
+            # "iva": iva,  # RI | RM | CF | MS
+        },
+        "fecha": fecha_str,
+        "copias": ["ORIGINAL", "DUPLICADO"],
+    }
+    return ctx
+
+@login_required
+def recibo_preview(request,pk):
+    context = recibo_pago_json(request,pk)
+    print(context)
+    """Vista para mostrar la vista previa editable del recibo"""
+    return render(request, 'recibo_preview.html', {"context":context})
 
 
 # Pagar una cuota
@@ -1553,7 +1661,7 @@ def pagarCuota(request):
             if(formaPago =="total"):
                 cuota = list(filter(lambda x:x["cuota"] == cuotaRequest,venta.cuotas))[0]
                 print(cuota)
-                monto = cuota["total"]
+                monto = cuota["total"] - cuota["descuento"]["monto"]
             elif(formaPago =="parcial"):
                 monto = data.get('valorParcial')
 
@@ -1727,7 +1835,7 @@ class PlanRecupero(generic.DetailView):
         
         # Para guardar como objeto Producto
         producto = form["producto"]
-        if producto and not Products.objects.filter(nombre=producto).exists():
+        if producto and not Products.objects.filter(nombre=producto,activo=True).exists():
             errors['producto'] = 'Producto invalido.' 
         else:
             producto = Products.objects.get(nombre=producto)
@@ -1807,16 +1915,12 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
     def get(self,request,*args, **kwargs):
         self.object = self.get_object()
         url = request.path
-        cuotasPagadas_parciales = self.object.cuotas_pagadas() + self.object.cuotas_parciales()
         sumaDePagos = 0
+        pagos_de_venta = PagoCannon.objects.filter(venta = self.object)
 
-        # Suma las cuotas pagadas para calcular el total a adjudicar
-        for cuota in cuotasPagadas_parciales:
-            print("Cuota:")
-            print(cuota)
-            for pago_id in cuota["pagos"]:
-                pago_instance = PagoCannon.objects.get(id=pago_id)
-                sumaDePagos += pago_instance.monto
+        for pago in pagos_de_venta:
+            if pago.nro_cuota != 0:
+                sumaDePagos += pago.monto
 
 
         tipoDeAdjudicacion = "NEGOCIACIÓN" if "negociacion" in url else "SORTEO"
@@ -1843,14 +1947,11 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         self.object = self.get_object()
         numeroOperacion = self.object.nro_operacion
         errors ={}
-        cuotasPagadas_parciales = self.object.cuotas_pagadas() + self.object.cuotas_parciales()
+        cuotas_consideradas = PagoCannon.objects.filter(venta=self.object).exclude(nro_cuota=0)
 
 
         # Suma las cuotas pagadas para calcular el total a adjudicar
-        sumaDePagos = 0
-        for cuota in cuotasPagadas_parciales:
-            pagos = cuota["pagos"]
-            sumaDePagos += sum([pago["monto"] for pago in pagos])
+        sumaDePagos = sum([cuota.monto for cuota in cuotas_consideradas])
 
         sale = Ventas()
 
@@ -1860,23 +1961,25 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
 
         # Validar el producto
         producto = form['producto']
-
-        if producto and not Products.objects.filter(nombre=producto).exists():
+        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        print(producto)
+        if producto and not Products.objects.filter(id=producto,activo=True).exists():
             errors['producto'] = 'Producto invalido.' 
 
         elif producto:
-            producto = Products.objects.get(nombre=producto)
+            print(Products.objects.filter(id=producto,activo=True).first().nombre)
+            producto = Products.objects.get(id=int(producto))
             sale.producto = producto
 
 
 
         # Validar la sucursal
         agencia = form['agencia']
-        if agencia and not Sucursal.objects.filter(pseudonimo=agencia).exists():
+        if agencia and not Sucursal.objects.filter(id=agencia).exists():
             errors['agencia'] = 'Agencia invalida.' 
 
         elif agencia:
-            agencia = Sucursal.objects.get(pseudonimo=agencia)
+            agencia = Sucursal.objects.get(id=agencia)
             sale.agencia = agencia
 
         contratoAdjudicado = form["nro_contrato"]
@@ -1884,7 +1987,6 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
     
         sale.nro_cliente = Cliente.objects.get(pk=request.session["venta"]["nro_cliente"])
         sale.nro_operacion = request.session["venta"]["nro_operacion"]
-        sale.agencia = Sucursal.objects.get(pseudonimo = form["agencia"])
         sale.vendedor = Usuario.objects.get(pk = request.session["venta"]["vendedor"])
         sale.supervisor = Usuario.objects.get(pk = request.session["venta"]["supervisor"])
         sale.cantidadContratos = request.session["venta"]["cantidadContratos"]
@@ -1906,7 +2008,7 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         sale.setDefaultFields()
         sale.crearCuotas() # Crea las cuotas
         if(tipo_adjudicacion == "sorteo"):
-            sale.acreditarCuotasPorAnticipo(sumaDePagos,request.user.nombre)
+            sale.acreditarCuotasPorAnticipo(sumaDePagos,request.user)
         sale.crearAdjudicacion(contratoAdjudicado,numeroOperacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
         
 
@@ -2002,7 +2104,7 @@ class ChangePack(TestLogin,generic.DetailView):
         # Validar el producto
         producto = form['producto']
 
-        if producto and not Products.objects.filter(nombre=producto).exists():
+        if producto and not Products.objects.filter(nombre=producto,activo=True).exists():
             errors['producto'] = 'Producto invalido.' 
 
         elif producto:
@@ -2959,37 +3061,115 @@ def viewsPDFInformePostVenta(request):
         resp["Content-Disposition"] = f"inline; filename={informeName}.pdf"
         return resp
 
+def _parse_fecha(fecha_str: str):
+    """
+    Acepta 'YYYY-MM-DD' o 'DD/MM/YYYY' (con o sin hora).
+    Devuelve datetime (naive o aware según settings).
+    """
+    raw = (fecha_str or "").strip()[:10]
+    fmt_candidates = ("%Y-%m-%d", "%d/%m/%Y")
+    for fmt in fmt_candidates:
+        try:
+            dt = datetime.strptime(raw, fmt)
+            # si usás TZ, la volvemos aware
+            try:
+                return make_aware(dt)
+            except Exception:
+                return dt
+        except ValueError:
+            pass
+    # fallback: ahora
+    try:
+        return make_aware(datetime.now())
+    except Exception:
+        return datetime.now()
+
+
+def _format_nro_recibo(nro):
+    """
+    Si viene como int o string simple, lo deja como string.
+    Si ya viene formateado '0007-00000000', lo respeta.
+    """
+    if nro is None:
+        return ""
+    s = str(nro)
+    return s
+
+
 def viewPDFReciboCuota(request, pk):
-    pagoData = PagoCannon.objects.get(id=pk).json()
-    print(pagoData)
-    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "pdf_recibo_cuota.pdf")
-    informeName = "Recibo"
-    numero_recibo = pagoData["nro_recibo"]
-    cliente_de_cuota = Ventas.objects.get(id=int(pagoData["venta_id"])).nro_cliente
-    agencia = Ventas.objects.get(id=int(pagoData["venta_id"])).agencia
+    pago = PagoCannon.objects.get(id=pk)
+    pagoData = pago.json()  # asumes que te devuelve dict con campos usados abajo
+
+    # Venta / cliente / agencia
+    venta = Ventas.objects.select_related("agencia", "nro_cliente").get(id=int(pagoData["venta_id"]))
+    cliente = venta.nro_cliente  # tu FK a Cliente
+    agencia = venta.agencia
+
+    # Datos básicos
+    numero_recibo = _format_nro_recibo(pagoData.get("nro_recibo"))
+    fecha_dt = _parse_fecha(pagoData.get("fecha", ""))
+
+    # Concepto e importes
+    monto = pagoData.get("monto", 0)
+    concepto = f"Pago de cuota N°{pagoData.get('nro_cuota')}"
+    monto_letras = convertir_moneda_a_texto(monto)
+
+    # Contexto que espera el template A4 DOBLE
     context = {
-        "numero_recibo": numero_recibo,
-        "fecha": pagoData["fecha"][:10],
-        "cuit_empresa": "30-12345678-9",
-        # "responsable_tipo": "Monotributo",
-        "nombre_cliente": cliente_de_cuota.nombre,
-        "domicilio_cliente": cliente_de_cuota.domic,
-        "localidad_cliente": cliente_de_cuota.loc,
-        "monto_en_letras": convertir_moneda_a_texto(pagoData["monto"]),
-        
-        "monto_numero": pagoData["monto"],
-        "direcc_agencia": agencia.direccion,
-        "tel_agencia": agencia.tel_ref,
-        "email_agencia": agencia.email_ref,
-        "concepto_recibo" : f"Pago de cuota N°{pagoData['nro_cuota']}"
+        "recibo": {
+            "numero_formateado": numero_recibo,
+            "condicion": "contado",             # o "cc" si tenés esa info
+            "importe_letras": monto_letras,     # se muestra en mayúsculas en CSS si querés
+            "efectivo": f"{monto:,.2f}".replace(",", "."),
+            "cheque1_numero": "",
+            "cheque1_banco": "",
+            "cheque1_importe": "",
+            "cheque2_numero": "",
+            "cheque2_banco": "",
+            "cheque2_importe": "",
+            "cheque3_numero": "",
+            "cheque3_banco": "",
+            "cheque3_importe": "",
+            "total": f"{monto:,.2f}".replace(",", "."),
+            "concepto": concepto,
+        },
+        "cliente": {
+            "nombre": getattr(cliente, "nombre", "") or "",
+            "domicilio": getattr(cliente, "domic", "") or "",
+            "localidad": getattr(cliente, "loc", "") or "",
+            "cuit": getattr(cliente, "cuit", "") or "",  # si tu modelo no tiene cuit, quedará vacío
+            "iva": "RM",  # "RI" | "RM" | "CF" | "MS"  (ajustá según tu dato real)
+        },
+        "fecha": fecha_dt,
+        # Si querés inyectar datos de agencia en el header, podés
+        # adaptar el template y usar estas claves:
+        "agencia": {
+            "direccion": getattr(agencia, "direccion", "") or "",
+            "tel": getattr(agencia, "tel_ref", "") or "",
+            "email": getattr(agencia, "email_ref", "") or "",
+        },
     }
 
-    printPDF(context,request.build_absolute_uri(),urlPDF,"pdf_recibo_cuota.html","static/css/pdfReciboCuota.css")
+    # Archivo de salida
+    informeName = "Recibo"
+    urlPDF = os.path.join(settings.PDF_STORAGE_DIR, "pdf_recibo_cuota.pdf")
 
-    
-    with open(urlPDF, 'rb') as pdf_file:
-        response = HttpResponse(pdf_file,content_type="application/pdf")
-        response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
+    # Render PDF con el template de doble copia A4
+    # Asegurate de tener:
+    # - templates/recibos/recibo_a4_doble.html
+    # - templates/recibos/_recibo_contenido.html
+    # - static/css/recibo_a4_doble.css
+    printPDF(
+        context,
+        request.build_absolute_uri(),
+        urlPDF,
+        "pdf_recibo_doble.html",
+        "static/css/pdfReciboCuota.css",
+    )
+
+    with open(urlPDF, "rb") as pdf_file:
+        response = HttpResponse(pdf_file, content_type="application/pdf")
+        response["Content-Disposition"] = f'inline; filename="{informeName}.pdf"'
         return response
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

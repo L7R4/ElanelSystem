@@ -7,7 +7,7 @@ from simple_history.admin import SimpleHistoryAdmin
 class ClienteAdmin(admin.ModelAdmin):
     list_display = ('nro_cliente', 'nombre', 'dni', 'domic', 'loc', 'prov', 'cod_postal', 'tel', 'fec_nacimiento', 'estado_civil', 'ocupacion')
     list_filter = ("agencia_registrada",)
-    search_fields = ('nombre', 'dni',)
+    search_fields = ('nombre', 'dni', 'nro_cliente')
     
 
 class UsuarioHistoryAdmin(SimpleHistoryAdmin):

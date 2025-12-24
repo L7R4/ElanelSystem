@@ -68,7 +68,13 @@ urlpatterns = [
     path("ventas/pdf/arqueo/<int:pk>/",viewPDFArqueo,name="arqueoPDF"),
     path('ventas/pdf/informe/', viewsPDFInforme, name='informePDF'),
     path('ventas/pdf/informesend/', viewPDFInformeAndSend, name='informeSend'),
-    path('ventas/detalle_venta/recibo/pago/<int:pk>/', viewPDFReciboCuota, name='getReciboCuota'),
+    # path('ventas/detalle_venta/recibo/pago/<int:pk>/', viewPDFReciboCuota, name='getReciboCuota'),
+    #     path(
+    #     "ventas/detalle_venta/recibo-json/pago/<int:pk>/",
+    #     recibo_pago_json,
+    #     name="recibo-pago-json"
+    # ),
+    path('ventas/detalle_venta/recibo-preview/<int:pk>/', recibo_preview, name='recibo-preview'),
     #endregion ---------------------------------------------------------
         
     #region URLs PostVentas --------------------------------------------

@@ -4,6 +4,9 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager, PermissionsMixin
 import re, datetime
 from simple_history.models import HistoricalRecords
+from django.db.models.functions import Cast, Substr
+from django.db import models, transaction
+from django.db.models import IntegerField, Max
 
 from elanelsystem.utils import obtenerCampaña_atraves_fecha
 
@@ -101,7 +104,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     premios = models.JSONField("Premios", default=list,blank=True,null=True)
 
     datos_familiares = models.JSONField("Datos familiares", default=list,blank=True,null=True)
-    vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True)
+    vendedores_a_cargo = models.JSONField("Vendedores a cargo", default=list,blank=True,null=True) #Este se tiene que eliminar despues
+    supervisores_a_cargo = models.ForeignKey('self',on_delete=models.SET_NULL,related_name="supervisor_a_cargo",blank=True,null=True)
     additional_passwords = models.JSONField("Contraseñas adicionales",default=dict,blank=True,null=True)
     history = HistoricalRecords()
     
@@ -336,59 +340,97 @@ class Descuento(models.Model):
     def __str__(self):
         return f"{self.usuario.nombre} – ${self.monto} ({self.fecha})"
 
+class ClienteQuerySet(models.QuerySet):
+
+
+    def ordered_desc(self):
+        return self.annotate(
+            nro_cli_num=Cast(Substr('nro_cliente', 5), IntegerField())
+        ).order_by('-nro_cli_num', '-nro_cliente')
+PAD_WIDTH = 3  # cli_001, cli_002...
 
 class Cliente(models.Model):
-    def returNro_Cliente(): 
-        
-        if not Cliente.objects.last():
-            number_client = 1
-            last_number_cliente_char = f"cli_{number_client}"
-        else:
-            last_cliente = Cliente.objects.last()
-            number_client = int(last_cliente.nro_cliente.split("_")[1])
-            last_number_cliente_char = last_cliente.nro_cliente = f"cli_{number_client + 1}"
-        return last_number_cliente_char    
-        
-    nro_cliente = models.CharField(max_length=15,default=returNro_Cliente)
+    nro_cliente = models.CharField(max_length=15)  # sin default (lo asignamos en save)
     nombre = models.CharField(max_length=100)
-    dni = models.CharField(max_length=12,default="")
-    # agencia_registrada = models.CharField(max_length=30,default="")
+    dni = models.CharField(max_length=12, default="")
     agencia_registrada = models.ForeignKey(Sucursal, on_delete=models.PROTECT, related_name="cliente_sucursal")
 
-    domic = models.CharField(max_length=100,default="", blank = True, null = True)
-    loc = models.CharField(max_length=40,default="", blank = True, null = True)
-    prov = models.CharField(max_length=40,default="", blank = True, null = True)
-    cod_postal = models.CharField(max_length=7,default="", blank = True, null = True)
-    tel = models.CharField(max_length=15,default="", blank = True, null = True)
-    fec_nacimiento = models.CharField(max_length=10, default="",blank=True,null=True)
+    domic = models.CharField(max_length=100, default="", blank=True, null=True)
+    loc = models.CharField(max_length=40, default="", blank=True, null=True)
+    prov = models.CharField(max_length=40, default="", blank=True, null=True)
+    cod_postal = models.CharField(max_length=7, default="", blank=True, null=True)
+    tel = models.CharField(max_length=15, default="", blank=True, null=True)
+    fec_nacimiento = models.CharField(max_length=10, default="", blank=True, null=True)
     estado_civil = models.CharField(max_length=50, blank=True, null=True)
     ocupacion = models.CharField(max_length=50, blank=True, null=True)
-    
+
+    # Si usás un QuerySet custom:
+    # objects = ClienteQuerySet.as_manager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["agencia_registrada", "nro_cliente"],
+                name="uniq_nro_cliente_por_agencia",
+            ),
+        ]
+
     def __str__(self):
         return f'{self.nro_cliente}: {self.nombre} - {self.dni}'
-    
+
+    # ---------- Núcleo: asignación segura del número por agencia ----------
+    @classmethod
+    def next_for_agencia(cls, sucursal: Sucursal) -> str:
+        """
+        Calcula el próximo nro_cliente de la forma cli_### dentro de la agencia dada,
+        de forma segura ante concurrencia.
+        """
+        with transaction.atomic():
+            # Tomamos lock sobre la fila de la sucursal para serializar la numeración
+            Sucursal.objects.select_for_update().filter(pk=sucursal.pk).exists()
+
+            last_num = (
+                cls.objects.filter(agencia_registrada=sucursal)
+                .annotate(n=Cast(Substr("nro_cliente", 5), IntegerField()))
+                .aggregate(m=Max("n"))["m"] or 0
+            )
+            return f"cli_{last_num + 1:0{PAD_WIDTH}d}"
+
+    def assign_nro_cliente_if_needed(self):
+        if not self.nro_cliente:
+            if not self.agencia_registrada_id:
+                raise ValidationError({"agencia_registrada": "Debe indicar la agencia registrante."})
+            self.nro_cliente = self.next_for_agencia(self.agencia_registrada)
+
+        # Validar formato básico (por si alguien lo tocó manualmente)
+        if not re.match(r"^cli_\d+$", self.nro_cliente):
+            raise ValidationError({"nro_cliente": "Formato inválido. Debe ser cli_###."})
+
+    # ---------- Save con normalizaciones + asignación de número ----------
     def save(self, *args, **kwargs):
-        # Convertir a string y luego capitalizar los campos que puedan tener valores nulos o numéricos
+        # Asignar nro si falta
+        self.assign_nro_cliente_if_needed()
+
+        # Normalizaciones de texto
         self.nombre = str(self.nombre).title()
         self.domic = str(self.domic).capitalize()
         self.prov = str(self.prov).title()
         self.loc = str(self.loc).title()
         self.estado_civil = str(self.estado_civil).capitalize() if self.estado_civil else None
         self.ocupacion = str(self.ocupacion).capitalize() if self.ocupacion else None
-        
-        super(Cliente, self).save(*args, **kwargs)
 
+        super().save(*args, **kwargs)
 
+    # ---------- Validaciones ----------
     def clean(self):
         errors = {}
         validation_methods = [
-            # self.clean_nro_cliente,
             self.validation_nombre,
             self.validation_estado_civil,
             self.validation_dni,
             self.validation_tel,
-            # self.validation_fec_nacimiento,
             self.validation_cod_postal,
+            # self.validation_fec_nacimiento,  # si querés activarla
         ]
 
         for method in validation_methods:
@@ -399,77 +441,50 @@ class Cliente(models.Model):
 
         if errors:
             raise ValidationError(errors)
-        
-    #region Clean area de los campos
-    def clean_nro_cliente(self):
-        if Cliente.objects.last():
-            nro_cliente = int(self.nro_cliente.split("_")[1])
-            last_cliente = int(Cliente.objects.last().nro_cliente.split("_")[1])
-            if(nro_cliente != last_cliente+1):
-                raise ValidationError({'nro_cliente': "Número de cliente incorrecto."})
-            
 
     def validation_nombre(self):
         if not self.nombre:
             raise ValidationError({'nombre': 'No puede estar vacío.'})
-        
         patron = r'^[a-zA-ZÁÉÍÓÚáéíóúñÑ\s]*$'
         if not re.match(patron, self.nombre):
             raise ValidationError({'nombre': 'Solo puede contener letras (incluyendo tildes y ñ) y espacios.'})
 
-
     def validation_estado_civil(self):
-        if not re.match(r'^[a-zA-Z\s]*$', self.estado_civil):
+        if self.estado_civil and not re.match(r'^[a-zA-Z\s]*$', self.estado_civil):
             raise ValidationError({'estado_civil': 'Solo puede contener letras.'})
-        
 
     def validation_cod_postal(self):
-
-        if len(self.cod_postal) > 5:
-            raise ValidationError({'cod_postal': 'Codigo postal invalido.'})
-
-        if not re.match(r'^\d+$', self.cod_postal):
-            raise ValidationError({'cod_postal': 'Debe contener solo números.'})
-
+        if self.cod_postal:
+            if len(self.cod_postal) > 5:
+                raise ValidationError({'cod_postal': 'Código postal inválido.'})
+            if not re.match(r'^\d+$', self.cod_postal):
+                raise ValidationError({'cod_postal': 'Debe contener solo números.'})
 
     def validation_dni(self):
-        
-        if len(self.dni) < 8: 
+        if len(self.dni) < 8:
             raise ValidationError({'dni': 'DNI inválido.'})
-
         if not re.match(r'^\d+$', self.dni):
             raise ValidationError({'dni': 'Debe contener solo números.'})
-        
         if Cliente.objects.filter(dni=self.dni).exists():
             raise ValidationError({'dni': 'DNI ya registrado.'})
 
-
     def validation_tel(self):
         if len(self.tel) < 10:
-            raise ValidationError({'tel': 'Telefono inválido.'})
-
+            raise ValidationError({'tel': 'Teléfono inválido.'})
         if not re.match(r'^\d+$', self.tel):
-            raise ValidationError({'tel': 'Debe contener solo números.'}) 
-            
+            raise ValidationError({'tel': 'Debe contener solo números.'})
 
     def validation_fec_nacimiento(self):
         if self.fec_nacimiento:
-            if self.fec_nacimiento and not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fec_nacimiento):
+            if not re.match(r'^\d{2}/\d{2}/\d{4}$', self.fec_nacimiento):
                 raise ValidationError({'fec_nacimiento': 'Debe estar en el formato DD/MM/AAAA.'})
-
             try:
                 fec_nacimiento = datetime.datetime.strptime(self.fec_nacimiento, '%d/%m/%Y')
             except ValueError:
                 raise ValidationError({'fec_nacimiento': 'Fecha inválida.'})
-
-            fec_nacimiento = datetime.datetime.strptime(self.fec_nacimiento, '%d/%m/%Y')
             if fec_nacimiento > datetime.datetime.now():
                 raise ValidationError({'fec_nacimiento': 'Fecha inválida.'})
-
-
-    # endregion 
-
-
+            
 class Key(models.Model):
     motivo = models.CharField(max_length=20, default="")
     descripcion = models.CharField(max_length=255, default="")

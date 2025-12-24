@@ -1,505 +1,492 @@
 .wrapper_content {
-    overflow: hidden;
-    box-sizing: border-box;
-    padding: 4rem;
-    gap: 3rem;
-    display: flex;
-    flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 4rem;
+  gap: 3rem;
+  display: flex;
+  flex-direction: column;
 }
-
-
 
 /*#region HEADER BUTTONS  */
 .wrapperButtonManageVenta {
-    width: 100%;
-    display: flex;
-    column-gap: 2rem;
-    justify-content: flex-end;
+  width: 100%;
+  display: flex;
+  column-gap: 2rem;
+  justify-content: flex-end;
 }
 
-.wrapperButtonManageVenta>div {
-    height: fit-content;
-    position: relative;
+.wrapperButtonManageVenta > div {
+  height: fit-content;
+  position: relative;
 }
 
 /* #region Estilos de boton de baja */
-.wrapperButtonManageVenta>.buttonDeBaja {
-    display: flex;
-    justify-content: center;
+.wrapperButtonManageVenta > .buttonDeBaja {
+  display: flex;
+  justify-content: center;
 }
 
-.wrapperButtonManageVenta>.buttonDeBaja>#bajaBtn {
-    box-sizing: border-box;
-    padding: 1rem 2.3rem;
-    font-family: raleway-semibold;
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    background-color: var(--danger-color);
-    color: white;
-    border: none;
-    border-radius: .6rem;
-    outline: none;
-    cursor: pointer;
+.wrapperButtonManageVenta > .buttonDeBaja > #bajaBtn {
+  box-sizing: border-box;
+  padding: 1rem 2.3rem;
+  font-family: raleway-semibold;
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+  border-radius: 0.6rem;
+  outline: none;
+  cursor: pointer;
 }
 
-.buttonDeBaja>.formConfirmBajaWrapper {
-    position: absolute;
-    z-index: 6;
-    width: 15vw;
-    max-width: 30rem;
-    min-width: 25rem;
-    top: 130%;
-    display: none;
+.buttonDeBaja > .formConfirmBajaWrapper {
+  position: absolute;
+  z-index: 6;
+  width: 15vw;
+  max-width: 30rem;
+  min-width: 25rem;
+  top: 130%;
+  display: none;
 }
 
-.buttonDeBaja>.formConfirmBajaWrapper.active {
-    display: unset;
+.buttonDeBaja > .formConfirmBajaWrapper.active {
+  display: unset;
 }
 
-.buttonDeBaja>.formConfirmBajaWrapper>.formsContainer {
-    position: relative;
+.buttonDeBaja > .formConfirmBajaWrapper > .formsContainer {
+  position: relative;
 }
-
 
 /* #region Form baja */
 #formBaja {
-    padding: 2rem;
-    background-color: var(--third-color);
-    box-sizing: border-box;
-    border-radius: .6rem;
-
+  padding: 2rem;
+  background-color: var(--third-color);
+  box-sizing: border-box;
+  border-radius: 0.6rem;
 }
 
-#formBaja>.backgroundBlockForm {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
-    background-color: #00000083;
-    z-index: 10;
+#formBaja > .backgroundBlockForm {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: #00000083;
+  z-index: 10;
 }
 
-
-#formBaja>.porcentajeWrapper>div>p {
-    font-family: 'raleway-semibold';
-    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
-    color: var(--background-color);
+#formBaja > .porcentajeWrapper > div > p {
+  font-family: "raleway-semibold";
+  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+  color: var(--background-color);
 }
 
 #formBaja .porcentajeContainer {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    box-sizing: border-box;
-    margin-top: .6rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  box-sizing: border-box;
+  margin-top: 0.6rem;
 }
 
-#formBaja .porcentajeContainer>.inputPorcentajeContainer {
-    width: 30%;
-    max-width: 7rem;
-    min-width: 3rem;
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-
+#formBaja .porcentajeContainer > .inputPorcentajeContainer {
+  width: 30%;
+  max-width: 7rem;
+  min-width: 3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-#formBaja .porcentajeContainer>.inputPorcentajeContainer>* {
-    font-family: 'raleway-semibold';
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    color: var(--background-color);
+#formBaja .porcentajeContainer > .inputPorcentajeContainer > * {
+  font-family: "raleway-semibold";
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  color: var(--background-color);
 }
 
-
-
-#formBaja .porcentajeContainer>.inputPorcentajeContainer>input {
-    width: 100%;
-    border: 1px solid var(--background-color);
-    box-sizing: border-box;
-    border-radius: 0.5rem;
-    padding: .2rem .5rem;
-    pointer-events: none;
-    background-color: #00000027;
+#formBaja .porcentajeContainer > .inputPorcentajeContainer > input {
+  width: 100%;
+  border: 1px solid var(--background-color);
+  box-sizing: border-box;
+  border-radius: 0.5rem;
+  padding: 0.2rem 0.5rem;
+  pointer-events: none;
+  background-color: #00000027;
 }
 
-#formBaja .porcentajeContainer>.inputPorcentajeContainer>input.enable {
-    background-color: transparent;
-    pointer-events: all;
+#formBaja .porcentajeContainer > .inputPorcentajeContainer > input.enable {
+  background-color: transparent;
+  pointer-events: all;
 }
 
-#formBaja .porcentajeContainer>.inputPorcentajeContainer>input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+#formBaja
+  .porcentajeContainer
+  > .inputPorcentajeContainer
+  > input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-#formBaja .porcentajeContainer>#porcentajeBtn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: 'raleway-semibold';
-    color: var(--background-color);
-    background-color: transparent;
-    border-radius: 0.5rem;
-    outline: none;
-    box-sizing: border-box;
-    border: 1px solid #3d7bd8d5;
-    padding: 0.2rem 1rem;
-    cursor: pointer;
+#formBaja .porcentajeContainer > #porcentajeBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  font-family: "raleway-semibold";
+  color: var(--background-color);
+  background-color: transparent;
+  border-radius: 0.5rem;
+  outline: none;
+  box-sizing: border-box;
+  border: 1px solid #3d7bd8d5;
+  padding: 0.2rem 1rem;
+  cursor: pointer;
 }
 
-#formBaja .porcentajeContainer>#porcentajeBtn>img {
-    width: 1.5rem;
+#formBaja .porcentajeContainer > #porcentajeBtn > img {
+  width: 1.5rem;
 }
 
-
-#formBaja>.motivoBaja>h3 {
-    font-family: raleway-semibold;
-    font-size: 1.3rem;
-    margin-bottom: 0.3rem;
+#formBaja > .motivoBaja > h3 {
+  font-family: raleway-semibold;
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
 }
 
-#formBaja>#selectMotivoWrapper {
-    margin-top: 1rem;
+#formBaja > #selectMotivoWrapper {
+  margin-top: 1rem;
 }
 
-#formBaja>#selectMotivoWrapper>h3 {
-    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
-    font-family: 'raleway-semibold';
-    color: var(--background-color);
-    margin-bottom: .3rem;
+#formBaja > #selectMotivoWrapper > h3 {
+  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+  font-family: "raleway-semibold";
+  color: var(--background-color);
+  margin-bottom: 0.3rem;
 }
 
-#formBaja>#selectMotivoWrapper>.containerInputAndOptions>input {
-    border: 1px solid #3d7bd8d5;
-    font-size: clamp(1rem, 1vw, 1.4rem);
-    font-family: 'raleway';
-    border-radius: .6rem;
-    color: var(--background-color);
-    z-index: 5
+#formBaja > #selectMotivoWrapper > .containerInputAndOptions > input {
+  border: 1px solid #3d7bd8d5;
+  font-size: clamp(1rem, 1vw, 1.4rem);
+  font-family: "raleway";
+  border-radius: 0.6rem;
+  color: var(--background-color);
+  z-index: 5;
 }
 
-#formBaja>#selectMotivoWrapper>.containerInputAndOptions>.options {
-    z-index: 4
+#formBaja > #selectMotivoWrapper > .containerInputAndOptions > .options {
+  z-index: 4;
 }
 
-#formBaja>.motivoBaja {
-    margin-top: 1rem;
+#formBaja > .motivoBaja {
+  margin-top: 1rem;
 }
 
-#formBaja>.motivoBaja>h3 {
-    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
-    font-family: 'raleway-semibold';
-    color: var(--background-color);
+#formBaja > .motivoBaja > h3 {
+  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+  font-family: "raleway-semibold";
+  color: var(--background-color);
 }
 
-#formBaja>.motivoBaja>textarea {
-    width: 100%;
-    resize: none;
-    outline: none;
-    padding: .5rem;
-    box-sizing: border-box;
-    border-radius: .6rem;
-    border: 1px solid #3d7bd8d5;
-    font-size: clamp(1rem, 1vw, 1.4rem);
-    font-family: 'raleway';
-    color: var(--background-color);
+#formBaja > .motivoBaja > textarea {
+  width: 100%;
+  resize: none;
+  outline: none;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  border-radius: 0.6rem;
+  border: 1px solid #3d7bd8d5;
+  font-size: clamp(1rem, 1vw, 1.4rem);
+  font-family: "raleway";
+  color: var(--background-color);
 }
 
-
-#formBaja>.confirmWrapper {
-    margin-top: 1rem;
+#formBaja > .confirmWrapper {
+  margin-top: 1rem;
 }
 
-#formBaja>.confirmWrapper>h3 {
-    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
-    font-family: 'raleway-semibold';
-    color: var(--background-color);
+#formBaja > .confirmWrapper > h3 {
+  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+  font-family: "raleway-semibold";
+  color: var(--background-color);
 }
 
-#formBaja>.confirmWrapper>div {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-top: .4rem;
+#formBaja > .confirmWrapper > div {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 0.4rem;
 }
 
-#formBaja>.confirmWrapper>div>#yesConfirm,
-#formBaja>.confirmWrapper>div>#noConfirm {
-    padding: .4rem 3rem;
+#formBaja > .confirmWrapper > div > #yesConfirm,
+#formBaja > .confirmWrapper > div > #noConfirm {
+  padding: 0.4rem 3rem;
 }
 
 /* #endregion */
 
 /* #region Form descuento baja */
-.buttonDeBaja>.formConfirmBajaWrapper>.formsContainer>#formPassword {
-    position: absolute;
-    top: 0;
-    right: 115%;
-    width: 100%;
-    background-color: var(--third-color);
-    box-sizing: border-box;
-    padding: 2rem;
-    border-radius: .6rem;
-    min-width: fit-content;
-    display: none;
+.buttonDeBaja > .formConfirmBajaWrapper > .formsContainer > #formPassword {
+  position: absolute;
+  top: 0;
+  right: 115%;
+  width: 100%;
+  background-color: var(--third-color);
+  box-sizing: border-box;
+  padding: 2rem;
+  border-radius: 0.6rem;
+  min-width: fit-content;
+  display: none;
 }
 
-.buttonDeBaja>.formConfirmBajaWrapper>.formsContainer>#formPassword.active {
-    display: unset;
+.buttonDeBaja
+  > .formConfirmBajaWrapper
+  > .formsContainer
+  > #formPassword.active {
+  display: unset;
 }
 
-#formPassword>.inputClaveWrapper>p {
-    font-size: clamp(1.2rem, 1.1vw, 1.5rem);
-    font-family: 'raleway-semibold';
-    color: var(--background-color);
+#formPassword > .inputClaveWrapper > p {
+  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+  font-family: "raleway-semibold";
+  color: var(--background-color);
 }
 
-#formPassword>.inputClaveWrapper>#clave {
-    width: 100%;
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: 'raleway-semibold';
-    color: var(--background-color);
-    border: 1px solid #3d7bd8d5;
-    border-radius: .4rem;
-    padding: .2rem 1rem;
-    box-sizing: border-box;
-    outline: none;
-    margin-top: .3rem;
+#formPassword > .inputClaveWrapper > #clave {
+  width: 100%;
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  font-family: "raleway-semibold";
+  color: var(--background-color);
+  border: 1px solid #3d7bd8d5;
+  border-radius: 0.4rem;
+  padding: 0.2rem 1rem;
+  box-sizing: border-box;
+  outline: none;
+  margin-top: 0.3rem;
 }
 
-#formPassword>.inputClaveWrapper>#clave::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+#formPassword > .inputClaveWrapper > #clave::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-#formPassword>.confirmClaveWrapper {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-top: .6rem;
+#formPassword > .confirmClaveWrapper {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 0.6rem;
 }
 
-#formPassword>.confirmClaveWrapper>#confirmPass,
-#formPassword>.confirmClaveWrapper>#notConfirmPass {
-    padding: .4rem 2rem;
-    font-size: clamp(1rem, 1vw, 1.3rem);
-
+#formPassword > .confirmClaveWrapper > #confirmPass,
+#formPassword > .confirmClaveWrapper > #notConfirmPass {
+  padding: 0.4rem 2rem;
+  font-size: clamp(1rem, 1vw, 1.3rem);
 }
 
-#formPassword>.messageErrorPass {
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: 'raleway-semibold';
-    color: #ed1717;
-    margin-top: .6rem;
+#formPassword > .messageErrorPass {
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  font-family: "raleway-semibold";
+  color: #ed1717;
+  margin-top: 0.6rem;
 }
-
 
 .modalBajaVenta__content > h2 {
-    font-size: clamp(1.5rem, 1.5vw, 2rem);
-    font-family: raleway-bold;
-    color: var(--white-color-800);
-    margin-bottom: 1rem;
-
+  font-size: clamp(1.5rem, 1.5vw, 2rem);
+  font-family: raleway-bold;
+  color: var(--white-color-800);
+  margin-bottom: 1rem;
 }
-.modalBajaVenta__content .field{
-    display: flex;
-    flex-direction: column;
-    gap: .6rem;
-    margin-top: 1rem;
-
+.modalBajaVenta__content .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
 }
-#passArea{
-    margin-top: 1rem;
+#passArea {
+  margin-top: 1rem;
 }
-#passArea > .pass-actions{
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-top: 1rem;
+#passArea > .pass-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
 }
-#passArea > label{
-    font-size: clamp(1rem, 1.1vw, 1.4rem);
-    font-family: raleway-bold;
-    color: var(--white-800-80);
-    margin-bottom: .6rem;
-    display: block;
+#passArea > label {
+  font-size: clamp(1rem, 1.1vw, 1.4rem);
+  font-family: raleway-bold;
+  color: var(--white-800-80);
+  margin-bottom: 0.6rem;
+  display: block;
 }
-#passArea > #passInput{
-    width: 50%;
-    min-width: 230px;
+#passArea > #passInput {
+  width: 50%;
+  min-width: 230px;
 }
 
-.modalBajaVenta__content .field > label{
-    font-size: clamp(1rem, 1.1vw, 1.4rem);
-    font-family: raleway-bold;
-    color: var(--white-800-80);
+.modalBajaVenta__content .field > label {
+  font-size: clamp(1rem, 1.1vw, 1.4rem);
+  font-family: raleway-bold;
+  color: var(--white-800-80);
 }
 
-.modalBajaVenta__content .field > .row{
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    width: 50%;
-    min-width: 230px;
+.modalBajaVenta__content .field > .row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  width: 50%;
+  min-width: 230px;
 }
 
 /* #endregion */
-
 
 /* #endregion */
 
 /*#region Estilos de boton adjudicacion */
 
-.wrapperButtonManageVenta>.selectAdjudicacion {
-    position: relative;
+.wrapperButtonManageVenta > .selectAdjudicacion {
+  position: relative;
 }
 
-.wrapperButtonManageVenta>.selectAdjudicacion>.selectedOption {
-    box-sizing: border-box;
-    padding: 1rem 2.3rem;
-    background-color: var(--blue-accent-color);
-    gap: 1rem;
-    width: 100%;
-    border-radius: .6rem;
-    position: relative;
-    z-index: 2;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
+.wrapperButtonManageVenta > .selectAdjudicacion > .selectedOption {
+  box-sizing: border-box;
+  padding: 1rem 2.3rem;
+  background-color: var(--blue-accent-color);
+  gap: 1rem;
+  width: 100%;
+  border-radius: 0.6rem;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
 }
 
-.wrapperButtonManageVenta>.selectAdjudicacion>.selectedOption>h2 {
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: var(--third-color);
-
+.wrapperButtonManageVenta > .selectAdjudicacion > .selectedOption > h2 {
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--third-color);
 }
 
-.wrapperButtonManageVenta>.selectAdjudicacion>.selectedOption>img {
-    filter: invert(1);
-    width: 1.5rem;
+.wrapperButtonManageVenta > .selectAdjudicacion > .selectedOption > img {
+  filter: invert(1);
+  width: 1.5rem;
 }
 
-.wrapperButtonManageVenta>.selectAdjudicacion>.options {
-    list-style: none;
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    width: 100%;
-    background-color: rgba(255, 255, 255, 1);
-    max-height: 0rem;
-    overflow: hidden;
-    position: absolute;
-    top: 75%;
-    z-index: 1;
-    border-bottom-left-radius: .6rem;
-    border-bottom-right-radius: .6rem;
+.wrapperButtonManageVenta > .selectAdjudicacion > .options {
+  list-style: none;
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  font-family: raleway-semibold;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 1);
+  max-height: 0rem;
+  overflow: hidden;
+  position: absolute;
+  top: 75%;
+  z-index: 1;
+  border-bottom-left-radius: 0.6rem;
+  border-bottom-right-radius: 0.6rem;
 }
 
-.wrapperButtonManageVenta>.selectAdjudicacion>.options.active {
-    max-height: none;
+.wrapperButtonManageVenta > .selectAdjudicacion > .options.active {
+  max-height: none;
 }
 
-.wrapperButtonManageVenta>.selectAdjudicacion>.options>a {
-    cursor: pointer;
-    width: 100%;
-    text-decoration: none;
-    color: #000;
-    display: block;
-    padding: 1rem;
-    box-sizing: border-box;
+.wrapperButtonManageVenta > .selectAdjudicacion > .options > a {
+  cursor: pointer;
+  width: 100%;
+  text-decoration: none;
+  color: #000;
+  display: block;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
-.wrapperButtonManageVenta>.selectAdjudicacion>.options>a:first-child {
-    margin-top: 1rem;
+.wrapperButtonManageVenta > .selectAdjudicacion > .options > a:first-child {
+  margin-top: 1rem;
 }
 
-.wrapperButtonManageVenta>.selectAdjudicacion>.options>a:hover {
-    color: var(--secundary-color);
+.wrapperButtonManageVenta > .selectAdjudicacion > .options > a:hover {
+  color: var(--secundary-color);
 }
 
 /* #endregion */
 
 /* #region Estilos de demas botones */
-.buttonChangePack>a,
-.buttonChangeTitularidad>a {
-    text-decoration: none;
-    color: var(--third-color);
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    padding: .8rem 2rem;
-
+.buttonChangePack > a,
+.buttonChangeTitularidad > a {
+  text-decoration: none;
+  color: var(--third-color);
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  font-family: raleway-semibold;
+  padding: 0.8rem 2rem;
 }
 
 .buttonChangePack:hover,
 .buttonChangeTitularidad:hover {
-    background-color: rgba(23, 84, 237, 0.07);
+  background-color: rgba(23, 84, 237, 0.07);
 }
 
 /* #endregion */
 
 /* #endregion */
 
-
 .wrapperBase {
-    display: flex;
-    flex-wrap: wrap;
-    box-sizing: border-box;
-    /* margin-top: 4rem; */
-    gap: 5%;
-    gap: 5%;
-    flex: 1 1 auto;
-    min-height: 0;
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  /* margin-top: 4rem; */
+  gap: 5%;
+  gap: 5%;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /*#region  WRAPPER INFORMATION */
 .wrapper_information {
-    width: 65%;
-    box-sizing: border-box;
-    min-width: 50rem;
-    overflow-y: hidden;
-    /* padding: 1.5rem; */
-    max-height: 100%;
-    display: flex;
-    flex-direction: column;
+  width: 65%;
+  box-sizing: border-box;
+  min-width: 50rem;
+  overflow-y: hidden;
+  /* padding: 1.5rem; */
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .information {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(10rem, 1fr));
-    gap: 2rem;
-    overflow: auto;
-    height: 90%;
-    padding-right: 2rem;
-    flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(10rem, 1fr));
+  gap: 2rem;
+  overflow: auto;
+  height: 90%;
+  padding-right: 2rem;
+  flex: 1 1 auto;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
-.wrapper_information>h1 {
-    color: var(--third-color);
-    font-size: clamp(3rem, 3vw, 5rem);
-    font-family: raleway-bold;
-    margin-bottom: 1.5rem;
-    box-sizing: border-box;
-
+.wrapper_information > h1 {
+  color: var(--third-color);
+  font-size: clamp(3rem, 3vw, 5rem);
+  font-family: raleway-bold;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
 }
 
-.inputs>h2 {
-    color: var(--third-color);
-    font-size: clamp(1.3rem, 1vw, 1.6rem);
-    font-family: raleway-semibold;
-    margin-bottom: .3rem;
-    box-sizing: border-box;
+.inputs > h2 {
+  color: var(--third-color);
+  font-size: clamp(1.3rem, 1vw, 1.6rem);
+  font-family: raleway-semibold;
+  margin-bottom: 0.3rem;
+  box-sizing: border-box;
 
-    white-space: nowrap;
-    /* Evita que el texto salte de línea */
-    overflow: hidden;
-    /* Oculta el texto que excede el contenedor */
-    text-overflow: ellipsis;
-    /* Añade puntos suspensivos (...) al final del texto que no cabe */
-
+  white-space: nowrap;
+  /* Evita que el texto salte de línea */
+  overflow: hidden;
+  /* Oculta el texto que excede el contenedor */
+  text-overflow: ellipsis;
+  /* Añade puntos suspensivos (...) al final del texto que no cabe */
 }
-
 
 /* INPUTS */
 
@@ -507,207 +494,199 @@
 #vendedor,
 #producto,
 #paquete {
-    grid-column: 2 span;
+  grid-column: 2 span;
 }
-
+#observaciones {
+  grid-column: 1 / -1;
+  /* grid-row: 2 /3; */
+}
 #wrapperContratos {
-    grid-column: 1/ -1;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(12rem, 1fr));
-    gap: 2rem;
-    /* border: 2px solid var(--third-color); */
-    /* padding: 1.3rem; */
-    border-radius: .6rem;
+  grid-column: 1/ -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(12rem, 1fr));
+  gap: 2rem;
+  /* border: 2px solid var(--third-color); */
+  /* padding: 1.3rem; */
+  border-radius: 0.6rem;
 }
 
-#wrapperContratos>.contratosItem {
-    padding: 1.5rem;
-    border-radius: .6rem;
-    background-color: rgb(24 30 44);
-    box-shadow: 0px 0px 9px 0px rgba(127, 140, 141, 0.75);
-    -webkit-box-shadow: 3px 3px 6px 0px rgb(137 137 171 / 15%);
+#wrapperContratos > .contratosItem {
+  padding: 1.5rem;
+  border-radius: 0.6rem;
+  background-color: rgb(24 30 44);
+  box-shadow: 0px 0px 9px 0px rgba(127, 140, 141, 0.75);
+  -webkit-box-shadow: 3px 3px 6px 0px rgb(137 137 171 / 15%);
 }
 
-#wrapperContratos>.contratosItem.contratoAdjudicado {
-    box-shadow: 0px 0px 9px 2px rgba(0, 0, 0, 0.34);
+#wrapperContratos > .contratosItem.contratoAdjudicado {
+  box-shadow: 0px 0px 9px 2px rgba(0, 0, 0, 0.34);
 }
 
-#wrapperContratos>.contratosItem.contratoDisable {
-    opacity: .5;
+#wrapperContratos > .contratosItem.contratoDisable {
+  opacity: 0.5;
 }
 
-#wrapperContratos>.contratosItem>h2 {
-    color: var(--blue-accent-color);
-    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-    font-family: raleway-semibold;
+#wrapperContratos > .contratosItem > h2 {
+  color: var(--blue-accent-color);
+  font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+  font-family: raleway-semibold;
 }
 
-#wrapperContratos>.contratosItem>h2.adjText {
-    color: var(--secundary-color);
-    background-color: var(--third-color);
-    padding: .4rem;
-    margin-bottom: .5rem;
-    text-align: center;
-    border-radius: .6rem;
+#wrapperContratos > .contratosItem > h2.adjText {
+  color: var(--secundary-color);
+  background-color: var(--third-color);
+  padding: 0.4rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  border-radius: 0.6rem;
 }
 
-
-#wrapperContratos>.contratosItem>.inputs {
-    margin-top: 1rem;
+#wrapperContratos > .contratosItem > .inputs {
+  margin-top: 1rem;
 }
 
-
-
-.inputs>div {
-    display: flex;
-    align-items: center;
-    /* background-color: var(--info-color-20); */
-    background-color: rgb(30 68 123 / 20%);
-    position: relative;
-    border-radius: 1rem;
-    outline: none;
-    text-indent: 1rem;
-    width: 100%;
+.inputs > div {
+  display: flex;
+  align-items: center;
+  /* background-color: var(--info-color-20); */
+  background-color: rgb(30 68 123 / 20%);
+  position: relative;
+  border-radius: 1rem;
+  outline: none;
+  text-indent: 1rem;
+  width: 100%;
 }
 
-
-.inputs>div>h3 {
-    font: clamp(1.1rem, 1vw, 1.4rem) raleway-semibold;
-    font-feature-settings: "pnum" on, "lnum" on;
-    color: var(--third-color);
-    padding: 1rem;
+.inputs > div > h3 {
+  font: clamp(1.1rem, 1vw, 1.4rem) raleway-semibold;
+  font-feature-settings: "pnum" on, "lnum" on;
+  color: var(--third-color);
+  padding: 1rem;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 /* #endregion */
 
-
 /* #region WRAPPER CUOTAS */
 .wrapper_cuotas {
-    width: 30%;
-    min-width: 23rem;
-    min-height: 35rem;
-    max-height: 65rem;
-    display: flex;
-    align-items: center;
-    position: relative;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
+  width: 30%;
+  min-width: 23rem;
+  min-height: 35rem;
+  /* max-height: 65rem; */
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
-.wrapper_cuotas>.wrapperTittleCuotas {
-    margin-bottom: .6rem
+.wrapper_cuotas > .wrapperTittleCuotas {
+  margin-bottom: 0.6rem;
 }
 
-.wrapper_cuotas>.wrapperTittleCuotas>h3 {
-    font-size: clamp(2rem, 1.8vw, 3rem);
-    font-family: raleway-bold;
-    color: var(--third-color);
+.wrapper_cuotas > .wrapperTittleCuotas > h3 {
+  font-size: clamp(2rem, 1.8vw, 3rem);
+  font-family: raleway-bold;
+  color: var(--third-color);
 }
 
 .wrapper_cuotas.adjudicado,
 .wrapper_cuotas.enBaja {
-    justify-content: center;
+  justify-content: center;
 }
 
 .wrapperDetalleEstadoVenta {
-    box-sizing: border-box;
-    width: 100%;
-    /* height: 95%; */
-    flex: 1 1 auto;
-    border-radius: 1rem;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  /* height: 95%; */
+  flex: 1 1 auto;
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-
 .wrapperCuotasList {
-    color: var(--third-color);
-    position: relative;
-    background-color: var(--blue-1);
-    /* border: 1px solid var(--white-800-50); */
-    height: 100%;
-    width: 100%;
-    overflow-y: auto;
-    border-radius: 1rem;
-    padding: 1.2rem;                 /* aire interno (izq/der + sup/inf) */
-    /* scrollbar-gutter: stable both-edges;   */
+  color: var(--third-color);
+  position: relative;
+  background-color: var(--blue-1);
+  /* border: 1px solid var(--white-800-50); */
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  border-radius: 1rem;
+  padding: 1.2rem; /* aire interno (izq/der + sup/inf) */
+  /* scrollbar-gutter: stable both-edges;   */
 }
 
 .wrapperCuotasList::-webkit-scrollbar {
-    width: 4px;
-    border-radius: 5px;
+  width: 4px;
+  border-radius: 5px;
 }
 
 .wrapperCuotasList::-webkit-scrollbar-thumb {
-    background: #000000c0;
-    border-radius: 1rem;
+  background: #000000c0;
+  border-radius: 1rem;
 }
 
-.wrapperCuotasList>.cuotas_list {
-    list-style: none;
-    /* padding: .8rem; */
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    row-gap: 1.2rem;
+.wrapperCuotasList > .cuotas_list {
+  list-style: none;
+  /* padding: .8rem; */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  row-gap: 1.2rem;
 }
 
-
-.wrapperCuotasList>.cuotas_list>.cuota {
-    display: flex;
-    column-gap: 2rem;
-    box-sizing: border-box;
-    width: 100%;
-    padding: .6rem 0;
-    align-items: center;
-    border-radius: .8rem;
-    position: relative;
+.wrapperCuotasList > .cuotas_list > .cuota {
+  display: flex;
+  column-gap: 2rem;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.6rem 0;
+  align-items: center;
+  border-radius: 0.8rem;
+  position: relative;
 }
 
-
-
-
-.wrapperCuotasList>.cuotas_list>.cuota.bloqueado {
-    background-color: var(--white-800-20);
-
+.wrapperCuotasList > .cuotas_list > .cuota.bloqueado {
+  background-color: var(--white-800-20);
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>input {
-    display: none;
+.wrapperCuotasList > .cuotas_list > .cuota > input {
+  display: none;
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>h4 {
-    color: var(--white-color-800);
-    font-size: clamp(1.4rem, 1.2vw, 1.8rem);
-    font-family: raleway-semibold;
-    cursor: pointer;
+.wrapperCuotasList > .cuotas_list > .cuota > h4 {
+  color: var(--white-color-800);
+  font-size: clamp(1.4rem, 1.2vw, 1.8rem);
+  font-family: raleway-semibold;
+  cursor: pointer;
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>h5 {
-    display: none;
+.wrapperCuotasList > .cuotas_list > .cuota > h5 {
+  display: none;
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>.marca {
-    width: 9%;
-    /* Esto hace que sea un cuadrado  */
-    aspect-ratio: 1 / 1;
-    border-radius: .5rem;
-    background-size: contain;
-    margin-left: 1rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-image: none;
-
+.wrapperCuotasList > .cuotas_list > .cuota > .marca {
+  width: 9%;
+  /* Esto hace que sea un cuadrado  */
+  aspect-ratio: 1 / 1;
+  border-radius: 0.5rem;
+  background-size: contain;
+  margin-left: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: none;
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>.marca.Pendiente {
-    background-color: var(--white-color-800);
-
+.wrapperCuotasList > .cuotas_list > .cuota > .marca.Pendiente {
+  background-color: var(--white-color-800);
 }
 
 /* .wrapperCuotasList>.cuotas_list>.cuota.Pagado {
@@ -715,88 +694,86 @@
     pointer-events: none;
 } */
 
-.wrapperCuotasList>.cuotas_list>.cuota>.marca.Pagado {
-    background-color: var(--success-color);
+.wrapperCuotasList > .cuotas_list > .cuota > .marca.Pagado {
+  background-color: var(--success-color);
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>.marca.Vencido {
-    background-color: var(--danger-color);
+.wrapperCuotasList > .cuotas_list > .cuota > .marca.Vencido {
+  background-color: var(--danger-color);
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota.Vencido>h5 {
-    display: unset;
-    color: var(--danger-color);
-    font-size: clamp(1.2rem, 1.1vw, 1.6rem);
-    font-family: raleway-semibold;
-    cursor: pointer;
+.wrapperCuotasList > .cuotas_list > .cuota.Vencido > h5 {
+  display: unset;
+  color: var(--danger-color);
+  font-size: clamp(1.2rem, 1.1vw, 1.6rem);
+  font-family: raleway-semibold;
+  cursor: pointer;
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>.marca.Parcial {
-    background-color: var(--warning-color);
+.wrapperCuotasList > .cuotas_list > .cuota > .marca.Parcial {
+  background-color: var(--warning-color);
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota>.marca.bloqueado {
-    background-color: transparent;
-    background-size: contain;
+.wrapperCuotasList > .cuotas_list > .cuota > .marca.bloqueado {
+  background-color: transparent;
+  background-size: contain;
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota:hover {
-    background-color: color-mix(in srgb, var(--blue-2) 90%, white);
-    cursor: pointer;
+.wrapperCuotasList > .cuotas_list > .cuota:hover {
+  background-color: color-mix(in srgb, var(--blue-2) 90%, white);
+  cursor: pointer;
 }
 
-.wrapperCuotasList>.cuotas_list>.cuota.bloqueado {
-    cursor: default;
-    pointer-events: none;
+.wrapperCuotasList > .cuotas_list > .cuota.bloqueado {
+  cursor: default;
+  pointer-events: none;
 }
 
-
-.wrapperCuotasList>.cuotas_list>.cuota.pagoBloqueado>h4 {
-    cursor: default;
-    pointer-events: none;
+.wrapperCuotasList > .cuotas_list > .cuota.pagoBloqueado > h4 {
+  cursor: default;
+  pointer-events: none;
 }
 
 /* #endregion */
 
-
 /* #region WRAPPER CUOTAS EN BAJA*/
 
-.wrapper_cuotas.enBaja>.cuotas {
-    height: 80%;
-    background-color: var(--third-color);
-    justify-content: center;
-    border-radius: .8rem;
+.wrapper_cuotas.enBaja > .cuotas {
+  height: 80%;
+  background-color: var(--third-color);
+  justify-content: center;
+  border-radius: 0.8rem;
 }
 
-.wrapper_cuotas.enBaja>.cuotas>h1 {
-    font-size: clamp(2rem, 1.8vw, 3rem);
-    font-family: raleway-semibold;
-    color: #ed1717;
+.wrapper_cuotas.enBaja > .cuotas > h1 {
+  font-size: clamp(2rem, 1.8vw, 3rem);
+  font-family: raleway-semibold;
+  color: #ed1717;
 }
 
-.wrapper_cuotas.enBaja>.cuotas>h2 {
-    font-size: clamp(1.4rem, 1.2vw, 2rem);
-    font-family: raleway-semibold;
-    color: var(--background-color);
+.wrapper_cuotas.enBaja > .cuotas > h2 {
+  font-size: clamp(1.4rem, 1.2vw, 2rem);
+  font-family: raleway-semibold;
+  color: var(--background-color);
 }
 
 /* #endregion */
 
 .containerDetalleCuota {
-    padding: 1.5rem;
-    box-sizing: border-box;
-    position: absolute;
-    overflow-y: auto;
-    border-radius: 1rem;
-    right: -100%;
-    top: 0;
-    background-color: var(--blue-1);
-    border: 1px solid var(--white-800-50);
-    height: 100%;
-    width: 100%;
-    transition: all .3s ease-in-out;
-    display: flex;
-    flex-direction: column;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  position: absolute;
+  overflow-y: auto;
+  border-radius: 1rem;
+  right: -100%;
+  top: 0;
+  background-color: var(--blue-1);
+  border: 1px solid var(--white-800-50);
+  height: 100%;
+  width: 100%;
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
 }
 
 /* #region FORM PAY CUOTA */
@@ -812,382 +789,403 @@
 } */
 
 #payCuotaForm.active {
-    right: 0%;
+  right: 0%;
 }
 
 .descuentoWrapperBackground {
-    position: absolute;
-    width: 100%;
-    z-index: 20;
-    border-bottom: 2px solid var(--secundary-color);
-    height: 100%;
-    left: 0;
-    top: 0;
-    background-color: #00000058;
+  position: absolute;
+  width: 100%;
+  z-index: 20;
+  border-bottom: 2px solid var(--secundary-color);
+  height: 100%;
+  left: 0;
+  top: 0;
+  background-color: #00000058;
 }
 
-.descuentoWrapperBackground>div {
-    padding: 2rem;
-    box-sizing: border-box;
-    border-bottom: 2px solid var(--secundary-color);
-    background-color: var(--third-color);
+.descuentoWrapperBackground > div {
+  padding: 2rem;
+  box-sizing: border-box;
+  border-bottom: 2px solid var(--secundary-color);
+  background-color: var(--third-color);
 }
 
-.descuentoWrapperBackground>div>h3 {
-    font-size: clamp(1.2rem, 1.1vw, 1.6rem);
-    font-family: raleway-semibold;
-    color: var(--background-color);
-    margin-bottom: .4rem;
+.descuentoWrapperBackground > div > h3 {
+  font-size: clamp(1.2rem, 1.1vw, 1.6rem);
+  font-family: raleway-semibold;
+  color: var(--background-color);
+  margin-bottom: 0.4rem;
 }
 
-#descuentoCuotaForm{
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+#descuentoCuotaForm {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.descuentoWrapperBackground>div>#descuentoCuotaForm>.buttonsActionsDescuentoWrapper {
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1rem;
+.descuentoWrapperBackground
+  > div
+  > #descuentoCuotaForm
+  > .buttonsActionsDescuentoWrapper {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
-.descuentoWrapperBackground>div>#descuentoCuotaForm>input {
-    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-    font-family: raleway;
-    color: var(--background-color);
+.descuentoWrapperBackground > div > #descuentoCuotaForm > input {
+  font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+  font-family: raleway;
+  color: var(--background-color);
 }
 
-.descuentoWrapperBackground>div>#descuentoCuotaForm>#dineroDescuento {
-    margin-bottom: 1.2rem;
+.descuentoWrapperBackground > div > #descuentoCuotaForm > #dineroDescuento {
+  margin-bottom: 1.2rem;
 }
 
 .modalDescuento .titleModalDescuento {
-    font-size: clamp(1.4rem, 1.4vw, 1.8rem);
-    font-family: raleway-semibold;
-    color: var(--white-color-800);
-    margin-bottom: .4rem;
+  font-size: clamp(1.4rem, 1.4vw, 1.8rem);
+  font-family: raleway-semibold;
+  color: var(--white-color-800);
+  margin-bottom: 0.4rem;
 }
 
 .tingle-btn[disabled] {
-  opacity: .5;
+  opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-.modalDescuento #descuentoCuotaForm>div>h3 {
-    font-size: clamp(1rem, 1.1vw, 1.3rem);
-    font-family: raleway-semibold;
-    color: var(--white-800-80);
-    margin-bottom: .4rem;
+.modalDescuento #descuentoCuotaForm > div > h3 {
+  font-size: clamp(1rem, 1.1vw, 1.3rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
+  margin-bottom: 0.4rem;
 }
 
-
-.descuentoWrapperBackground>div>#descuentoCuotaForm>#dineroDescuento::-webkit-inner-spin-button,
-.descuentoWrapperBackground>div>#descuentoCuotaForm>#dineroDescuento::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.descuentoWrapperBackground
+  > div
+  > #descuentoCuotaForm
+  > #dineroDescuento::-webkit-inner-spin-button,
+.descuentoWrapperBackground
+  > div
+  > #descuentoCuotaForm
+  > #dineroDescuento::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-#descuentoCuotaForm>.buttonsActionsDescuentoWrapper>#closeFormDescuento {
-    color: var(--background-color);
-    font-size: clamp(1.1rem, 1vw, 1.5rem);
-    padding: .8rem 1.5rem;
-
+#descuentoCuotaForm > .buttonsActionsDescuentoWrapper > #closeFormDescuento {
+  color: var(--background-color);
+  font-size: clamp(1.1rem, 1vw, 1.5rem);
+  padding: 0.8rem 1.5rem;
 }
 
-#descuentoCuotaForm>.buttonsActionsDescuentoWrapper>#submitDescuento {
-    font-size: clamp(1.1rem, 1vw, 1.5rem);
-    padding: .8rem 1.5rem;
+#descuentoCuotaForm > .buttonsActionsDescuentoWrapper > #submitDescuento {
+  font-size: clamp(1.1rem, 1vw, 1.5rem);
+  padding: 0.8rem 1.5rem;
 }
 
-#descuentoCuotaForm>.buttonsActionsDescuentoWrapper>#submitDescuento:disabled {
-    opacity: .5;
-    pointer-events: none;
+#descuentoCuotaForm
+  > .buttonsActionsDescuentoWrapper
+  > #submitDescuento:disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .buttonsActions {
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.buttonsActions>button {
-    background-color: transparent;
-    outline: none;
-    border: none;
-    width: 3rem;
-    height: 3rem;
-    cursor: pointer;
+.buttonsActions > button {
+  background-color: transparent;
+  outline: none;
+  border: none;
+  width: 3rem;
+  height: 3rem;
+  cursor: pointer;
 }
 
 /* .buttonsActions>button#closeFormCuota {
     margin-left: auto;
 } */
 
-a#btnReciboCuota {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    background-color: var(--blue-3);
-    padding: .6rem 1.6rem;
-    text-decoration: none;
-    border-radius: .6rem;
-    color: var(--white-800-80);
+button#btnReciboCuota {
+  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+  font-family: raleway-semibold;
+  background-color: var(--blue-3);
+  padding: 0.6rem 1.6rem;
+  text-decoration: none;
+  border-radius: 0.6rem;
+  color: var(--white-800-80);
+  z-index: 100000000;
+  border-color: transparent;
+  cursor: pointer;
 }
 
-a#btnReciboCuota:hover{
-    background-color: var(--blue-4);
+button#btnReciboCuota:hover {
+  background-color: var(--blue-4);
 }
 
-.buttonsActions>button>img {
-    width: 100%;
-    filter: invert(1);
+.buttonsActions > button > img {
+  width: 100%;
+  filter: invert(1);
 }
 
-.buttonsActions>button.buttonCancelarPago {
-    background-color: var(--danger-color);
+.buttonsActions > button.buttonCancelarPago {
+  background-color: var(--danger-color);
 }
 
-.buttonsActions>button#btnAnularCuota {
-    background-color: var(--danger-color);
+.buttonsActions > button#btnAnularCuota {
+  background-color: var(--danger-color);
 }
 
 .labelInput {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    color: var(--white-800-80);
+  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
 }
 
 .wrapperSelectFilter {
-    margin-top: 1.3rem;
+  margin-top: 1.3rem;
 }
 
 .cuotaPicked {
-    font-size: clamp(2.2rem, 1.9vw, 3rem);
-    font-family: raleway-bold;
-    color: var(--white-color-800);
-    margin-top: 2rem;
-    margin-bottom: .4rem;
-    text-align: center;
+  font-size: clamp(2.2rem, 1.9vw, 3rem);
+  font-family: raleway-bold;
+  color: var(--white-color-800);
+  margin-top: 2rem;
+  margin-bottom: 0.4rem;
+  text-align: center;
 }
 
-#payCuotaForm>.typesPayments>h3 {
-    font-size: clamp(1.4rem, 1.2vw, 2rem);
-    font-family: raleway-semibold;
-    color: var(--white-800-80);
-    text-align: center;
+#payCuotaForm > .typesPayments > h3 {
+  font-size: clamp(1.4rem, 1.2vw, 2rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
+  text-align: center;
 }
 
-#payCuotaForm>.typesPayments>.wrapperChoices {
-    display: flex;
-    column-gap: 1rem;
-    margin-top: .5rem;
-    justify-content: center;
+#payCuotaForm > .typesPayments > .wrapperChoices {
+  display: flex;
+  column-gap: 1rem;
+  margin-top: 0.5rem;
+  justify-content: center;
 }
 
-#payCuotaForm>.typesPayments>.wrapperChoices>.choice {
-    width: 50%;
-    box-sizing: border-box;
-    padding: .6rem 0rem;
-    border-radius: .6rem;
-    border: 1px solid var(--blue-4);
-    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-    font-family: raleway-semibold;
-    text-align: center;
-    cursor: pointer;
+#payCuotaForm > .typesPayments > .wrapperChoices > .choice {
+  width: 50%;
+  box-sizing: border-box;
+  padding: 0.6rem 0rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--blue-4);
+  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+  font-family: raleway-semibold;
+  text-align: center;
+  cursor: pointer;
 }
 
-#payCuotaForm>.typesPayments>.wrapperChoices>.choice h3 {
-    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-    font-family: raleway-semibold;
-    color: var(--white-color-800);
-    cursor: pointer;
+#payCuotaForm > .typesPayments > .wrapperChoices > .choice h3 {
+  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+  font-family: raleway-semibold;
+  color: var(--white-color-800);
+  cursor: pointer;
 }
 
-#payCuotaForm>.typesPayments>.wrapperChoices>.choice:hover {
-    cursor: pointer;
+#payCuotaForm > .typesPayments > .wrapperChoices > .choice:hover {
+  cursor: pointer;
 }
 
-
-#payCuotaForm>.typesPayments>.wrapperChoices>.choice:hover {
-    background-color: var(--blue-3);
-    color: var(--third-color);
+#payCuotaForm > .typesPayments > .wrapperChoices > .choice:hover {
+  background-color: var(--blue-3);
+  color: var(--third-color);
 }
 
-#payCuotaForm>.typesPayments>.wrapperChoices>.choice.active {
-    background-color: var(--blue-3);
+#payCuotaForm > .typesPayments > .wrapperChoices > .choice.active {
+  background-color: var(--blue-3);
 }
 
-#payCuotaForm>.typesPayments>.wrapperChoices>.choice.active h3,
-#payCuotaForm>.typesPayments>.wrapperChoices>.choice:hover h3 {
-    color: var(--third-color);
+#payCuotaForm > .typesPayments > .wrapperChoices > .choice.active h3,
+#payCuotaForm > .typesPayments > .wrapperChoices > .choice:hover h3 {
+  color: var(--third-color);
 }
 
-
-#payCuotaForm>.typesPayments>.choice.active {
-    background-color: var(--blue-4);
-    color: var(--third-color);
+#payCuotaForm > .typesPayments > .choice.active {
+  background-color: var(--blue-4);
+  color: var(--third-color);
 }
 
-#payCuotaForm>.typesPayments>.wrapperChoices>.choice input {
-    display: none;
+#payCuotaForm > .typesPayments > .wrapperChoices > .choice input {
+  display: none;
 }
 
-#payCuotaForm>.pickedAmount {
-    position: relative;
-    margin-top: 1rem;
-    margin: 0 auto;
-    margin-top: 1rem;
-    width: 80%;
-    /* display: none; */
+#payCuotaForm > .pickedAmount {
+  position: relative;
+  margin-top: 1rem;
+  margin: 0 auto;
+  margin-top: 1rem;
+  width: 80%;
+  /* display: none; */
 }
 
-#payCuotaForm>.pickedAmount.active {
-    display: unset;
+#payCuotaForm > .pickedAmount.active {
+  display: unset;
 }
 
-#payCuotaForm>.pickedAmount>h4 {
-    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-    font-family: raleway-semibold;
-    color: var(--white-800-80);
-    margin-bottom: .6rem;
+#payCuotaForm > .pickedAmount > h4 {
+  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
+  margin-bottom: 0.6rem;
 }
 
-#payCuotaForm>.pickedAmount>input {
-    width: 100%;
-    color: var(--white-800-80);
+#payCuotaForm > .pickedAmount > input {
+  width: 100%;
+  color: var(--white-800-80);
 }
 
-#payCuotaForm>.wrapperSelect {
-    width: 80%;
-    margin: 0 auto;
+#payCuotaForm > .wrapperSelect {
+  width: 80%;
+  margin: 0 auto;
 }
 
-#payCuotaForm>.wrapperSelect>h3 {
-    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-    font-family: raleway-semibold;
-    color: var(--background-color);
-    margin-top: 1rem;
+#payCuotaForm > .wrapperSelect > h3 {
+  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+  font-family: raleway-semibold;
+  color: var(--background-color);
+  margin-top: 1rem;
 }
 
-#payCuotaForm>#selectWrapperSelectCobrador>.containerInputAndOptions>img {
-    z-index: 6;
-    filter: invert(1);
+#payCuotaForm > #selectWrapperSelectCobrador > .containerInputAndOptions > img {
+  z-index: 6;
+  filter: invert(1);
 }
 
-#payCuotaForm>#selectWrapperSelectCobrador>.containerInputAndOptions>.pseudo-input-select-wrapper {
-    z-index: 5;
-    /* background-color: var(--third-color); */
+#payCuotaForm
+  > #selectWrapperSelectCobrador
+  > .containerInputAndOptions
+  > .pseudo-input-select-wrapper {
+  z-index: 5;
+  /* background-color: var(--third-color); */
 }
 
-#payCuotaForm>#selectWrapperSelectCobrador>.containerInputAndOptions>.options {
-    z-index: 4;
+#payCuotaForm
+  > #selectWrapperSelectCobrador
+  > .containerInputAndOptions
+  > .options {
+  z-index: 4;
 }
 
-#payCuotaForm>#selectWrapperSelectTypePayments>.containerInputAndOptions>img {
-    z-index: 3;
-    filter: invert(1);
-
+#payCuotaForm
+  > #selectWrapperSelectTypePayments
+  > .containerInputAndOptions
+  > img {
+  z-index: 3;
+  filter: invert(1);
 }
 
-#payCuotaForm>#selectWrapperSelectTypePayments>.containerInputAndOptions>.pseudo-input-select-wrapper {
-    z-index: 2;
-
+#payCuotaForm
+  > #selectWrapperSelectTypePayments
+  > .containerInputAndOptions
+  > .pseudo-input-select-wrapper {
+  z-index: 2;
 }
 
-#payCuotaForm>#selectWrapperSelectTypePayments>.containerInputAndOptions>.options {
-    z-index: 1;
+#payCuotaForm
+  > #selectWrapperSelectTypePayments
+  > .containerInputAndOptions
+  > .options {
+  z-index: 1;
 }
 
 .wrapperButtonPayCuota {
-    box-sizing: border-box;
-    display: flex;
-    width: 100%;
-    justify-content: center;
-    align-items: center;
-    margin-top: auto;
-    flex-direction: column;
-    gap: 1rem;
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  margin-top: auto;
+  flex-direction: column;
+  gap: 1rem;
 }
-.wrapperButtonPayCuota>button#btnDescuentoCuota {
-    padding: .3rem 4rem;
-    border-radius: .6rem;
-    width: fit-content;
-    height: fit-content;
-    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-    font-family: raleway-semibold;
-    background-color: transparent;
-    border: 1px solid;
-    color: var(--blue-accent-color);
-    cursor: pointer;
-
+.wrapperButtonPayCuota > button#btnDescuentoCuota {
+  padding: 0.3rem 4rem;
+  border-radius: 0.6rem;
+  width: fit-content;
+  height: fit-content;
+  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+  font-family: raleway-semibold;
+  background-color: transparent;
+  border: 1px solid;
+  color: var(--blue-accent-color);
+  cursor: pointer;
 }
-.wrapperButtonPayCuota>button#sendPayment {
-    padding: .8rem 4rem;
-    width: fit-content;
-    height: fit-content;
-    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-    font-family: raleway-semibold;
+.wrapperButtonPayCuota > button#sendPayment {
+  padding: 0.8rem 4rem;
+  width: fit-content;
+  height: fit-content;
+  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+  font-family: raleway-semibold;
 }
 
 /* .wrapperButtonPayCuota>#sendPayment {} */
 
 .payCuotaStatus {
-    width: 95%;
-    height: 10%;
-    max-height: 6rem;
-    min-height: 3rem;
-    box-sizing: border-box;
-    border-radius: .8rem;
-    position: absolute;
-    bottom: -8rem;
-    padding: 1rem;
-    background: var(--background-color);
-    border: 3px solid var(--primary-color);
-    /* border: 3px solid #ed1717; */
-    display: flex;
-    column-gap: 2rem;
-    align-items: center;
-    transition: .7s all ease;
+  width: 95%;
+  height: 10%;
+  max-height: 6rem;
+  min-height: 3rem;
+  box-sizing: border-box;
+  border-radius: 0.8rem;
+  position: absolute;
+  bottom: -8rem;
+  padding: 1rem;
+  background: var(--background-color);
+  border: 3px solid var(--primary-color);
+  /* border: 3px solid #ed1717; */
+  display: flex;
+  column-gap: 2rem;
+  align-items: center;
+  transition: 0.7s all ease;
 }
 
 .payCuotaStatus.active {
-    bottom: 1rem;
+  bottom: 1rem;
 }
 
-.payCuotaStatus>img {
-    width: 8%;
-    max-width: 3rem;
-    min-width: 2rem;
+.payCuotaStatus > img {
+  width: 8%;
+  max-width: 3rem;
+  min-width: 2rem;
 }
 
-.payCuotaStatus>h2 {
-    font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-    font-family: raleway-semibold;
-    color: var(--third-color);
+.payCuotaStatus > h2 {
+  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
+  font-family: raleway-semibold;
+  color: var(--third-color);
 }
 
 /* #endregion */
 
-
 /* #region WRAPPER VIEW DETALLE DE CUOTA */
 
 #wrapperVerDetallesPago.active {
-    right: 0%;
-    display: flex;
-    flex-direction: column;
+  right: 0%;
+  display: flex;
+  flex-direction: column;
 }
 
 .wrapperInfo_cuota {
-    /* max-height: 70%;
+  /* max-height: 70%;
     overflow-y: auto;
     padding-right: 1rem; */
-    width: 100%;
-    margin-top: 1rem;
+  width: 100%;
+  margin-top: 1rem;
 }
 
 /* #wrapperVerDetallesPago>.cuotaPicked {
@@ -1199,420 +1197,391 @@ a#btnReciboCuota:hover{
 } */
 
 .info_cuota {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: rgb(127 140 141 / 5%);
-    padding: .7rem;
-    flex-wrap: wrap;
-    margin-bottom: 1rem;
-    border-radius: .6rem;
-    row-gap: .7rem;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgb(127 140 141 / 5%);
+  padding: 0.7rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  border-radius: 0.6rem;
+  row-gap: 0.7rem;
+  cursor: pointer;
 }
 
-.info_cuota>h3:first-child {
-    color: var(--blue-accent-color);
+.info_cuota > h3:first-child {
+  color: var(--blue-accent-color);
 }
 .info_cuota.detail_view_more:first-child {
-    background-color: transparent;
+  background-color: transparent;
 }
 
-.info_cuota.detail_view_more>h3 {
-    font-size: clamp(1.1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-
+.info_cuota.detail_view_more > h3 {
+  font-size: clamp(1.1rem, 1vw, 1.5rem);
+  font-family: raleway-semibold;
 }
 
-.info_cuota.detail_view_more>h3:first-child {
-    color: var(--white-color-800);
+.info_cuota.detail_view_more > h3:first-child {
+  color: var(--white-color-800);
 }
 
-.info_cuota.view_more>img {
-    width: 1.5rem;
-    filter: invert(1);
+.info_cuota.view_more > img {
+  width: 1.5rem;
+  filter: invert(1);
 }
 
-.info_cuota.view_more>img.active {
-    rotate: 180deg;
+.info_cuota.view_more > img.active {
+  rotate: 180deg;
 }
 
-.info_cuota>h3 {
-    font-size: clamp(1.2rem, 1.1vw, 1.6rem);
-    font-family: raleway-semibold;
-    color: var(--white-800-80);
+.info_cuota > h3 {
+  font-size: clamp(1.2rem, 1.1vw, 1.6rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
 }
 
-.view_more>.wrapperDetail_view_more.active {
-    display: block;
+.view_more > .wrapperDetail_view_more.active {
+  display: block;
 }
 
-.view_more>.wrapperDetail_view_more {
-    display: none;
-    flex-basis: 100%;
-    padding-left: .5rem;
+.view_more > .wrapperDetail_view_more {
+  display: none;
+  flex-basis: 100%;
+  padding-left: 0.5rem;
 }
 
-.view_more>.wrapperDetail_view_more>h3 {
-    font-size: clamp(1rem, 1vw, 1.4rem);
-    font-family: raleway-semibold;
-    color: var(--white-800-80);
+.view_more > .wrapperDetail_view_more > h3 {
+  font-size: clamp(1rem, 1vw, 1.4rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
 }
 
-#wrapperVerDetallesPago>#anularButton {
-    margin-top: auto;
-    cursor: pointer;
+#wrapperVerDetallesPago > #anularButton {
+  margin-top: auto;
+  cursor: pointer;
 }
 
 #formAnularCuota {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    padding: 2rem;
-    left: 0;
-    border-top: 2px solid var(--primary-color);
-    background-color: var(--third-color);
-    z-index: 10;
-    border-radius: .8rem;
-    display: flex;
-    flex-direction: column;
-    row-gap: 1rem;
-    box-shadow: 0px 1px 8px 4px rgba(0, 0, 0, .2);
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 2rem;
+  left: 0;
+  border-top: 2px solid var(--primary-color);
+  background-color: var(--third-color);
+  z-index: 10;
+  border-radius: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  row-gap: 1rem;
+  box-shadow: 0px 1px 8px 4px rgba(0, 0, 0, 0.2);
 }
 
-#formAnularCuota>h3 {
-    font-size: clamp(1rem, 1vw, 1.4rem);
-    font-family: raleway-semibold;
-    color: var(--background-color);
+#formAnularCuota > h3 {
+  font-size: clamp(1rem, 1vw, 1.4rem);
+  font-family: raleway-semibold;
+  color: var(--background-color);
 }
 
 #formAnularCuota #cancelarAnularButton {
-    color: var(--background-color);
+  color: var(--background-color);
 }
 
 .buttonsWrapperAnularCuota {
-    display: flex;
-    gap: 1rem;
+  display: flex;
+  gap: 1rem;
 }
 
 /* #endregion */
 .selectMotivoWrapper {
-    width: 100%;
-    position: relative;
-    margin: 1rem 0;
+  width: 100%;
+  position: relative;
+  margin: 1rem 0;
 }
 
 .motivoSelectedWrapper {
-    background-color: white;
-    width: 90%;
-    height: 1.5rem;
-    display: flex;
-    align-items: center;
-    padding: 0.6rem;
-    font-size: clamp(.9rem, 1vw, 1.1em);
-    font-family: raleway-semibold;
-    border: 1px solid #3d7bd8d5;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    position: relative;
-    z-index: 2;
+  background-color: white;
+  width: 90%;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0.6rem;
+  font-size: clamp(0.9rem, 1vw, 1.1em);
+  font-family: raleway-semibold;
+  border: 1px solid #3d7bd8d5;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
 }
 
 .motivosList {
-    width: 90%;
-    padding: 0.6rem;
-    margin: 0 auto;
-    list-style: none;
-    background-color: white;
-    border-radius: 0.6rem;
-    position: absolute;
-    top: 70%;
-    height: 0rem;
-    overflow: auto;
-    z-index: 1;
+  width: 90%;
+  padding: 0.6rem;
+  margin: 0 auto;
+  list-style: none;
+  background-color: white;
+  border-radius: 0.6rem;
+  position: absolute;
+  top: 70%;
+  height: 0rem;
+  overflow: auto;
+  z-index: 1;
 }
 
-.motivosList>li:first-child {
-    padding-top: 1.5rem;
-
+.motivosList > li:first-child {
+  padding-top: 1.5rem;
 }
 
-.motivosList>li {
-    font-size: clamp(1rem, 1vw, 1.2rem);
-    font-family: raleway-semibold;
-    padding: .5rem 0;
-    cursor: pointer;
+.motivosList > li {
+  font-size: clamp(1rem, 1vw, 1.2rem);
+  font-family: raleway-semibold;
+  padding: 0.5rem 0;
+  cursor: pointer;
 }
 
-.motivosList>li:hover {
-    color: var(--third-color);
-
+.motivosList > li:hover {
+  color: var(--third-color);
 }
-
 
 .motivosList.active {
-    border: 1px solid #3d7bd8d5;
-    height: 9rem;
+  border: 1px solid #3d7bd8d5;
+  height: 9rem;
 }
 
-
-
 .buttonSubmitWrapper {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: 2rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
 }
 
 #sendPayment.blocked {
-    pointer-events: none;
-    background-color: var(--blue-2);
+  pointer-events: none;
+  background-color: var(--blue-2);
 }
 
 #amountParcial.invalido {
-    border: 2px solid rgba(255, 0, 0, 0.616);
+  border: 2px solid rgba(255, 0, 0, 0.616);
 }
 
 .errorMessageSendBaja {
-    font-family: raleway-semibold;
-    font-size: 1.3rem;
-    color: #ed1717;
-    margin-top: .5rem;
+  font-family: raleway-semibold;
+  font-size: 1.3rem;
+  color: #ed1717;
+  margin-top: 0.5rem;
 }
 
 #dineroRestante {
-    font-size: clamp(1.2rem, 1vw, 1.2rem);
-    font-family: raleway-semibold;
-    color: var(--danger-color);
-    text-align: center;
-    margin-top: 0.2rem;
+  font-size: clamp(1.2rem, 1vw, 1.2rem);
+  font-family: raleway-semibold;
+  color: var(--danger-color);
+  text-align: center;
+  margin-top: 0.2rem;
 }
 
 #sendPayment:hover {
-    transition: .1s all ease;
-    transform: scale(1.02);
+  transition: 0.1s all ease;
+  transform: scale(1.02);
 }
-
-
-
-
-
-
-
-
 
 .textAtrasado {
-    font-size: clamp(1.2rem, 1vw, 1.6rem);
-    font-family: raleway-bold;
-    color: rgb(240, 7, 7);
-    margin-left: 1.3rem;
+  font-size: clamp(1.2rem, 1vw, 1.6rem);
+  font-family: raleway-bold;
+  color: rgb(240, 7, 7);
+  margin-left: 1.3rem;
 }
-
-
 
 .cuotas {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    flex-flow: column;
-    max-width: 38rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-flow: column;
+  max-width: 38rem;
 }
 
-.cuotas>h3 {
-    color: white;
-    font-size: 2rem;
-    font-family: raleway-bold;
-    margin-bottom: 1rem;
+.cuotas > h3 {
+  color: white;
+  font-size: 2rem;
+  font-family: raleway-bold;
+  margin-bottom: 1rem;
 }
-
-
 
 .cuotaSuccess {
-    position: absolute;
-    bottom: 2rem;
-    display: flex;
-    left: 100%;
-    background-color: #fff;
-    padding: .8rem 1.5rem;
-    align-items: center;
-    border-radius: 1rem;
-    min-width: fit-content;
-    transition: 1s all ease;
-
+  position: absolute;
+  bottom: 2rem;
+  display: flex;
+  left: 100%;
+  background-color: #fff;
+  padding: 0.8rem 1.5rem;
+  align-items: center;
+  border-radius: 1rem;
+  min-width: fit-content;
+  transition: 1s all ease;
 }
 
 .cuotaSuccess.active {
-    left: -20%;
+  left: -20%;
 }
 
-.cuotaSuccess>img {
-    width: 3rem;
-    margin-right: 1.5rem;
+.cuotaSuccess > img {
+  width: 3rem;
+  margin-right: 1.5rem;
 }
 
 .cuotaPagada {
-    font-size: clamp(1.2rem, 1.3vw, 1.6rem);
-    font-family: raleway-semibold;
-    white-space: nowrap
+  font-size: clamp(1.2rem, 1.3vw, 1.6rem);
+  font-family: raleway-semibold;
+  white-space: nowrap;
 }
 
-.cuotaPagada>strong {
-    color: var(--primary-color);
+.cuotaPagada > strong {
+  color: var(--primary-color);
 }
-
-
 
 .wrapperSelectAdjudicacion {
-    position: relative;
-    height: 100%;
+  position: relative;
+  height: 100%;
 }
 
-.wrapperSelectAdjudicacion>h3 {
-    font-family: raleway-semibold;
-    font-size: 1.4rem;
-    color: white;
-    margin-bottom: 0.4rem;
-    margin-left: 0.2rem;
+.wrapperSelectAdjudicacion > h3 {
+  font-family: raleway-semibold;
+  font-size: 1.4rem;
+  color: white;
+  margin-bottom: 0.4rem;
+  margin-left: 0.2rem;
 }
 
-
-
-
-.selectedOption>img {
-    width: 2rem;
-    filter: invert(1);
+.selectedOption > img {
+  width: 2rem;
+  filter: invert(1);
 }
-
 
 .changeTitularidadWrapper {
-    width: 100%;
-    border-top: 1px #ffffff85 solid;
-    margin-top: 1rem;
-    height: 20rem;
-    overflow: auto;
+  width: 100%;
+  border-top: 1px #ffffff85 solid;
+  margin-top: 1rem;
+  height: 20rem;
+  overflow: auto;
 }
 
 .changeTitularidadWrapper::-webkit-scrollbar {
-    width: 4px;
-    border-radius: 5px;
+  width: 4px;
+  border-radius: 5px;
 }
 
 .changeTitularidadWrapper::-webkit-scrollbar-thumb {
-    background: #585858;
-    border-radius: 1rem;
+  background: #585858;
+  border-radius: 1rem;
 }
 
-.changeTitularidadWrapper>h2 {
-    font-size: clamp(1.6rem, 1.5vw, 2.1rem);
-    font-family: raleway-semibold;
-    color: white;
-    margin-left: .4rem;
-    margin-bottom: .9rem;
-    margin-top: 1.5rem;
+.changeTitularidadWrapper > h2 {
+  font-size: clamp(1.6rem, 1.5vw, 2.1rem);
+  font-family: raleway-semibold;
+  color: white;
+  margin-left: 0.4rem;
+  margin-bottom: 0.9rem;
+  margin-top: 1.5rem;
 }
 
 .changeItem {
-    border: 2px var(--primary-color) solid;
-    display: flex;
-    justify-content: space-around;
-    padding: 1rem;
-    border-radius: .8rem;
-    margin-bottom: 1rem;
+  border: 2px var(--primary-color) solid;
+  display: flex;
+  justify-content: space-around;
+  padding: 1rem;
+  border-radius: 0.8rem;
+  margin-bottom: 1rem;
 }
 
-.changeItem>.names>img {
-    width: 2rem;
-    filter: invert(1);
-    transform: rotate(180deg);
+.changeItem > .names > img {
+  width: 2rem;
+  filter: invert(1);
+  transform: rotate(180deg);
 }
 
-.changeItem>.names>a {
-    color: white;
-    text-decoration: none;
-    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    width: fit-content;
+.changeItem > .names > a {
+  color: white;
+  text-decoration: none;
+  font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
+  width: fit-content;
 }
 
-.changeItem>.names>a:hover {
-    transition: .1s all ease;
-    transform: scale(0.98);
+.changeItem > .names > a:hover {
+  transition: 0.1s all ease;
+  transform: scale(0.98);
 }
 
-.changeItem>.names>a:last-child {
-    color: rgba(255, 255, 255, 0.464);
+.changeItem > .names > a:last-child {
+  color: rgba(255, 255, 255, 0.464);
 }
 
-.changeItem>.names {
-    width: 30%;
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
+.changeItem > .names {
+  width: 30%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
 }
 
-
-
-
-.changeItem>.changeItemInformation {
-    width: 60%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
+.changeItem > .changeItemInformation {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
 }
 
-.changeItem>.changeItemInformation>h3 {
-    color: var(--third-color);
+.changeItem > .changeItemInformation > h3 {
+  color: var(--third-color);
 
-    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    margin-bottom: .4rem;
+  font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
+  margin-bottom: 0.4rem;
 }
 
-.changeItem>.changeItemInformation>h3>strong {
-    color: white;
+.changeItem > .changeItemInformation > h3 > strong {
+  color: white;
 
-    margin-left: .5rem;
+  margin-left: 0.5rem;
 }
 
 #verPDFTitularidad {
-    position: absolute;
-    right: 2rem;
-    top: .2rem;
-    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: white;
-    padding-bottom: .1rem;
-    text-decoration: none;
-    border-bottom: 1px solid white;
+  position: absolute;
+  right: 2rem;
+  top: 0.2rem;
+  font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: white;
+  padding-bottom: 0.1rem;
+  text-decoration: none;
+  border-bottom: 1px solid white;
 }
 
 #verPDFTitularidad:hover {
-    color: var(--primary-color);
-    border-bottom: 1px solid var(--primary-color);
-
+  color: var(--primary-color);
+  border-bottom: 1px solid var(--primary-color);
 }
 
 .wrapperUrlRecupero {
-    margin-top: 1rem;
+  margin-top: 1rem;
 }
 
-.wrapperUrlRecupero>a {
-    text-decoration: none;
-    color: var(--third-color);
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
+.wrapperUrlRecupero > a {
+  text-decoration: none;
+  color: var(--third-color);
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  font-family: raleway-semibold;
 }
 
 /* #region Eliminar la venta */
 .deleteSale {
-    margin-right: auto;
+  margin-right: auto;
 }
 
-.deleteSale>#showDeleteWrapper {
-    font-size: clamp(1rem, 1vw, 1.5rem);
+.deleteSale > #showDeleteWrapper {
+  font-size: clamp(1rem, 1vw, 1.5rem);
 }
 /* 
 .wrapperFormDeleteSale {
@@ -1632,89 +1601,86 @@ a#btnReciboCuota:hover{
     display: flex;
 } */
 
-
-#formDeleteSale>h1 {
-    font-size: clamp(2rem, 1.7vw, 3rem);
-    font-family: raleway-bold;
-    color: var(--white-color-800);
-    /* text-align: center; */
-    margin-bottom: 1.6rem;
+#formDeleteSale > h1 {
+  font-size: clamp(2rem, 1.7vw, 3rem);
+  font-family: raleway-bold;
+  color: var(--white-color-800);
+  /* text-align: center; */
+  margin-bottom: 1.6rem;
 }
 
-#formDeleteSale>.inputClaveWrapper>p {
-    font-size: clamp(1.4rem, 1.4vw, 1.8rem);
-    font-family: raleway-semibold;
-    color: var(--white-800-80);
-    margin-bottom: 1rem;
+#formDeleteSale > .inputClaveWrapper > p {
+  font-size: clamp(1.4rem, 1.4vw, 1.8rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
+  margin-bottom: 1rem;
 }
 
-#formDeleteSale>.inputClaveWrapper>p>strong {
-    color: var(--blue-accent-color);
+#formDeleteSale > .inputClaveWrapper > p > strong {
+  color: var(--blue-accent-color);
 }
 
-#formDeleteSale>.inputClaveWrapper>input {
-    font-size: clamp(1.3rem, 1.3vw, 1.7rem);
-    font-family: raleway-semibold;
-    max-width: 30rem;
-    /* height: 4rem; */
+#formDeleteSale > .inputClaveWrapper > input {
+  font-size: clamp(1.3rem, 1.3vw, 1.7rem);
+  font-family: raleway-semibold;
+  max-width: 30rem;
+  /* height: 4rem; */
 }
-
 
 /* #endregion */
 
-
 .modalContainerFilter .tingle-modal-box__content {
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
+  font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
 }
 
-.modalContainerFilter .tingle-modal-box__footer>button {
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
+.modalContainerFilter .tingle-modal-box__footer > button {
+  font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
 }
 
 .modalResponse .messageReponseModal {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-    font-family: raleway-semibold;
-    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-    color: var(--white-color-800);
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  font-family: raleway-semibold;
+  font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+  color: var(--white-color-800);
 }
 
-.modalResponse .messageReponseModal>img {
-    width: 4vw;
-    min-width: 5rem;
-    max-width: 7rem;
+.modalResponse .messageReponseModal > img {
+  width: 4vw;
+  min-width: 5rem;
+  max-width: 7rem;
 }
 
-.modalResponse .tingle-modal-box__footer>button {
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
+.modalResponse .tingle-modal-box__footer > button {
+  font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
 }
 
 .wrapperCuotasList::-webkit-scrollbar {
-  width: 8px;                           /* antes: 4px */
+  width: 8px; /* antes: 4px */
 }
 .wrapperCuotasList::-webkit-scrollbar-track {
   background: transparent;
-  margin-block: 8px;                    /* aire arriba y abajo del riel */
+  margin-block: 8px; /* aire arriba y abajo del riel */
 }
 .wrapperCuotasList::-webkit-scrollbar-thumb {
   background: var(--primary-color);
   border-radius: 8px;
-  border: 2px solid transparent;        /* “separa” el pulgar del borde */
+  border: 2px solid transparent; /* “separa” el pulgar del borde */
   /* background-clip: content-box; */
 }
 
 /* Firefox */
 .wrapperCuotasList {
-  scrollbar-width: thin;                /* auto | thin */
+  scrollbar-width: thin; /* auto | thin */
   scrollbar-color: var(--white-800-50) transparent;
 }
 
-.inline-loader{
-    margin-top: 1rem;
+.inline-loader {
+  margin-top: 1rem;
 }

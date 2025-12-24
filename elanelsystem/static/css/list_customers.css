@@ -28,7 +28,11 @@
     filter: invert(1);
     opacity: .6;
 } */
-
+.titleHeaderWrapper{
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
 .titleHeader {
     font-size: clamp(3rem, 1.6vw, 5rem);
     font-family: raleway-bold;
@@ -36,6 +40,15 @@
     letter-spacing: .06rem;
     padding: .5rem 0;
 }
+.titleHeaderWrapper img{
+    width: 3vw;
+    height: 3vw;
+    min-width: 3.5rem;
+    min-height: 3.5rem;
+    max-width: 6rem;
+    max-height: 6rem;
+}
+
 .filters form#formFilter {
     width: 70%;
     display: flex;

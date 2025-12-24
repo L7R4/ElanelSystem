@@ -111,14 +111,13 @@
 
         var info_icon = "{% static 'images/icons/info_icon.svg' %}"
     </script>
-    <script src="{% static 'js/redirectToPDFNewLiquidacion.js' %}"></script>
+    <script src="{% static 'js/liquidation/redirectToPDFNewLiquidacion.js' %}"></script>
     <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 
-    {% comment %} <script src="{% static 'js/input_select_create_user.js' %}"></script> {% endcomment %}
-    <script src="{% static 'js/filters_liquidacion.js' %}"></script>
-    <script src="{% static 'js/ajuste_comision_liquidacion.js' %}"></script> 
-    <script src="{% static 'js/z_index_orders_selects.js' %}"></script>
-    <script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
+    <script src="{% static 'js/liquidation/filters_liquidacion.js' %}"></script>
+    <script src="{% static 'js/liquidation/ajuste_comision_liquidacion.js' %}"></script> 
+    <script src="{% static 'js/vanilla_components/vanilla_components/z_index_orders_selects.js.js' %}"></script>
+    <script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
 
     
 {% endblock js %}

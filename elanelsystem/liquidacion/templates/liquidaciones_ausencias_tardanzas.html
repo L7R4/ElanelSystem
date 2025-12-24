@@ -60,14 +60,14 @@
 {% endblock content %}
 
 {% block js %} 
-<script src="{% static 'js/inputsSelectsOnly.js' %}"></script>   
+<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>   
 <script>
     const urlFilterUsuario = "{{urlRequestColaboradores}}"
     const urlNewIem = "{{urlNewItem}}"    
 </script>
-<script src="{% static 'js/timePickerModule.js' %}"></script>    
-<script src="{% static 'js/requestColaboradores_tardanzasAusencias.js' %}"></script>    
-<script src="{% static 'js/createNewTardanzaAusencia.js' %}"></script>  
+<script src="{% static 'js/vanilla_components/timePickerModule.js' %}"></script>    
+<script src="{% static 'js/users/requestColaboradores_tardanzasAusencias.js' %}"></script>    
+<script src="{% static 'js/users/createNewTardanzaAusencia.js' %}"></script>  
 
 
 {% endblock js %}

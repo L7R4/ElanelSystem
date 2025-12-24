@@ -82,7 +82,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('nro_recibo', models.CharField(help_text='Número de recibo o comprobante, debe ser único por pago.', max_length=30, unique=True, verbose_name='N° de comprobante')),
                 ('nro_cuota', models.PositiveSmallIntegerField(help_text='Cuota a la que aplica este pago (0 = inscripción).', validators=[django.core.validators.MinValueValidator(0)], verbose_name='N° de cuota')),
-                ('fecha', models.CharField(default=sales.models.PagoCannon.now_formatted, help_text='Fecha y hora en que se registró el pago.', max_length=30, verbose_name='Fecha de pago')),
+                ('fecha', models.CharField(default="", help_text='Fecha y hora en que se registró el pago.', max_length=30, verbose_name='Fecha de pago')),
                 ('campana_de_pago', models.CharField(blank=True, help_text="Ej. 'Marzo 2025'. Se calcula en el save().", max_length=30, verbose_name='Campaña de pago')),
                 ('monto', models.PositiveIntegerField(help_text='Importe entero del pago, mayor a cero.', validators=[django.core.validators.MinValueValidator(1)], verbose_name='Monto')),
                 ('cobrador', models.ForeignKey(blank=True, help_text='Cuenta o persona que cobra.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='pagos_cannon', to='sales.cuentacobranza')),

@@ -906,7 +906,7 @@ def detalle_liquidado_x_rol(usuario, campania, suc):
 
     snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania)
     rango_lower = snapshot_usuario_by_campania[0].rango.lower()
-    # print(f"\n\nRango de {usuario.nombre} -> {rango_lower}")
+    print(f"\n\nRango de {usuario.nombre} -> {rango_lower}")
     if rango_lower == "supervisor":
         ventas_qs = Ventas.objects.filter(supervisor= usuario, campania=campania, is_commissionable=True)
         comisiones_brutas_dict = comisiones_brutas_supervisor(ventas_qs)

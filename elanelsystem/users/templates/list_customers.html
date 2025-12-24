@@ -16,10 +16,18 @@
 </div>
 
 <div class="filters">
-  <h1 class="titleHeader">CLIENTES</h1>
+
+  
+  <div class="titleHeaderWrapper">
+    <img src="{% static 'images/icons_sider/clientes.svg' %}" alt="">
+    <h1 class="titleHeader">CLIENTES</h1>
+  </div>
+  
   <div class="buttonsActionsWrapper">
     <a href="{% url 'users:create_customer' %}" class="add-button-default" id="create_customer">Agregar</a>
+    {% if perms.cliente.importar %}
     <button type="button" id="showModalImport" class="button-default-style" onclick="newModalImport()">Importar</button>
+    {% endif%}
   </div>
 </div>
 
@@ -43,10 +51,10 @@
 </script>
 
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
-<script src="{% static 'js/inputSelectOnly_v2.js' %}"></script>
-<script src="{% static 'js/z_index_orders_selects.js' %}"></script>
-<script src="{% static 'js/importDataCliente.js' %}"></script>
-<script type="module" src="{% static 'js/customers_table.js' %}"></script>
+<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
+<script src="{% static 'js/vanilla_components/z_index_orders_selects.js.js' %}"></script>
+<script src="{% static 'js/users/importDataCliente.js' %}"></script>
+<script type="module" src="{% static 'js/users/customers_table.js' %}"></script>
 
 
 {% endblock js %}

@@ -160,7 +160,7 @@ class ViewProducts(generic.View):
 def requestProducts(request):
     if request.method == 'POST':
         tipo = json.loads(request.body).get('tipoProducto', None)
-        productos = Products.objects.filter(tipo_de_producto=tipo).order_by('-plan__valor_nominal') if tipo else []
+        productos = Products.objects.filter(tipo_de_producto=tipo,activo=True).order_by('-plan__valor_nominal') if tipo else []
 
         productos_list = []
         for producto in productos:

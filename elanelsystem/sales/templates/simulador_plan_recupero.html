@@ -145,15 +145,15 @@
 
 {% endblock content %}
 {% block js %}
-    <script src="{% static 'js/menuContextual.js' %}"></script>
-    <script src="{% static 'js/porcentajeAdjudicacion.js' %}"></script>
+    <script src="{% static 'js/vanilla_components/menuContextual.js' %}"></script>
+    <script src="{% static 'js/sales/porcentajeAdjudicacion.js' %}"></script>
 
     <script>
         var urlRequestProductos = "{% url 'products:get_products' %}";
     </script>
 
-    <script src="{% static 'js/inputsSelectsOnly.js' %}"></script>
-    <script src="{% static 'js/errorsFormManagement.js' %}"></script>
-    <script src="{% static 'js/form_simulacro_planRecupero.js' %}"></script>
+    <script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
+    <script src="{% static 'js/vanilla_components/errorsFormManagement.js' %}"></script>
+    <script src="{% static 'js/sales/form_simulacro_planRecupero.js' %}"></script>
     
 {% endblock js %}

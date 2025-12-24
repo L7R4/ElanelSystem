@@ -1,57 +1,56 @@
 .wrapper_content {
-    /* padding-left: 5rem; */
-    overflow: hidden;
-    padding: 5rem;
-    display: flex;
-    gap: 2rem;
-    flex-flow: column;
+  /* padding-left: 5rem; */
+  overflow: hidden;
+  padding: 5rem;
+  display: flex;
+  gap: 2rem;
+  flex-flow: column;
 }
 
 .not_ed {
-    background-color: var(--white-800-20) !important;
-    pointer-events: none;
-    /* border: 2px solid #1c2d45b8 !important; */
+  background-color: var(--white-800-20) !important;
+  pointer-events: none;
+  /* border: 2px solid #1c2d45b8 !important; */
 }
 
 .input-select-custom {
-    background-color: var(--background-color);
-    color: var(--third-color);
+  background-color: var(--background-color);
+  color: var(--third-color);
 }
 
 .containerIcon_Input {
-    position: relative;
-    display: flex;
-    align-items: center;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 p.iconValueInput {
-    position: absolute;
-    font-family: raleway-bold;
-    margin-left: 1rem;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-
+  position: absolute;
+  font-family: raleway-bold;
+  margin-left: 1rem;
+  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+  color: var(--third-color);
 }
 
 .wrapper_tittle {
-    flex:0 0 auto ;
+  flex: 0 0 auto;
 }
 
-.wrapper_tittle>h1 {
-    font-size: clamp(3rem, 3vw, 5rem);
-    font-family: raleway-bold;
-    color: var(--third-color);
+.wrapper_tittle > h1 {
+  font-size: clamp(3rem, 3vw, 5rem);
+  font-family: raleway-bold;
+  color: var(--third-color);
 }
 
 #form_create_sale {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
-    gap: 2rem;
-    position: relative;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
+  gap: 2rem;
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem;
 }
 /* El calendario que se inserta dentro del form */
 #form_create_sale .vc {
@@ -59,148 +58,143 @@ p.iconValueInput {
   z-index: 9999; /* que quede por encima de inputs/modales */
 }
 
-#form_create_sale>div {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    min-width: 25rem;
+#form_create_sale > div {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 25rem;
 }
 
-#form_create_sale>#wrapperProducto.desactive input {
-    background-color: #393e4c;
-    border-color: #243247;
+#form_create_sale > #wrapperProducto.desactive input {
+  background-color: #393e4c;
+  border-color: #243247;
 }
 
-#form_create_sale>#wrapperProducto.desactive img {
-    display: none;
+#form_create_sale > #wrapperProducto.desactive img {
+  display: none;
 }
 
-
-#form_create_sale>div>p {
-    position: absolute;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    color: #ff7b7b;
-    padding: 0.3rem .5rem;
-    left: 0;
-    top: 100%;
-    border-radius: 0.6rem;
+#form_create_sale > div > p {
+  position: absolute;
+  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+  font-family: raleway-semibold;
+  color: #ff7b7b;
+  padding: 0.3rem 0.5rem;
+  left: 0;
+  top: 100%;
+  border-radius: 0.6rem;
 }
 
-
-#form_create_sale div.containerIcon_Input>input {
-    color: var(--third-color);
-    text-indent: 2.2rem;
+#form_create_sale div.containerIcon_Input > input {
+  color: var(--third-color);
+  text-indent: 2.2rem;
 }
 
 .iconDesplegar {
-    filter: invert(1);
+  filter: invert(1);
 }
 
-#productoWrapper{
-    grid-column: 2 / -2;
+#productoWrapper {
+  grid-column: 2 / -2;
 }
-#vendedorWrapper{
-    grid-column: 1 / span 2;
+#vendedorWrapper {
+  grid-column: 1 / span 2;
 }
-#supervisorWrapper{
-    grid-column: 3 / span 2;
-}
-
-#form_create_sale>div>textarea.input-read-write-default {
-    padding: 1.2rem;
-    text-indent: 0;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway;
-    color: var(--third-color);
-    max-height: unset;
+#supervisorWrapper {
+  grid-column: 3 / span 2;
 }
 
-#form_create_sale>div>label {
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: var(--white-800-80);
-    width: fit-content;
-    padding-left: 0.5rem;
-    padding-bottom: 0.3rem;
+#form_create_sale > div > textarea.input-read-write-default {
+  padding: 1.2rem;
+  text-indent: 0;
+  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+  font-family: raleway;
+  color: var(--third-color);
+  max-height: unset;
+}
+
+#form_create_sale > div > label {
+  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
+  width: fit-content;
+  padding-left: 0.5rem;
+  padding-bottom: 0.3rem;
 }
 
 #form_create_sale input[type="number"]::-webkit-inner-spin-button,
 #form_create_sale input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
-
-
 
 /* INPUTS DESIGN */
 
 #wrapperButtons {
-    display: flex;
-    gap: 1rem;
-    margin-top: auto;
-    align-self: end;
+  display: flex;
+  gap: 1rem;
+  margin-top: auto;
+  align-self: end;
 }
 
-#wrapperButtons>#submitCreateSaleButton,
-#wrapperButtons>#cancelar {
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+#wrapperButtons > #submitCreateSaleButton,
+#wrapperButtons > #cancelar {
+  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
 }
 
 #form_create_sale p.message-error {
-    position: absolute;
-    font-size: clamp(1.1rem, 1vw, 1.3rem);
-    font-family: raleway-semibold;
-    color: #ff7b7b;
-    padding: 0.3rem .6rem;
-    left: 0;
-    top: 100%;
-    border-radius: 0.6rem;
-    white-space: nowrap;
+  position: absolute;
+  font-size: clamp(1.1rem, 1vw, 1.3rem);
+  font-family: raleway-semibold;
+  color: #ff7b7b;
+  padding: 0.3rem 0.6rem;
+  left: 0;
+  top: 100%;
+  border-radius: 0.6rem;
+  white-space: nowrap;
 }
 
-#form_create_sale>div>.select {
-    position: absolute;
-    height: 0;
-    overflow-y: auto;
-    top: 80%;
-    transition: all .4s ease;
-    width: 100%;
-    background: white;
-    border-radius: 0.5rem;
-    max-height: 13rem;
+#form_create_sale > div > .select {
+  position: absolute;
+  height: 0;
+  overflow-y: auto;
+  top: 80%;
+  transition: all 0.4s ease;
+  width: 100%;
+  background: white;
+  border-radius: 0.5rem;
+  max-height: 13rem;
 }
 
-
-#form_create_sale>div>.select>li {
-    padding: 1rem;
-    font-family: raleway;
-    font-size: 1.4rem;
-    color: black;
+#form_create_sale > div > .select > li {
+  padding: 1rem;
+  font-family: raleway;
+  font-size: 1.4rem;
+  color: black;
 }
 
-#form_create_sale>div>.select>li:first-child {
-    padding-top: 2rem;
+#form_create_sale > div > .select > li:first-child {
+  padding-top: 2rem;
 }
 
-#form_create_sale>div>.select>li:hover {
-    background-color: #3d7bd867;
-    cursor: pointer;
+#form_create_sale > div > .select > li:hover {
+  background-color: #3d7bd867;
+  cursor: pointer;
 }
 
-#form_create_sale>div>.select::-webkit-scrollbar {
-    width: 4px;
-    border-radius: 5px;
+#form_create_sale > div > .select::-webkit-scrollbar {
+  width: 4px;
+  border-radius: 5px;
 }
 
-#form_create_sale>div>.select::-webkit-scrollbar-thumb {
-    background: #0b386289;
-    border-radius: 1rem;
+#form_create_sale > div > .select::-webkit-scrollbar-thumb {
+  background: #0b386289;
+  border-radius: 1rem;
 }
 
 button#submitCreateSaleButton:disabled {
-    opacity: 0.5;
-    pointer-events: none;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 /* DISEÑO DE INPUTS */
@@ -209,86 +203,260 @@ button#submitCreateSaleButton:disabled {
 #wrapperVendedor,
 #wrapperSupervisor,
 #wrapperAgencia {
-    grid-column: span 2;
+  grid-column: span 2;
 }
-#wrapperChances{
-    grid-column: 1/-1;
-
+#wrapperChances {
+  grid-column: 1/-1;
 }
 
 #wrapperObservaciones {
-    grid-column: 1 / span 2;
-    grid-row: span 2;
+  grid-column: 1 / span 2;
+  grid-row: span 2;
 }
 
 #id_producto.desactive {
-    background-color: #3f4653d4 !important;
-    pointer-events: none;
-    border: 2px solid #1c2d45b8 !important;
+  background-color: #3f4653d4 !important;
+  pointer-events: none;
+  border: 2px solid #1c2d45b8 !important;
 }
-.labelInput{
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: var(--white-800-80);
-    margin-bottom: .5rem;
-    padding-bottom: 0.3rem;
-    width: fit-content;
+.labelInput {
+  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
+  width: fit-content;
 }
 
 /* #region Multiples chances */
-#agregarNewChance{
-    margin-top: 1rem;
+#agregarNewChance {
+  margin-top: 1rem;
 }
 .wrapperChanceItem {
-    display: flex;
-    width: 100%;
-    gap: 2rem;
-    flex-wrap: wrap;
+  display: flex;
+  width: 100%;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
-.wrapperChanceItem > .chanceItem{
-    padding: 1rem;
-    border: 1px solid var(--third-color);
-    border-radius: .6rem;
-    width: 25%;
-    min-width: 25rem;
+.wrapperChanceItem > .chanceItem {
+  padding: 1rem;
+  border: 1px solid var(--third-color);
+  border-radius: 0.6rem;
+  width: 25%;
+  min-width: 25rem;
 }
-.wrapperChanceItem > .chanceItem > div{
-    display: flex;
-    flex-direction: column;
+.wrapperChanceItem > .chanceItem > div {
+  display: flex;
+  flex-direction: column;
 }
-.wrapperChanceItem > .chanceItem > div > input{
-    color: var(--third-color);
-    height: 3.3rem;
+.wrapperChanceItem > .chanceItem > div > input {
+  color: var(--third-color);
+  height: 3.3rem;
 }
 
 .wrapperChanceItem > .chanceItem > h5 {
-    font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: var(--background-color);
-    margin-bottom: .7rem;
-    width: 100%;
-    background-color: var(--third-color);
-    padding: .3rem;
-    border-radius: .6rem;
-    padding-left: 1rem;
+  font-size: clamp(1.4rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--background-color);
+  margin-bottom: 0.7rem;
+  width: 100%;
+  background-color: var(--third-color);
+  padding: 0.3rem;
+  border-radius: 0.6rem;
+  padding-left: 1rem;
 }
 
 .wrapperChanceItem > .chanceItem > .wrapperNroOrden {
-    margin: .6rem 0;
+  margin: 0.6rem 0;
 }
 
-.wrapperChanceItem > .chanceItem > div > label{
-    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-    font-family: raleway-semibold;
-    color: var(--third-color);
-    padding-left: 0.5rem;
-    padding-bottom: 0.3rem;
+.wrapperChanceItem > .chanceItem > div > label {
+  font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+  font-family: raleway-semibold;
+  color: var(--third-color);
+  padding-left: 0.5rem;
+  padding-bottom: 0.3rem;
 }
 
 button.quitarChanceButton {
-    font-size: clamp(1rem, 1vw, 1.2rem);
-    padding: .5rem 1rem;
-    min-height: unset;
+  font-size: clamp(1rem, 1vw, 1.2rem);
+  padding: 0.5rem 1rem;
+  min-height: unset;
 }
 /* #endregion */
+
+/* #region Input editable de productos con filtrado */
+/* Estilos para el input editable dentro del pseudo-input-select-wrapper */
+.select-search .pseudo-input-select-wrapper {
+  padding: 0;
+  cursor: text;
+  border-radius: 0.6rem 0.6rem 0 0;
+  border-bottom: none;
+}
+
+/* Cuando el select está abierto, quitar el borde inferior del wrapper para unirse con la lista */
+.select-search #contenedorProductos.open ~ .pseudo-input-select-wrapper,
+.select-search
+  .containerInputAndOptions:has(#contenedorProductos.open)
+  .pseudo-input-select-wrapper {
+  border-bottom: none;
+  border-radius: 0.6rem 0.6rem 0 0;
+}
+.select-search .editable-product-input {
+  width: 100%;
+  height: 100%;
+  max-height: 3.5rem;
+  min-height: 3rem;
+  border: none;
+  outline: none;
+  background-color: transparent;
+  color: var(--third-color);
+  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+  font-family: raleway;
+  padding: 0 1rem;
+  text-indent: 0;
+  border-radius: 0.6rem 0.6rem 0 0;
+  font-feature-settings: "pnum" on, "lnum" on;
+  box-sizing: border-box;
+  cursor: text;
+}
+
+.editable-product-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  opacity: 0.5;
+}
+
+.editable-product-input:focus {
+  outline: none;
+}
+
+/* Estilos para las opciones filtradas */
+.list-select-custom li[style*="display: none"] {
+  display: none !important;
+}
+
+/* Estilo para el elemento activo en navegación por teclado */
+.list-select-custom li.active {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: var(--third-color);
+  font-weight: 600;
+}
+
+/* Estilo cuando hay un elemento activo y está seleccionado */
+.list-select-custom li.active.selected {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Transición suave para los cambios de estado */
+.list-select-custom li {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Asegurar que el icono de desplegar esté visible y funcional */
+.select-search .iconDesplegar {
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* Estado cuando el select está abierto */
+/* #productoWrapper #contenedorProductos.open {
+  z-index: 100;
+} */
+
+/* Aumentar el espacio entre el input y el primer resultado */
+.select-search .list-select-custom {
+  top: calc(100% + 0.2rem);
+  border-radius: 0 0 0.6rem 0.6rem;
+  border-top: none;
+}
+
+/* Aumentar el padding superior del primer elemento de la lista */
+.select-search .list-select-custom > li:first-child {
+  padding-top: 1rem;
+}
+
+/* Estilo para el mensaje cuando no hay productos que coincidan */
+.select-search .list-select-custom li.no-results-message {
+  padding: 1rem 2rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: clamp(1rem, 1vw, 1.3rem);
+  font-family: raleway;
+  text-align: center;
+  font-style: italic;
+  cursor: default;
+  pointer-events: none;
+  background-color: transparent !important;
+  border: none;
+  opacity: 0.7;
+}
+
+/* Mejoras visuales para el wrapper del producto */
+.select-search .containerInputAndOptions {
+  position: relative;
+}
+
+/* Asegurar que el input editable ocupe todo el espacio disponible */
+.select-search .pseudo-input-select-wrapper .editable-product-input {
+  flex: 1;
+  width: 100%;
+}
+
+/* Estilo para cuando el producto está desactivado */
+.select-search.desactive .editable-product-input {
+  background-color: #393e4c;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.select-search.desactive .pseudo-input-select-wrapper {
+  border-color: #243247;
+  background-color: #393e4c;
+  pointer-events: none;
+}
+
+/* Scrollbar personalizado para la lista de productos */
+.select-search .list-select-custom::-webkit-scrollbar {
+  width: 6px;
+}
+
+.select-search .list-select-custom::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.select-search .list-select-custom::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.select-search .list-select-custom::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+/* #endregion */
+
+/* Que la lista no tape al input cuando está cerrada */
+.select-search .options {
+  pointer-events: none;
+}
+.select-search .options.open {
+  pointer-events: auto;
+}
+
+/* El input visible ocupa el alto y es escribible */
+.select-search .pseudo-input-select-wrapper {
+  pointer-events: auto;
+}
+.select-search .editable-product-input {
+  width: 100%;
+  min-height: 3rem;
+  max-height: 3.5rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--third-color);
+  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+  padding: 0 1rem;
+  box-sizing: border-box;
+}

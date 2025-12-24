@@ -5,6 +5,8 @@ import re
 from django.conf import settings
 from django.contrib.auth.models import Group,Permission
 from django.forms import ValidationError
+from django.db.models.functions import Cast, Substr
+from django.db.models import IntegerField
 from django.db.utils import IntegrityError
 from django.shortcuts import redirect, render
 from django.views import generic
@@ -15,6 +17,9 @@ from .models import Usuario,Cliente,Sucursal,Key
 from products.models import Products
 from sales.models import CuentaCobranza
 from sales.models import Ventas,ArqueoCaja,MovimientoExterno,MetodoPago
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_GET
+from django.views.decorators.cache import never_cache
 from sales.utils import getEstadoVenta
 # from .forms import CreateClienteForm
 from django.urls import reverse_lazy, reverse
@@ -38,6 +43,35 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib.auth.hashers import check_password
 #region Usuarios - - - - - - - - - - - - - - - - - - - -
+@never_cache
+@login_required
+@require_GET
+def me(request):
+    u = request.user
+    # Permisos como "app_label.codename" (p.ej. "sales.my_ver_graficos")
+    perms = sorted(list(u.get_all_permissions()))
+    groups = list(u.groups.values_list('name', flat=True))
+
+    # Si querés enviar sucursales (tu modelo Usuario las tiene):
+    try:
+        sucursales = list(u.sucursales.values("id", "pseudonimo"))
+    except Exception:
+        sucursales = []
+
+    data = {
+        "id": u.pk,
+        "username": getattr(u, "username", ""),
+        "name": getattr(u, "nombre", ""),
+        "is_staff": u.is_staff,
+        "is_superuser": u.is_superuser,
+        "groups": groups,
+        "perms": perms,
+        "sucursales": sucursales,
+    }
+    # Evitar caching por proxies
+    resp = JsonResponse(data)
+    resp["Cache-Control"] = "no-store"
+    return resp
 
 class ConfiguracionPerfil(TestLogin,generic.View):
     model = Usuario
@@ -886,7 +920,7 @@ class ListaClientes(TestLogin, generic.View):
                 Q(loc__icontains=search) |
                 Q(tel__icontains=search) 
             ).distinct()
-
+        customer_queryset = customer_queryset.annotate(nro_cli_num=Cast(Substr('nro_cliente', 5), IntegerField())).order_by('-nro_cli_num', '-nro_cliente')
         paginator = Paginator(customer_queryset, page_size)
         page_obj = paginator.get_page(page_number)
 
@@ -947,7 +981,7 @@ def importar_clientes(request):
 
     try:
         df = preprocesar_excel_clientes(file_path)
-        sucursal = Sucursal.objects.get(pseudonimo=agencia_key)
+        sucursal = Sucursal.objects.get(id=agencia_key)
 
         nuevos = 0
         with transaction.atomic():
@@ -997,46 +1031,59 @@ class CrearCliente(TestLogin, generic.CreateView):
     model = Cliente
     template_name = 'create_customers.html'
 
-
-    def get(self, request,*args, **kwargs):
-        context = {}
-        context["customer_number"] = Cliente.returNro_Cliente
+    def get(self, request, *args, **kwargs):
+        suc = request.user.sucursales.all()[0]
+        context = {"customer_number": Cliente.next_for_agencia(suc)}  # solo display
         return render(request, self.template_name, context)
-    
 
-    def post(self,request,*args,**kwargs):
+    def post(self, request, *args, **kwargs):
         errors = {}
         form = json.loads(request.body)
-        
-        customer = Cliente()
-        customer.nro_cliente = form["nro_cliente"]
-        customer.nombre = form['nombre']
-        customer.dni = str(form['dni'])
-        customer.domic = form['domic']
-        customer.loc = form['loc']
-        customer.prov = form['prov']
-        customer.cod_postal = str(form['cod_postal'])
-        customer.tel = str(form['tel'])
-        customer.estado_civil = form['estado_civil']
-        customer.fec_nacimiento = form['fec_nacimiento']
-        customer.ocupacion = form['ocupacion']
-        customer.agencia_registrada = request.user.sucursales.all()[0]
+
+        suc = request.user.sucursales.all()[0]
+
+        customer = Cliente(
+            # NO tomes nro_cliente del form, lo asignamos abajo
+            nombre=form['nombre'],
+            dni=str(form['dni']),
+            domic=form.get('domic', ""),
+            loc=form.get('loc', ""),
+            prov=form.get('prov', ""),
+            cod_postal=str(form.get('cod_postal', "")),
+            tel=str(form.get('tel', "")),
+            estado_civil=form.get('estado_civil') or None,
+            fec_nacimiento=form.get('fec_nacimiento') or "",
+            ocupacion=form.get('ocupacion') or None,
+            agencia_registrada=suc,
+        )
 
         try:
-            customer.full_clean()
+            with transaction.atomic():
+                # 1) Asignar número ANTES de validar
+                # Si implementaste assign_nro_cliente_if_needed():
+                if hasattr(customer, "assign_nro_cliente_if_needed"):
+                    customer.assign_nro_cliente_if_needed()
+                else:
+                    # Si no, asignalo directo:
+                    customer.nro_cliente = Cliente.next_for_agencia(suc)
+
+                # 2) Validar y guardar
+                customer.full_clean()
+                customer.save()
+
         except ValidationError as e:
             errors.update(e.message_dict)
-              
 
-        if len(errors) != 0:
-            print(errors)
-            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
-        else:
-            customer.save()
+        if errors:
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)
 
-            response_data = {"urlRedirect": reverse_lazy('users:list_customers'),"success": True}
-            return JsonResponse(response_data, safe=False)     
-
+        response_data = {
+            "urlRedirect": reverse_lazy('users:list_customers'),
+            "success": True,
+            "nro_cliente": customer.nro_cliente,
+        }
+        return JsonResponse(response_data, safe=False)
+    
 @method_decorator(cache_control(no_cache=True, must_revalidate=True, no_store=True), name='dispatch') # Para no guardar el cache cuando se presiona el boton de atras
 class CuentaUser(TestLogin, generic.DetailView):
     model = Cliente
@@ -1058,49 +1105,57 @@ class CuentaUser(TestLogin, generic.DetailView):
                    }
         return render(request, self.template_name, context)
     
-    def post(self,request,*args,**kwargs):
+    def post(self, request, *args, **kwargs):
         try:
+            self.object = self.get_object()
+            data = json.loads(request.body or "{}")
 
-            form = json.loads(request.body)
+            nro_operacion = (data.get("nro_operacion") or "").strip()
+            producto_name = (data.get("producto") or "").strip()
 
-            # Obtenemos los valores de las claves del JSON o None si no existen
-            nro_operacion = form.get("nro_operacion", None)
-            producto = form.get("producto", None)
+            qs = self.object.ventas_nro_cliente.all()
 
-            # Construimos un diccionario de filtros dinámicamente basado en los valores existentes
-            filters = {}
-            if nro_operacion is not None:
-                filters["nro_operacion"] = nro_operacion
-            if producto is not None:
-                filters["producto"] = Products.objects.get(nombre=producto).pk
+            if nro_operacion:
+                qs = qs.filter(nro_operacion=nro_operacion)
 
-            # Realizar la consulta solo con los filtros disponibles
-            ventas = Ventas.objects.filter(**filters)
+            if producto_name:
+                prod = Products.objects.filter(nombre=producto_name).first()
+                if not prod:
+                    return JsonResponse({"status": True, "ventas": []})
+                qs = qs.filter(producto=prod)
+
+            ventas = qs
 
             ventas_list = []
-            ventaDict ={}
-            for venta in ventas:
-                ventaDict = {
-                    "nro_operacion": venta.nro_operacion,
-                    "cuotas_pagadas": len(venta.cuotas_pagadas()),
-                    "nro_ordenes" : [contrato["nro_orden"] for contrato in venta.cantidadContratos],
-                    "producto": venta.producto.nombre,
-                    "tipo_producto": venta.producto.tipo_de_producto,
+            for v in ventas:
+                ventas_list.append({
+                    "nro_operacion": v.nro_operacion,
+                    "cuotas_pagadas": len(v.cuotas_pagadas()),
+                    "nro_ordenes": [c["nro_orden"] for c in v.cantidadContratos],
+                    "producto": v.producto.nombre,
+                    "tipo_producto": v.producto.tipo_de_producto,
                     "img_tipo_producto": "",
-                    "fecha_inscripcion": venta.fecha,
-                    "estado": getEstadoVenta(venta),
-                    "importe": venta.importe,
+                    "fecha_inscripcion": v.fecha,
+                    "estado": getEstadoVenta(v),
+                    "importe": v.importe,
+                    "detail_url": reverse("sales:detail_sale", args=[v.pk]),
+                })
+
+            return JsonResponse({"status": True, "ventas": ventas_list})
+
+        except Exception as error:
+            # mientras debugueás:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception("Error en filtro de ventas de CuentaUser")
+
+            return JsonResponse(
+                {
+                    "status": False,
+                    "message": "Filtro fallido",
+                    "detalleError": str(error),
                 }
-                ventas_list.append(ventaDict)
-
-
-            # Convertir el QuerySet a una lista para que sea serializable por JSON
-
-
-            return JsonResponse({"status": True,"ventas":ventas_list}, safe=False)
-
-        except Exception as error:   
-            return JsonResponse({"status": False,"message":"Filtro fallido","detalleError":str(error)}, safe=False)
+            )
 
 
 class PanelAdmin(TestLogin,PermissionRequiredMixin,generic.View):

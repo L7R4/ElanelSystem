@@ -77,7 +77,7 @@ class Migration(migrations.Migration):
             name='Cliente',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nro_cliente', models.CharField(default=users.models.Cliente.returNro_Cliente, max_length=15)),
+                ('nro_cliente', models.CharField(max_length=15)),
                 ('nombre', models.CharField(max_length=100)),
                 ('dni', models.CharField(default='', max_length=9)),
                 ('domic', models.CharField(default='', max_length=100)),
