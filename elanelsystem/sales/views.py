@@ -1,5 +1,7 @@
 from decimal import Decimal
 import time
+import unicodedata
+from django.utils.dateparse import parse_datetime, parse_date
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
@@ -1433,8 +1435,11 @@ class DetailSale(TestLogin, generic.DetailView):
 
         request.session["ventaPK"] = sale.pk
         request.session["statusKeyPorcentajeBaja"] = False
+
         if sale.adjudicado:
             sale.addPorcentajeAdjudicacion()
+        else:
+            sale.removePorcentajeAdjudicacion()
 
         context = {
             "object": sale,
@@ -1568,79 +1573,203 @@ def getUnaCuotaDeUnaVenta(request):
         # except Exception as error:
         #     return JsonResponse({"status": False,"message":"Error al obtener la cuota","detalleError":str(error)}, safe=False)
 
+# ===== helpers de normalización / formato =====
+def _norm(s: str) -> str:
+    s = (s or "").strip().lower()
+    s = unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode("ascii")
+    return s
+
+def _fmt_money(x) -> str:
+    d = Decimal(x or 0)
+    return f"{d:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+# ===== mapeo a 3 categorías =====
+WALLETS_Y_TRANSFER = {
+    "transferencia", "tranferencia", "transfer", "transferencias",
+    "mercado pago", "mp", "mercadopago",
+    "uala", "uála",
+    "naranja x", "naranjax",
+    "claro pay", "claropay",
+    "personal pay", "personalpay",
+    "prex",
+    "galicia",  # si en tu flujo 'Galicia' representa transferencia bancaria
+    "otros"     # si querés forzar 'otros' aquí; podés moverlo a donde prefieras
+}
+
+TARJETAS_Y_BANCOS = {
+    "posnet", "tarjeta", "tarjetas", "visa", "mastercard", "amex",
+    "debito", "crédito", "credito", "bapro", "nativa", "cabal"
+}
+
+EFECTIVO_SET = {"efectivo", "contado", "cash"}
+
+def categorizar_metodo(nombre: str) -> str:
+    n = _norm(nombre)
+    if n in EFECTIVO_SET:
+        return "efectivo"
+    if n in TARJETAS_Y_BANCOS or "posnet" in n or "tarjeta" in n:
+        return "bancos"
+    if n in WALLETS_Y_TRANSFER or "transfer" in n or "mercado" in n or "uala" in n:
+        return "transferencias"
+    # default: ponelo donde prefieras; yo lo llevo a transferencias
+    return "transferencias"
+def to_local_date_str_compat(value, out_fmt="%Y-%m-%d") -> str:
+    """Acepta str|date|datetime y devuelve string en la tz local."""
+    if not value:
+        return ""
+    # date puro
+    if isinstance(value, datetime) is False and hasattr(value, "strftime"):
+        return value.strftime(out_fmt)
+
+    # datetime o string
+    if not isinstance(value, datetime):
+        # 1) tu helper (DD/MM/YYYY[ HH:MM])
+        dt = parse_fecha(str(value))
+        if dt is None:
+            # 2) ISO u otros
+            dt = parse_datetime(str(value)) or (
+                datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+                if "Z" in str(value)
+                else None
+            )
+        if dt is None:
+            return str(value)
+    else:
+        dt = value
+
+    # asegurar aware
+    if timezone.is_naive(dt):
+        dt = timezone.make_aware(dt, timezone.get_current_timezone())
+    return timezone.localtime(dt).strftime(out_fmt)
+
+# ===== util para sacar metodo/fecha/monto robusto del pago =====
+def extraer_info_pago(p):
+    # método
+    metodo = getattr(p, "metodo_pago", None) or getattr(p, "metodoPago", None) or getattr(p, "metodo", "") or ""
+    # monto
+    monto = getattr(p, "monto", None)
+    if monto is None and hasattr(p, "importe"):
+        monto = getattr(p, "importe", 0)
+    # fecha
+    dt = getattr(p, "fecha", None)
+    fstr = to_local_date_str_compat(dt, "%Y-%m-%d")
+
+    return str(metodo or ""), Decimal(monto or 0), fstr
+
 @login_required
 @require_GET
 def recibo_pago_json(request, pk: int):
+    """
+    Ahora: dado un pago (pk), buscamos TODOS los pagos de la misma venta + misma cuota,
+    armamos un solo recibo con la lista completa y el resumen por categoría (3 buckets).
+    """
     pago = get_object_or_404(PagoCannon, pk=pk)
-    data = pago.json() if hasattr(pago, "json") and callable(pago.json) else None
-    print("DATA RECIBO:", data)
-    if data and "venta_id" in data:
-        venta = get_object_or_404(
-            Ventas.objects.select_related("agencia", "nro_cliente"),
-            id=int(data["venta_id"])
-        )
-        fecha_str  = str(data.get("fecha",""))[:10]
-        dia_mes_ano = fecha_str.split("/")
-        nro_recibo = str(data.get("nro_recibo") or "")
-        monto      = data.get("monto") or 0
-        nro_cuota  = data.get("nro_cuota") or ""
-    else:
-        venta = getattr(pago, "venta", None) or get_object_or_404(Ventas, id=pago.venta_id)
-        dt = getattr(pago, "fecha", None)
-        fecha_str  = localtime(dt).strftime("%Y-%m-%d") if dt else datetime.now().strftime("%Y-%m-%d")
-        nro_recibo = getattr(pago, "nro_recibo", "") or ""
-        monto      = getattr(pago, "monto", 0) or 0
-        nro_cuota  = getattr(pago, "nro_cuota", "") or ""
 
+    # Venta y cuota "base" para agrupar
+    venta = getattr(pago, "venta", None) or get_object_or_404(Ventas, id=pago.venta_id)
+    nro_cuota = getattr(pago, "nro_cuota", "") or ""
+
+    # Si tu modelo tiene flag de anulación/cancelación, filtralo aquí (ajustá el campo):
+    pagos_qs = PagoCannon.objects.filter(
+        venta_id=venta.id,
+        nro_cuota=nro_cuota,
+    ).order_by("fecha")  # .exclude(estado__iexact="Anulado")
+
+    # Datos empresa / cliente
     cliente = venta.nro_cliente
     agencia = venta.agencia
-    iva = (getattr(cliente, "iva", None) or "RM").strip().upper()
+
+    # Sumas por bucket
+    sumas = {"transferencias": Decimal("0"), "bancos": Decimal("0"), "efectivo": Decimal("0")}
+    pagos = []
+
+    for p in pagos_qs:
+        metodo_raw, monto_p, fecha_p = extraer_info_pago(p)
+        cat = categorizar_metodo(metodo_raw)
+        sumas[cat] += monto_p
+        pagos.append({
+            "id": p.pk,
+            "fecha": fecha_p,
+            "metodo_raw": metodo_raw or "-",
+            "metodo_categoria": cat,  # transferencias | bancos | efectivo
+            "monto": monto_p,
+            "monto_display": _fmt_money(monto_p),
+        })
+
+    total = sum(sumas.values())
+    # Tomamos número de recibo del último pago (o el actual) — ajustá si querés otro criterio.
+    nro_recibo = getattr(pagos_qs.last(), "nro_recibo", "") or getattr(pago, "nro_recibo", "") or ""
+
+    # Fecha del recibo (del último pago, o del actual)
+    dt = getattr(pagos_qs.last(), "fecha", None) or getattr(pago, "fecha", None)
+    fecha_str = to_local_date_str_compat(dt, "%d/%m/%Y") or datetime.now().strftime("%d/%m/%Y")
+    dia_mes_ano = fecha_str.split("/")
+
+    # Helpers HTML para tu template actual (inyectamos HTML seguro desde server)
+    pagos_rows_html = "".join(
+        f"""
+        <div class="fila-pago">
+          <span class="pago-cat">{item['metodo_categoria'].title()}</span>
+          <span class="pago-detalle">{item['metodo_raw']}</span>
+          <div class="linea-pago"></div>
+          <span>${item['monto_display']}</span>
+        </div>
+        """
+        for item in pagos
+    )
+
+    resumen_rows_html = f"""
+      <div class="resumen-metodos">
+        <div>Transferencias <strong>${_fmt_money(sumas['transferencias'])}</strong></div>
+        <div>Bancos <strong>${_fmt_money(sumas['bancos'])}</strong></div>
+        <div>Efectivo <strong>${_fmt_money(sumas['efectivo'])}</strong></div>
+      </div>
+    """
 
     ctx = {
         "empresa": {
             "nombre": "ELANEL",
             "sub": "Servicios S.R.L.",
-            "direccion": getattr(agencia, "direccion", ""),
-            "telefono": getattr(agencia, "tel_ref", ""),
-            "pseudonimo": getattr(agencia, "pseudonimo", ""),
-            "email": getattr(agencia, "email_ref", ""),
+            "direccion": getattr(agencia, "direccion", "") or "",
+            "telefono": getattr(agencia, "tel_ref", "") or "",
+            "pseudonimo": getattr(agencia, "pseudonimo", "") or "",
+            "email": getattr(agencia, "email_ref", "") or "",
             "cuit": "C.U.I.T./D.G.R: 30-71804533-5",
-            # "inicio": "INICIO ACT.: 05/2023",
             "leyenda": "DOCUMENTO NO VÁLIDO COMO FACTURA",
-            "regimen": "RESPONSABLE MONOTRIBUTO",
+            "regimen": "CLIENTE",
         },
         "recibo": {
             "numero_formateado": nro_recibo,
-            # "condicion": "contado",
             "fecha_dia": dia_mes_ano[0],
             "fecha_mes": dia_mes_ano[1],
-            "fecha_anio": dia_mes_ano[2],   
-            "importe_letras": convertir_moneda_a_texto(monto) ,
-            "efectivo": f"{Decimal(monto):,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
-            "cheque1_numero": "", "cheque1_banco": "", "cheque1_importe": "",
-            "cheque2_numero": "", "cheque2_banco": "", "cheque2_importe": "",
-            "cheque3_numero": "", "cheque3_banco": "", "cheque3_importe": "",
-            "total": f"{Decimal(monto):,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
-            "concepto": f"Pago de cuota N°{nro_cuota}",
+            "fecha_anio": dia_mes_ano[2],
+            "importe_letras": convertir_moneda_a_texto(total),
+            "total": _fmt_money(total),
+            "concepto": f"Pago de cuota N°{nro_cuota} ({len(pagos)} pago(s))",
         },
         "cliente": {
             "nombre": getattr(cliente, "nombre", "") or "",
             "domicilio": getattr(cliente, "domic", "") or "",
             "localidad": getattr(cliente, "loc", "") or "",
             "cuit": getattr(cliente, "cuit", "") or "",
-            # "iva": iva,  # RI | RM | CF | MS
         },
-        "fecha": fecha_str,
+        "pagos": pagos,  # por si querés usar bucles en template
+        "sumas": {
+            "transferencias": _fmt_money(sumas["transferencias"]),
+            "bancos": _fmt_money(sumas["bancos"]),
+            "efectivo": _fmt_money(sumas["efectivo"]),
+        },
+        # html “inyectable” (compatible con tu template actual)
+        "pagos_html": pagos_rows_html,
+        "resumen_html": resumen_rows_html,
         "copias": ["ORIGINAL", "DUPLICADO"],
     }
     return ctx
 
 @login_required
-def recibo_preview(request,pk):
-    context = recibo_pago_json(request,pk)
-    print(context)
-    """Vista para mostrar la vista previa editable del recibo"""
-    return render(request, 'recibo_preview.html', {"context":context})
+def recibo_preview(request, pk):
+    context = recibo_pago_json(request, pk)
+    return render(request, "recibo_preview.html", {"context": context})
 
 
 # Pagar una cuota

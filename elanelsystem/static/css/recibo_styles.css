@@ -93,7 +93,7 @@ body {
   justify-content: center;
   align-items: center;
   border: 1px solid #000;
-  background-color: #000000d8;
+  /* background-color: #000000d8; */
 
   margin-bottom: 2mm;
   height: 18mm;
@@ -107,7 +107,7 @@ body {
   margin: 0;
   padding: 0;
   line-height: 1;
-  color: #fff;
+  color: #000;
 }
 
 .header-right {

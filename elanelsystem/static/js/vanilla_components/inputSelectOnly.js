@@ -1,524 +1,672 @@
-// inputSelectOnly_unified.js
-// Unifica:
-// - Select custom simple (como vanilla_components/inputSelectOnly_v2.js.js)
-// - Select con búsqueda (como inputSelectOnlySearch.js)
-// Mantiene la MISMA estructura HTML (hidden + pseudo wrapper + ul.options + icon)
+// inputSelectOnly.js — módulo unificado y “drop-in”
+// Estructura soportada (tu HTML actual):
+// .containerInputAndOptions
+//   ├─ <img.iconDesplegar>
+//   ├─ <input type="hidden" name="...">
+//   ├─ <div class="onlySelect pseudo-input-select-wrapper"><h3></h3></div>
+//   └─ <ul class="list-select-custom options"><li data-value="...">Texto</li>...</ul>
+//
+// Opcional (para búsqueda): agregá la clase .select-search al wrapper padre del select
+// (el bloque que hoy tiene .wrapperInput.wrapperSelectCustom). El módulo inyecta un <input> de búsqueda
+// dentro del pseudo wrapper sin romper tu estructura.
 
-// ================= utils =================
-const _norm = (s) =>
-  String(s || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+(function () {
+  "use strict";
 
-function _closestContainer(el) {
-  return el?.closest?.(".containerInputAndOptions") || null;
-}
+  // ===== Utils
+  const norm = (s) =>
+    String(s || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
 
-function _getPartsFromContainer(container) {
-  if (!container) return null;
-
-  const wrapper =
-    container.closest(".select-search") ||
-    container.closest(".wrapperSelectCustom") ||
-    container.closest(".wrapperTypeFilter") ||
-    container.closest(".inputWrapper") ||
-    container.parentElement;
-
-  const icon = container.querySelector(".iconDesplegar");
-  const hidden = container.querySelector("input[type='hidden']");
-  const pseudo = container.querySelector(".pseudo-input-select-wrapper");
-  const list = container.querySelector("ul.options, ul.list-select-custom, ul");
-
-  if (!hidden || !pseudo || !list) return null;
-
-  const isSearch = !!(wrapper && wrapper.classList.contains("select-search"));
-
-  return { wrapper, container, icon, hidden, pseudo, list, isSearch };
-}
-
-function _placeholder(hidden) {
-  return hidden?.getAttribute("placeholder") || "Seleccionar";
-}
-
-function _ensureNoResults(list, text) {
-  let li = list.querySelector("li.no-results-message");
-  if (!li) {
-    li = document.createElement("li");
-    li.className = "no-results-message";
-    li.style.pointerEvents = "none";
-    list.appendChild(li);
-  }
-  li.textContent = text || "No se encontraron resultados";
-  li.style.display = "none";
-  return li;
-}
-
-function _isOpen(list) {
-  return list.classList.contains("open");
-}
-
-function _open(parts) {
-  parts.list.classList.add("open");
-  if (parts.icon) parts.icon.classList.add("open");
-  if (typeof window.ordersZindexSelects === "function") {
+  const cssEscape = (v) => {
     try {
-      window.ordersZindexSelects();
-    } catch {}
-  }
-}
-
-function _close(parts) {
-  parts.list.classList.remove("open");
-  if (parts.icon) parts.icon.classList.remove("open");
-  parts.list
-    .querySelectorAll("li.active")
-    .forEach((li) => li.classList.remove("active"));
-}
-
-function _toggle(parts) {
-  if (_isOpen(parts.list)) _close(parts);
-  else _open(parts);
-}
-
-function _visibleItems(list) {
-  return Array.from(list.querySelectorAll("li")).filter(
-    (li) =>
-      !li.classList.contains("no-results-message") &&
-      li.style.display !== "none"
-  );
-}
-
-function _clearSelection(list) {
-  list
-    .querySelectorAll("li.selected")
-    .forEach((li) => li.classList.remove("selected"));
-}
-
-// ================= API registry (opcional) =================
-const __registry = new WeakMap();
-
-// ================= core init =================
-function initOne(container, preValues = {}) {
-  const parts = _getPartsFromContainer(container);
-  if (!parts) return null;
-
-  // Evita doble init
-  if (parts.container.dataset._inited === "1")
-    return __registry.get(parts.hidden) || null;
-  parts.container.dataset._inited = "1";
-
-  const { wrapper, hidden, pseudo, list, isSearch } = parts;
-
-  // -------- search input (si corresponde) --------
-  let input = pseudo.querySelector("input.editable-product-input");
-  let displayH3 = pseudo.querySelector("h3");
-
-  if (isSearch) {
-    // Reemplazamos el contenido del pseudo wrapper por un input
-    if (!input) {
-      pseudo.innerHTML = "";
-      input = document.createElement("input");
-      input.type = "text";
-      input.className = "editable-product-input";
-      input.autocomplete = "off";
-      input.placeholder = _placeholder(hidden);
-      input.setAttribute("aria-autocomplete", "list");
-      pseudo.appendChild(input);
-    } else {
-      input.placeholder = _placeholder(hidden);
+      return CSS && CSS.escape ? CSS.escape(String(v)) : String(v);
+    } catch {
+      return String(v);
     }
-  } else {
-    // Select normal: asegurar H3
-    if (!displayH3) {
-      displayH3 = document.createElement("h3");
-      pseudo.appendChild(displayH3);
+  };
+
+  const placeholderOf = (hidden) =>
+    hidden?.getAttribute("placeholder") || "Seleccionar";
+
+  const ensureNoResults = (list, text) => {
+    let li = list.querySelector("li.no-results-message");
+    if (!li) {
+      li = document.createElement("li");
+      li.className = "no-results-message";
+      li.style.pointerEvents = "none";
+      list.appendChild(li);
     }
-  }
+    li.textContent = text || "No se encontraron resultados";
+    li.style.display = "none";
+    return li;
+  };
 
-  const noResults = _ensureNoResults(
-    list,
-    wrapper?.dataset?.noResults || "No se encontraron resultados"
-  );
+  const clearSelection = (list) => {
+    list
+      .querySelectorAll("li.selected")
+      .forEach((li) => li.classList.remove("selected"));
+  };
 
-  // -------- set placeholder / preValues --------
-  function setPlaceholder() {
-    const ph = _placeholder(hidden);
-    if (isSearch) {
-      if (input) {
-        if (!input.value) input.value = "";
-        input.placeholder = ph;
-      }
-    } else {
-      if (displayH3) {
-        displayH3.textContent = ph;
-        displayH3.classList.add("placeholder");
-      }
-    }
-  }
-
-  function setSelectedLabel(label) {
-    if (isSearch) {
-      if (input) input.value = label || "";
-    } else {
-      if (displayH3) {
-        displayH3.textContent = label || "";
-        displayH3.classList.remove("placeholder");
-      }
-    }
-  }
-
-  // PreValues por name (compat v2)
-  if (preValues && hidden.name && preValues[hidden.name]) {
-    const pv = preValues[hidden.name];
-    hidden.value = pv.data || "";
-    setSelectedLabel(pv.text || "");
-  } else if (hidden.value && String(hidden.value).trim()) {
-    // si ya viene value, intentar buscar su LI y setear label
-    const v = String(hidden.value).trim();
-    const li = list.querySelector(
-      `li[data-value="${CSS?.escape ? CSS.escape(v) : v}"]`
+  const getPartsFromContainer = (container) => {
+    if (!container) return null;
+    const wrapper =
+      container.closest(".wrapperSelectCustom") || container.parentElement;
+    const icon = container.querySelector(".iconDesplegar");
+    const hidden = container.querySelector('input[type="hidden"]');
+    const pseudo = container.querySelector(
+      ".onlySelect.pseudo-input-select-wrapper"
     );
-    if (li) {
-      _clearSelection(list);
-      li.classList.add("selected");
-      setSelectedLabel(li.textContent.trim());
-    } else {
-      setPlaceholder();
-    }
-  } else {
-    setPlaceholder();
-  }
+    const list =
+      container.querySelector("ul.options, ul.list-select-custom, ul") || null;
 
-  // -------- filtros (solo search) --------
-  function filter(val) {
-    const q = _norm(val);
-    let anyVisible = false;
+    if (!hidden || !pseudo || !list) return null;
 
-    list.querySelectorAll("li").forEach((li) => {
-      if (li.classList.contains("no-results-message")) return;
-      const txt = _norm(li.textContent.trim());
-      const show = q === "" || txt.includes(q);
-      li.style.display = show ? "" : "none";
-      if (show) anyVisible = true;
-    });
-
-    noResults.style.display = q !== "" && !anyVisible ? "block" : "none";
-  }
-
-  // -------- selección --------
-  function selectLi(li) {
-    if (!li || li.classList.contains("no-results-message")) return;
-    if (li.style.display === "none") return;
-
-    const value = li.getAttribute("data-value") || li.textContent.trim();
-    const label = li.textContent.trim();
-
-    hidden.value = value;
-    _clearSelection(list);
-    li.classList.add("selected");
-    setSelectedLabel(label);
-
-    hidden.dispatchEvent(new Event("input", { bubbles: true }));
-    hidden.dispatchEvent(new Event("change", { bubbles: true }));
-
-    // cerrar al seleccionar
-    _close(parts);
-  }
-
-  // ================= eventos =================
-
-  // 1) Click en icono: toggle open/close
-  const onIconClick = (e) => {
-    e.stopPropagation();
-    _toggle(parts);
-    if (isSearch && input && _isOpen(list)) input.focus();
-  };
-  if (parts.icon) parts.icon.addEventListener("click", onIconClick);
-
-  // 2) Click en el campo (pseudo wrapper / container):
-  // - si search y click fue en input => SOLO abrir (no cerrar por error)
-  // - si no => toggle
-  const onContainerClick = (e) => {
-    // Si clickeo en un LI, no toca acá (lo maneja list click)
-    const clickedLi = e.target.closest("li");
-    if (clickedLi) return;
-
-    if (isSearch && input && e.target === input) {
-      if (!_isOpen(list)) _open(parts);
-      return;
-    }
-    _toggle(parts);
-    if (isSearch && input && _isOpen(list)) input.focus();
-  };
-  parts.container.addEventListener("click", onContainerClick);
-
-  // 3) Click en lista: delegación (sirve si agregás <li> por JS)
-  const onListClick = (e) => {
-    const li = e.target.closest("li");
-    if (!li) return;
-    selectLi(li);
-  };
-  list.addEventListener("click", onListClick);
-
-  // 4) Search input typing + focus
-  const onInput = (e) => {
-    // al tipear, limpiar hidden y selección
-    if (hidden.value) hidden.value = "";
-    _clearSelection(list);
-    filter(e.target.value);
-    if (!_isOpen(list)) _open(parts);
+    const isSearch = !!(wrapper && wrapper.classList.contains("select-search"));
+    return { wrapper, container, icon, hidden, pseudo, list, isSearch };
   };
 
-  const onInputFocus = () => {
-    _open(parts);
+  const isOpen = (list) => list.classList.contains("open");
+  const openList = (parts) => {
+    parts.list.classList.add("open");
+    parts.icon && parts.icon.classList.add("open");
+    try {
+      if (typeof window.ordersZindexSelects === "function")
+        window.ordersZindexSelects();
+    } catch {}
   };
-
-  const onInputKeyDown = (e) => {
-    const vis = _visibleItems(list);
-    if (!vis.length) return;
-
-    const idx = vis.findIndex((li) => li.classList.contains("active"));
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      if (idx >= 0) vis[idx].classList.remove("active");
-      const next = idx < vis.length - 1 ? idx + 1 : 0;
-      vis[next].classList.add("active");
-      vis[next].scrollIntoView({ block: "nearest" });
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      if (idx >= 0) vis[idx].classList.remove("active");
-      const prev = idx > 0 ? idx - 1 : vis.length - 1;
-      vis[prev].classList.add("active");
-      vis[prev].scrollIntoView({ block: "nearest" });
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      const pick = idx >= 0 ? vis[idx] : vis.length === 1 ? vis[0] : null;
-      if (pick) selectLi(pick);
-    } else if (e.key === "Escape") {
-      _close(parts);
-    }
+  const closeList = (parts) => {
+    parts.list.classList.remove("open");
+    parts.icon && parts.icon.classList.remove("open");
+    parts.list
+      .querySelectorAll("li.active")
+      .forEach((li) => li.classList.remove("active"));
   };
+  const toggleList = (parts) =>
+    isOpen(parts.list) ? closeList(parts) : openList(parts);
 
-  if (isSearch && input) {
-    input.addEventListener("input", onInput);
-    input.addEventListener("focus", onInputFocus);
-    input.addEventListener("keydown", onInputKeyDown);
-  }
+  // ===== API builder por instancia
+  function buildAPI(parts, display, searchInput) {
+    const { list, hidden } = parts;
 
-  // 5) Click fuera: cierra
-  const onDocClick = (e) => {
-    if (!parts.container.contains(e.target)) _close(parts);
-  };
-  document.addEventListener("click", onDocClick);
-
-  // ================= API pública =================
-  const api = {
-    elements: { ...parts, input },
-    open: () => _open(parts),
-    close: () => _close(parts),
-    toggle: () => _toggle(parts),
-    clear: () => {
-      hidden.value = "";
-      _clearSelection(list);
-      if (isSearch && input) {
-        input.value = "";
-        filter("");
-      } else {
-        setPlaceholder();
+    const setSelectedLabel = (label) => {
+      if (!label) {
+        if (searchInput) {
+          searchInput.value = "";
+          searchInput.placeholder = placeholderOf(hidden);
+        } else if (display) {
+          display.textContent = placeholderOf(hidden);
+          display.classList.add("placeholder");
+        }
+        return;
       }
-      hidden.dispatchEvent(new Event("input", { bubbles: true }));
-      hidden.dispatchEvent(new Event("change", { bubbles: true }));
-    },
-    setValue: (value) => {
-      const v = String(value ?? "");
-      const sel = `li[data-value="${CSS?.escape ? CSS.escape(v) : v}"]`;
-      const li = list.querySelector(sel);
-      if (li) selectLi(li);
-    },
-    setValueAndLabel: (
+      if (searchInput) searchInput.value = label;
+      else if (display) {
+        display.textContent = label;
+        display.classList.remove("placeholder");
+      }
+    };
+
+    const setValueAndLabel = (
       value,
       label,
       { fire = true, markSelected = true } = {}
     ) => {
-      hidden.value = value ?? "";
-      setSelectedLabel(label ?? "");
+      hidden.value = value == null ? "" : String(value);
+      setSelectedLabel(label || "");
 
       if (markSelected) {
-        _clearSelection(list);
+        clearSelection(list);
         const v = String(value ?? "");
-        const li = list.querySelector(
-          `li[data-value="${CSS?.escape ? CSS.escape(v) : v}"]`
-        );
+        const li = list.querySelector(`li[data-value="${cssEscape(v)}"]`);
         if (li) li.classList.add("selected");
       }
       if (fire) {
         hidden.dispatchEvent(new Event("input", { bubbles: true }));
         hidden.dispatchEvent(new Event("change", { bubbles: true }));
       }
-    },
-    destroy: () => {
-      if (parts.icon) parts.icon.removeEventListener("click", onIconClick);
-      parts.container.removeEventListener("click", onContainerClick);
-      list.removeEventListener("click", onListClick);
-      document.removeEventListener("click", onDocClick);
+    };
 
-      if (isSearch && input) {
-        input.removeEventListener("input", onInput);
-        input.removeEventListener("focus", onInputFocus);
-        input.removeEventListener("keydown", onInputKeyDown);
+    const setValue = (value, opts = {}) => {
+      if (value == null || value === "") {
+        // clear
+        clearSelection(list);
+        hidden.value = "";
+        setSelectedLabel("");
+        return;
       }
+      const v = String(value);
+      const li = list.querySelector(`li[data-value="${cssEscape(v)}"]`);
+      if (li) {
+        li.classList.add("selected");
+        setSelectedLabel(li.textContent.trim());
+        hidden.value = v;
+        if (opts.fire) {
+          hidden.dispatchEvent(new Event("input", { bubbles: true }));
+          hidden.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      } else {
+        // no existe el li: dejamos el hidden y label tal cual
+        hidden.value = v;
+        setSelectedLabel("");
+      }
+    };
 
-      parts.container.dataset._inited = "0";
-      __registry.delete(hidden);
-      if (hidden.__customSelectApi) delete hidden.__customSelectApi;
-    },
-  };
+    const getValue = () => ({
+      value: hidden.value,
+      label: searchInput
+        ? searchInput.value
+        : display?.textContent?.trim() || "",
+    });
 
-  __registry.set(hidden, api);
-  hidden.__customSelectApi = api; // atajo
+    const clear = () => {
+      clearSelection(list);
+      hidden.value = "";
+      setSelectedLabel("");
+      closeList(parts);
+    };
 
-  return api;
-}
+    const setOptions = (options = []) => {
+      // options: [{value, label}] | ['text','text2']
+      list.innerHTML = "";
+      const frag = document.createDocumentFragment();
+      options.forEach((opt) => {
+        const val =
+          typeof opt === "object"
+            ? String(opt.value ?? opt.label ?? "")
+            : String(opt);
+        const lab =
+          typeof opt === "object"
+            ? String(opt.label ?? opt.value ?? "")
+            : String(opt);
+        const li = document.createElement("li");
+        li.setAttribute("data-value", val);
+        li.textContent = lab;
+        frag.appendChild(li);
+      });
+      frag.appendChild(ensureNoResults(list));
+      list.appendChild(frag);
+      clear(); // al cambiar opciones, limpiamos selección
+    };
 
-// ================= init all =================
-function initAll(preValues = {}, root = document) {
-  const apis = [];
-  root.querySelectorAll(".containerInputAndOptions").forEach((container) => {
-    const parts = _getPartsFromContainer(container);
-    if (!parts) return;
-    // Solo los que tienen pseudo wrapper "onlySelect"
-    if (!container.querySelector(".onlySelect.pseudo-input-select-wrapper"))
-      return;
-    const api = initOne(container, preValues);
-    if (api) apis.push(api);
-  });
-  if (typeof window.ordersZindexSelects === "function") {
-    try {
-      window.ordersZindexSelects();
-    } catch {}
+    return {
+      setValue,
+      setValueAndLabel,
+      getValue,
+      clear,
+      setOptions,
+      setSelectedLabel,
+    };
   }
-  return apis;
-}
 
-// ================= compat con tu v2 (globals) =================
-function setPlaceholder(displayText, hiddenInput) {
-  const ph = _placeholder(hiddenInput);
-  if (!displayText || !hiddenInput) return;
-  displayText.textContent = ph;
-  displayText.classList.add("placeholder");
-}
+  // ===== Init una instancia
+  function initOne(container, preValues = {}) {
+    if (!container || container.dataset._selectOneInit === "1") return null;
+    const parts = getPartsFromContainer(container);
+    if (!parts) return null;
+    container.dataset._selectOneInit = "1";
 
-function clearInputs(inputs, scope = document) {
-  // Limpia inputs específicos
-  (inputs || []).forEach((i) => {
-    try {
-      i.value = "";
-    } catch {}
-  });
+    const { wrapper, hidden, pseudo, list, icon, isSearch } = parts;
 
-  // Limpia selects dentro del scope
-  scope.querySelectorAll(".containerInputAndOptions").forEach((container) => {
-    const parts = _getPartsFromContainer(container);
-    if (!parts) return;
+    let displayH3 = pseudo.querySelector("h3") || null;
+    let searchInput = null;
 
-    // si está inicializado, usar su API
-    const api = __registry.get(parts.hidden) || parts.hidden.__customSelectApi;
-    if (api) {
-      api.clear();
-      return;
+    if (isSearch) {
+      searchInput = pseudo.querySelector("input[type=text]");
+      if (!searchInput) {
+        searchInput = document.createElement("input");
+        searchInput.type = "text";
+        searchInput.autocomplete = "off";
+        searchInput.className = "editable-product-input"; // tu clase
+        searchInput.placeholder = placeholderOf(hidden);
+        searchInput.setAttribute("aria-autocomplete", "list");
+        pseudo.appendChild(searchInput);
+      } else {
+        searchInput.placeholder = placeholderOf(hidden);
+      }
+    } else {
+      if (!displayH3) {
+        displayH3 = document.createElement("h3");
+        pseudo.appendChild(displayH3);
+      }
     }
 
-    // fallback simple
-    parts.hidden.value = "";
-    _clearSelection(parts.list);
-    const h3 = parts.pseudo.querySelector("h3");
-    if (h3) setPlaceholder(h3, parts.hidden);
-  });
-}
+    const api = buildAPI(parts, displayH3, searchInput);
 
-// ================= public globals =================
-window.initCustomSingleSelects = function (preValues = {}) {
-  return initAll(preValues, document);
-};
+    // Estado inicial (preselección)
+    const pre = preValues?.[hidden.name];
+    if (pre && typeof pre === "object" && ("value" in pre || "label" in pre)) {
+      api.setValueAndLabel(pre.value ?? "", pre.label ?? "", {
+        fire: false,
+        markSelected: true,
+      });
+    } else if (typeof pre === "string" || typeof pre === "number") {
+      api.setValue(String(pre), { fire: false });
+    } else if (hidden.value && String(hidden.value).trim()) {
+      const v = String(hidden.value).trim();
+      const li = list.querySelector(`li[data-value="${cssEscape(v)}"]`);
+      if (li) {
+        clearSelection(list);
+        li.classList.add("selected");
+        api.setSelectedLabel(li.textContent.trim());
+      } else {
+        api.setSelectedLabel("");
+      }
+    } else {
+      api.setSelectedLabel("");
+    }
 
-// Alias para tu caso "search"
-window.initSelectSearchAll = function () {
-  return initAll({}, document);
-};
+    // Filtro (solo modo search)
+    const noResults = ensureNoResults(list);
+    const applyFilter = (q) => {
+      const query = norm(q);
+      let any = false;
+      list.querySelectorAll("li").forEach((li) => {
+        if (li.classList.contains("no-results-message")) return;
+        const txt = norm(li.textContent.trim());
+        const hit = query === "" || txt.includes(query);
+        li.style.display = hit ? "" : "none";
+        if (hit) any = true;
+      });
+      noResults.style.display = query !== "" && !any ? "block" : "none";
+    };
 
-window.setSelectSearch = function (
-  target,
-  { value, label, fire = true, markSelected = true } = {}
-) {
-  const hidden =
-    typeof target === "string" ? document.querySelector(target) : target;
-  if (!hidden) return false;
+    // Selección + toggle (si vuelvo a hacer click en el mismo, des-selecciona)
+    const selectLi = (li) => {
+      if (
+        !li ||
+        li.classList.contains("no-results-message") ||
+        li.style.display === "none"
+      )
+        return;
+      const val = li.getAttribute("data-value") || li.textContent.trim();
+      const lab = li.textContent.trim();
 
-  const api = __registry.get(hidden) || hidden.__customSelectApi;
-  if (!api) {
-    const container = _closestContainer(hidden);
-    const newApi = initOne(container, {});
-    if (!newApi) return false;
-    if (label == null) newApi.setValue(value);
-    else newApi.setValueAndLabel(value, label, { fire, markSelected });
+      if (li.classList.contains("selected")) {
+        // Toggle: estaba seleccionado → limpiar
+        api.clear();
+        return;
+      }
+
+      clearSelection(list);
+      li.classList.add("selected");
+      api.setValueAndLabel(val, lab, { fire: true, markSelected: false }); // ya marcamos arriba
+      closeList(parts);
+    };
+
+    // Eventos
+    const onIconClick = (e) => {
+      e.stopPropagation();
+      toggleList(parts);
+      if (isSearch && searchInput && isOpen(list)) searchInput.focus();
+    };
+    icon && icon.addEventListener("click", onIconClick);
+
+    const onContainerClick = (e) => {
+      if (isSearch && searchInput && e.target === searchInput) {
+        if (!isOpen(list)) openList(parts);
+        return;
+      }
+      toggleList(parts);
+      if (isSearch && searchInput && isOpen(list)) searchInput.focus();
+    };
+    parts.container.addEventListener("click", onContainerClick);
+
+    const onListClick = (e) => {
+      const li = e.target.closest("li");
+      if (!li) return;
+      selectLi(li);
+    };
+    list.addEventListener("click", onListClick);
+
+    if (isSearch && searchInput) {
+      const onInput = (e) => {
+        if (hidden.value) hidden.value = "";
+        clearSelection(list);
+        applyFilter(e.target.value);
+      };
+      const onFocus = () => {
+        applyFilter(searchInput.value);
+        openList(parts);
+      };
+      const onKeyDown = (e) => {
+        // Enter = si hay un li visible activo, seleccionar; si no, el primero visible
+        if (e.key === "Enter") {
+          e.preventDefault();
+          let li = list.querySelector(
+            "li.active:not(.no-results-message):not([style*='display: none'])"
+          );
+          if (!li)
+            li = Array.from(list.querySelectorAll("li")).find(
+              (x) =>
+                x.style.display !== "none" &&
+                !x.classList.contains("no-results-message")
+            );
+          if (li) selectLi(li);
+        }
+        // Escape = cerrar
+        if (e.key === "Escape") {
+          closeList(parts);
+        }
+        // Flechas = mover active
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          const visibles = Array.from(list.querySelectorAll("li")).filter(
+            (x) =>
+              !x.classList.contains("no-results-message") &&
+              x.style.display !== "none"
+          );
+          if (!visibles.length) return;
+          let idx = visibles.findIndex((x) => x.classList.contains("active"));
+          if (idx === -1) idx = 0;
+          else
+            idx =
+              e.key === "ArrowDown"
+                ? Math.min(idx + 1, visibles.length - 1)
+                : Math.max(idx - 1, 0);
+          list
+            .querySelectorAll("li.active")
+            .forEach((x) => x.classList.remove("active"));
+          visibles[idx].classList.add("active");
+          visibles[idx].scrollIntoView({ block: "nearest" });
+        }
+      };
+      searchInput.addEventListener("input", onInput);
+      searchInput.addEventListener("focus", onFocus);
+      searchInput.addEventListener("keydown", onKeyDown);
+    }
+
+    // Cerrar al click fuera
+    const onDocClick = (e) => {
+      if (!parts.container.contains(e.target)) closeList(parts);
+    };
+    document.addEventListener("click", onDocClick);
+
+    // Devolver API pública por instancia
+    return api;
+  }
+
+  // ===== Init masivo
+  function initAll(preValues = {}, root = document) {
+    const apis = [];
+    root.querySelectorAll(".containerInputAndOptions").forEach((container) => {
+      // Solo si existe el pseudo wrapper de tu estructura
+      if (!container.querySelector(".onlySelect.pseudo-input-select-wrapper"))
+        return;
+      const api = initOne(container, preValues);
+      if (api) apis.push(api);
+    });
+    try {
+      if (typeof window.ordersZindexSelects === "function")
+        window.ordersZindexSelects();
+    } catch {}
+    return apis;
+  }
+
+  // ===== Helpers públicos (“comodines”)
+  function findContainer(elOrSelector) {
+    const el =
+      typeof elOrSelector === "string"
+        ? document.querySelector(elOrSelector)
+        : elOrSelector;
+    if (!el) return null;
+    return el.classList?.contains("containerInputAndOptions")
+      ? el
+      : el.closest(".containerInputAndOptions");
+  }
+
+  // set value by {value,label} o solo value
+  window.setSelectValue = function (
+    elOrSelector,
+    valueOrObj,
+    opts = { fire: true, markSelected: true }
+  ) {
+    const container = findContainer(elOrSelector);
+    if (!container) return false;
+    const { hidden, pseudo, list } = getPartsFromContainer(container) || {};
+    if (!hidden) return false;
+
+    const h3 = pseudo?.querySelector("h3");
+    const input = pseudo?.querySelector("input[type=text]");
+    const api = buildAPI({ hidden, list, container }, h3, input);
+
+    if (valueOrObj == null || valueOrObj === "") {
+      api.clear();
+      return true;
+    }
+    if (typeof valueOrObj === "object") {
+      api.setValueAndLabel(valueOrObj.value, valueOrObj.label, opts);
+    } else {
+      api.setValue(String(valueOrObj), opts);
+    }
     return true;
-  }
+  };
 
-  if (label == null) api.setValue(value);
-  else api.setValueAndLabel(value, label, { fire, markSelected });
-  return true;
-};
+  window.getSelectValue = function (elOrSelector) {
+    const container = findContainer(elOrSelector);
+    if (!container) return { value: "", label: "" };
+    const { hidden, pseudo, list } = getPartsFromContainer(container) || {};
+    const h3 = pseudo?.querySelector("h3");
+    const input = pseudo?.querySelector("input[type=text]");
+    const api = buildAPI({ hidden, list, container }, h3, input);
+    return api.getValue();
+  };
 
-window.clearInputs = clearInputs;
-window.setPlaceholder = setPlaceholder;
+  window.clearSelect = function (elOrSelector) {
+    const container = findContainer(elOrSelector);
+    if (!container) return false;
+    const { hidden, pseudo, list } = getPartsFromContainer(container) || {};
+    const h3 = pseudo?.querySelector("h3");
+    const input = pseudo?.querySelector("input[type=text]");
+    const api = buildAPI({ hidden, list, container }, h3, input);
+    api.clear();
+    return true;
+  };
 
-// ================= auto-init =================
-(function bootstrap() {
-  const run = () => initAll({}, document);
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", run);
-  } else {
-    run();
-  }
+  window.setSelectOptions = function (elOrSelector, options = []) {
+    const container = findContainer(elOrSelector);
+    if (!container) return false;
+    const parts = getPartsFromContainer(container);
+    if (!parts) return false;
+    const { hidden, pseudo, list } = parts;
+    const h3 = pseudo?.querySelector("h3");
+    const input = pseudo?.querySelector("input[type=text]");
+    const api = buildAPI(parts, h3, input);
+    api.setOptions(options);
+    return true;
+  };
+
+  // Crea (si hace falta) el <ul> y carga opciones, luego inicializa.
+  // options: [{value, label}] | ['A','B',...]
+  // opts: { value, label, searchable: boolean, placeholder: string }
+  window.buildSingleSelect = function (elOrSelector, options = [], opts = {}) {
+    const el =
+      typeof elOrSelector === "string"
+        ? document.querySelector(elOrSelector)
+        : elOrSelector;
+    if (!el) return null;
+
+    // En tu estructura, el "pseudo" vive dentro del container
+    const container = el.classList?.contains("containerInputAndOptions")
+      ? el
+      : el.closest(".containerInputAndOptions");
+    if (!container) return null;
+
+    // Aseguramos UL
+    let list =
+      container.querySelector("ul.options, ul.list-select-custom, ul") || null;
+    if (!list) {
+      list = document.createElement("ul");
+      list.className = "list-select-custom options";
+      container.appendChild(list);
+    }
+
+    // Aseguramos pseudo wrapper (ya existe en tu HTML)
+    if (!container.querySelector(".onlySelect.pseudo-input-select-wrapper")) {
+      const pseudo = document.createElement("div");
+      pseudo.className = "onlySelect pseudo-input-select-wrapper";
+      pseudo.appendChild(document.createElement("h3"));
+      const hidden = container.querySelector('input[type="hidden"]');
+      hidden && container.insertBefore(pseudo, list);
+    }
+
+    // Modo búsqueda agregando clase al wrapper externo
+    if (opts.searchable) {
+      const outer = container.closest(".wrapperSelectCustom");
+      if (outer) outer.classList.add("select-search");
+    }
+
+    // placeholder
+    const hidden = container.querySelector('input[type="hidden"]');
+    if (hidden && opts.placeholder)
+      hidden.setAttribute("placeholder", String(opts.placeholder));
+
+    // Cargamos opciones
+    window.setSelectOptions(container, options);
+
+    // Init
+    const api = initOne(container, {});
+    if (api && (opts.value != null || opts.label != null)) {
+      if (opts.label != null)
+        api.setValueAndLabel(opts.value ?? "", opts.label ?? "", {
+          fire: false,
+          markSelected: true,
+        });
+      else api.setValue(String(opts.value ?? ""), { fire: false });
+    }
+    return api;
+  };
+
+  // Init masivo (escanea el DOM)
+  window.initCustomSingleSelects = function (preValues = {}) {
+    return initAll(preValues, document);
+  };
+
+  // Init 1 (si sólo querés un select recién insertado)
+  window.initSingleSelect = function (
+    selectWrapperOrContainer,
+    preValues = {}
+  ) {
+    const el =
+      typeof selectWrapperOrContainer === "string"
+        ? document.querySelector(selectWrapperOrContainer)
+        : selectWrapperOrContainer;
+
+    if (!el) return null;
+
+    const container = el.classList?.contains("containerInputAndOptions")
+      ? el
+      : el.closest(".containerInputAndOptions");
+
+    if (!container) return null;
+    return initOne(container, preValues);
+  };
+
+  // Bootstrap automático
+  (function bootstrap() {
+    const run = () => initAll({}, document);
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", run, { once: true });
+    } else {
+      run();
+    }
+  })();
+
+  window.clearInputs = function clearInputs(requiredFields, scope, opts) {
+    const options = Object.assign({ fire: true }, opts || {});
+    const root = scope && scope.nodeType === 1 ? scope : document;
+
+    // 1) Resolver el conjunto de elementos a limpiar
+    let items = [];
+    if (typeof requiredFields === "string") {
+      items = Array.from(root.querySelectorAll(requiredFields));
+    } else if (
+      requiredFields &&
+      typeof requiredFields.length === "number" &&
+      requiredFields.length > 0
+    ) {
+      items = Array.from(requiredFields);
+    } else {
+      // Fallback: limpiar inputs típicos del form (excluye csrf y .notForm)
+      items = Array.from(
+        root.querySelectorAll(
+          "input[type='hidden']:not(.notForm):not([name='csrfmiddlewaretoken'])," +
+            "input[type='text']:not(.notForm):not([name='csrfmiddlewaretoken'])," +
+            "input[type='number']:not(.notForm):not([name='csrfmiddlewaretoken'])"
+        )
+      );
+    }
+
+    // 2) Limpiar cada input
+    items.forEach((el) => {
+      if (!(el instanceof HTMLElement)) return;
+
+      // a) Si es hidden y pertenece a un select custom, uso la API del módulo
+      if (el.tagName === "INPUT" && el.type === "hidden") {
+        const container = el.closest(".containerInputAndOptions");
+        if (container) {
+          if (typeof window.clearSelect === "function") {
+            window.clearSelect(container); // quita .selected, cierra lista, restaura placeholder
+          } else {
+            // Fallback por si la API no está disponible
+            el.value = "";
+            const pseudo = container.querySelector(
+              ".onlySelect.pseudo-input-select-wrapper"
+            );
+            const h3 = pseudo ? pseudo.querySelector("h3") : null;
+            if (h3) {
+              const ph = el.getAttribute("placeholder") || "Seleccionar";
+              h3.textContent = ph;
+              h3.classList.add("placeholder");
+            }
+            container
+              .querySelectorAll("ul li.selected")
+              .forEach((li) => li.classList.remove("selected"));
+          }
+          if (options.fire) {
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+            el.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+          return;
+        }
+      }
+
+      // b) Inputs de texto / número comunes
+      if (
+        el.tagName === "INPUT" &&
+        (el.type === "text" || el.type === "number" || el.type === "hidden")
+      ) {
+        el.value = "";
+        if (options.fire) {
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+          el.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+    });
+
+    // 3) Extra: si el select está en modo búsqueda, vaciar el input de búsqueda y ocultar "no results"
+    root.querySelectorAll(".containerInputAndOptions").forEach((container) => {
+      const wrapper = container.closest(".wrapperSelectCustom");
+      const isSearch = wrapper && wrapper.classList.contains("select-search");
+      if (!isSearch) return;
+
+      const searchInput = container.querySelector(
+        ".onlySelect.pseudo-input-select-wrapper input[type='text']"
+      );
+      if (searchInput) {
+        searchInput.value = "";
+        if (options.fire) {
+          searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+          searchInput.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+
+      const noRes = container.querySelector(
+        "ul.list-select-custom li.no-results-message"
+      );
+      if (noRes) noRes.style.display = "none";
+    });
+  };
 })();
-
-// ================= init manual por JS =================
-
-// initSingleSelect(selectWrapper, preValues)
-// - selectWrapper: el .onlySelect.pseudo-input-select-wrapper (o un selector)
-// - preValues: igual que antes (por hidden.name)
-window.initSingleSelect = function (selectWrapper, preValues = {}) {
-  const el =
-    typeof selectWrapper === "string"
-      ? document.querySelector(selectWrapper)
-      : selectWrapper;
-
-  if (!el) return null;
-
-  // En tu HTML el selectWrapper vive dentro del containerInputAndOptions
-  const container = el.classList?.contains("containerInputAndOptions")
-    ? el
-    : el.closest(".containerInputAndOptions");
-
-  if (!container) return null;
-
-  return initOne(container, preValues); // usa el core unificado (normal o search según .select-search)
-};
-
-// initCustomSingleSelects(preValues) ya existe, pero por compat lo dejamos explícito
-window.initCustomSingleSelects = function (preValues = {}) {
-  return initAll(preValues, document);
-};
-
-// ====== COMO INICIALIZAR MANUALMENTE LOS SELECTS CON JS ======
-// 1) Insertás el bloque HTML al DOM (tu estructura igual)
-// 2) Inicializás solo ese select:
-// const selectWrapper = document.querySelector(
-//   "#selectWrapperSelectCobrador .onlySelect.pseudo-input-select-wrapper"
-// );
-// initSingleSelect(selectWrapper);
-
-// O si agregaste varios de golpe:
-// initCustomSingleSelects(); // inicializa los nuevos (los ya inicializados no se tocan)

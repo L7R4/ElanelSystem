@@ -336,19 +336,19 @@
                                 <div id="{{cuota.cuota}}" class ="cuota {{cuota.status | capfirst }}">
 
                                     {% if cuota.status|lower == "vencido" %}
-                                        <div class="marca {{cuota.status | capfirst }}"></div>
+                                        <div class="marca {{cuota.status | capfirst}}"></div>
                                     {% endif %}
 
                                     {% if cuota.status|lower == "parcial" %}
-                                        <div class="marca {{cuota.status}}"></div>
+                                        <div class="marca {{cuota.status | capfirst}}"></div>
                                     {% endif %}
 
                                     {% if cuota.status|lower == "pagado" %}
-                                        <div class="marca {{cuota.status}}"></div>
+                                        <div class="marca {{cuota.status | capfirst}}"></div>
                                     {% endif %}
 
                                     {% if cuota.status|lower == "pendiente" %}
-                                        <div class="marca {{cuota.status}}"></div>
+                                        <div class="marca {{cuota.status | capfirst}}"></div>
                                     {% endif %}
 
                                 {% endif %}
@@ -475,12 +475,12 @@
                     </div>
                 </div> 
 
-                {% if object.suspendida %}
+                {% comment %} {% if object.suspendida %}
                 <div class="wrapperUrlRecupero button-default-style">
                     <a href="{% url "sales:planRecupero" object.pk %}">Crear plan recupero</a>
                 </div>
                 
-                {% endif %}
+                {% endif %} {% endcomment %}
 
         </div>
 
@@ -505,7 +505,7 @@
     var crsf_token = '{%csrf_token%}'
 </script>
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
-<script src="{% static 'js/vanilla_components/vanilla_components/z_index_orders_selects.js.js' %}"></script>
+<script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
 
 <script src="{% static 'js/sales/reciboGenerator.js' %}"></script>
 <script type="module" src="{% static 'js/sales/manejoCuotas.js' %}"></script>

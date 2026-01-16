@@ -414,10 +414,15 @@ function viewMoreFunction(elemento) {
 window.viewMoreFunction = viewMoreFunction; // lo usás en el HTML generado
 
 function htmlDetalleCuota(cuota) {
+  const hasPagos = Array.isArray(cuota["pagos"]) && cuota["pagos"].length > 0;
+  const botonRecibo = hasPagos
+    ? `<button type="button" onclick="abrirVistaPreviaRecibo(${cuota["pagos"][0].id})" id="btnReciboCuota">Ver recibo</button>`
+    : "";
   let stringHTML = `
     <div class="wrapperInfo_cuota">
       <div onclick="viewMoreFunction(this)" class="info_cuota view_more">
         <h3>Pagos</h3>
+        ${botonRecibo}
         <img class="iconDisplayViewMore" src="/static/images/icons/arrowDown.png" alt="">
         <div class="wrapperDetail_view_more">
           ${htmlPagos(cuota["pagos"])}
@@ -451,11 +456,8 @@ function htmlPagos(pagos) {
   return pagos
     .map(
       (p, i) => `
-    <div class="info_cuota detail_view_more">
+    <div class="info_cuota detail_view_more title_payment">
     <h3>Pago ${i + 1}:</h3>
-    <button type="button" onclick="abrirVistaPreviaRecibo(${
-      p.id
-    })" id="btnReciboCuota">Ver recibo</button>
     </div>
     <div class="info_cuota detail_view_more"><h3>Fecha de pago</h3><h3>${
       p["fecha"]
@@ -661,10 +663,13 @@ function checkFormValid(okInputs, okMontoParcial) {
 
 function validarInputsRellenados() {
   const requiredFields = payCuotaForm.querySelectorAll(".inputValidation");
-  console.log("[validarInputsRellenados] validando", requiredFields, "inputs");
   const formaPago = payCuotaForm.querySelector(
     ".typesPayments > .wrapperChoices > .choice.active"
   );
+
+  // 🔒 Guard: si aún no hay opción activa, no validamos
+  if (!formaPago) return false;
+
   let cont = 0;
   requiredFields.forEach((f) => {
     if (f.value !== "") cont++;

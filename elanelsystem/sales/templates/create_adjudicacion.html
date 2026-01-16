@@ -259,8 +259,8 @@
 
     </form>
     <div class="wrapperButtons">
-        <button type="button" class="add-button-default" disabled form="form_create_sale" id="enviar">Terminar</button>
-        <a id ="cancelar" class="delete-button-default" href="{% url 'sales:detail_sale' venta.id%}"> Cancelar </a>
+        {% comment %} <button type="button" class="add-button-default" disabled form="form_create_sale" id="enviar">Terminar</button> {% endcomment %}
+        <a id ="cancelar" class="button-default-style" href="{% url 'sales:detail_sale' venta.id%}"> Volver </a>
     </div> 
 
 {% endblock content %}
@@ -289,17 +289,12 @@
             disableFuture: true,    // 👈 bloquea futuras
             });
         });
-
-      import { initSelectSearchAll, setSelectSearch } from "{% static 'js/inputSelectOnlySearch.js' %}";
-      window.addEventListener("DOMContentLoaded", () => {
-        const apis = initSelectSearchAll(); // busca todos los .select-search del DOM
-      });
         
     </script>
 
     {% comment %} <script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script> {% endcomment %}
-    <script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
-    <script src="{% static 'js/vanilla_components/vanilla_components/z_index_orders_selects.js.js' %}"></script>
+    <script src="{% static 'js/vanilla_components/inputSelectOnly.js' %}"></script>
+    <script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
     <script src="{% static 'js/vanilla_components/errorsFormManagement.js' %}"></script>
     <script src="{% static 'js/sales/form_create_adju.js' %}"></script>
 {% endblock js %}

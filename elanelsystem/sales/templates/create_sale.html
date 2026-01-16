@@ -494,9 +494,7 @@
 
 <script type="module">
       import { initInputCalendar } from "{% static 'js/vanilla-calendar-pro/calendarSingle-input.js' %}";
-      import { initSelectSearchAll, setSelectSearch } from "{% static 'js/inputSelectOnlySearch.js' %}";
 
-      {% comment %} Para el calendario de fecha {% endcomment %}
       window.addEventListener('DOMContentLoaded', () => {
           initInputCalendar('#id_fecha', {
           locale: 'es-AR',
@@ -510,9 +508,6 @@
           });
       });
 
-  window.addEventListener("DOMContentLoaded", () => {
-      const apis = initSelectSearchAll(); // busca todos los .select-search del DOM
-  });
 </script>
 
 <script>
@@ -523,9 +518,7 @@
 
 <script src="{% static 'js/sales/form_create_sale.js' %}"></script>
 <script src="{% static 'js/sales/seleccionarChances.js' %}"></script>
-<script src="{% static 'js/vanilla_components/vanilla_components/z_index_orders_selects.js.js' %}"></script>
-<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
-<script src="{% static 'js/vanilla_components/errorsFormManagement.js' %}"></script>
-{% comment %}
-<script src="{% static 'js/inputSelect33.js' %}"></script>
-{% endcomment %} {% endblock js %}
+<script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
+<script src="{% static 'js/vanilla_components/inputSelectOnly.js' %}"></script>  
+<script src="{% static 'js/vanilla_components/errorsFormManagement.js' %}"></script> 
+{% endblock js %}

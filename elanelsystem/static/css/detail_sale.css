@@ -701,8 +701,19 @@
 .wrapperCuotasList > .cuotas_list > .cuota > .marca.Vencido {
   background-color: var(--danger-color);
 }
+.wrapperCuotasList > .cuotas_list > .cuota > .marca.vencido {
+  background-color: var(--danger-color);
+}
 
 .wrapperCuotasList > .cuotas_list > .cuota.Vencido > h5 {
+  display: unset;
+  color: var(--danger-color);
+  font-size: clamp(1.2rem, 1.1vw, 1.6rem);
+  font-family: raleway-semibold;
+  cursor: pointer;
+}
+
+.wrapperCuotasList > .cuotas_list > .cuota.vencido > h5 {
   display: unset;
   color: var(--danger-color);
   font-size: clamp(1.2rem, 1.1vw, 1.6rem);
@@ -923,7 +934,7 @@ button#btnReciboCuota {
   text-decoration: none;
   border-radius: 0.6rem;
   color: var(--white-800-80);
-  z-index: 100000000;
+  z-index: 1;
   border-color: transparent;
   cursor: pointer;
 }
@@ -1208,10 +1219,13 @@ button#btnReciboCuota:hover {
   row-gap: 0.7rem;
   cursor: pointer;
 }
+.info_cuota.title_payment {
+  background-color: transparent;
+  /* justify-content: center; */
 
-.info_cuota > h3:first-child {
-  color: var(--blue-accent-color);
+  /* cursor: default; */
 }
+
 .info_cuota.detail_view_more:first-child {
   background-color: transparent;
 }
@@ -1221,8 +1235,8 @@ button#btnReciboCuota:hover {
   font-family: raleway-semibold;
 }
 
-.info_cuota.detail_view_more > h3:first-child {
-  color: var(--white-color-800);
+.info_cuota.detail_view_more.title_payment > h3 {
+  color: var(--blue-accent-color);
 }
 
 .info_cuota.view_more > img {

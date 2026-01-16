@@ -26,7 +26,7 @@
             <div class="recibo">
               <div class="header">
                 <div class="header-left">
-                  <img src="{% static 'images/logoElanelPDF.png' %}" alt="Logo ELANEL" class="logo-elanel" />
+                  <img src="{% static 'images/logoElanelPDF_sin_fondo.png' %}" alt="Logo ELANEL" class="logo-elanel" />
                   <div class="empresa-datos">
                     <p>{{ context.empresa.direccion }} | Cel: {{ context.empresa.telefono }}</p>
                     <p>{{ context.empresa.pseudonimo }}</p>
@@ -42,7 +42,7 @@
                 <div class="header-right">
                   <div class="titulo-numero">
                     <p class="titulo">RECIBO</p>
-                    <p class="numero">Nº {{ context.recibo.numero_recibo }}</p>
+                    <p class="numero">Nº {{ context.recibo.numero_formateado }}</p>
                   </div>
                   <div class="fecha">
                     <div class="fecha-box"><span>DÍA</span><div class="fecha-line">{{ context.recibo.fecha_dia }}</div></div>
@@ -65,24 +65,7 @@
                 </div>
 
                 <div class="recuadros-cliente">
-                  <div class="fila-recuadro">
 
-                    <div class="fila iva">
-                      <span>IVA</span>
-                      <label><input type="checkbox" {% if context.cliente.iva == "RI" %}checked{% endif %}> Resp. Inscripto</label>
-                      <label><input type="checkbox" {% if context.cliente.iva == "EX" %}checked{% endif %}> Exento</label>
-                      <label><input type="checkbox" {% if context.cliente.iva == "RM" %}checked{% endif %}> Resp. Monot.</label>
-                      <label><input type="checkbox" {% if context.cliente.iva == "CF" %}checked{% endif %}> Cons. Final</label>
-                      <label><input type="checkbox" {% if context.cliente.iva == "MS" %}checked{% endif %}> Monot. Social</label>
-                    </div>
-
-                    <div class="fila condiciones">
-                      <span>CONDICIONES DE VENTA</span>
-                      <label><input type="checkbox" {% if context.recibo.condicion == "contado" %}checked{% endif %}> CONTADO</label>
-                      <label><input type="checkbox" {% if context.recibo.condicion == "cc" %}checked{% endif %}> CUENTA CORRIENTE</label>
-                    </div>
-
-                  </div>
 
                   <div class="recuadro-cuit">
                     <span class="cuit-label">C.U.I.T. Nº:</span>
@@ -105,22 +88,19 @@
 
               <div class="pagos">
                 <div class="fila-pago">
-                  <span>Efectivo:</span><span>c/Banco</span><div class="linea-pago"></div><span>${{ context.recibo.efectivo }}</span>
+                  <span>Efectivo</span>
+                  <span>$ {{ context.sumas.efectivo }}</span>
                 </div>
 
-                {% if context.cheques and context.cheques|length %}
-                  {% for c in context.cheques %}
-                    <div class="fila-pago">
-                      <span>Cheque Nº {{ c.numero }}:</span>
-                      <span>{{ c.banco }}</span>
-                      <div class="linea-pago"></div>
-                      <span>${{ c.importe }}</span>
-                    </div>
-                  {% endfor %}
-                {% else %}
-                  <div class="fila-pago"><span>Cheque Nº:</span><span>c/Banco</span><div class="linea-pago"></div><span>$</span></div>
-                  <div class="fila-pago"><span>Cheque Nº:</span><span>c/Banco</span><div class="linea-pago"></div><span>$</span></div>
-                {% endif %}
+                <div class="fila-pago">
+                  <span>Transferencias</span>
+                  <span>$ {{ context.sumas.transferencias }}</span>
+                </div>
+
+                <div class="fila-pago">
+                  <span>Banco/s</span>
+                  <span>$ {{ context.sumas.bancos }}</span>
+                </div>
 
                 <div class="total">
                   <strong>TOTAL $</strong>

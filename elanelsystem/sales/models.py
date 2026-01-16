@@ -674,6 +674,15 @@ class Ventas(models.Model):
 
             self.cuotas = cuotas
         self.save()
+    def removePorcentajeAdjudicacion(self):
+        cuotas = self.cuotas
+
+        for i in range(0,len(self.cuotas)):
+            cuotas[i]["interesPorMora"] = 0
+            cuotas[i]["totalFinal"] = cuotas[i]["total"]
+
+        self.cuotas = cuotas
+        self.save()
 
 
     def contarDias(self,fechaReferente):
