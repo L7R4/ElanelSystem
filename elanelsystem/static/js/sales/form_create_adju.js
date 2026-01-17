@@ -82,11 +82,12 @@ inputProducto.addEventListener("input", async () => {
       (item) => item["id"] == inputProducto.value
     )[0];
   }
-  if (window.location.href.includes("sorteo")) {
-    id_importe.value = productoHandled
-      ? productoHandled["importe"] * cantidadChances
-      : "";
-  }
+  console.log("WEpsss");
+  console.log(productoHandled);
+  id_importe.value = productoHandled
+    ? productoHandled["importe"] * cantidadChances
+    : "";
+
   rellenarCamposDeVenta();
 });
 
@@ -109,7 +110,7 @@ function rellenarCamposDeVenta() {
         (dineroDeCuotas * (parseInt(id_porcentaje_a_reconocer.value) / 100) +
           parseInt(id_anticipo.value));
       id_intereses_generados.value = parseInt(
-        (subTotalSinIntereses * id_tasacd_interes.value) / 100
+        (subTotalSinIntereses * id_tasa_interes.value) / 100
       );
 
       id_total_a_pagar.value =
@@ -157,49 +158,49 @@ function createLiHTMLElement(contenedor, li_id, li_name) {
   contenedor.insertAdjacentHTML("afterbegin", stringForHTML);
 }
 
-submitAdjudicacionButton.addEventListener("click", async () => {
-  body = {};
-  let inputs = form_create_sale.querySelectorAll("input");
-  let textareas = form_create_sale.querySelectorAll("textarea");
-  let inputsAsP_tag = form_create_sale.querySelectorAll(".textInputP");
+// submitAdjudicacionButton.addEventListener("click", async () => {
+//   body = {};
+//   let inputs = form_create_sale.querySelectorAll("input");
+//   let textareas = form_create_sale.querySelectorAll("textarea");
+//   let inputsAsP_tag = form_create_sale.querySelectorAll(".textInputP");
 
-  inputs = [...inputs, ...textareas, ...inputsAsP_tag];
+//   inputs = [...inputs, ...textareas, ...inputsAsP_tag];
 
-  inputs.forEach((element) => {
-    body[element.name] = element.value;
-  });
+//   inputs.forEach((element) => {
+//     body[element.name] = element.value;
+//   });
 
-  // document.getElementById('loader').style.display = 'block';
-  let response = await fetchFunction(body, window.location.pathname);
+//   // document.getElementById('loader').style.display = 'block';
+//   let response = await fetchFunction(body, window.location.pathname);
 
-  if (!response["success"]) {
-    mostrarErrores(response["errors"], form_create_sale);
-  } else {
-    window.location.href = response["urlRedirect"];
-  }
+//   if (!response["success"]) {
+//     mostrarErrores(response["errors"], form_create_sale);
+//   } else {
+//     window.location.href = response["urlRedirect"];
+//   }
 
-  // document.getElementById('loader').style.display = 'none';
-});
+//   // document.getElementById('loader').style.display = 'none';
+// });
 
-function checkInputs() {
-  const requiredInputs = form_create_sale.querySelectorAll("input[required]");
-  let allInputsCompleted = true;
+// function checkInputs() {
+//   const requiredInputs = form_create_sale.querySelectorAll("input[required]");
+//   let allInputsCompleted = true;
 
-  requiredInputs.forEach((input) => {
-    if (input.value.trim() === "") {
-      allInputsCompleted = false;
-    }
-  });
+//   requiredInputs.forEach((input) => {
+//     if (input.value.trim() === "") {
+//       allInputsCompleted = false;
+//     }
+//   });
 
-  if (allInputsCompleted) {
-    submitAdjudicacionButton.disabled = false;
-  } else {
-    submitAdjudicacionButton.disabled = true;
-  }
-}
+//   if (allInputsCompleted) {
+//     submitAdjudicacionButton.disabled = false;
+//   } else {
+//     submitAdjudicacionButton.disabled = true;
+//   }
+// }
 
 // Agregar evento de input a los inputs requeridos
-const requiredInputs = form_create_sale.querySelectorAll("input[required]");
-requiredInputs.forEach((input) => {
-  input.addEventListener("input", checkInputs);
-});
+// const requiredInputs = form_create_sale.querySelectorAll("input[required]");
+// requiredInputs.forEach((input) => {
+//   input.addEventListener("input", checkInputs);
+// });

@@ -1669,17 +1669,26 @@ def recibo_pago_json(request, pk: int):
     Ahora: dado un pago (pk), buscamos TODOS los pagos de la misma venta + misma cuota,
     armamos un solo recibo con la lista completa y el resumen por categoría (3 buckets).
     """
+
     pago = get_object_or_404(PagoCannon, pk=pk)
 
-    # Venta y cuota "base" para agrupar
     venta = getattr(pago, "venta", None) or get_object_or_404(Ventas, id=pago.venta_id)
-    nro_cuota = getattr(pago, "nro_cuota", "") or ""
 
-    # Si tu modelo tiene flag de anulación/cancelación, filtralo aquí (ajustá el campo):
-    pagos_qs = PagoCannon.objects.filter(
-        venta_id=venta.id,
-        nro_cuota=nro_cuota,
-    ).order_by("fecha")  # .exclude(estado__iexact="Anulado")
+    # normalizar nro_cuota: intentar convertir a int, si no -> None
+    nro_cuota_raw = getattr(pago, "nro_cuota", None)
+    try:
+        nro_cuota_val = int(nro_cuota_raw) if nro_cuota_raw not in (None, "") else None
+    except (ValueError, TypeError):
+        nro_cuota_val = None
+
+    nro_cuota_display = str(nro_cuota_val) if nro_cuota_val is not None else ""
+
+    print(f"Generando recibo para pago ID={pago.id}, venta ID={venta.id}, cuota={nro_cuota_display}")
+
+    if nro_cuota_val is None:
+        pagos_qs = PagoCannon.objects.filter(venta_id=venta.id).order_by("fecha")
+    else:
+        pagos_qs = PagoCannon.objects.filter(venta_id=venta.id, nro_cuota=nro_cuota_val).order_by("fecha")
 
     # Datos empresa / cliente
     cliente = venta.nro_cliente
@@ -1751,7 +1760,7 @@ def recibo_pago_json(request, pk: int):
             "fecha_anio": dia_mes_ano[2],
             "importe_letras": convertir_moneda_a_texto(total),
             "total": _fmt_money(total),
-            "concepto": f"Pago de cuota N°{nro_cuota} ({len(pagos)} pago(s))",
+            "concepto": f"Pago de cuota N°{nro_cuota_val} ({len(pagos)} pago(s))",
         },
         "cliente": {
             "nombre": getattr(cliente, "nombre", "") or "",
