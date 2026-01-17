@@ -1068,7 +1068,7 @@ def importVentas(request):
         try:
             df_res, df_est = preprocesar_excel_ventas(file_path)
 
-            sucursal_obj = Sucursal.objects.get(pseudonimo=agencia)
+            sucursal_obj = Sucursal.objects.get(id=agencia)
             print("🔎 ???????????")
 
              # 1) Preparo el set de contratos ya importados
@@ -1436,10 +1436,16 @@ class DetailSale(TestLogin, generic.DetailView):
         request.session["ventaPK"] = sale.pk
         request.session["statusKeyPorcentajeBaja"] = False
 
-        if sale.adjudicado:
-            sale.addPorcentajeAdjudicacion()
-        else:
-            sale.removePorcentajeAdjudicacion()
+        try:
+            if sale.adjudicado["status"] == True:
+                sale.addPorcentajeAdjudicacion()
+            else:
+                sale.removePorcentajeAdjudicacion()
+        except Exception:
+            if sale.adjudicado:
+                sale.addPorcentajeAdjudicacion()
+            else:
+                sale.removePorcentajeAdjudicacion()
 
         context = {
             "object": sale,

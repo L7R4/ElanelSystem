@@ -1,67 +1,113 @@
 function renderFormImportData() {
   return `
     <div id="importDataContainer">
-        <h2 class="tittleModal">Importar ventas</h2>
-        <form id="importForm" enctype="multipart/form-data">
-          ${csrf_token}
-          <div id="agenciaWrapper" class="inputWrapper">
-            <label class="labelInput">Sucursal</label>
-            <div class="containerInputAndOptions">
-                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="${logoDisplayMore}" alt="">
-                <input placeholder="Seleccionar" type="text" readonly name="agencia" id="agenciaInput" required="required" autocomplete="off" maxlength="50" class="checkInput input-select-custom onlySelect">
-                <ul id="contenedorAgencia" class="list-select-custom options">
-                ${sucursalesDisponibles
-                  .map(
-                    (item) => `
-                    <li>${item}</li>
-                `
-                  )
-                  .join("")}   
-                </ul>
-            </div>
+      <h2 class="tittleModal">Importar ventas</h2>
+      <form id="importForm" enctype="multipart/form-data">
+        ${csrf_token}
+
+        <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
+          <h3 class="labelInput">Agencia</h3>
+          <div class="containerInputAndOptions">
+            <img class="iconDesplegar" src="${logoDisplayMore}" alt="">
+            <input type="hidden" class="filterInput" required name="agencia" id="agenciaInput"
+                   placeholder="Seleccionar" autocomplete="off" readonly>
+            <div class="onlySelect pseudo-input-select-wrapper"><h3></h3></div>
+            <ul id="contenedorSucursal" class="list-select-custom options">
+              ${sucursalesDisponibles
+                .map(
+                  (item) => `
+                <li data-value="${item.id}">${item.pseudonimo}</li>
+              `
+                )
+                .join("")}
+            </ul>
           </div>
-          <div class="containerSelectFile">
-            <label for="importDataInput" class="button-default-style ">
-                Seleccionar Archivo
-            </label>
-            <p id="nameFile"></p>
-            <input type="file" id="importDataInput" class="checkInput" oninput="displayNameFile(this)" style="display:none;"/>
-          </div>
-          
-        </form>
+        </div>
+
+        <div class="containerSelectFile">
+          <label for="importDataInput" class="button-default-style">Seleccionar Archivo</label>
+          <p id="nameFile"></p>
+          <input type="file" id="importDataInput" class="checkInput" oninput="displayNameFile(this)" style="display:none;"/>
+        </div>
+      </form>
     </div>
-    `;
+  `;
 }
 
 function renderMessage(message, iconMessage) {
   return `
-        <div id="messageStatusContainer">
-            <img src="${iconMessage}" alt="">
-            <h2>${message}</h2>
-        </div>
-    `;
+    <div id="messageStatusContainer">
+      <img src="\${iconMessage}" alt="">
+      <h2>\${message}</h2>
+    </div>
+  `;
 }
 
-//#region Manejar el display del loader
+//#region Loader
 function showLoader() {
   document.querySelector(".modalContainerImport").children[0].style.display =
     "none";
   document.getElementById("wrapperLoader").style.display = "flex";
 }
-
 function hiddenLoader() {
   document.getElementById("wrapperLoader").style.display = "none";
 }
 //#endregion
 
+// Lee la agencia seleccionada de forma robusta
+function readAgenciaValue() {
+  const input = document.getElementById("agenciaInput");
+  let val = (input?.value || "").trim();
+  if (!val) {
+    // fallback: li seleccionado por tu select custom
+    const liSel = document.querySelector(
+      "#agenciaWrapper .options li.selected"
+    );
+    if (liSel) val = (liSel.textContent || "").trim();
+  }
+  // fallback extra: el texto visible del pseudo-input si tu lib lo usa
+  if (!val) {
+    const h3 = document.querySelector(
+      "#agenciaWrapper .pseudo-input-select-wrapper h3"
+    );
+    if (h3) val = (h3.textContent || "").trim();
+  }
+  // Evitar que "Seleccionar" se considere válido
+  if (val.toLowerCase() === "seleccionar") val = "";
+  return val;
+}
+
+// Adjunta listeners al UL para que clic en un <li> setee el input
+function bindBasicSelectBehavior() {
+  const ul = document.querySelector("#agenciaWrapper .options");
+  const input = document.getElementById("agenciaInput");
+  if (!ul || !input) return;
+
+  ul.querySelectorAll("li").forEach((li) => {
+    li.addEventListener("click", () => {
+      // Marcar seleccionado visualmente
+      ul.querySelectorAll("li.selected").forEach((x) =>
+        x.classList.remove("selected")
+      );
+      li.classList.add("selected");
+      // Cargar valor en el input visible
+      input.value = (li.textContent || "").trim();
+      // Disparar eventos para validación
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  });
+}
+
 function newModalImport() {
-  let modal = new tingle.modal({
+  const modal = new tingle.modal({
     footer: true,
     closeMethods: [""],
     cssClass: ["modalContainerImport"],
-
     onOpen: function () {
-      cargarListenersEnInputs(); // Para cargar los listeners de los inputs selects custom
+      // igual que clientes:
+      const el = document.querySelector("#sucursalWrapper .onlySelect");
+      if (typeof initSingleSelect === "function") initSingleSelect(el);
       enableImportButton();
     },
     onClose: function () {
@@ -69,73 +115,90 @@ function newModalImport() {
     },
   });
 
-  // set content
   modal.setContent(renderFormImportData());
 
-  // add a button
   modal.addFooterBtn(
     "Importar",
     "tingle-btn tingle-btn--primary",
     async function () {
-      const inputFile = document.getElementById("importDataInput").files[0];
-      let body = {
-        file: inputFile,
-        agencia: agenciaInput.value,
-      };
+      const fileEl = document.getElementById("importDataInput");
+      const agencia = (
+        document.getElementById("agenciaInput")?.value || ""
+      ).trim();
+
+      if (!agencia) {
+        newModalMessage(
+          "Seleccioná una agencia.",
+          "/static/images/icons/error_icon.svg"
+        );
+        return;
+      }
+      if (!fileEl.files || !fileEl.files[0]) {
+        newModalMessage(
+          "Seleccioná un archivo.",
+          "/static/images/icons/error_icon.svg"
+        );
+        return;
+      }
 
       showLoader();
-      let response = await fetchFunction(body, urlImportData);
 
-      if (response.status) {
-        console.log("Salio todo bien");
-        hiddenLoader();
-        modal.close();
-        modal.destroy();
-      } else {
-        console.log("Salio todo mal");
-        hiddenLoader();
+      const body = { file: fileEl.files[0], agencia }; // agencia = pseudónimo
+      const response = await fetchFunction(body, urlImportData);
 
-        modal.close();
-        modal.destroy();
-      }
-      newModalMessage(response.message, response.iconMessage);
+      hiddenLoader();
+      modal.close();
+      modal.destroy();
+      newModalMessage(
+        response?.message || "Proceso finalizado",
+        response?.iconMessage || "/static/images/icons/checkMark.svg"
+      );
     }
   );
 
-  // add another button
   modal.addFooterBtn("Cancelar", "tingle-btn tingle-btn--default", function () {
     modal.close();
     modal.destroy();
   });
 
-  // open modal
   modal.open();
-
-  // Se bloquea hasta que los campos esten todos completos
   document.querySelector(".tingle-btn--primary").disabled = true;
 }
 
 function enableImportButton() {
-  // Obtener el botón de importar
-  const importButton = document.querySelector(".tingle-btn--primary");
+  const btn = document.querySelector(".tingle-btn--primary");
+  const agenciaHidden = document.getElementById("agenciaInput");
+  const importDataInput = document.getElementById("importDataInput");
 
-  // Obtener los inputs que queremos validar
+  function checkInputs() {
+    const okAgencia = !!(agenciaHidden.value || "").trim();
+    const okFile = importDataInput.files.length > 0;
+    btn.disabled = !(okAgencia && okFile);
+    btn.classList.toggle("disabled", btn.disabled);
+  }
+  checkInputs();
+  agenciaHidden.addEventListener("input", checkInputs);
+  agenciaHidden.addEventListener("change", checkInputs);
+  importDataInput.addEventListener("input", checkInputs);
+}
+
+function enableImportButton() {
+  const importButton = document.querySelector(".tingle-btn--primary");
   const agenciaInput = document.getElementById("agenciaInput");
   const importDataInput = document.getElementById("importDataInput");
 
-  // Función que verifica si los inputs están completos
   function checkInputs() {
-    if (agenciaInput.value && importDataInput.files.length > 0) {
-      importButton.disabled = false; // Habilitar el botón
-      importButton.classList.remove("disabled");
-    } else {
-      importButton.disabled = true; // Deshabilitar el botón
-      importButton.classList.add("disabled");
-    }
+    const okAgencia = !!readAgenciaValue();
+    const okFile = importDataInput.files.length > 0;
+    importButton.disabled = !(okAgencia && okFile);
+    importButton.classList.toggle("disabled", importButton.disabled);
   }
+
   checkInputs();
-  // Escuchar cambios en ambos inputs
+
+  // Cuando cambia el input visible (o el li seleccionado desde bindBasicSelectBehavior)
   agenciaInput.addEventListener("input", checkInputs);
+  agenciaInput.addEventListener("change", checkInputs);
   importDataInput.addEventListener("input", checkInputs);
 }
 
@@ -146,31 +209,25 @@ function newModalMessage(message, iconMessage) {
     cssClass: ["modalContainerMessage"],
   });
 
-  // set content
   modalMessage.setContent(renderMessage(message, iconMessage));
 
   modalMessage.addFooterBtn(
     "Cerrar",
     "tingle-btn tingle-btn--default",
     function () {
-      // here goes some logic
       modalMessage.close();
       modalMessage.destroy();
     }
   );
 
-  // open modal
   modalMessage.open();
 }
 
 function displayNameFile(input) {
-  if (input.files[0]) {
-    document.getElementById("nameFile").textContent = input.files[0].name;
-  } else {
-    document.getElementById("nameFile").textContent = "";
-  }
+  document.getElementById("nameFile").textContent = input.files[0]
+    ? input.files[0].name
+    : "";
 }
-
 //#region Fetch data
 function getCookie(name) {
   let cookieValue = null;
@@ -178,7 +235,6 @@ function getCookie(name) {
     const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
       const cookie = cookies[i].trim();
-      // Does this cookie string begin with the name we want?
       if (cookie.substring(0, name.length + 1) === name + "=") {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
         break;
@@ -190,24 +246,23 @@ function getCookie(name) {
 
 async function fetchFunction(body, url) {
   try {
-    let formData = new FormData();
-    formData.append("file", body.file); // Añadir el archivo
-    formData.append("agencia", body.agencia); // Añadir la agencia
+    const formData = new FormData();
+    formData.append("file", body.file);
+    formData.append("agencia", body.agencia); // pseudónimo
 
-    let response = await fetch(url, {
+    const resp = await fetch(url, {
       method: "POST",
       body: formData,
-      headers: {
-        "X-CSRFToken": getCookie("csrftoken"),
-      },
+      headers: { "X-CSRFToken": getCookie("csrftoken") },
     });
-
-    if (!response.ok) {
-      throw new Error("Error");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {}
+    if (!resp.ok) throw new Error("Error");
+    return await resp.json();
+  } catch (e) {
+    return {
+      status: false,
+      message: "Error de red.",
+      iconMessage: "/static/images/icons/error_icon.svg",
+    };
+  }
 }
-//#endregion - - - - - - - - - - - - - - -
+//#endregion

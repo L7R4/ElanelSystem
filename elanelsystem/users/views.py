@@ -969,44 +969,51 @@ class ListaClientes(TestLogin, generic.View):
         return render(request, self.template_name,context)
 
 
+@login_required
 def importar_clientes(request):
     if request.method != "POST":
         return render(request, 'importar_clientes.html')
 
     archivo_excel = request.FILES.get('file')
     agencia_key   = request.POST.get('agencia')
-    fs            = FileSystemStorage()
-    filename      = fs.save(archivo_excel.name, archivo_excel)
-    file_path     = fs.path(filename)
+
+    if not archivo_excel:
+        return JsonResponse({"status": False, "message": "Subí un archivo.", "iconMessage": "/static/images/icons/error_icon.svg"}, status=400)
+
+    # ✅ validar agencia
+    try:
+        sucursal_id = int(agencia_key)
+    except (TypeError, ValueError):
+        return JsonResponse({"status": False, "message": "Agencia inválida.", "iconMessage": "/static/images/icons/error_icon.svg"}, status=400)
+
+    try:
+        sucursal = Sucursal.objects.get(pk=sucursal_id)
+    except Sucursal.DoesNotExist:
+        return JsonResponse({"status": False, "message": "La agencia no existe.", "iconMessage": "/static/images/icons/error_icon.svg"}, status=404)
+
+    fs = FileSystemStorage()
+    filename = fs.save(archivo_excel.name, archivo_excel)
+    file_path = fs.path(filename)
 
     try:
         df = preprocesar_excel_clientes(file_path)
-        sucursal = Sucursal.objects.get(id=agencia_key)
-
         nuevos = 0
         with transaction.atomic():
             for _, row in df.iterrows():
-                nro_cliente = handle_nan(row['nro'])
-                dni = handle_nan(row['dni'])
+                nro_cliente = handle_nan(row.get('nro'))
+                dni = handle_nan(row.get('dni'))
 
-                # Saltar si ya existe DNI en cualquier cliente
+                if not (nro_cliente or dni):
+                    continue
+
                 if Cliente.objects.filter(nro_cliente=nro_cliente, dni=dni).exists():
-                    print(f"El cliente {nro_cliente} ya existe")
                     continue
 
                 Cliente.objects.create(
-                    nro_cliente         = nro_cliente,
-                    nombre              = handle_nan(row['cliente']),
-                    dni                 = dni,
-                    agencia_registrada  = sucursal,
-                    # domic               = handle_nan(row.get('domic', '')),
-                    # loc                 = handle_nan(row.get('loc', '')),
-                    # prov                = handle_nan(row.get('prov', '')),
-                    # cod_postal          = row.get('cod_pos', ''),
-                    # tel                 = row.get('tel_1', ''),
-                    # estado_civil        = handle_nan(row.get('estado_civil', '')),
-                    # ocupacion           = handle_nan(row.get('ocupacion', '')),
-                    # fec_nacimiento = format_date(row.get('fecha_de_nac', ''))  # si la incluyes
+                    nro_cliente        = nro_cliente,
+                    nombre             = handle_nan(row.get('cliente')),
+                    dni                = dni,
+                    agencia_registrada = sucursal,
                 )
                 nuevos += 1
 
@@ -1016,7 +1023,6 @@ def importar_clientes(request):
             "message": f"Se importaron {nuevos} clientes nuevos.",
             "iconMessage": "/static/images/icons/checkMark.svg"
         })
-
     except Exception as e:
         fs.delete(filename)
         print("Error al importar clientes:", e)
@@ -1024,8 +1030,7 @@ def importar_clientes(request):
             "status": False,
             "message": "Error al procesar el archivo.",
             "iconMessage": "/static/images/icons/error_icon.svg"
-        })
-    
+        }, status=500)   
 
 class CrearCliente(TestLogin, generic.CreateView):
     model = Cliente
@@ -1163,7 +1168,7 @@ class PanelAdmin(TestLogin,PermissionRequiredMixin,generic.View):
     permission_required = "sales.my_ver_resumen"
     def get(self,request,*args,**kwargs):
         sucursalesObject = Sucursal.objects.all()
-        sucursales = [sucursal.pseudonimo for sucursal in sucursalesObject ]
+        sucursales = [{"pseudonimo":sucursal.pseudonimo,"id":sucursal.id} for sucursal in sucursalesObject ]
         context= {
             "sucursalesDisponibles": json.dumps(sucursales)
         }
