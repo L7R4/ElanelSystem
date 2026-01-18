@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-elanelsystem}
+      POSTGRES_USER: ${POSTGRES_USER:-elanelsystem}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-elanelsystem}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      > # Comando generado por la IA para esperar a que la DB esté lista, migrar, seedear y correr el servidor
+      sh -c "
+      python -c \"import os,time; import psycopg2;
+      h=os.getenv('DB_HOST','db'); p=int(os.getenv('DB_PORT','5432'));
+      u=os.getenv('DB_USER'); pw=os.getenv('DB_PASSWORD'); d=os.getenv('DB_NAME');
+      (lambda: [time.sleep(1) for _ in iter(int,1) if __import__('sys').exit(0) if psycopg2.connect(host=h,port=p,user=u,password=pw,dbname=d) else None])()\" &&
+      python elanelsystem/manage.py migrate --noinput &&
+      python elanelsystem/manage.py seed &&
+      python elanelsystem/manage.py runserver 0.0.0.0:8000
+      "
+
+volumes:
+  pgdata:

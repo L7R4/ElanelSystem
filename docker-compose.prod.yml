@@ -22,10 +22,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env.server
-    environment:
-      # manage.py ya apunta a prod, no hace falta: DJANGO_SETTINGS_MODULE
-      # Ajustá si querés forzar:
-      # DJANGO_SETTINGS_MODULE: elanelsystem.settings.prod
     depends_on:
       - db
     volumes:
@@ -42,7 +38,6 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      # solo para notificaciones de Let's Encrypt
       CADDY_EMAIL: ${CADDY_EMAIL}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
