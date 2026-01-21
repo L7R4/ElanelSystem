@@ -1,7 +1,7 @@
 let formNewMov;
 
 function templateFormIngreso(uniqueFechaId) {
-    return `
+  return `
         <form method="POST" class="modal_form" id="formNewMov">
             ${CSRF_TOKEN}
             <input name="movimiento" id="typeMov" type="hidden" value="ingreso">
@@ -83,9 +83,13 @@ function templateFormIngreso(uniqueFechaId) {
                         <h3></h3>
                     </div>
                     <ul class="list-select-custom options">
-                        ${agencias.map(ag => `
+                        ${agencias
+                          .map(
+                            (ag) => `
                             <li data-value="${ag.id}">${ag.pseudonimo}</li>
-                        `).join('')}
+                        `,
+                          )
+                          .join("")}
                     </ul>
                 </div>
             </div>
@@ -104,9 +108,13 @@ function templateFormIngreso(uniqueFechaId) {
                         <h3></h3>
                     </div>
                   <ul class="list-select-custom options">
-                        ${metodos_de_pago.map(mp => `
+                        ${metodos_de_pago
+                          .map(
+                            (mp) => `
                             <li data-value="${mp.id}">${mp.nombre}</li>
-                        `).join('')}
+                        `,
+                          )
+                          .join("")}
                   </ul>
                 </div>
             </div>
@@ -128,9 +136,13 @@ function templateFormIngreso(uniqueFechaId) {
                         <h3></h3>
                     </div>
                     <ul class="list-select-custom options">
-                        ${cuentas_de_cobro.map(cc => `
+                        ${cuentas_de_cobro
+                          .map(
+                            (cc) => `
                             <li data-value="${cc.id}">${cc.nombre}</li>
-                        `).join('')}       
+                        `,
+                          )
+                          .join("")}       
                     </ul>
                 </div>
             </div>
@@ -145,9 +157,13 @@ function templateFormIngreso(uniqueFechaId) {
                         <h3></h3>
                     </div>
                     <ul class="list-select-custom options">
-                        ${campaniasDisponibles.map(c => `
+                        ${campaniasDisponibles
+                          .map(
+                            (c) => `
                             <li data-value="${c}">${c}</li>
-                        `).join('')}       
+                        `,
+                          )
+                          .join("")}       
                     </ul>
                 </div>
             </div>
@@ -157,11 +173,11 @@ function templateFormIngreso(uniqueFechaId) {
                 <input name="concepto" id="conceptoMov" class="input-read-write-default inputEgresoIngreso">
             </div>
         </form>
-    `
+    `;
 }
 
 function templateFormEgreso(uniqueFechaId) {
-    return `
+  return `
         <form method="POST" class="modal_form" id="formNewMov">
             ${CSRF_TOKEN}
             <input name="movimiento" id="typeMov" type="hidden" value="egreso">
@@ -228,9 +244,13 @@ function templateFormEgreso(uniqueFechaId) {
                         <h3></h3>
                     </div>
                     <ul class="list-select-custom options">
-                        ${agencias.map(ag => `
+                        ${agencias
+                          .map(
+                            (ag) => `
                             <li data-value="${ag.id}">${ag.pseudonimo}</li>
-                        `).join('')}
+                        `,
+                          )
+                          .join("")}
                     </ul>
                 </div>
             </div>
@@ -249,9 +269,13 @@ function templateFormEgreso(uniqueFechaId) {
                         <h3></h3>
                     </div>
                   <ul class="list-select-custom options">
-                        ${metodos_de_pago.map(mp => `
+                        ${metodos_de_pago
+                          .map(
+                            (mp) => `
                             <li data-value="${mp.id}">${mp.nombre}</li>
-                        `).join('')}
+                        `,
+                          )
+                          .join("")}
                   </ul>
                 </div>
             </div>
@@ -273,9 +297,13 @@ function templateFormEgreso(uniqueFechaId) {
                         <h3></h3>
                     </div>
                     <ul class="list-select-custom options">
-                        ${cuentas_de_cobro.map(cc => `
+                        ${cuentas_de_cobro
+                          .map(
+                            (cc) => `
                             <li data-value="${cc.id}">${cc.nombre}</li>
-                        `).join('')}       
+                        `,
+                          )
+                          .join("")}       
                     </ul>
                 </div>
             </div>
@@ -290,9 +318,13 @@ function templateFormEgreso(uniqueFechaId) {
                         <h3></h3>
                     </div>
                     <ul class="list-select-custom options">
-                        ${campaniasDisponibles.map(c => `
+                        ${campaniasDisponibles
+                          .map(
+                            (c) => `
                             <li data-value="${c}">${c}</li>
-                        `).join('')}       
+                        `,
+                          )
+                          .join("")}       
                     </ul>
                 </div>
             </div>
@@ -302,89 +334,106 @@ function templateFormEgreso(uniqueFechaId) {
                 <input name="concepto" id="conceptoMov" class="input-read-write-default inputEgresoIngreso">
             </div>
         </form>
-    `
+    `;
 }
 
 function modalNewMov(typeMov) {
-    let modal = new tingle.modal({
-        footer: true,
-        closeMethods: ['button', 'escape'],
-        cssClass: ['modalContainerFilter'],
+  let modal = new tingle.modal({
+    footer: true,
+    closeMethods: ["button", "escape"],
+    cssClass: ["modalContainerFilter"],
 
-        onOpen: function () {
-            initCustomSingleSelects()
-        },
-        onClose: function () {
-            deleteSingleCalendarTimeDOM()
-            modal.destroy();
-        },
-    });
+    onOpen: function () {
+      initCustomSingleSelects();
+    },
+    onClose: function () {
+      deleteSingleCalendarTimeDOM();
+      modal.destroy();
+    },
+  });
 
-    let uniqueFechaId = 'newFecha_' + Date.now();
-    template = typeMov == "egreso" ? templateFormEgreso(uniqueFechaId) : templateFormIngreso(uniqueFechaId)
-    modal.setContent(template);
+  let uniqueFechaId = "newFecha_" + Date.now();
+  template =
+    typeMov == "egreso"
+      ? templateFormEgreso(uniqueFechaId)
+      : templateFormIngreso(uniqueFechaId);
+  modal.setContent(template);
 
-    initSelectSingleDateWithTime(document.getElementById(`${uniqueFechaId}`));
+  initSelectSingleDateWithTime(document.getElementById(`${uniqueFechaId}`));
 
-    // add a button
-    modal.addFooterBtn('Guardar', 'tingle-btn tingle-btn--primary add-button-default', async function () {
-        formNewMov = document.getElementById('formNewMov');
-        let response = await makeMov()
-        if (response.status) {
-            console.log("Salio todo bien");
-            // hiddenLoader();
-            updateMovs(currentPage);
-            modal.close();
-            modal.destroy();
-        } else {
-            console.log("Salio todo mal");
-            // hiddenLoader();
-            modal.close();
-            modal.destroy();
-        }
-    });
-
-    // add another button
-    modal.addFooterBtn('Cancelar', 'tingle-btn tingle-btn--default button-default-style', function () {
+  // add a button
+  modal.addFooterBtn(
+    "Guardar",
+    "tingle-btn tingle-btn--primary add-button-default",
+    async function () {
+      formNewMov = document.getElementById("formNewMov");
+      let response = await makeMov();
+      if (response.status) {
+        console.log("Salio todo bien");
+        try {
+          window.dispatchEvent(new CustomEvent("caja:reload"));
+        } catch (e) {}
         modal.close();
         modal.destroy();
-    });
+      } else {
+        console.log("Salio todo mal");
+        // hiddenLoader();
+        modal.close();
+        modal.destroy();
+      }
+    },
+  );
 
-    // open modal
-    modal.open();
+  // add another button
+  modal.addFooterBtn(
+    "Cancelar",
+    "tingle-btn tingle-btn--default button-default-style",
+    function () {
+      modal.close();
+      modal.destroy();
+    },
+  );
+
+  // open modal
+  modal.open();
 }
 
+// Permite abrir el modal desde la nueva tabla (caja_table.js)
+document.addEventListener("caja:new-ingreso", function () {
+  modalNewMov("ingreso");
+});
 
+document.addEventListener("caja:new-egreso", function () {
+  modalNewMov("egreso");
+});
 
 //#region ENVIA EL FORMULARIO DEL MOVIMIENTO ----------------------------------------------------------------------------
 
 async function makeMov() {
-    let newMov = await fetch("/create_new_mov/", {
-        method: 'POST',
-        body: new FormData(formNewMov),
-        headers: {
-            "X-CSRFToken": getCookie('csrftoken')
-        }
-    })
-    let data = await newMov.json()
-    return data;
+  let newMov = await fetch("/create_new_mov/", {
+    method: "POST",
+    body: new FormData(formNewMov),
+    headers: {
+      "X-CSRFToken": getCookie("csrftoken"),
+    },
+  });
+  let data = await newMov.json();
+  return data;
 }
-
 
 function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      // Does this cookie string begin with the name we want?
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
     }
-    return cookieValue;
+  }
+  return cookieValue;
 }
 //#endregion -----------------------------------------------------------------------------------------------------------------
-

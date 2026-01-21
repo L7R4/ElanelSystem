@@ -60,6 +60,9 @@ urlpatterns = [
     path("ventas/caja/",Caja.as_view(),name="caja"),
     path("ventas/caja/arqueo/",CierreCaja.as_view(),name="cierreDeCaja"),
     path("ventas/caja/arqueosanteriores",OldArqueosView.as_view(),name="oldArqueos"),
+
+    path("ventas/movs_pagos/", movs_pagos_list_api, name="movs_pagos_list"),
+    path("ventas/movs_pagos/<str:kind>/<int:pk>/", movs_pagos_detail_api, name="movs_pagos_detail"),
     #endregion -----------------------------------------------------------
     
     #region URLs PDFs ------------------------------------------------------

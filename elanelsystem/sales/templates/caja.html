@@ -11,47 +11,30 @@
 <link href="{% static 'js/vanilla-calendar-pro/styles/index.css' %}" rel="stylesheet">
 <script src="{% static 'js/vanilla-calendar-pro/index.js' %}" defer></script>
 
+<link rel="stylesheet" href="{% static 'css/vanilla_table.css' %}" />
+
 {% endblock css %}
 
 {% block content %}
-    <div class="buttonsFilters">
-        <a href="{% url 'sales:cierreDeCaja' %}">Cierre de caja</a>
-        <button class ="buttonNewMov" value="egreso" id="buttonEgreso" onclick="modalNewMov(this.value)" type ="button">Nuevo Egreso</button>
+    <div class="header_section">
+        <div class="titleHeaderWrapper">
+            <img src="{% static 'images/icons_sider/caja.svg' %}" alt="">
+            <h1 class="titleHeader">CAJA</h1>
+        </div>
+        <a class="add-button-default" href="{% url 'sales:informePDF' %}" target="_blank">Generer reporte</a>
+        <a class="button-default-style" href="{% url 'sales:cierreDeCaja' %}">Cierre de caja</a>
+        {% comment %} <button class ="buttonNewMov" value="egreso" id="buttonEgreso" onclick="modalNewMov(this.value)" type ="button">Nuevo Egreso</button>
         <button class ="buttonNewMov" value="ingreso" id="buttonIngreso" onclick="modalNewMov(this.value)" type ="button">Nuevo Ingreso</button>
         <div class="buttonFilterWrapper">
             <button id="openFilters" class="buttonActiveModalFilter" onclick="modalFilter()" type ="button">Filtrar</button>
             <a href="{% url 'sales:caja' %}" id="clear_filters"> Limpiar filtros</a>
-        </div>   
+        </div>    {% endcomment %}
     </div>
 
     <!-- INFORMACION DE CAJA -->
     <div class ="caja">
         <div class="movimientos">
-            <div class="tittlesWrapper">
-                <ul class="tittles">
-                    <li>Fecha</li>
-                    <li>Concepto</li>
-                    <li>N° Cuota</li>
-                    <li>Ingreso</li>
-                    <li>Egreso</li>
-                </ul>   
-            </div>
-          
-            <div class="valuesWrapper">
-                  <ul class="values">
-                    
-                  </ul>       
-            </div>
-
-            <div id="pagination_container">
-                
-                <button type="button" id="buttonPreviousMov">Atras</button>
-                
-                <h3 class="cuotasPages"></h3>
-
-                <button type="button" id="buttonNextMov">Siguiente</button>
-                
-            </div>
+            <div id="caja_table" class="vt-sticky"></div>
         </div>
 
         <div class="resumWrapper">
@@ -60,6 +43,8 @@
                     <thead>
                         <tr>
                             <th>Tipo de caja</th>
+                            {% comment %} <th>Ingreso</th>
+                            <th>Egreso</th> {% endcomment %}
                             <th>Saldo</th>
                         </tr>
                     </thead>
@@ -67,9 +52,8 @@
                     </tbody>
                 </table>
             </div>
-            <div class="wrapperButtonInforme">
-                <a href="{% url 'sales:informePDF' %}" target="_blank">Hacer informe</a>
-            </div>
+            {% comment %} <div class="wrapperButtonInforme">
+            </div> {% endcomment %}
 
         </div>
     </div>
@@ -93,15 +77,11 @@
 <script src="{% static 'js/vanilla-calendar-pro/multipleCalendarManage.js' %}" defer></script>
 <script src="{% static 'js/vanilla-calendar-pro/singleCalendarWithTime.js' %}" defer></script>
 
-<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
-<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
-<script src="{% static 'js/vanilla_components/inputsMultipleSelect_v2.js.js' %}"></script>
+<script src="{% static 'js/vanilla_components/inputSelectOnly.js' %}"></script>
+<script src="{% static 'js/vanilla_components/inputsMultipleSelect_v2.js' %}"></script>
 
-
-<!-- ------------------------------------------------------------------------------------------  -->
-
-<script src="{% static 'js/sales/fillMovimientos.js' %}"></script>
-<script src="{% static 'js/vanilla_components/vanilla_components/z_index_orders_selects.js.js' %}"></script>
+<script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
 <script src="{% static 'js/sales/createNewMov.js' %}"></script>
+<script type="module" src="{% static 'js/users/caja_table.js' %}"></script>
 
 {% endblock js %}

@@ -3453,6 +3453,464 @@ class OldArqueosView(TestLogin,generic.View):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return HttpResponse(data, 'application/json')
         return render(request, self.template_name,context)
+
+
+# ============================================================================
+# API NUEVA - Caja (Movimientos Externos + Pagos Cannon)
+# Endpoint principal: GET /ventas/movs_pagos/
+# Detalle:          GET /ventas/movs_pagos/<kind>/<pk>/  (kind: "pago" | "externo")
+#
+# Objetivo:
+# - Responder JSON liviano, paginado y filtrable para la tabla nueva (VanillaTable)
+# - Unificar PagoCannon + MovimientoExterno con un formato consistente
+# - Mantener seguridad: el usuario sólo ve sucursales permitidas
+# ============================================================================
+
+def _parse_int(value, default=None):
+    try:
+        return int(value)
+    except Exception:
+        return default
+
+
+def _parse_int_list(value: str):
+    if not value:
+        return []
+    out = []
+    for part in str(value).split("-"):
+        part = part.strip()
+        if not part:
+            continue
+        if part.isdigit():
+            out.append(int(part))
+    return out
+
+
+def _normalize_fecha_fragment(fecha_raw: str) -> str:
+    """Devuelve un fragmento comparable con los campos CharField fecha (dd/mm/yyyy...).
+
+    - Si viene YYYY-MM-DD -> DD/MM/YYYY
+    - Si viene DD/MM/YYYY o DD/MM/YYYY HH:MM -> usa DD/MM/YYYY
+    - Si viene vacío -> ""
+    """
+    if not fecha_raw:
+        return ""
+    s = str(fecha_raw).strip()
+    if not s:
+        return ""
+
+    # YYYY-MM-DD
+    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", s)
+    if m:
+        y, mo, d = m.group(1), m.group(2), m.group(3)
+        return f"{d}/{mo}/{y}"
+
+    # DD/MM/YYYY ...
+    m = re.match(r"^(\d{2})/(\d{2})/(\d{4})", s)
+    if m:
+        return f"{m.group(1)}/{m.group(2)}/{m.group(3)}"
+
+    return s
+
+
+def _parse_fecha_to_dt(fecha_str: str):
+    """Parsea fechas que suelen venir como string: dd/mm/yyyy hh:mm o dd/mm/yyyy.
+    Devuelve datetime (naive). Si falla, datetime.min.
+    """
+    if not fecha_str:
+        return datetime.min
+    s = str(fecha_str).strip()
+    for fmt in ("%d/%m/%Y %H:%M", "%d/%m/%Y", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(s, fmt)
+        except Exception:
+            continue
+    return datetime.min
+
+
+def _get_allowed_agencia_ids(request):
+    """IDs de sucursales permitidas para el usuario."""
+    try:
+        if getattr(request.user, "is_superuser", False):
+            return list(Sucursal.objects.values_list("id", flat=True))
+        return list(request.user.sucursales.values_list("id", flat=True))
+    except Exception:
+        return []
+
+
+def _format_money(v):
+    try:
+        return f"${formatear_moneda_sin_centavos(v)}"
+    except Exception:
+        try:
+            return f"${v}"
+        except Exception:
+            return "-"
+
+
+def _row_from_pago(p: PagoCannon):
+    cliente_nombre = ""
+    nro_cliente = ""
+    nro_operacion = ""
+    agencia = ""
+    campania = ""
+    try:
+        if p.venta_id and p.venta:
+            nro_operacion = getattr(p.venta, "nro_operacion", "")
+            agencia = getattr(getattr(p.venta, "agencia", None), "pseudonimo", "")
+            campania = getattr(p.venta, "campania", "")
+            if getattr(p.venta, "nro_cliente", None):
+                cliente_nombre = getattr(p.venta.nro_cliente, "nombre", "")
+                nro_cliente = getattr(p.venta.nro_cliente, "nro_cliente", "")
+    except Exception:
+        pass
+
+    concepto = cliente_nombre or "Pago"
+    if p.nro_cuota is not None:
+        concepto = f"{concepto} — Cuota {p.nro_cuota}"
+    if p.nro_recibo:
+        concepto = f"{concepto} (Recibo {p.nro_recibo})"
+
+    dt = _parse_fecha_to_dt(p.fecha)
+    monto = int(p.monto or 0)
+    return dt, {
+        "id": f"pago-{p.id}",
+        "kind": "pago",
+        "pk": p.id,
+        "fecha": p.fecha or "",
+        "concepto": concepto,
+        "nro_cuota": p.nro_cuota,
+        "ingreso": _format_money(monto),
+        "egreso": "-",
+        "ingreso_value": monto,
+        "egreso_value": 0,
+        "metodo_pago": getattr(getattr(p, "metodo_pago", None), "alias", "") or "",
+        "metodo_pago_id": getattr(p, "metodo_pago_id", None),
+        "cobrador": getattr(getattr(p, "cobrador", None), "alias", "") or "",
+        "cobrador_id": getattr(p, "cobrador_id", None),
+        "agencia": agencia,
+        "campania": campania,
+        "nro_operacion": nro_operacion,
+        "nro_cliente": nro_cliente,
+        "cliente": cliente_nombre,
+    }
+
+
+def _row_from_externo(m: MovimientoExterno):
+    tipo = (m.movimiento or "").strip().lower()
+    monto = float(m.dinero or 0)
+    is_ingreso = tipo == "ingreso"
+
+    dt = _parse_fecha_to_dt(m.fecha)
+    return dt, {
+        "id": f"externo-{m.id}",
+        "kind": "externo",
+        "pk": m.id,
+        "fecha": m.fecha or "",
+        "concepto": m.concepto or "",
+        "nro_cuota": "-",
+        "ingreso": _format_money(monto) if is_ingreso else "-",
+        "egreso": _format_money(monto) if not is_ingreso else "-",
+        "ingreso_value": monto if is_ingreso else 0,
+        "egreso_value": monto if not is_ingreso else 0,
+        "tipo_mov": tipo,
+        "metodo_pago": getattr(getattr(m, "metodoPago", None), "alias", "") or "",
+        "metodo_pago_id": getattr(m, "metodoPago_id", None),
+        "cobrador": getattr(getattr(m, "ente", None), "alias", "") or "",
+        "agencia": getattr(getattr(m, "agencia", None), "pseudonimo", "") or "",
+        "campania": getattr(m, "campania", "") or "",
+    }
+
+
+@require_GET
+@login_required
+def movs_pagos_list_api(request):
+    page = max(1, _parse_int(request.GET.get("page"), 1) or 1)
+    page_size = max(1, min(200, _parse_int(request.GET.get("page_size"), 20) or 20))
+    search = (request.GET.get("search") or "").strip()
+
+    # Filtros esperados
+    fecha = _normalize_fecha_fragment(request.GET.get("fecha") or "")
+    concepto = (request.GET.get("concepto") or "").strip()
+    tipo_mov = (request.GET.get("tipo_mov") or "").strip().lower()  # ingreso|egreso
+    nro_cuota = _parse_int(request.GET.get("nro_cuota"), None)
+    monto_min = request.GET.get("monto_min")
+    monto_max = request.GET.get("monto_max")
+    metodo_pago_ids = _parse_int_list(request.GET.get("metodo_pago") or "")
+    cobrador_ids = _parse_int_list(request.GET.get("cobrador") or "")
+
+    # Seguridad: sólo sucursales del usuario (o todas si superuser)
+    allowed_agencias = set(_get_allowed_agencia_ids(request))
+    requested_agencias = set(_parse_int_list(request.GET.get("agencia") or ""))
+    agencia_ids = list(requested_agencias.intersection(allowed_agencias)) if requested_agencias else list(allowed_agencias)
+
+    pagos_qs = (
+        PagoCannon.objects
+        .select_related(
+            "venta",
+            "venta__nro_cliente",
+            "venta__agencia",
+            "metodo_pago",
+            "cobrador",
+            "responsable_pago",
+        )
+        .filter(venta__agencia__id__in=agencia_ids)
+    )
+
+    externos_qs = (
+        MovimientoExterno.objects
+        .select_related("metodoPago", "agencia", "ente")
+        .filter(agencia__id__in=agencia_ids)
+    )
+
+    # --- Filtro tipo_mov (ingreso/egreso)
+    if tipo_mov == "egreso":
+        pagos_qs = pagos_qs.none()  # PagoCannon es ingreso
+        externos_qs = externos_qs.filter(movimiento__iexact="egreso")
+    elif tipo_mov == "ingreso":
+        externos_qs = externos_qs.filter(movimiento__iexact="ingreso")
+
+    # --- Filtro fecha (contiene el día)
+    if fecha:
+        pagos_qs = pagos_qs.filter(fecha__icontains=fecha)
+        externos_qs = externos_qs.filter(fecha__icontains=fecha)
+
+    # --- nro_cuota solo aplica a pagos
+    if nro_cuota is not None:
+        pagos_qs = pagos_qs.filter(nro_cuota=nro_cuota)
+
+    # --- concepto (externos) y/o texto de cliente
+    if concepto:
+        pagos_qs = pagos_qs.filter(
+            Q(venta__nro_cliente__nombre__icontains=concepto)
+            | Q(nro_recibo__icontains=concepto)
+            | Q(venta__nro_operacion__icontains=concepto)
+        )
+        externos_qs = externos_qs.filter(
+            Q(concepto__icontains=concepto)
+            | Q(denominacion__icontains=concepto)
+            | Q(nroComprobante__icontains=concepto)
+            | Q(nroIdentificacion__icontains=concepto)
+        )
+
+    # --- búsqueda general
+    if search:
+        pagos_qs = pagos_qs.filter(
+            Q(venta__nro_cliente__nombre__icontains=search)
+            | Q(venta__nro_operacion__icontains=search)
+            | Q(nro_recibo__icontains=search)
+        )
+        externos_qs = externos_qs.filter(
+            Q(concepto__icontains=search)
+            | Q(denominacion__icontains=search)
+            | Q(nroComprobante__icontains=search)
+            | Q(nroIdentificacion__icontains=search)
+        )
+
+    # --- método de pago
+    if metodo_pago_ids:
+        pagos_qs = pagos_qs.filter(metodo_pago_id__in=metodo_pago_ids)
+        externos_qs = externos_qs.filter(metodoPago_id__in=metodo_pago_ids)
+
+    # --- cobrador (PagoCannon.cobrador) / ente recaudador (MovimientoExterno.ente)
+    if cobrador_ids:
+        pagos_qs = pagos_qs.filter(cobrador_id__in=cobrador_ids)
+        externos_qs = externos_qs.filter(ente_id__in=cobrador_ids)
+
+    # --- monto min/max
+    try:
+        if monto_min not in (None, ""):
+            vmin = float(monto_min)
+            pagos_qs = pagos_qs.filter(monto__gte=vmin)
+            externos_qs = externos_qs.filter(dinero__gte=vmin)
+    except Exception:
+        pass
+    try:
+        if monto_max not in (None, ""):
+            vmax = float(monto_max)
+            pagos_qs = pagos_qs.filter(monto__lte=vmax)
+            externos_qs = externos_qs.filter(dinero__lte=vmax)
+    except Exception:
+        pass
+
+    # Total (para paginación). Nota: la ordenación se hace en Python (fechas string).
+    total = int(pagos_qs.count() + externos_qs.count())
+
+    # Para armar página N sin traer TODO: overfetch razonable y luego sort + slice
+    offset = (page - 1) * page_size
+    take = min(total, offset + (page_size * 3)) if total else (page_size * 3)
+
+    pagos = list(pagos_qs.order_by("-id")[:take])
+    externos = list(externos_qs.order_by("-id")[:take])
+
+    merged = []
+    for p in pagos:
+        merged.append(_row_from_pago(p))
+    for m in externos:
+        merged.append(_row_from_externo(m))
+
+    merged.sort(key=lambda x: x[0], reverse=True)
+    page_rows = [d for _, d in merged[offset: offset + page_size]]
+
+    # Resumen por método de pago (neto = ingreso - egreso)
+    resumen_map = {}
+
+    # Pagos: sólo ingreso
+    for r in pagos_qs.values("metodo_pago_id", "metodo_pago__alias").annotate(
+        ingreso=Coalesce(Sum("monto"), 0)
+    ):
+        mid = r.get("metodo_pago_id")
+        alias = r.get("metodo_pago__alias") or "Sin método"
+        ingreso = float(r.get("ingreso") or 0)
+        key = f"mp-{mid}" if mid else "mp-none"
+        resumen_map[key] = {
+            "metodo_pago_id": mid,
+            "metodo_pago": alias,
+            "ingreso": ingreso,
+            "egreso": 0.0,
+        }
+
+    # Externos: ingreso/egreso
+    for r in externos_qs.values("metodoPago_id", "metodoPago__alias").annotate(
+        ingreso=Coalesce(Sum("dinero", filter=Q(movimiento__iexact="ingreso")), 0.0),
+        egreso=Coalesce(Sum("dinero", filter=Q(movimiento__iexact="egreso")), 0.0),
+    ):
+        mid = r.get("metodoPago_id")
+        alias = r.get("metodoPago__alias") or "Sin método"
+        ingreso = float(r.get("ingreso") or 0)
+        egreso = float(r.get("egreso") or 0)
+        key = f"mp-{mid}" if mid else "mp-none"
+        if key not in resumen_map:
+            resumen_map[key] = {
+                "metodo_pago_id": mid,
+                "metodo_pago": alias,
+                "ingreso": 0.0,
+                "egreso": 0.0,
+            }
+        resumen_map[key]["ingreso"] += ingreso
+        resumen_map[key]["egreso"] += egreso
+
+    resumen = []
+    total_neto = 0.0
+    # Ordenar por alias para que sea estable
+    for item in sorted(resumen_map.values(), key=lambda x: (x.get("metodo_pago") or "")):
+        neto = float(item["ingreso"] or 0) - float(item["egreso"] or 0)
+        total_neto += neto
+        resumen.append({
+            "metodo_pago_id": item["metodo_pago_id"],
+            "metodo_pago": item["metodo_pago"],
+            "ingreso": _format_money(item["ingreso"]),
+            "egreso": _format_money(item["egreso"]),
+            "neto": _format_money(neto),
+            "neto_value": neto,
+        })
+
+    resumen.append({
+        "metodo_pago_id": None,
+        "metodo_pago": "Total",
+        "ingreso": "-",
+        "egreso": "-",
+        "neto": _format_money(total_neto),
+        "neto_value": total_neto,
+    })
+
+    return JsonResponse(
+        {
+            "results": page_rows,
+            "count": total,
+            "page": page,
+            "page_size": page_size,
+            "summary": resumen,
+        },
+        safe=False,
+    )
+
+
+@require_GET
+@login_required
+def movs_pagos_detail_api(request, kind: str, pk: int):
+    kind = (kind or "").strip().lower()
+    allowed_agencias = set(_get_allowed_agencia_ids(request))
+
+    if kind == "pago":
+        obj = get_object_or_404(
+            PagoCannon.objects.select_related(
+                "venta",
+                "venta__nro_cliente",
+                "venta__agencia",
+                "metodo_pago",
+                "cobrador",
+                "responsable_pago",
+            ),
+            pk=pk,
+        )
+        agencia_id = getattr(getattr(getattr(obj, "venta", None), "agencia", None), "id", None)
+        if agencia_id not in allowed_agencias and not getattr(request.user, "is_superuser", False):
+            return JsonResponse({"detail": "No autorizado"}, status=403)
+
+        venta = obj.venta
+        cliente = getattr(venta, "nro_cliente", None)
+        data = {
+            "id": obj.id,
+            "fecha": obj.fecha,
+            "monto": obj.monto,
+            "monto_formatted": _format_money(obj.monto or 0),
+            "nro_cuota": obj.nro_cuota,
+            "nro_recibo": obj.nro_recibo,
+            "campana_de_pago": obj.campana_de_pago,
+            "metodo_pago": getattr(getattr(obj, "metodo_pago", None), "alias", ""),
+            "cobrador": getattr(getattr(obj, "cobrador", None), "alias", ""),
+            "responsable": getattr(getattr(obj, "responsable_pago", None), "username", ""),
+            "venta": {
+                "id": getattr(venta, "id", None),
+                "nro_operacion": getattr(venta, "nro_operacion", ""),
+                "campania": getattr(venta, "campania", ""),
+                "agencia": getattr(getattr(venta, "agencia", None), "pseudonimo", ""),
+                "cliente": {
+                    "id": getattr(cliente, "id", None),
+                    "nombre": getattr(cliente, "nombre", ""),
+                    "nro_cliente": getattr(cliente, "nro_cliente", ""),
+                    "dni": getattr(cliente, "dni", ""),
+                },
+            },
+        }
+        return JsonResponse({"kind": "pago", "data": data}, safe=False)
+
+    if kind == "externo":
+        obj = get_object_or_404(
+            MovimientoExterno.objects.select_related("metodoPago", "agencia", "ente"),
+            pk=pk,
+        )
+        agencia_id = getattr(getattr(obj, "agencia", None), "id", None)
+        if agencia_id not in allowed_agencias and not getattr(request.user, "is_superuser", False):
+            return JsonResponse({"detail": "No autorizado"}, status=403)
+
+        data = {
+            "id": obj.id,
+            "fecha": obj.fecha,
+            "movimiento": obj.movimiento,
+            "monto": obj.dinero,
+            "monto_formatted": _format_money(obj.dinero or 0),
+            "concepto": obj.concepto,
+            "metodo_pago": getattr(getattr(obj, "metodoPago", None), "alias", ""),
+            "agencia": getattr(getattr(obj, "agencia", None), "pseudonimo", ""),
+            "ente": getattr(getattr(obj, "ente", None), "alias", ""),
+            "campania": obj.campania,
+            "tipoIdentificacion": obj.tipoIdentificacion,
+            "nroIdentificacion": obj.nroIdentificacion,
+            "tipoComprobante": obj.tipoComprobante,
+            "nroComprobante": obj.nroComprobante,
+            "denominacion": obj.denominacion,
+            "tipoMoneda": obj.tipoMoneda,
+            "premio": bool(obj.premio),
+            "adelanto": bool(obj.adelanto),
+            "observaciones": obj.observaciones,
+        }
+        return JsonResponse({"kind": "externo", "data": data}, safe=False)
+
+    return JsonResponse({"detail": "Tipo inválido"}, status=400)
+
+
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 

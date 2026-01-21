@@ -1,581 +1,621 @@
 .wrapper_content {
-    padding: 3rem;
-    box-sizing: border-box;
-    overflow-y: unset;
+  gap: 3rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: unset;
+}
+.header_section {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 2rem 3.5rem;
+  flex: 0 0 auto;
+  background-color: var(--blue-1);
+  border-bottom: 1px solid var(--white-800-20);
+}
+.header_section a {
+  font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+  color: var(--third-color);
+  text-decoration: none;
+}
+
+.header_section .titleHeaderWrapper {
+  display: flex;
+  align-items: center;
+  gap: 1.5em;
+  margin-right: auto;
+}
+.header_section .titleHeaderWrapper h1 {
+  font-size: clamp(3rem, 1.6vw, 5rem);
+  font-family: raleway-bold;
+  color: var(--white-color-800);
+  letter-spacing: 0.06rem;
+  padding: 0.5rem 0;
+}
+
+.header_section .titleHeaderWrapper img {
+  width: 3vw;
+  height: 3vw;
+  min-width: 3.5rem;
+  min-height: 3.5rem;
+  max-width: 6rem;
+  max-height: 6rem;
 }
 
 .caja {
-    display: flex;
-    flex-wrap: wrap;
-    height: 93%;
-    column-gap: 3rem;
-    box-sizing: border-box;
-    margin-top: 3rem;
+  display: flex;
+  padding: 0 2rem;
+  flex: 1 1 auto;
+  column-gap: 3rem;
+  overflow-y: auto;
 }
 
 @media screen and (max-width: 1168px) {
-    .caja {
-        flex-flow: column-reverse;
-    }
+  .caja {
+    flex-flow: column-reverse;
+  }
 }
 
+/* #region ESTILOS DE TABLA DE MOVIMIENTOS */
+.vt-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.vt-header-actions .add-button-default {
+  margin-left: auto;
+}
 
+#caja_table {
+  height: 100%;
+}
+
+#caja_table tbody tr td:nth-child(2) {
+  max-width: 35rem;
+  white-space: nowrap; /* Evita que el texto salte a la siguiente línea */
+  overflow: hidden; /* Oculta el texto que se desborda */
+  text-overflow: ellipsis; /* Añade los puntos suspensivos */
+}
+/* #endregion */
 
 /* #region SECTOR DE MOVIMIENTOS DE CAJA */
 
 .movimientos {
-    flex: 3 1 65%;
-    /* width: 55%; */
-    height: 100%;
+  flex: 3 1 65%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.tittlesWrapper>.tittles {
-    display: flex;
-    list-style: none;
-    width: 100%;
-    justify-content: space-around;
-    align-items: center;
-    height: 100%;
+.tittlesWrapper > .tittles {
+  display: flex;
+  list-style: none;
+  width: 100%;
+  justify-content: space-around;
+  align-items: center;
+  height: 100%;
 }
 
-.tittlesWrapper>.tittles>li {
-    color: var(--third-color);
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    padding: 1rem 0;
-    width: 15%;
-    text-align: center;
+.tittlesWrapper > .tittles > li {
+  color: var(--third-color);
+  font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
+  padding: 1rem 0;
+  width: 15%;
+  text-align: center;
 }
 
-.tittlesWrapper>.tittles>li:nth-child(2) {
-    width: 35%;
+.tittlesWrapper > .tittles > li:nth-child(2) {
+  width: 35%;
 }
 
-.tittlesWrapper>.tittles>li:nth-child(3) {
-    width: 10%;
+.tittlesWrapper > .tittles > li:nth-child(3) {
+  width: 10%;
 }
 
-.movimientos>.tittlesWrapper {
-    width: 100%;
-    background-color: var(--fourth-color);
-    border-radius: 0.6rem;
-    height: 8%;
+.movimientos > .tittlesWrapper {
+  width: 100%;
+  background-color: var(--fourth-color);
+  border-radius: 0.6rem;
+  height: 8%;
 }
 
-.movimientos>.valuesWrapper {
-    overflow-y: auto;
-    height: 85%;
+.movimientos > .valuesWrapper {
+  overflow-y: auto;
+  height: 85%;
 }
 
-.valuesWrapper>.values>.mov {
-    display: flex;
-    font-size: 1.4rem;
-    justify-content: space-around;
-    font-family: raleway;
-    position: relative;
-    padding: 1rem 0;
-    width: 100%;
-    color: rgb(241, 237, 237);
-    cursor: pointer;
-    text-decoration: none;
-    border-radius: 0.6rem;
+.valuesWrapper > .values > .mov {
+  display: flex;
+  font-size: 1.4rem;
+  justify-content: space-around;
+  font-family: raleway;
+  position: relative;
+  padding: 1rem 0;
+  width: 100%;
+  color: rgb(241, 237, 237);
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 0.6rem;
 }
 
-.valuesWrapper>.values>.mov:hover {
-    background-color: #304361;
+.valuesWrapper > .values > .mov:hover {
+  background-color: #304361;
 }
 
-.valuesWrapper>.values>.mov>div {
-    width: 15%;
-    text-align: center;
+.valuesWrapper > .values > .mov > div {
+  width: 15%;
+  text-align: center;
 }
 
-.valuesWrapper>.values>.mov>div:nth-child(2) {
-    width: 35%;
-    text-align: center;
+.valuesWrapper > .values > .mov > div:nth-child(2) {
+  width: 35%;
+  text-align: center;
 }
 
-.valuesWrapper>.values>.mov>div:nth-child(3) {
-    width: 10%;
-    text-align: center;
+.valuesWrapper > .values > .mov > div:nth-child(3) {
+  width: 10%;
+  text-align: center;
 }
 
 /* #endregion */
-
 
 /* #region SECTOR DE RESUMEN DE ESTADOS DE CUENTA */
 .resumWrapper {
-    max-width: 43rem;
-    min-width: 27.5rem;
-    height: fit-content;
-    flex: 1 1 30%;
+  max-width: 43rem;
+  min-width: 27.5rem;
+  height: fit-content;
+  flex: 1 1 30%;
 }
 
-.resumWrapper>div.resumTableWrapper {
-    background-color: var(--third-color);
-    border-radius: 1rem;
-    padding: 1rem;
-
+.resumWrapper > div.resumTableWrapper {
+  border: 1px solid var(--white-800-20);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--blue-1);
+  padding: 1rem;
 }
 
 table.resum_table {
-    width: 100%;
-    /* border-collapse: collapse; */
-    /* Elimina el espacio entre bordes */
-    border-spacing: 0;
-    /* Asegura que no haya separación entre celdas */
+  width: 100%;
+  /* border-collapse: collapse; */
+  /* Elimina el espacio entre bordes */
+  border-spacing: 0;
+  /* Asegura que no haya separación entre celdas */
 }
 
-table.resum_table tr>* {
-    padding: 1rem;
-    text-align: center;
-    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-    color: var(--background-color);
-    font-family: raleway-semibold;
-    white-space: nowrap;
+table.resum_table tr > * {
+  padding: 1rem;
+  text-align: center;
+  font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+  color: var(--vt-text);
+  font-family: raleway;
+  white-space: nowrap;
 }
 
-
-table.resum_table>thead {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    min-width: 18rem;
-    background-color: var(--fourth-color);
-    border-radius: .8rem;
+table.resum_table > thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  min-width: 18rem;
+  background: var(--blue-2);
+  border-radius: 1.2rem;
 }
 
-table.resum_table>thead>tr>th {
-    color: var(--third-color);
-
+table.resum_table > thead > tr > th {
+  color: var(--third-color);
 }
 
-table.resum_table>thead>tr>th:first-child {
-    border-top-left-radius: .6rem;
-    border-bottom-left-radius: .6rem;
+table.resum_table > thead > tr > th:first-child {
+  border-top-left-radius: 0.6rem;
+  border-bottom-left-radius: 0.6rem;
 }
 
-table.resum_table>thead>tr>th:last-child {
-    border-top-right-radius: .6rem;
-    border-bottom-right-radius: .6rem;
+table.resum_table > thead > tr > th:last-child {
+  border-top-right-radius: 0.6rem;
+  border-bottom-right-radius: 0.6rem;
 }
 
-table.resum_table>tbody>tr:last-child>td {
-    border: 2px solid var(--secundary-color);
+table.resum_table > tbody > tr:last-child > td {
+  border: 2px solid var(--secundary-color);
 }
 
-table.resum_table>tbody>tr>td:first-child {
-    border-top-left-radius: .6rem;
-    border-bottom-left-radius: .6rem;
-    border-right: none;
+table.resum_table > tbody > tr > td:first-child {
+  border-top-left-radius: 0.6rem;
+  border-bottom-left-radius: 0.6rem;
+  border-right: none;
 }
 
-table.resum_table>tbody>tr>td:last-child {
-    border-top-right-radius: .6rem;
-    border-bottom-right-radius: .6rem;
+table.resum_table > tbody > tr > td:last-child {
+  border-top-right-radius: 0.6rem;
+  border-bottom-right-radius: 0.6rem;
 }
 
-.wrapperButtonInforme>a {
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    color: white;
-    text-decoration: none;
-    width: 10%;
-    min-width: fit-content;
-    padding: 2% 3%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--primary-color);
-    border-radius: 0.6rem;
-    margin: 1rem 0;
+.wrapperButtonInforme > a {
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  width: fit-content;
 }
 
 /* #endregion */
-
 
 /* #region HEADER BUTTONS */
 .buttonsFilters {
-    width: 100%;
-    display: flex;
-    gap: 2rem;
-    justify-content: flex-end;
-    height: 7%;
-    max-height: 4.3rem;
+  width: 100%;
+  display: flex;
+  gap: 2rem;
+  justify-content: flex-end;
+  height: 7%;
+  max-height: 4.3rem;
 }
 
-.buttonsFilters>a {
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: white;
-    text-decoration: none;
-    width: 10%;
-    min-width: fit-content;
-    padding: 1% 2%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--primary-color);
-    border-radius: 0.6rem;
+.buttonsFilters > a {
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: white;
+  text-decoration: none;
+  width: 10%;
+  min-width: fit-content;
+  padding: 1% 2%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--primary-color);
+  border-radius: 0.6rem;
 }
 
-.buttonsFilters>.buttonNewMov {
-    width: 10%;
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: transparent;
-    min-width: fit-content;
-    color: white;
-    outline: none;
-    padding: 1% 2%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-color: transparent;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    border: 2px solid var(--primary-color);
+.buttonsFilters > .buttonNewMov {
+  width: 10%;
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  font-family: raleway-semibold;
+  background-color: transparent;
+  min-width: fit-content;
+  color: white;
+  outline: none;
+  padding: 1% 2%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-color: transparent;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  border: 2px solid var(--primary-color);
 }
 
-.buttonsFilters>.buttonFilterWrapper {
-    width: 10%;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.buttonsFilters > .buttonFilterWrapper {
+  width: 10%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #openFilters {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1% 2%;
-    font-size: clamp(1rem, 1.1vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    color: white;
-    outline: none;
-    border-color: transparent;
-    border-radius: 0.6rem;
-    cursor: pointer;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1% 2%;
+  font-size: clamp(1rem, 1.1vw, 1.5rem);
+  font-family: raleway-semibold;
+  background-color: var(--primary-color);
+  color: white;
+  outline: none;
+  border-color: transparent;
+  border-radius: 0.6rem;
+  cursor: pointer;
 }
 
-.buttonsFilters>.buttonFilterWrapper>a#clear_filters {
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-    font-family: raleway-semibold;
-    margin-top: .3rem;
-    color: rgba(255, 255, 255, 0.856);
-    outline: none;
-    text-align: center;
-    cursor: pointer;
-    margin-right: 1%;
-    position: absolute;
-    display: none;
-    top: 100%;
+.buttonsFilters > .buttonFilterWrapper > a#clear_filters {
+  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+  font-family: raleway-semibold;
+  margin-top: 0.3rem;
+  color: rgba(255, 255, 255, 0.856);
+  outline: none;
+  text-align: center;
+  cursor: pointer;
+  margin-right: 1%;
+  position: absolute;
+  display: none;
+  top: 100%;
 }
 
-.buttonsFilters>.buttonFilterWrapper>a#clear_filters.show {
-    display: block;
+.buttonsFilters > .buttonFilterWrapper > a#clear_filters.show {
+  display: block;
 }
 
 /* #endregion */
-
 
 /* #region MODAL CUOTA INFORMATION*/
 .main_modalCuota {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    visibility: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-    z-index: 5;
-    opacity: 0;
-    transition: opacity .3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  visibility: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .main_modalCuota.active {
-    visibility: visible;
+  visibility: visible;
 }
 
 .background {
-    background-color: rgba(0, 0, 0, 0.5);
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
 }
 
 .modal {
-    width: 50%;
-    background-color: var(--third-color);
-    border-radius: 1rem;
-    position: absolute;
-    box-sizing: border-box;
-    visibility: hidden;
-    padding: 3rem 4rem;
-
+  width: 50%;
+  background-color: var(--third-color);
+  border-radius: 1rem;
+  position: absolute;
+  box-sizing: border-box;
+  visibility: hidden;
+  padding: 3rem 4rem;
 }
 
-.modal>.tittleModal {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.modal > .tittleModal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.modal>.tittleModal>h3 {
-    font-size: clamp(2rem, 1.7vw, 3rem);
-    font-family: raleway-semibold;
-    color: var(--fourth-color);
+.modal > .tittleModal > h3 {
+  font-size: clamp(2rem, 1.7vw, 3rem);
+  font-family: raleway-semibold;
+  color: var(--fourth-color);
 }
 
-.modal>.tittleModal>button {
-    outline: none;
-    border-color: transparent;
-    background-color: transparent;
-    cursor: pointer;
+.modal > .tittleModal > button {
+  outline: none;
+  border-color: transparent;
+  background-color: transparent;
+  cursor: pointer;
 }
 
-.modal>.tittleModal>button>img {
-    width: 3rem;
+.modal > .tittleModal > button > img {
+  width: 3rem;
 }
 
-.modal>.modal_information {
-    display: flex;
-    width: 100%;
-    flex-wrap: wrap;
-    column-gap: 1rem;
-    row-gap: .8rem;
-    margin-top: .6rem;
+.modal > .modal_information {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  column-gap: 1rem;
+  row-gap: 0.8rem;
+  margin-top: 0.6rem;
 }
 
-.modal>.modal_information>.wrapperData {
-    width: 30%;
+.modal > .modal_information > .wrapperData {
+  width: 30%;
 }
 
-
-.wrapperData>.input-read-only-default {
-    background-color: var(--third-color);
-    border-radius: 1rem;
-    border: 2px solid var(--secundary-color);
-    display: flex;
-    font: unset;
-    align-items: center;
-    width: 100%;
-    padding: .8rem;
-    height: fit-content;
-    min-height: unset;
+.wrapperData > .input-read-only-default {
+  background-color: var(--third-color);
+  border-radius: 1rem;
+  border: 2px solid var(--secundary-color);
+  display: flex;
+  font: unset;
+  align-items: center;
+  width: 100%;
+  padding: 0.8rem;
+  height: fit-content;
+  min-height: unset;
 }
 
-.wrapperData>h2 {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: 'raleway-semibold';
-    margin-bottom: .3rem;
-    margin-left: .3rem;
-    color: var(--background-color);
+.wrapperData > h2 {
+  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+  font-family: "raleway-semibold";
+  margin-bottom: 0.3rem;
+  margin-left: 0.3rem;
+  color: var(--background-color);
 }
 
-.wrapperData>.input-read-only-default>h2 {
-    font-size: clamp(1.2rem, 1.3vw, 1.4rem);
-    font-family: 'raleway';
-    color: var(--background-color);
+.wrapperData > .input-read-only-default > h2 {
+  font-size: clamp(1.2rem, 1.3vw, 1.4rem);
+  font-family: "raleway";
+  color: var(--background-color);
 }
 
 /* #endregion */
-
 
 /* #region TEXTO DE FILTROS DE MOVIMIENTOS */
 .wrapperFiltroTexto {
-    width: 80%;
-    margin-top: 2rem;
+  width: 80%;
+  margin-top: 2rem;
 }
 
-.wrapperFiltroTexto>h3 {
-    color: white;
-    font-size: clamp(1.4rem, 1.3vw, 1.6rem);
-    font-family: 'raleway-semibold';
+.wrapperFiltroTexto > h3 {
+  color: white;
+  font-size: clamp(1.4rem, 1.3vw, 1.6rem);
+  font-family: "raleway-semibold";
 }
 
-.wrapperFiltroTexto>ul {
-    list-style: none;
-    margin-top: 1rem;
+.wrapperFiltroTexto > ul {
+  list-style: none;
+  margin-top: 1rem;
 }
 
 .wrapperFiltroTexto .fitroItem {
-    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: rgba(255, 255, 255, 0.756);
-    margin-bottom: .7rem;
+  font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: rgba(255, 255, 255, 0.756);
+  margin-bottom: 0.7rem;
 }
 
-.wrapperFiltroTexto .fitroItem>strong {
-    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: white;
+.wrapperFiltroTexto .fitroItem > strong {
+  font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: white;
 }
 
-.wrapperFiltroTexto>a {
-    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: var(--third-color);
-    /* text-decoration: none; */
-    margin-top: 1rem;
-    display: block;
+.wrapperFiltroTexto > a {
+  font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--third-color);
+  /* text-decoration: none; */
+  margin-top: 1rem;
+  display: block;
 }
 
 /* #endregion */
-
 
 /* #region PAGINACION DE MOVIMIENTOS */
 #pagination_container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
 }
 
-
-#pagination_container>button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: .5% 3%;
-    font-size: clamp(1rem, 1.1vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: transparent;
-    color: white;
-    outline: none;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    border: 2px solid var(--primary-color);
+#pagination_container > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5% 3%;
+  font-size: clamp(1rem, 1.1vw, 1.5rem);
+  font-family: raleway-semibold;
+  background-color: transparent;
+  color: white;
+  outline: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  border: 2px solid var(--primary-color);
 }
 
-#pagination_container>button.blocked {
-    background-color: #3f4653d4 !important;
-    pointer-events: none;
-    border: 0px solid transparent;
+#pagination_container > button.blocked {
+  background-color: #3f4653d4 !important;
+  pointer-events: none;
+  border: 0px solid transparent;
 }
 
-#pagination_container>.cuotasPages {
-    color: white;
-    font-size: 1.6rem;
-    font-family: raleway-semibold;
+#pagination_container > .cuotasPages {
+  color: white;
+  font-size: 1.6rem;
+  font-family: raleway-semibold;
 }
 
 /* #endregion */
 
-
 #filterForm {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
 }
 
-#filterForm>div {
-    width: 25%;
-    flex: auto;
-    min-width: 20rem;
-    max-width: 30rem;
-    height: fit-content;
-
+#filterForm > div {
+  width: 25%;
+  flex: auto;
+  min-width: 20rem;
+  max-width: 30rem;
+  height: fit-content;
 }
 
-#filterForm>div .containerInputAndOptions {
-    height: unset;
+#filterForm > div .containerInputAndOptions {
+  height: unset;
 }
 
-#filterForm>div>.labelInput {
-    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: var(--background-color);
+#filterForm > div > .labelInput {
+  font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--background-color);
 }
-
 
 .pseudo-input-select-wrapper {
-    background-color: var(--third-color);
+  background-color: var(--third-color);
 }
 
-.containerCalendario>input {
-    font-weight: bold;
+.containerCalendario > input {
+  font-weight: bold;
 }
 
-.modalContainerFilter .tingle-modal-box__footer>button {
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
+.modalContainerFilter .tingle-modal-box__footer > button {
+  font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
 }
 
 .modal_form {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.modal_form>div.wrapperInput {
-    width: 25%;
-    flex: auto;
-    min-width: 20rem;
-    max-width: 30rem;
-    height: fit-content;
+.modal_form > div.wrapperInput {
+  width: 25%;
+  flex: auto;
+  min-width: 20rem;
+  max-width: 30rem;
+  height: fit-content;
 }
 
-.modal_form>div.wrapperInput>.labelInput {
-    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: var(--background-color);
+.modal_form > div.wrapperInput > .labelInput {
+  font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--background-color);
 }
 
 .movimiento-info,
 .cannon-info {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
-.movimiento-info>h2,
-.cannon-info>h2 {
-    flex: 1 1 100%;
-    font-size: clamp(1.8rem, 1.4vw, 2.5rem);
-    font-family: raleway-semibold;
-    color: var(--primary-color);
+.movimiento-info > h2,
+.cannon-info > h2 {
+  flex: 1 1 100%;
+  font-size: clamp(1.8rem, 1.4vw, 2.5rem);
+  font-family: raleway-semibold;
+  color: var(--primary-color);
 }
 
-.movimiento-info>div,
-.cannon-info>div {
-    flex: 1 1 25%;
-    min-width: 25rem;
+.movimiento-info > div,
+.cannon-info > div {
+  flex: 1 1 25%;
+  min-width: 25rem;
 }
 
-.movimiento-info>div>p,
-.cannon-info>div>p {
-    font-size: clamp(1.2rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: var(--background-color);
+.movimiento-info > div > p,
+.cannon-info > div > p {
+  font-size: clamp(1.2rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--background-color);
 }
 
-.movimiento-info>div>div,
-.cannon-info>div>div {
-    border: 2px solid var(--secundary-color);
-    font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
-    background-color: transparent;
-    position: relative;
-    border-radius: .6rem;
-    outline: none;
-    padding: .5rem 1.3rem;
-    width: 100%;
-    font-feature-settings: "pnum" on, "lnum" on;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
+.movimiento-info > div > div,
+.cannon-info > div > div {
+  border: 2px solid var(--secundary-color);
+  font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
+  background-color: transparent;
+  position: relative;
+  border-radius: 0.6rem;
+  outline: none;
+  padding: 0.5rem 1.3rem;
+  width: 100%;
+  font-feature-settings:
+    "pnum" on,
+    "lnum" on;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
 }
 
-.modalContainerViewMov .tingle-modal-box__footer>button {
-    font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-    font-family: raleway-semibold;
+.modalContainerViewMov .tingle-modal-box__footer > button {
+  font-size: clamp(1.3rem, 1.2vw, 1.5rem);
+  font-family: raleway-semibold;
 }
