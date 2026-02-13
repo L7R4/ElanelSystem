@@ -387,30 +387,6 @@
                             
                         </div>
 
-                        <div class="pickedAmount">
-                            <h4>Monto a abonar</h4>
-                            <input type="text" class="input-select-custom inputValidation" name="amountParcial" id="amountParcial" placeholder="Ingrese el dinero">
-                            <p id="dineroRestante"></p>
-                        </div>
-
-                        {% comment %} <div id="selectWrapperSelectCobrador" class="wrapperSelectFilter wrapperInput">
-                            <label class="labelInput">Cobrador</label>
-                            <div class="containerInputAndOptions">
-                                <img id="cobradorIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""/>
-                                
-                                <input type="hidden" name="cobrador" required="" autocomplete="off" maxlength="100" class="input-cobrador">
-                                
-                                <div class="onlySelect pseudo-input-select-wrapper">
-                                    <h3></h3>
-                                </div>
-
-                                <ul class="list-select-custom options">
-                                    {% for cobrador in cobradores %}
-                                    <li data-value="{{cobrador.id}}">{{cobrador.alias}}</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </div> {% endcomment %}
 
                         <div id="selectWrapperSelectCobrador" class="select-search wrapperTypeFilter wrapperSelectFilter wrapperInput">
                             <h3 class="labelInput">Cobrador</h3>
@@ -452,6 +428,34 @@
                                         <li data-value="{{metodo.id}}">{{metodo.alias}}</li>
                                     {% endfor %}
                                 </ul>
+                            </div>
+                        </div>
+                        <div class="montoMonedaWrapper">
+                            <div id="selectWrapperSelectMoneda" class="select-search wrapperTypeFilter wrapperSelectFilter wrapperInput">
+                                <h3 class="labelInput">Moneda</h3>
+                                <div class="containerInputAndOptions">
+                                    <img
+                                        class="iconDesplegar"
+                                        id="cobradorIconDisplay"
+                                        src="{% static 'images/icons/arrowDown.png' %}"
+                                        alt=""
+                                    />
+
+                                    <input type="hidden" name="inputMoneda" readonly required autocomplete="off" maxlength="100" class="input-moneda inputValidation" id="inputMoneda" value="ars">
+
+                                    <div class="onlySelect pseudo-input-select-wrapper">
+                                        <h3></h3>
+                                    </div>
+                                    <ul class="list-select-custom options">
+                                        <li data-value="ars">ARS</li>
+                                        <li data-value="usd">USD ($ {{dolar_oficial}})</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="pickedAmount">
+                                <h4>Valor</h4>
+                                <input type="text" class="input-select-custom inputValidation" name="amountParcial" id="amountParcial" placeholder="Ingrese el dinero">
+                                <p id="dineroRestante"></p>
                             </div>
                         </div>
 
@@ -501,7 +505,7 @@
     var solicitudAnulacionCuotaUrl = "{{solicitudAnulacionCuotaUrl}}"
     var confirmacionAnulacionCuotaUrl = "{{confirmacionAnulacionCuotaUrl}}"
     var cantidadCuotas = {{object.nro_cuotas}}
-
+    var dolar_oficial = {{dolar_oficial}}
     var crsf_token = '{%csrf_token%}'
 </script>
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
@@ -522,6 +526,7 @@
       location.reload();
     }
   });
+
 </script>
 
 {% endblock js %}

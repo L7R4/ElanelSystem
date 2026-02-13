@@ -1,6 +1,8 @@
 import VanillaTable from "../vanilla_components/vanilla_table_module.js";
 
 const ENDPOINT = "/ventas/movs_pagos/";
+const REPORT_PDF_ENDPOINT = "/ventas/pdf/informe/";
+const REPORT_XLSX_ENDPOINT = "/ventas/excel/informe/";
 
 function escapeHtml(s) {
   return String(s ?? "")
@@ -55,6 +57,19 @@ function updateResumen(summary) {
     .join("\n");
 }
 
+function updateReportLink({ query, filters }) {
+  const a = document.querySelector(".wrapperButtonInforme a");
+  if (!a) return;
+
+  const qs = buildQS({
+    search: query || "",
+    ...(filters || {}),
+    // limit: 400,
+  });
+
+  a.href = `${REPORT_ENDPOINT}?${qs.toString()}`;
+}
+
 function renderDetail(kind, data) {
   const title = kind === "pago" ? "Detalle de pago" : "Detalle de movimiento";
 
@@ -66,32 +81,33 @@ function renderDetail(kind, data) {
         <h2 class="tittleModal">${escapeHtml(title)}</h2>
 
         <div class="detail_grid">
-          <div><strong>Fecha:</strong> ${escapeHtml(data?.fecha)}</div>
-          <div><strong>Monto:</strong> ${escapeHtml(data?.monto_formatted)}</div>
-          <div><strong>N° Cuota:</strong> ${escapeHtml(data?.nro_cuota ?? "-")}</div>
-          <div><strong>Recibo:</strong> ${escapeHtml(data?.nro_recibo ?? "-")}</div>
-          <div><strong>Método de pago:</strong> ${escapeHtml(data?.metodo_pago ?? "-")}</div>
-          <div><strong>Cobrador:</strong> ${escapeHtml(data?.cobrador ?? "-")}</div>
-          <div><strong>Campaña (pago):</strong> ${escapeHtml(data?.campana_de_pago ?? "-")}</div>
-          <div><strong>Responsable:</strong> ${escapeHtml(data?.responsable ?? "-")}</div>
+          <div class="detail_item"><label>Fecha</label><p class="input-read-only-default">${escapeHtml(data?.fecha)}</p></div>
+          <div class="detail_item"><label>Monto unitario</label><p class="input-read-only-default">${escapeHtml(data?.monto_por_chance_formatted ?? "-")}</p></div>
+          <div class="detail_item"><label>Monto total</label><p class="input-read-only-default">${escapeHtml(data?.monto_formatted)}</p></div>
+          <div class="detail_item"><label>N° Cuota</label><p class="input-read-only-default">${escapeHtml(data?.nro_cuota ?? "-")}</p></div>
+          <div class="detail_item"><label>Recibo</label><p class="input-read-only-default">${escapeHtml(data?.nro_recibo ?? "-")}</p></div>
+          <div class="detail_item"><label>Método de pago</label><p class="input-read-only-default">${escapeHtml(data?.metodo_pago ?? "-")}</p></div>
+          <div class="detail_item"><label>Cobrador</label><p class="input-read-only-default">${escapeHtml(data?.cobrador ?? "-")}</p></div>
+          <div class="detail_item"><label>Campaña (pago)</label><p class="input-read-only-default">${escapeHtml(data?.campana_de_pago ?? "-")}</p></div>
+          <div class="detail_item"><label>Responsable</label><p class="input-read-only-default">${escapeHtml(data?.responsable ?? "-")}</p></div>
         </div>
 
-        <hr />
-        <h3 style="margin: 0 0 10px 0;">Venta</h3>
+        <h2 class="tittleModal sub">Venta</h2>
 
-        <div class="detail_grid">
-          <div><strong>N° Operación:</strong> ${escapeHtml(v?.nro_operacion ?? "-")}</div>
-          <div><strong>Campaña (venta):</strong> ${escapeHtml(v?.campania ?? "-")}</div>
-          <div><strong>Agencia:</strong> ${escapeHtml(v?.agencia ?? "-")}</div>
+        <div class="detail_grid"> 
+          <div class="detail_item"><label>N° Operación</label><p class="input-read-only-default">${escapeHtml(v?.nro_operacion ?? "-")}</p></div>
+          <div class="detail_item"><label>Campaña (venta)</label><p class="input-read-only-default">${escapeHtml(v?.campania ?? "-")}</p></div>
+          <div class="detail_item"><label>Agencia</label><p class="input-read-only-default">${escapeHtml(v?.agencia ?? "-")}</p></div>
+          <div class="detail_item"><label>Chances</label><p class="input-read-only-default">${escapeHtml(v?.chances ?? "-")}</p></div>
+
         </div>
 
-        <hr />
-        <h3 style="margin: 0 0 10px 0;">Cliente</h3>
+        <h2 class="tittleModal sub">Cliente</h2>
 
         <div class="detail_grid">
-          <div><strong>Nombre:</strong> ${escapeHtml(c?.nombre ?? "-")}</div>
-          <div><strong>N° Cliente:</strong> ${escapeHtml(c?.nro_cliente ?? "-")}</div>
-          <div><strong>DNI:</strong> ${escapeHtml(c?.dni ?? "-")}</div>
+          <div class="detail_item"><label>Nombre</label><p class="input-read-only-default">${escapeHtml(c?.nombre ?? "-")}</p></div>
+          <div class="detail_item"><label>N° Cliente</label><p class="input-read-only-default">${escapeHtml(c?.nro_cliente ?? "-")}</p></div>
+          <div class="detail_item"><label>DNI</label><p class="input-read-only-default">${escapeHtml(c?.dni ?? "-")}</p></div>
         </div>
       </div>
     `;
@@ -103,33 +119,29 @@ function renderDetail(kind, data) {
       <h2 class="tittleModal">${escapeHtml(title)}</h2>
 
       <div class="detail_grid">
-        <div><strong>Fecha:</strong> ${escapeHtml(data?.fecha)}</div>
-        <div><strong>Movimiento:</strong> ${escapeHtml(data?.movimiento ?? "-")}</div>
-        <div><strong>Monto:</strong> ${escapeHtml(data?.monto_formatted ?? "-")}</div>
-        <div><strong>Concepto:</strong> ${escapeHtml(data?.concepto ?? "-")}</div>
-        <div><strong>Método de pago:</strong> ${escapeHtml(data?.metodo_pago ?? "-")}</div>
-        <div><strong>Agencia:</strong> ${escapeHtml(data?.agencia ?? "-")}</div>
-        <div><strong>Ente:</strong> ${escapeHtml(data?.ente ?? "-")}</div>
-        <div><strong>Campaña:</strong> ${escapeHtml(data?.campania ?? "-")}</div>
+        <div class="detail_item"><label>Fecha</label><p class="input-read-only-default">${escapeHtml(data?.fecha)}</p></div>
+        <div class="detail_item"><label>Movimiento</label><p class="input-read-only-default">${escapeHtml(data?.movimiento ?? "-")}</p></div>
+        <div class="detail_item"><label>Monto</label><p class="input-read-only-default">${escapeHtml(data?.monto_formatted ?? "-")}</p></div>
+        <div class="detail_item"><label>Concepto</label><p class="input-read-only-default">${escapeHtml(data?.concepto ?? "-")}</p></div>
+        <div class="detail_item"><label>Método de pago</label><p class="input-read-only-default">${escapeHtml(data?.metodo_pago ?? "-")}</p></div>
+        <div class="detail_item"><label>Agencia</label><p class="input-read-only-default">${escapeHtml(data?.agencia ?? "-")}</p></div>
+        <div class="detail_item"><label>Ente</label><p class="input-read-only-default">${escapeHtml(data?.ente ?? "-")}</p></div>
+        <div class="detail_item"><label>Campaña</label><p class="input-read-only-default">${escapeHtml(data?.campania ?? "-")}</p></div>
       </div>
 
-      <hr />
-      <h3 style="margin: 0 0 10px 0;">Comprobante</h3>
+      <h2 class="tittleModal sub"">Comprobante</h2>
 
       <div class="detail_grid">
-        <div><strong>Tipo ID:</strong> ${escapeHtml(data?.tipoIdentificacion ?? "-")}</div>
-        <div><strong>N° ID:</strong> ${escapeHtml(data?.nroIdentificacion ?? "-")}</div>
-        <div><strong>Tipo Comp.:</strong> ${escapeHtml(data?.tipoComprobante ?? "-")}</div>
-        <div><strong>N° Comp.:</strong> ${escapeHtml(data?.nroComprobante ?? "-")}</div>
-        <div><strong>Denominación:</strong> ${escapeHtml(data?.denominacion ?? "-")}</div>
-        <div><strong>Moneda:</strong> ${escapeHtml(data?.tipoMoneda ?? "-")}</div>
-        <div><strong>Premio:</strong> ${data?.premio ? "Sí" : "No"}</div>
-        <div><strong>Adelanto:</strong> ${data?.adelanto ? "Sí" : "No"}</div>
+        <div class="detail_item"><label>Tipo ID</label><p class="input-read-only-default">${escapeHtml(data?.tipoIdentificacion ?? "-")}</p></div>
+        <div class="detail_item"><label>N° ID</label><p class="input-read-only-default">${escapeHtml(data?.nroIdentificacion ?? "-")}</p></div>
+        <div class="detail_item"><label>Tipo Comp.</label><p class="input-read-only-default">${escapeHtml(data?.tipoComprobante ?? "-")}</p></div>
+        <div class="detail_item"><label>N° Comp.</label><p class="input-read-only-default">${escapeHtml(data?.nroComprobante ?? "-")}</p></div>
+        <div class="detail_item"><label>Denominación</label><p class="input-read-only-default">${escapeHtml(data?.denominacion ?? "-")}</p></div>
+        <div class="detail_item"><label>Moneda</label><p class="input-read-only-default">${escapeHtml(data?.tipoMoneda ?? "-")}</p></div>
+        <div class="detail_item"><label>Premio</label><p class="input-read-only-default">${data?.premio ? "Sí" : "No"}</p></div>
+        <div class="detail_item"><label>Adelanto</label><p class="input-read-only-default">${data?.adelanto ? "Sí" : "No"}</p></div>
+        <div class="detail_item"><label>Observaciones</label><p class="input-read-only-default">${escapeHtml(data?.observaciones ?? "-")}</p></div>
       </div>
-
-      <hr />
-      <h3 style="margin: 0 0 10px 0;">Observaciones</h3>
-      <div>${escapeHtml(data?.observaciones ?? "-")}</div>
     </div>
   `;
 }
@@ -138,7 +150,6 @@ async function openDetailModal(row, { signal } = {}) {
   const kind = row?.kind;
   const pk = row?.pk;
   if (!kind || !pk) return;
-
   const url = `${ENDPOINT}${encodeURIComponent(kind)}/${encodeURIComponent(pk)}/`;
   const data = await fetchJSON(url, { signal });
 
@@ -159,6 +170,7 @@ async function openDetailModal(row, { signal } = {}) {
       modal.close();
     },
   );
+  // syncReportLinks({ query: state.query || "", filters: f || {} });
   modal.open();
 }
 
@@ -173,50 +185,98 @@ function openFiltersModal(api) {
     onClose: function () {
       modal.destroy();
     },
+    onOpen: function () {
+      buildSingleSelect(
+        document.querySelector(
+          "#selectWrapperSelectType .containerInputAndOptions",
+        ),
+        [
+          { value: "", label: "Todos" },
+          { value: "ingreso", label: "Ingreso" },
+          { value: "egreso", label: "Egreso" },
+        ],
+        { searchable: false, value: f.tipo_mov || "" },
+      );
+
+      buildSingleSelect(
+        document.querySelector(
+          "#selectWrapperSelectOrigen .containerInputAndOptions",
+        ),
+        [
+          { value: "", label: "Todos" },
+          { value: "cannon", label: "Solo cannons" },
+          { value: "externo", label: "Solo mov. externos" },
+        ],
+        { searchable: false, value: f.origen || "" },
+      );
+    },
   });
 
   modal.setContent(`
     <div class="modal_filter">
-      <h2 class="tittleModal">Filtrar movimientos</h2>
+      <h2 class="tittleModal">Filtrar caja</h2>
 
       <div class="detail_grid">
-        <label>
-          <div style="margin-bottom:6px;font-weight:600;">Fecha</div>
+        <div>
+          <label style="margin-bottom:6px;font-weight:600;">Fecha</label>
           <input id="flt_fecha" class="input-read-write-default" type="date" value="${escapeHtml(f.fecha || "")}" />
-        </label>
+        </div>
 
-        <label>
-          <div style="margin-bottom:6px;font-weight:600;">Concepto / Cliente</div>
+        <div>
+          <label style="margin-bottom:6px;font-weight:600;">Concepto / Cliente</label>
           <input id="flt_concepto" class="input-read-write-default" type="text" placeholder="Ej: cuota, Juan, factura..." value="${escapeHtml(f.concepto || "")}" />
-        </label>
+        </div>
 
-        <label>
-          <div style="margin-bottom:6px;font-weight:600;">N° cuota</div>
-          <input id="flt_nro_cuota" class="input-read-write-default" type="number" min="1" step="1" placeholder="Ej: 3" value="${escapeHtml(f.nro_cuota || "")}" />
-        </label>
+        <div>
+          <label style="margin-bottom:6px;font-weight:600;">N° cuota</label>
+          <input id="flt_nro_cuota" class="input-read-write-default" type="number" min="0" step="1" placeholder="Ej: 3" value="${escapeHtml(f.nro_cuota || "")}" />
+        </div>
 
-        <label>
-          <div style="margin-bottom:6px;font-weight:600;">Tipo</div>
-          <select id="flt_tipo" class="input-read-write-default">
-            <option value="" ${!f.tipo_mov ? "selected" : ""}>Todos</option>
-            <option value="ingreso" ${f.tipo_mov === "ingreso" ? "selected" : ""}>Ingreso</option>
-            <option value="egreso" ${f.tipo_mov === "egreso" ? "selected" : ""}>Egreso</option>
-          </select>
-        </label>
 
-        <label>
-          <div style="margin-bottom:6px;font-weight:600;">Monto mín.</div>
+        <div id="selectWrapperSelectType" class="wrapperInput wrapperSelectCustom">
+            <h3 class="labelInput">Tipo</h3>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="${imgNext}" alt="">
+                <input type="hidden" name="flt_tipo" id="flt_tipo" value="${escapeHtml(f.tipo_mov || "")}" placeholder="Seleccionar" autocomplete="off">
+                <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+                </div>
+                <ul class="list-select-custom options">
+                </ul>
+            </div>
+        </div>
+        
+        <div id="selectWrapperSelectOrigen" class="wrapperInput wrapperSelectCustom">
+            <h3 class="labelInput">Origen</h3>
+            <div class="containerInputAndOptions">
+                <img id="tipoComprobanteIconDisplay"class="iconDesplegar" src="${imgNext}" alt="">
+                <input type="hidden" name="flt_origen" id="flt_origen" value="${escapeHtml(f.origen || "")}" placeholder="Seleccionar" autocomplete="off">
+                <div class="onlySelect pseudo-input-select-wrapper">
+                    <h3></h3>
+                </div>
+                <ul class="list-select-custom options">
+                </ul>
+            </div>
+        </div>
+
+        <div>
+          <label style="margin-bottom:6px;font-weight:600;">Monto mín.</label>
           <input id="flt_monto_min" class="input-read-write-default" type="number" min="0" step="0.01" placeholder="0" value="${escapeHtml(f.monto_min || "")}" />
-        </label>
+        </div>
 
-        <label>
-          <div style="margin-bottom:6px;font-weight:600;">Monto máx.</div>
+        <div>
+          <label style="margin-bottom:6px;font-weight:600;">Monto máx.</label>
           <input id="flt_monto_max" class="input-read-write-default" type="number" min="0" step="0.01" placeholder="100000" value="${escapeHtml(f.monto_max || "")}" />
-        </label>
+        </div>
       </div>
-      <p style="margin-top:10px;opacity:.7;">Tip: la búsqueda de arriba también filtra (cliente / concepto / comprobante).</p>
     </div>
   `);
+
+  // buildSingleSelect(
+  //   modal.querySelector(
+  //     "#selectWrapperMoneda .onlySelect.pseudo-input-select-wrapper",
+  //   ),
+  // );
 
   modal.addFooterBtn(
     "Aplicar",
@@ -228,13 +288,14 @@ function openFiltersModal(api) {
       const tipo = document.getElementById("flt_tipo")?.value || "";
       const monto_min = document.getElementById("flt_monto_min")?.value || "";
       const monto_max = document.getElementById("flt_monto_max")?.value || "";
-
+      const origen = document.getElementById("flt_origen")?.value || "";
       api.setFilter("fecha", fecha);
       api.setFilter("concepto", concepto);
       api.setFilter("nro_cuota", nro_cuota);
       api.setFilter("tipo_mov", tipo);
       api.setFilter("monto_min", monto_min);
       api.setFilter("monto_max", monto_max);
+      api.setFilter("origen", origen);
 
       api.goToPage(1, { force: true });
       modal.close();
@@ -252,6 +313,7 @@ function openFiltersModal(api) {
         "tipo_mov",
         "monto_min",
         "monto_max",
+        "origen",
       ].forEach((k) => api.setFilter(k, ""));
       api.goToPage(1, { force: true });
       modal.close();
@@ -262,6 +324,25 @@ function openFiltersModal(api) {
 }
 
 const container = document.getElementById("caja_table");
+
+function syncReportLinks({ query, filters }) {
+  const qs = buildQS({
+    search: query || "",
+    ...(filters || {}),
+  }).toString();
+
+  const pdfA =
+    document.getElementById("btn_generar_pdf") ||
+    document.querySelector(".wrapperButtonInforme #btn_generar_pdf");
+  const xlsA =
+    document.getElementById("btn_generar_excel") ||
+    document.querySelector(".wrapperButtonInforme #btn_generar_excel");
+
+  if (pdfA)
+    pdfA.href = qs ? `${REPORT_PDF_ENDPOINT}?${qs}` : REPORT_PDF_ENDPOINT;
+  if (xlsA)
+    xlsA.href = qs ? `${REPORT_XLSX_ENDPOINT}?${qs}` : REPORT_XLSX_ENDPOINT;
+}
 
 const table = new VanillaTable(container, {
   remoteSearch: true,
@@ -278,7 +359,11 @@ const table = new VanillaTable(container, {
   renderExtraFilters: (el, api) => {
     el.innerHTML = `
       <div class="vt-header-actions">
-        <button id="vt_filter" class="button-open-modal button-default-style" type="button">Filtrar</button>
+        <button id="vt_filter" class="button-open-modal button-default-style" type="button"> 
+        <img id="filterIcon" class="filterIcon" src="/static/images/icons/filter_icon.svg" alt="">
+
+        Filtrar
+        </button>
         <button id="vt_new_ing" class="button-open-modal add-button-default" type="button">Nuevo ingreso</button>
         <button id="vt_new_egr" class="button-open-modal delete-button-default" type="button">Nuevo egreso</button>
       </div>
@@ -313,6 +398,8 @@ const table = new VanillaTable(container, {
     const data = await fetchJSON(url, { signal });
 
     updateResumen(data?.summary);
+    syncReportLinks({ query, filters });
+
     return {
       data: Array.isArray(data?.results) ? data.results : [],
       total: Number(data?.count || 0),

@@ -1,25 +1,39 @@
+import asyncio
 from decimal import Decimal
+import signal
+import tempfile
 import time
 import unicodedata
 from django.utils.dateparse import parse_datetime, parse_date
+from django.core.cache import cache
+import multiprocessing as mp
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
+from django.http import FileResponse, HttpResponse, HttpResponseForbidden, JsonResponse, HttpResponseBadRequest
 from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth import get_user_model
 from django.db import transaction,connection
+
+from sales.services.dolar import get_dolar_blue_y_oficial_async
+from sales.services.arqueo import BILLETES, compute_saldo_diario_caja, get_allowed_agencias, today_fragment_ddmmyyyy, validate_agencia_allowed
+from sales.services.caja_query import _format_money, _get_allowed_agencia_ids, _normalize_fecha_fragment, _parse_int, _parse_int_list, _row_from_externo, _row_from_pago
+from sales.exports.arqueo import export_arqueo_pdf
+
 from .mixins import TestLogin
 from .models import ArqueoCaja, Auditoria, MetodoPago, Ventas,CoeficientesListadePrecios,MovimientoExterno,CuentaCobranza
 from users.models import Cliente, Sucursal,Usuario
 from .models import Ventas,PagoCannon
 from products.models import Products,Plan
+from types import SimpleNamespace
 import datetime
 from django.views.decorators.vary import vary_on_headers
 import os,re
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, Substr, Concat
 from django.db.models import (
-    Q, F, Count, Sum, OuterRef, Subquery, IntegerField, Value, Prefetch, Func
+    Q, F, Count, Sum, OuterRef, Subquery, IntegerField, Value, Prefetch, Func, CharField
+,
 )
 from django.utils.timezone import make_aware
 from django.utils.timezone import localtime
@@ -53,7 +67,7 @@ import io
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils.dataframe import dataframe_to_rows
-
+from sales.exports.caja import export_caja
 
 #region EndPoint graficos de torta ---------------------------------------------------
 class GraficosDashboard(TestLogin, PermissionRequiredMixin, generic.View):
@@ -1422,6 +1436,11 @@ class DetailSale(TestLogin, generic.DetailView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
+        
+        response_dolar = cotizaciones_dolar(request)
+        dolar_oficial = 0
+        if response_dolar.status_code == 200:
+            dolar_oficial = json.loads(response_dolar.content).get("oficial").get("compra",0)
 
         # 1) Primero recalculá/actualizá estados
         self.object.testVencimientoCuotas()
@@ -1454,6 +1473,7 @@ class DetailSale(TestLogin, generic.DetailView):
             "cobradores": CuentaCobranza.objects.all(),
             "metodosDePagos": MetodoPago.objects.all(),
             "nro_cuotas": sale.nro_cuotas,
+            "dolar_oficial": dolar_oficial,
             "urlRedirectPDF": reverse("sales:bajaPDF", args=[sale.pk]),
             "urlUser": reverse("users:cuentaUser", args=[sale.pk]),
             "deleteSaleUrl": reverse("sales:delete_sale", args=[sale.pk]),
@@ -1554,7 +1574,7 @@ def getUnaCuotaDeUnaVenta(request):
                 if cuota["cuota"] == cuotaRequest:
                     # print("CUOTA ENCONTRADA:", cuota)
                     pagos = PagoCannon.objects.filter(venta=venta, nro_cuota=int(cuotaRequest.split()[-1]))
-                    cuota["pagos"] = [{"id":pago.id, "monto": pago.monto, "metodoPago": pago.metodo_pago.alias, "fecha": pago.fecha, "cobrador": pago.cobrador.alias, "nro_recibo": pago.nro_recibo} for pago in pagos]
+                    cuota["pagos"] = [pago.json() for pago in pagos]
 
                     cuota["styleBloqueado"] = f"background-image: url('{bloqueado_path}')"
                     if len(lista_cuotasPagadasSinCredito) != 0 and lista_cuotasPagadasSinCredito[-1]["cuota"] == cuota["cuota"] and "sales.my_anular_cuotas" in permisosUser:
@@ -1568,8 +1588,10 @@ def getUnaCuotaDeUnaVenta(request):
 
                     if ((cuota["cuota"] == "Cuota 0" or cuota["cuota"] == "Cuota 1") and cuota["status"] != "Pagado"):
                         cuota["buttonDescuentoCuota"] = buttonDescuentoCuota
-                        print("asdasdsadasadsa")
-
+                    
+                    restante_por_divisa = get_dinero_restante_segun_divisa(cuota, data.get("dolar",0))
+                    cuota["restante_por_divisa"] = restante_por_divisa
+                    
                     resp = JsonResponse(cuota, safe=False)
                     resp["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
                     resp["Pragma"] = "no-cache"
@@ -2856,240 +2878,31 @@ def viewPDFTitularidad(request,pk,idCambio):
         response['Content-Disposition'] = 'inline; filename='+titularName+'.pdf'
         return response
 
-def viewPDFArqueo(request,pk):
-    
-    # Establece el idioma local en español
-    locale.setlocale(locale.LC_TIME, 'es_AR.utf8')
-    arqueo = ArqueoCaja.objects.get(id=pk)
+@login_required
+def viewPDFArqueo(request, pk):
+    arqueo = get_object_or_404(ArqueoCaja, pk=pk)
 
-    # Para pasar los movimientos del dia
-    #region Logica para obtener los movimientos segun los filtros aplicados 
-    agencia = "Todas" if not request.GET.get("agencia") else request.GET.get("agencia")
-    all_movimientos = dataStructureMoviemientosYCannons(agencia)
-    all_movimientosTidy = sorted(all_movimientos, key=lambda x: datetime.datetime.strptime(x['fecha'], '%d/%m/%Y %H:%M'),reverse=True) # Ordenar de mas nuevo a mas viejo los movimientos
-   
-    
-    #endregion
-    movsToday = list(filter(lambda x: x["fecha"][:10] == arqueo.fecha,all_movimientosTidy))
+    # Seguridad: que el usuario pueda ver esa agencia
+    if arqueo.agencia_id:
+        suc = validate_agencia_allowed(request, int(arqueo.agencia_id))
+        if not suc:
+            return HttpResponseForbidden("Sin permisos para ver este arqueo.")
 
-    movsDetalles = [
-        {
-            "Moviem.": d.get("tipoMovimiento", "-"),
-            "Compro.": "---" if d.get("tipoComprobante") is None or d.get("tipoComprobante") == "null" else d.get("tipoComprobante", "---"),
-            "Nro Comprob.": "---" if d.get("nroComprobante") is None or d.get("nroComprobante") == "null" else d.get("nroComprobante", "---"),
-            "Denominacion": "---" if d.get("denominacion") is None or d.get("denominacion") == "null" else d.get("denominacion", "---"),
-            "T. de ID": "---" if d.get("tipoIdentificacion") is None or d.get("tipoIdentificacion") == "null" else d.get("tipoIdentificacion", "---"),
-            "Nro de ID.": "---" if d.get("nroIdentificacion") is None or d.get("nroIdentificacion") == "null" else d.get("nroIdentificacion", "---"),
-            "Sucursal": d.get("sucursal", "-"),
-            "Moneda": "---" if d.get("tipoMoneda") is None or d.get("tipoMoneda") == "null" else d.get("tipoMoneda", "---"),
-            "Dinero": d.get("pagado", "-"),
-            "Metodo de pago": d.get("metodoPago", "-"),
-            "Ente recau.": d.get("ente", "-"),
-            "Concepto": d.get("concepto", "-"),
-            "Fecha": d.get("fecha", "-"),
-        }
-        for d in movsToday
-    ]
-    
-    # Para pasar el resumen de tipos de pagos
-    resumenData = {}
-    tiposDePago = {"efectivo":"Efectivo",
-                       "banco":"Banco", 
-                       "posnet":"Posnet", 
-                       "merPago":"Mercado Pago", 
-                       "transferencia":"Transferencia"}  
-        
-    montoTotal = 0
-    for clave in tiposDePago.keys():
-        itemsTypePayment = list(filter(lambda x: x['metodoPago'] == tiposDePago[clave], movsToday))
-        montoTypePaymentEgreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipoMovimiento'] == 'Egreso'])
-        montoTypePaymentIngreso = sum([monto['pagado'] for monto in itemsTypePayment if monto['tipoMovimiento'] == 'Ingreso'])
-        montoTypePayment = montoTypePaymentIngreso - montoTypePaymentEgreso
-        montoTotal += montoTypePayment 
-        resumenData[clave] = montoTypePayment
-    resumenData["total"] = montoTotal
+    return export_arqueo_pdf(request, arqueo, timeout_sec=300)
 
-    # Para pasar los datos del arqueo 
-    arqueoData ={
-                "fecha": arqueo.fecha,
-                "agencia": arqueo.agencia,
-                "responsable":arqueo.responsable,
-                "admin": arqueo.admin,
-                "totalPlanilla": arqueo.totalPlanilla,
-                "totalSegunDiarioCaja": arqueo.totalSegunDiarioCaja,
-                "diferencia": arqueo.diferencia,
-                "observaciones": arqueo.observaciones,
-                "p2000": arqueo.detalle["p2000"],
-                "p1000": arqueo.detalle["p1000"],
-                "p500": arqueo.detalle["p500"],
-                "p200": arqueo.detalle["p200"],
-                "p100": arqueo.detalle["p100"],
-                "p50": arqueo.detalle["p50"],
-                "p20": arqueo.detalle["p20"],
-                "p10": arqueo.detalle["p10"],
-                "p5": arqueo.detalle["p5"],
-                "p2": arqueo.detalle["p2"],
-            }
-            
-    arqueoName = "Arqueo de caja del: " + str(arqueo.fecha)
-    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "arqueo.pdf")
-    
-    printPDFarqueo({"arqueoData": arqueoData, "movsData": movsDetalles,"resumenData": resumenData},request.build_absolute_uri(),urlPDF)
-
-    # Para enviar PDF
-    fechaYHoraHoy = datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
-
-    url_referer = request.META.get('HTTP_REFERER', '')
-    if reverse("sales:oldArqueos") not in url_referer:
-        sendEmailPDF("",os.path.join(settings.BASE_DIR, 'pdfs/arqueo.pdf'),"Cierre de caja del: " + fechaYHoraHoy)
-    
-
-
-    with open(urlPDF, 'rb') as pdf_file:
-        response = HttpResponse(pdf_file,content_type="application/pdf")
-        response['Content-Disposition'] = 'inline; filename='+arqueoName+'.pdf'
-        return response
-
+@require_GET
+@login_required
 def viewsPDFInforme(request):
-    # Establece el idioma local en español
-    # locale.setlocale(locale.LC_TIME, 'es_AR.utf8')
-    datos = request.session.get('informe_data', {})
+    # usa los mismos filtros del querystring
+    return export_caja(request, "pdf", timeout_sec=300)
 
-    # Para pasar el detalles de los movs
-    datos_modificado = [
-        {
-            "Moviem.": (
-                d.get("tipo_mov", {})
-                 .get("data", "---")
-                ).capitalize(),
 
-            "Compro.": (
-                d.get("tipoComprobante", {}).get("data", None).capitalize()
-                if d.get("tipoComprobante", {}).get("data", None) 
-                not in (None, "null")
-                else "---"
-            ),
+@require_GET
+@login_required
+def viewsExcelInforme(request):
+    # usa los mismos filtros del querystring
+    return export_caja(request, "xlsx", timeout_sec=300)
 
-            "Nro Comprob.": (
-                d.get("nroComprobante", {}).get("data", "---")
-                if d.get("nroComprobante", {}).get("data", None)
-                not in (None, "null")
-                else "---"
-            ),
-
-            "Denominacion": (
-                d.get("denominacion", {}).get("data", "---")
-                if d.get("denominacion", {}).get("data", None)
-                not in (None, "null")
-                else "---"
-            ),
-
-            "T. de ID": (
-                d.get("tipoIdentificacion", {}).get("data", "---")
-                if d.get("tipoIdentificacion", {}).get("data", None)
-                not in (None, "null")
-                else "---"
-            ),
-
-            "Nro de ID.": (
-                d.get("nroIdentificacion", {}).get("data", "---")
-                if d.get("nroIdentificacion", {}).get("data", None)
-                not in (None, "null")
-                else "---"
-            ),
-
-            "Sucursal": (
-                d.get("agencia", {}).get("data", "---")
-                if d.get("agencia", {}).get("data", None)
-                not in (None, "null")
-                else "---"
-            ),
-
-            "Moneda": (
-                d.get("tipoMoneda", {}).get("data", "---")
-                if d.get("tipoMoneda", {}).get("data", None)
-                not in (None, "null")
-                else "---"
-            ),
-
-            "Dinero": (
-                d.get("montoFormated", {}).get("data", "---")
-                if d.get("montoFormated", {}).get("data", None)
-                not in (None, "null")
-                else "---"
-            ),
-
-            "Metodo de pago": (
-                d.get("metodoPagoAlias", {}).get("data", "---")
-                if d.get("metodoPagoAlias", {}).get("data", None)
-                not in (None, "null")
-                else "---"
-            ),
-
-            "Ente recau.": (
-                d.get("ente", {}).get("data", "---")
-                if d.get("ente", {}).get("data", None)
-                not in (None, "null")
-                else d.get("cobradorAlias", {}).get("data", "---")
-            ),
-
-            "Concepto": (
-                d.get("concepto", {}).get("data", "---")
-                if d.get("concepto", {}).get("data", None)
-                not in (None, "null")
-                else "---"
-            ),
-
-            "Fecha": (
-                d.get("fecha", {}).get("data", "---")
-                if d.get("fecha", {}).get("data", None)
-                not in (None, "null")
-                else "---"
-            ),
-        }
-        for d in datos
-    ]
-    # Para pasar el resumen de tipos de pagos 
-    resumenEstadoCuenta=[]
-    total_money = 0
-    metodosPagos = MetodoPago.objects.all()
-    for metodo in metodosPagos:
-        estado_cuenta_by_metodo = {}
-        estado_cuenta_by_metodo["verbose_name"] = metodo.alias
-        metodoClean = metodo.alias.replace(" ","_").lower() + "_total_money"
-        estado_cuenta_by_metodo["name_clean"] = metodoClean
-        movs_by_metodo = list(filter(lambda mov:mov["metodoPago"]["data"] == str(metodo.id), datos))
-        money_by_metodo_ingreso = sum([mov["monto"]["data"] for mov in movs_by_metodo if mov["tipo_mov"]["data"] == "ingreso"])
-        money_by_metodo_egreso = sum([mov["monto"]["data"] for mov in movs_by_metodo if mov["tipo_mov"]["data"] == "egreso"])
-        money_by_metodo = money_by_metodo_ingreso - money_by_metodo_egreso
-        estado_cuenta_by_metodo["money"] = formatear_moneda_sin_centavos(money_by_metodo)
-        resumenEstadoCuenta.append(estado_cuenta_by_metodo)
-        
-        total_money += money_by_metodo
-    dictTotal = {
-        "verbose_name": "Total",
-        "name_clean": "total_money",
-        "money": formatear_moneda_sin_centavos(total_money)
-    }
-    resumenEstadoCuenta.append(dictTotal)
-
-    informeName = "Informe"
-    urlPDF= os.path.join(settings.PDF_STORAGE_DIR, "liquidacion.pdf")
-    
-    # printPDFinforme({"data":datos_modificado},request.build_absolute_uri(),urlPDF)
-    printPDFinforme({"data":datos_modificado,"metodosPagosResumen":resumenEstadoCuenta},request.build_absolute_uri(),urlPDF)
-
-    
-    with open(urlPDF, 'rb') as pdf_file:
-        response = HttpResponse(pdf_file,content_type="application/pdf")
-        response['Content-Disposition'] = 'inline; filename='+informeName+'.pdf'
-        return response
-
-def viewPDFInformeAndSend(request):
-    # Para enviar PDF
-    fechaYHoraHoy = datetime.datetime.today().strftime("%d/%m/%Y %H:%M")
-    sendEmailPDF("valerossi2004@hotmail.com",os.path.join(settings.BASE_DIR, 'pdfs/informe.pdf'),"Informe del: " + fechaYHoraHoy)
-    return viewsPDFInforme(request)
 
 @login_required
 def viewsPDFInformePostVenta(request):
@@ -3355,271 +3168,143 @@ class Caja(TestLogin,generic.View):
         return render(request, self.template_name, context)
         
 
-class CierreCaja(TestLogin,generic.View):
+class CierreCaja(TestLogin, generic.View):
+    template_name = "cierreDeCaja.html"
 
-    template_name = 'cierreDeCaja.html'
+    def get(self, request, *args, **kwargs):
+        agencias = get_allowed_agencias(request)
+        selected = agencias[0] if agencias else None
 
-    def get(self,request,*args,**kwargs):
-        context = {}
-        json_data = requestMovimientos(request)
-        movsData = json.loads(json_data.content)
-        
-        today = datetime.today().strftime("%d/%m/%Y %H:%M")
+        fecha_hoy = today_fragment_ddmmyyyy()
+        saldo = compute_saldo_diario_caja(selected.id, fecha_hoy) if selected else 0.0
 
-        context["sucursal"] = request.user.sucursales.all()[0]
-        context["sucursales"] = Sucursal.objects.all()
-        context["fecha"] =  datetime.today().strftime("%d/%m/%Y")
-        context["admin"]= request.user
-        
+        context = {
+            "selected_agencia_id": selected.id if selected else "",
+            "selected_agencia_label": str(selected) if selected else "Seleccionar",
+            "agencias": agencias,
+            "fecha": fecha_hoy,
+            "admin": request.user,
+            "saldo_diario": float(saldo),
+        }
         return render(request, self.template_name, context)
-    
 
-    def post(self,request,*args,**kwargs):
-        context= {}
+    def post(self, request, *args, **kwargs):
+        # ✅ Agencia por ID (no por "localidad, provincia")
+        agencia_id = request.POST.get("agencia_id") or ""
+        try:
+            agencia_id_int = int(agencia_id)
+        except Exception:
+            return JsonResponse({"success": False, "error": "Agencia inválida."}, status=400)
+
+        sucursal = validate_agencia_allowed(request, agencia_id_int)
+        if not sucursal:
+            return JsonResponse({"success": False, "error": "No tenés permisos para esa agencia."}, status=403)
+
+        responsable = (request.POST.get("responsable") or "").strip()
+        observaciones = (request.POST.get("observaciones") or "").strip()
+
+        # ✅ saldo del día: NO confiar en lo que manda el front
+        fecha_hoy = today_fragment_ddmmyyyy()
+        total_segun_diario = compute_saldo_diario_caja(sucursal.id, fecha_hoy)
+
         arqueo = ArqueoCaja()
-        BILLETES = [2000,1000,500,200,100,50,20,10,5,2]
-        
-        # OBTIENE LOS DATOS----------------------------------------------------
-        sucursal = request.POST.get("sucursal")
-        localidad_buscada, provincia_buscada = map(str.strip, sucursal.split(","))
-        sucursalObject = Sucursal.objects.get(localidad = localidad_buscada, provincia = provincia_buscada)
-
-        fecha =  datetime.date.today().strftime("%d/%m/%Y %H:%M")
-        admin = request.user
-        responsable = request.POST.get("responsable")
-        totalSegunDiarioCaja = request.POST.get("saldoSegunCaja")
-        observaciones = request.POST.get("observaciones")
-        
-        total=0
-        for b in BILLETES:
-            billeteCantidad = request.POST.get("p"+ str(b))
-            if(billeteCantidad == ""):
-                billeteCantidad = 0
-            
-            billeteItem = {}
-            billeteItem["cantidad"] = int(billeteCantidad)
-            billeteItem["importeTotal"] = int(billeteCantidad) * b
-            total += int(billeteCantidad) * b
-            arqueo.detalle["p"+ str(b)] = billeteItem
-
-        # ---------------------------------------------------------------------
-
-        # COLOCA LOS DATOS ---------------------------------------------------
-        
-        arqueo.agencia = sucursalObject
-        arqueo.fecha = fecha
-        arqueo.admin = admin
+        arqueo.agencia = sucursal
+        arqueo.fecha = datetime.now().strftime("%d/%m/%Y %H:%M")
+        arqueo.admin = str(request.user)
         arqueo.responsable = responsable
-        arqueo.totalPlanilla = total
-        arqueo.totalSegunDiarioCaja = float(totalSegunDiarioCaja)
-        arqueo.diferencia = total - float(totalSegunDiarioCaja)
         arqueo.observaciones = observaciones
-        # ---------------------------------------------------------------------
+
+        detalle = {}
+        total_planilla = 0
+
+        for b in BILLETES:
+            raw = request.POST.get(f"p{b}", "")
+            try:
+                cantidad = int(raw) if str(raw).strip() != "" else 0
+            except Exception:
+                cantidad = 0
+
+            importe = cantidad * b
+            total_planilla += importe
+            detalle[f"p{b}"] = {"cantidad": cantidad, "importeTotal": importe}
+
+        arqueo.detalle = detalle
+        arqueo.totalPlanilla = float(total_planilla)
+        arqueo.totalSegunDiarioCaja = float(total_segun_diario)
+        arqueo.diferencia = float(total_planilla) - float(total_segun_diario)
 
         arqueo.save()
 
-        response_data = {
-            'success': True,
-            'urlPDF': reverse("sales:arqueoPDF", args=[ArqueoCaja.objects.latest('pk').pk]),
-            'urlCaja': reverse("sales:caja")
-        }
-        
-        return JsonResponse(response_data, safe=False)
+        return JsonResponse(
+            {
+                "success": True,
+                "urlPDF": reverse("sales:arqueoPDF", args=[arqueo.pk]),
+                "urlCaja": reverse("sales:caja"),
+            },
+            safe=False,
+        )
 
 
-class OldArqueosView(TestLogin,generic.View):
+class OldArqueosView(TestLogin, generic.View):
     model = ArqueoCaja
-    template_name= "listaDeArqueos.html"
+    template_name = "listaDeArqueos.html"
 
-    def get(self,request,*args, **kwargs):
-        arqueos = ArqueoCaja.objects.filter(agencia = request.user.sucursal)
+    def get(self, request, *args, **kwargs):
+        sucursales = get_allowed_agencias(request)
+        ids = [s.id for s in sucursales]
+
+        arqueos = ArqueoCaja.objects.filter(agencia_id__in=ids).order_by("-pk")
+
         context = {
-            "arqueos": reversed(arqueos)
+            "arqueos": arqueos,
+            "sucursales": sucursales,  
         }
-        arqueos_list = []
-        for a in arqueos:
-            data_arqueo = {}
-            data_arqueo["pk"] = a.pk
-            data_arqueo["sucursal"] = a.agencia
-            data_arqueo["fecha"] = a.fecha
-            data_arqueo["admin"] = a.admin
-            data_arqueo["responsable"] = a.responsable
-            data_arqueo["totalPlanilla"] = a.totalPlanilla
-            arqueos_list.append(data_arqueo)
 
-        arqueos_list.reverse()
-        data = json.dumps(arqueos_list)
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            arqueos_list = []
+            for a in arqueos:
+                arqueos_list.append(
+                    {
+                        "pk": a.pk,
+                        "agencia_id": a.agencia_id or 0,
+                        "sucursal": str(a.agencia) if a.agencia else "",
+                        "fecha": a.fecha,
+                        "admin": a.admin,
+                        "responsable": a.responsable,
+                        "totalPlanilla": float(a.totalPlanilla or 0),
+                        "pdf_url": reverse("sales:arqueoPDF", args=[a.pk]),  # ✅ link directo
+                    }
+                )
+            return JsonResponse(arqueos_list, safe=False)
 
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return HttpResponse(data, 'application/json')
-        return render(request, self.template_name,context)
-
-
-# ============================================================================
-# API NUEVA - Caja (Movimientos Externos + Pagos Cannon)
-# Endpoint principal: GET /ventas/movs_pagos/
-# Detalle:          GET /ventas/movs_pagos/<kind>/<pk>/  (kind: "pago" | "externo")
-#
-# Objetivo:
-# - Responder JSON liviano, paginado y filtrable para la tabla nueva (VanillaTable)
-# - Unificar PagoCannon + MovimientoExterno con un formato consistente
-# - Mantener seguridad: el usuario sólo ve sucursales permitidas
-# ============================================================================
-
-def _parse_int(value, default=None):
-    try:
-        return int(value)
-    except Exception:
-        return default
+        return render(request, self.template_name, context)
 
 
-def _parse_int_list(value: str):
-    if not value:
-        return []
-    out = []
-    for part in str(value).split("-"):
-        part = part.strip()
-        if not part:
-            continue
-        if part.isdigit():
-            out.append(int(part))
-    return out
-
-
-def _normalize_fecha_fragment(fecha_raw: str) -> str:
-    """Devuelve un fragmento comparable con los campos CharField fecha (dd/mm/yyyy...).
-
-    - Si viene YYYY-MM-DD -> DD/MM/YYYY
-    - Si viene DD/MM/YYYY o DD/MM/YYYY HH:MM -> usa DD/MM/YYYY
-    - Si viene vacío -> ""
-    """
-    if not fecha_raw:
-        return ""
-    s = str(fecha_raw).strip()
-    if not s:
-        return ""
-
-    # YYYY-MM-DD
-    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", s)
-    if m:
-        y, mo, d = m.group(1), m.group(2), m.group(3)
-        return f"{d}/{mo}/{y}"
-
-    # DD/MM/YYYY ...
-    m = re.match(r"^(\d{2})/(\d{2})/(\d{4})", s)
-    if m:
-        return f"{m.group(1)}/{m.group(2)}/{m.group(3)}"
-
-    return s
-
-
-def _parse_fecha_to_dt(fecha_str: str):
-    """Parsea fechas que suelen venir como string: dd/mm/yyyy hh:mm o dd/mm/yyyy.
-    Devuelve datetime (naive). Si falla, datetime.min.
-    """
-    if not fecha_str:
-        return datetime.min
-    s = str(fecha_str).strip()
-    for fmt in ("%d/%m/%Y %H:%M", "%d/%m/%Y", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+# ✅ Endpoint AJAX: saldo según diario de caja (cash) para agencia seleccionada
+class ArqueoSaldoAPI(TestLogin, generic.View):
+    def get(self, request, *args, **kwargs):
+        agencia_id = request.GET.get("agencia_id") or ""
         try:
-            return datetime.strptime(s, fmt)
+            agencia_id_int = int(agencia_id)
         except Exception:
-            continue
-    return datetime.min
+            return JsonResponse({"success": False, "error": "Agencia inválida."}, status=400)
 
+        sucursal = validate_agencia_allowed(request, agencia_id_int)
+        if not sucursal:
+            return JsonResponse({"success": False, "error": "Sin permisos."}, status=403)
 
-def _get_allowed_agencia_ids(request):
-    """IDs de sucursales permitidas para el usuario."""
-    try:
-        if getattr(request.user, "is_superuser", False):
-            return list(Sucursal.objects.values_list("id", flat=True))
-        return list(request.user.sucursales.values_list("id", flat=True))
-    except Exception:
-        return []
+        fecha = request.GET.get("fecha") or today_fragment_ddmmyyyy()
+        saldo = compute_saldo_diario_caja(sucursal.id, fecha)
 
-
-def _format_money(v):
-    try:
-        return f"${formatear_moneda_sin_centavos(v)}"
-    except Exception:
-        try:
-            return f"${v}"
-        except Exception:
-            return "-"
-
-
-def _row_from_pago(p: PagoCannon):
-    cliente_nombre = ""
-    nro_cliente = ""
-    nro_operacion = ""
-    agencia = ""
-    campania = ""
-    try:
-        if p.venta_id and p.venta:
-            nro_operacion = getattr(p.venta, "nro_operacion", "")
-            agencia = getattr(getattr(p.venta, "agencia", None), "pseudonimo", "")
-            campania = getattr(p.venta, "campania", "")
-            if getattr(p.venta, "nro_cliente", None):
-                cliente_nombre = getattr(p.venta.nro_cliente, "nombre", "")
-                nro_cliente = getattr(p.venta.nro_cliente, "nro_cliente", "")
-    except Exception:
-        pass
-
-    concepto = cliente_nombre or "Pago"
-    if p.nro_cuota is not None:
-        concepto = f"{concepto} — Cuota {p.nro_cuota}"
-    if p.nro_recibo:
-        concepto = f"{concepto} (Recibo {p.nro_recibo})"
-
-    dt = _parse_fecha_to_dt(p.fecha)
-    monto = int(p.monto or 0)
-    return dt, {
-        "id": f"pago-{p.id}",
-        "kind": "pago",
-        "pk": p.id,
-        "fecha": p.fecha or "",
-        "concepto": concepto,
-        "nro_cuota": p.nro_cuota,
-        "ingreso": _format_money(monto),
-        "egreso": "-",
-        "ingreso_value": monto,
-        "egreso_value": 0,
-        "metodo_pago": getattr(getattr(p, "metodo_pago", None), "alias", "") or "",
-        "metodo_pago_id": getattr(p, "metodo_pago_id", None),
-        "cobrador": getattr(getattr(p, "cobrador", None), "alias", "") or "",
-        "cobrador_id": getattr(p, "cobrador_id", None),
-        "agencia": agencia,
-        "campania": campania,
-        "nro_operacion": nro_operacion,
-        "nro_cliente": nro_cliente,
-        "cliente": cliente_nombre,
-    }
-
-
-def _row_from_externo(m: MovimientoExterno):
-    tipo = (m.movimiento or "").strip().lower()
-    monto = float(m.dinero or 0)
-    is_ingreso = tipo == "ingreso"
-
-    dt = _parse_fecha_to_dt(m.fecha)
-    return dt, {
-        "id": f"externo-{m.id}",
-        "kind": "externo",
-        "pk": m.id,
-        "fecha": m.fecha or "",
-        "concepto": m.concepto or "",
-        "nro_cuota": "-",
-        "ingreso": _format_money(monto) if is_ingreso else "-",
-        "egreso": _format_money(monto) if not is_ingreso else "-",
-        "ingreso_value": monto if is_ingreso else 0,
-        "egreso_value": monto if not is_ingreso else 0,
-        "tipo_mov": tipo,
-        "metodo_pago": getattr(getattr(m, "metodoPago", None), "alias", "") or "",
-        "metodo_pago_id": getattr(m, "metodoPago_id", None),
-        "cobrador": getattr(getattr(m, "ente", None), "alias", "") or "",
-        "agencia": getattr(getattr(m, "agencia", None), "pseudonimo", "") or "",
-        "campania": getattr(m, "campania", "") or "",
-    }
+        return JsonResponse(
+            {
+                "success": True,
+                "agencia_id": sucursal.id,
+                "fecha": fecha,
+                "saldo": float(saldo),
+            },
+            safe=False,
+        )
 
 
 @require_GET
@@ -3630,6 +3315,7 @@ def movs_pagos_list_api(request):
     search = (request.GET.get("search") or "").strip()
 
     # Filtros esperados
+    origen = (request.GET.get("origen") or "").strip().lower()
     fecha = _normalize_fecha_fragment(request.GET.get("fecha") or "")
     concepto = (request.GET.get("concepto") or "").strip()
     tipo_mov = (request.GET.get("tipo_mov") or "").strip().lower()  # ingreso|egreso
@@ -3662,6 +3348,10 @@ def movs_pagos_list_api(request):
         .select_related("metodoPago", "agencia", "ente")
         .filter(agencia__id__in=agencia_ids)
     )
+    if origen in ("cannon", "cannons", "pago", "pagos"):
+        externos_qs = externos_qs.none()
+    elif origen in ("externo", "externos"):
+        pagos_qs = pagos_qs.none()
 
     # --- Filtro tipo_mov (ingreso/egreso)
     if tipo_mov == "egreso":
@@ -3854,7 +3544,11 @@ def movs_pagos_detail_api(request, kind: str, pk: int):
             "id": obj.id,
             "fecha": obj.fecha,
             "monto": obj.monto,
+            "monto_por_chance": obj.monto / len(getattr(venta, "cantidadContratos", "") or []) if venta else 0,
             "monto_formatted": _format_money(obj.monto or 0),
+            "monto_por_chance_formatted": _format_money(
+                (obj.monto or 0) / len(getattr(venta, "cantidadContratos", "") or []) if venta else 0
+            ),
             "nro_cuota": obj.nro_cuota,
             "nro_recibo": obj.nro_recibo,
             "campana_de_pago": obj.campana_de_pago,
@@ -3864,6 +3558,7 @@ def movs_pagos_detail_api(request, kind: str, pk: int):
             "venta": {
                 "id": getattr(venta, "id", None),
                 "nro_operacion": getattr(venta, "nro_operacion", ""),
+                "chances": len(getattr(venta, "cantidadContratos", "") or []),
                 "campania": getattr(venta, "campania", ""),
                 "agencia": getattr(getattr(venta, "agencia", None), "pseudonimo", ""),
                 "cliente": {
@@ -4079,3 +3774,24 @@ def requestVentasAuditoria(request):
    
 #endregion - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+#region MANEJO DE DOLAR ------------------------------------------------------------------
+CACHE_KEY = "cotizaciones:dolar:blue_oficial:v1"
+CACHE_TTL_SECONDS = 60
+
+def cotizaciones_dolar(request):
+    cached = cache.get(CACHE_KEY)
+    if cached:
+        return JsonResponse({"cached": True, **cached}, status=200)
+
+    try:
+        data = asyncio.run(get_dolar_blue_y_oficial_async())
+        cache.set(CACHE_KEY, data, CACHE_TTL_SECONDS)
+        return JsonResponse({"cached": False, **data}, status=200)
+    except Exception as e:
+        # fallback: si falla y tenemos algo viejo en cache, lo devolvemos igual
+        stale = cache.get(CACHE_KEY)
+        if stale:
+            return JsonResponse({"cached": True, "stale": True, **stale}, status=200)
+
+        return JsonResponse({"error": str(e)}, status=502)
+#endregion -----------------------------------------------------------------------------

@@ -79,6 +79,43 @@ def printPDFinforme(data,url,productoName):
     # print(pdf)
     return pdf
 
+import mimetypes, urllib.parse
+from django.contrib.staticfiles import finders
+try:
+    from weasyprint.urls import default_url_fetcher
+except Exception:
+    from weasyprint import default_url_fetcher
+
+def django_static_url_fetcher(url):
+    parsed = urllib.parse.urlparse(url)
+    path = parsed.path or ""
+
+    # Resolver /static/... en filesystem
+    if path.startswith("/static/"):
+        rel = path[len("/static/"):]
+        abs_path = finders.find(rel)
+        if abs_path:
+            mime = mimetypes.guess_type(abs_path)[0] or "application/octet-stream"
+            return {"file_obj": open(abs_path, "rb"), "mime_type": mime, "redirected_url": url}
+
+    # Bloquear cualquier request http/https (evita cuelgues)
+    if parsed.scheme in ("http", "https"):
+        return {"string": b"", "mime_type": "application/octet-stream", "redirected_url": url}
+
+    return default_url_fetcher(url)
+
+def renderPDFinforme_bytes(data, base_url: str):
+    template = get_template("pdfForInforme.html")
+    html_template = template.render(data)
+
+    css_url = os.path.join(settings.ROOT_DIR, "static/css/pdfInforme.css")
+
+    # Devuelve bytes (NO escribe archivo)
+    pdf_bytes = HTML(string=html_template, base_url=base_url, url_fetcher=django_static_url_fetcher).write_pdf(
+        stylesheets=[CSS(css_url)]
+    )
+    return pdf_bytes
+
 def printPDFinformePostVenta(data,url,productoName):
     template = get_template("pdfPostVentaInforme.html")
     context = data
@@ -1030,3 +1067,23 @@ def get_or_create_cobrador(cobrador_str):
     )
 
 #endregion
+
+
+# =====================================================
+# Obtiene el total cannons pagados de una venta segun las divisas
+# =====================================================
+def get_dinero_restante_segun_divisa(cannon, tipo_cambio):
+    restante_por_divisa = {}
+    divisas = ["ARS","USD"]
+    suma_pagos = sum([pago["monto"] * (pago["tipo_cambio"] if pago["moneda"] != "ARS" else 1) for pago in cannon["pagos"]])
+    total_pagado = suma_pagos + cannon["descuento"]["monto"]
+
+    for divisa in divisas:
+        if divisa == "ARS":
+            total_divisa = cannon["total"] - total_pagado
+        else:  # USD
+            total_divisa = (cannon["total"] / tipo_cambio) - (total_pagado / tipo_cambio)
+        
+        restante_por_divisa[divisa] = round(max(total_divisa, 0), 2)
+
+    return restante_por_divisa

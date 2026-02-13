@@ -5,7 +5,7 @@ import { openActionModal, apiFetch } from "../vanilla_components/async_ui.js";
 const cuotasWrapper = document.querySelectorAll(".cuota");
 const payCuotaForm = document.getElementById("payCuotaForm");
 const wrapperVerDetallesPago = document.getElementById(
-  "wrapperVerDetallesPago"
+  "wrapperVerDetallesPago",
 );
 
 const btnPayCuota = document.getElementById("sendPayment");
@@ -80,7 +80,7 @@ async function runDescuento({ root, signal }) {
     ) {
       checkFormValid(
         validarInputsRellenados(),
-        validarMontoParcial(nuevoResto)
+        validarMontoParcial(nuevoResto),
       );
     }
   }
@@ -90,7 +90,7 @@ async function runDescuento({ root, signal }) {
 
 function descuentoAmountUpdate(cuotaData) {
   const descuentoDisplay = document.querySelector(
-    ".descuento_cuota_total h3:last-child"
+    ".descuento_cuota_total h3:last-child",
   );
   if (descuentoDisplay) {
     descuentoDisplay.textContent = cuotaData["descuento"]["monto"];
@@ -120,7 +120,7 @@ window.openModalDescuento = openModalDescuento;
 
 function habilitacionDeBotonDescuento(buttonHTML) {
   const wrapperButtonPayCuota = payCuotaForm.querySelector(
-    ".wrapperButtonPayCuota"
+    ".wrapperButtonPayCuota",
   );
   const lastButton = wrapperButtonPayCuota.lastElementChild;
 
@@ -143,11 +143,16 @@ cuotasWrapper.forEach((cuota) => {
     payCuotaForm.classList.remove("active");
 
     try {
-      const form = { ventaID: ventaID.value, cuota: cuota.id };
+      const form = {
+        ventaID: ventaID.value,
+        cuota: cuota.id,
+        dolar: dolar_oficial,
+      };
       const data = await apiFetch("/ventas/detalle_venta/get_specific_cuota/", {
         method: "POST",
         data: form,
       });
+      console.log(data);
 
       if (data.status === "Pagado") {
         wrapperVerDetallesPago.classList.add("active");
@@ -176,7 +181,7 @@ cuotasWrapper.forEach((cuota) => {
         const wrapperButtons = document.querySelector(".wrapperButtonPayCuota");
         wrapperButtons.insertAdjacentHTML(
           "beforebegin",
-          htmlDetalleCuota(data)
+          htmlDetalleCuota(data),
         );
         clearCancelButtons(); // no tiene sentido que haya botón de cancelación ni de anulacion
         clearAnularButtons();
@@ -190,7 +195,7 @@ cuotasWrapper.forEach((cuota) => {
         const wrapperButtons = document.querySelector(".wrapperButtonPayCuota");
         wrapperButtons.insertAdjacentHTML(
           "beforebegin",
-          htmlDetalleCuota(data)
+          htmlDetalleCuota(data),
         );
 
         if (data.buttonCancelacionDePago) {
@@ -215,7 +220,7 @@ cuotasWrapper.forEach((cuota) => {
       console.log(err);
       showReponseModal(
         "No se pudo cargar la cuota. Intenta nuevamente.",
-        "/static/images/icons/error_icon.png"
+        "/static/images/icons/error_icon.png",
       );
     }
   });
@@ -373,7 +378,7 @@ function showMessageFormAnularCuota() {
   const inputForm = document.querySelector("#formAnularCuota > input");
   inputForm.insertAdjacentHTML(
     "afterend",
-    `<h3 class="messageAnularCuota">Contraseña incorrecta</h3>`
+    `<h3 class="messageAnularCuota">Contraseña incorrecta</h3>`,
   );
 }
 function cerrarAnularCuotaForm() {
@@ -471,7 +476,7 @@ function htmlPagos(pagos) {
     <div class="info_cuota detail_view_more"><h3>Monto</h3><h3>$${
       p["monto"]
     }</h3></div>
-  `
+  `,
     )
     .join("");
 }
@@ -480,7 +485,7 @@ function htmlPagos(pagos) {
 btnPayCuota.addEventListener("click", async () => {
   console.log("Pagando cuota...");
   const typePaymentSelected = payCuotaForm.querySelector(
-    '.wrapperChoices input[type="radio"]:checked'
+    '.wrapperChoices input[type="radio"]:checked',
   );
   const cobrador = payCuotaForm.querySelector(".input-cobrador");
   const metodoPago = payCuotaForm.querySelector(".input-metodoPago");
@@ -555,12 +560,18 @@ function validarMontoParcial(restoValor) {
   }
 }
 
-function calcularDineroRestante(cuota) {
+function calcularDineroRestante(cuota, moneda) {
   const dineroRestanteHTML = payCuotaForm.querySelector("#dineroRestante");
+  // const convert_pagos_to_usd = cuota["pagos"].some()
+
   const sumaPagos = cuota["pagos"]
     .map(({ monto }) => monto)
     .reduce((acc, n) => acc + n, 0);
-  resto = cuota["total"] - (sumaPagos + cuota["descuento"]["monto"]);
+
+  const total_cuota_segun_moneda =
+    moneda === "ars" ? cuota["total"] : cuota["total"] / dolar_oficial;
+
+  resto = total_cuota_segun_moneda - (sumaPagos + cuota["descuento"]["monto"]);
   dineroRestanteHTML.textContent = "Dinero restante: $" + resto;
   return resto;
 }
@@ -579,11 +590,12 @@ function activeFormCuotas(cuotaSelected) {
     choices.forEach((choice) =>
       choice.addEventListener("click", () => {
         setearInputAFormaDePago(choice);
-      })
+      }),
     );
   }
 
   resto = calcularDineroRestante(cuotaSelected);
+  setupMonedaWatcher(payCuotaForm, () => resto);
 
   checkFormValid(validarInputsRellenados(), validarMontoParcial(resto));
   payCuotaForm.querySelectorAll("input").forEach((field) => {
@@ -620,7 +632,7 @@ function setearInputAFormaDePago(choice) {
   btnPayCuota.classList.add("blocked");
 
   const inputsFormaDePago = payCuotaForm.querySelectorAll(
-    ".wrapperChoices > .choice"
+    ".wrapperChoices > .choice",
   );
   const montoParcialBox = payCuotaForm.querySelector(".pickedAmount");
 
@@ -628,26 +640,24 @@ function setearInputAFormaDePago(choice) {
   payCuotaForm.reset();
 
   const requiredFields = payCuotaForm.querySelectorAll(
-    "input[type='hidden']:not(.notForm):not([name='csrfmiddlewaretoken']), input[type='text']:not(.notForm):not([name='csrfmiddlewaretoken'])"
+    "input[type='hidden']:not(.notForm):not([name='csrfmiddlewaretoken']), input[type='text']:not(.notForm):not([name='csrfmiddlewaretoken'])",
   );
 
-  // console.log(
-  //   "[setearInputAFormaDePago] voy a limpiar",
-  //   requiredFields.length,
-  //   "inputs"
-  // );
   clearInputs(requiredFields, payCuotaForm);
+
+  initCustomSingleSelects({
+    inputMoneda: "ars",
+  });
 
   choice.classList.add("active");
   choice.children[0].checked = true;
 
   if (choice.id === "choiceParcial") {
-    montoParcialBox.style.display = "block";
-    montoParcialBox.classList.remove("notForm");
+    montoParcialBox.classList.remove("blocked");
+    montoParcialBox.children[1].disabled = false;
   } else {
-    montoParcialBox.classList.add("notForm");
-    montoParcialBox.style.display = "none";
-    montoParcialBox.children[1].value = "";
+    montoParcialBox.classList.add("blocked");
+    montoParcialBox.children[1].disabled = true;
   }
 }
 
@@ -664,7 +674,7 @@ function checkFormValid(okInputs, okMontoParcial) {
 function validarInputsRellenados() {
   const requiredFields = payCuotaForm.querySelectorAll(".inputValidation");
   const formaPago = payCuotaForm.querySelector(
-    ".typesPayments > .wrapperChoices > .choice.active"
+    ".typesPayments > .wrapperChoices > .choice.active",
   );
 
   // 🔒 Guard: si aún no hay opción activa, no validamos
@@ -712,7 +722,7 @@ async function actualizarEstadoCuota(cuota) {
 
 function removeSpecificClasses(el) {
   ["Pendiente", "Pagado", "bloqueado", "Vencido", "Parcial"].forEach((cls) =>
-    el.classList.remove(cls)
+    el.classList.remove(cls),
   );
 }
 
@@ -763,7 +773,7 @@ function solicitudBajaCuota() {
     if (res?.ok)
       showReponseModal(
         res.result?.message || "Solicitud enviada",
-        "/static/images/icons/checkMark.png"
+        "/static/images/icons/checkMark.png",
       );
   });
 }
@@ -809,12 +819,12 @@ function anulacionCuota() {
     if (res?.ok)
       showReponseModal(
         res.result?.message || "Cuota anulada",
-        "/static/images/icons/checkMark.png"
+        "/static/images/icons/checkMark.png",
       );
     else if (res?.error) {
       showReponseModal(
         "No se pudo anular",
-        "/static/images/icons/error_icon.png"
+        "/static/images/icons/error_icon.png",
       );
       console.log(res.error);
     }
@@ -839,7 +849,7 @@ function showReponseModal(contenido, icon) {
   modal.addFooterBtn(
     "Cerrar",
     "tingle-btn tingle-btn--default button-default-style",
-    () => modal.close()
+    () => modal.close(),
   );
   modal.open();
 }
@@ -850,3 +860,74 @@ function cerrarContenedores_formPago_viewDetails() {
     .forEach((el) => el.classList.remove("active"));
   payCuotaForm.reset();
 }
+
+// --- START: Moneda watcher / sync amounts ---
+function setupMonedaWatcher(root, getRestFn) {
+  const hiddenMoneda = root.querySelector('input[name="moneda"].input-moneda');
+  const amountInput = root.querySelector("#amountParcial");
+  const dineroRestanteEl = root.querySelector("#dineroRestante");
+
+  if (!hiddenMoneda || !amountInput || !dineroRestanteEl) return;
+
+  const readDolar = () => {
+    const d = window.dolar_oficial ?? window.dolarOficial ?? 0;
+    return Number(d) || 0;
+  };
+
+  const formatNumber = (n) => {
+    return (Math.round((Number(n) || 0) * 100) / 100).toFixed(2);
+  };
+
+  const updateDisplay = () => {
+    const moneda = String(hiddenMoneda.value || "ars").toLowerCase();
+    const resto =
+      typeof getRestFn === "function"
+        ? Number(getRestFn())
+        : Number(window.resto || 0);
+    const dolar = readDolar();
+
+    if (moneda === "usd") {
+      const converted = dolar > 0 ? resto / dolar : 0;
+      // si el tipo de pago es total, mostramos el monto calculado convertido
+      amountInput.value = document.querySelector("#total:checked")
+        ? formatNumber(converted)
+        : amountInput.value;
+      dineroRestanteEl.textContent = `Dinero restante: USD ${formatNumber(converted)}`;
+    } else {
+      // ARS
+      amountInput.value = document.querySelector("#total:checked")
+        ? formatNumber(resto)
+        : amountInput.value;
+      dineroRestanteEl.textContent = `Dinero restante: $ ${formatNumber(resto)}`;
+    }
+  };
+
+  // actualizo inmediatamente
+  updateDisplay();
+
+  // escucho eventos que emite inputSelectOnly.js
+  ["input", "change"].forEach((ev) =>
+    hiddenMoneda.addEventListener(ev, () => {
+      // cuando cambia moneda, limpiar/actualizar amount si es tipo total
+      updateDisplay();
+    }),
+  );
+
+  // Si el usuario cambia el tipo de pago (radio total/parcial), reacciono:
+  const radios = root.querySelectorAll('input[name="typePayment"]');
+  radios.forEach((r) =>
+    r.addEventListener("change", () => {
+      // si seleccionaron total, bloquear y rellenar; si parcial, desbloquear
+      const isTotal =
+        root.querySelector('input[name="typePayment"]:checked')?.value ===
+        "total";
+      if (isTotal) {
+        amountInput.readOnly = true;
+      } else {
+        amountInput.readOnly = false;
+      }
+      updateDisplay();
+    }),
+  );
+}
+// --- END: Moneda watcher / sync amounts ---

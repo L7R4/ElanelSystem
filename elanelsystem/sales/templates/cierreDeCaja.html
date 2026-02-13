@@ -2,158 +2,185 @@
 {% load static %}
 
 {% block css %}
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link rel="stylesheet" href="{% static 'css/cierreDeCaja.css' %}">
+
 {% endblock css %}
 
 {% block content %}
-    
+    <div class="header_section">
+        <div class="titleHeaderWrapper">
+            <img src="{% static 'images/icons_sider/caja.svg' %}" alt="">
+            <h1 class="titleHeader">ARQUEO</h1>
+        </div>
+
+        <div class="buttons">
+            <button class="add-button-default" id="confirmArqueoCaja" type="button" form="formArqueoCaja">Confirmar</button>   
+        </div>
+    </div>
+
     <div class="arqueo">
         <form method ="POST" id="formArqueoCaja" class="arqueoWrapper">
             {% csrf_token %}
-            
-            <div class="tittleWrapper">
-                <h1>Agencia {{sucursal}}</h1>
-            </div>
-
+            <h2>Informacion del arqueo</h2>
             <div class="subtittleWrapper">
                <ul>
                     <li class="data">
-                        <div class="dataTittle"><h3>Sucursal</h3></div>
-                        <div class="dataValue"><h3>{{sucursal}}</h3></div>
+                        <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper" >
+                            <h3 class="labelInput">Agencia</h3>
+                            <div class="containerInputAndOptions">
+                            <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""/>
+                            <input
+                                type="hidden"
+                                class="filterInput"
+                                required
+                                name="agencia_id"
+                                id="id_agencia"
+                                value="{{ selected_agencia_id|default:'' }}"
+                                autocomplete="off"
+                                readonly
+                            />
+                            <div class="onlySelect pseudo-input-select-wrapper">
+                                <h3>{{ selected_agencia_label|default:"Seleccionar" }}</h3>
+                            </div>
+                            <ul id="contenedorSucursal" class="list-select-custom options">
+                                {% for agencia in agencias %}
+                                <li data-value="{{agencia.id}}">{{agencia}}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </li>
                      <li class="data">
-                        <div class="dataTittle"><h3>Fecha</h3></div>
-                        <div class="dataValue"><h3>{{fecha}}</h3></div>
+                        <label>Fecha</label>
+                        <p class="input-read-only-default">{{fecha}}</p>
                     </li>
                      <li class="data">
-                        <div class="dataTittle"><h3>Admin</h3></div>
-                        <div class="dataValue"><h3>{{admin}}</h3></div>
+                        <label>Administrativa/o</label>
+                        <p class="input-read-only-default">{{admin}}</p>
                     </li>
                      <li class="data">
-                        <div class="dataTittle"><h3>Responsable</h3></div>
-                        <div class="dataValue"><input type="text" id="responsable" name="responsable" value=""></div>
+                        <label>Responsable</label>
+                        <input id="responsable" name ="responsable" class="input-read-write-default" type="text" value="" placeholder="Escribir..." />
                     </li>
                </ul>
+               {% comment %} <div class="observacionesWrapper">
+                    <div class="obsTittle">
+                        <h2>Observaciones</h2>
+                    </div>
+                    <div class="inputObs">
+                        <textarea name="observaciones" id="observaciones" cols="30" rows="10"></textarea>
+                    </div>
+                </div> {% endcomment %}
             </div>
-
+            
+            <h2>Estado del arqueo</h2>
             <div class="detalleWrapper">
-                <div class="tittleEfectivo">
-                    <h2>Efectivo</h2>
-                </div>
-
-                <div class="tittlesDetalles">
-                   <ul>
-                        <li>Billetes/Monedas</li>
-                        <li>Cantidad</li>
-                        <li>Importe</li>
-                   </ul>
-                </div>
 
                 <div class="valuesWrapper">
+                    <div class="tittlesDetalles">
+                        <ul>
+                            <li>Billetes</li>
+                            <li>Cantidad</li>
+                            <li>Importe</li>
+                        </ul>
+                    </div>
+
                     <ul class="detalleItems">
-                    <li class="item">
+                        <li class="item">
+                            <div class="itemMoneda"><p>$</p><p class="monedaValue">20000</p></div>
+                            <div class="itemCantidad"><input type="number" name="p20000" id="p20000" placeholder=0></div>
+                            <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
+                        </li>
+                        <li class="item">
+                            <div class="itemMoneda"><p>$</p><p class="monedaValue">10000</p></div>
+                            <div class="itemCantidad"><input placeholder=0 type="number" name="p10000" id="p10000"></div>
+                            <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
+                        </li>
+                        <li class="item">
                             <div class="itemMoneda"><p>$</p><p class="monedaValue">2000</p></div>
-                            <div class="itemCantidad"><input type="number" id="p2000" name="p2000"></div>
+                            <div class="itemCantidad"><input placeholder=0 type="number" id="p2000" name="p2000"></div>
                             <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
                         </li>
                         <li class="item">
                             <div class="itemMoneda"><p>$</p><p class="monedaValue">1000</p></div>
-                            <div class="itemCantidad"><input type="number" id="p1000" name="p1000"></div>
+                            <div class="itemCantidad"><input placeholder=0 type="number" id="p1000" name="p1000"></div>
                             <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
                         </li>
                         <li class="item">
                             <div class="itemMoneda"><p>$</p><p class="monedaValue">500</p></div>
-                            <div class="itemCantidad"><input type="number" name="p500" id="p500"></div>
+                            <div class="itemCantidad"><input placeholder=0 type="number" name="p500" id="p500"></div>
                             <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
                         </li>
                         <li class="item">
                             <div class="itemMoneda"><p>$</p><p class="monedaValue">200</p></div>
-                            <div class="itemCantidad"><input type="number" name="p200" id="p200"></div>
+                            <div class="itemCantidad"><input placeholder=0 type="number" name="p200" id="p200"></div>
                             <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
                         </li>
                         <li class="item">
                             <div class="itemMoneda"><p>$</p><p class="monedaValue">100</p></div>
-                            <div class="itemCantidad"><input type="number" name="p100" id="p100"></div>
+                            <div class="itemCantidad"><input placeholder=0 type="number" name="p100" id="p100"></div>
                             <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
                         </li>
                         <li class="item">
                             <div class="itemMoneda"><p>$</p><p class="monedaValue">50</p></div>
-                            <div class="itemCantidad"><input type="number" name="p50" id="p50"></div>
+                            <div class="itemCantidad"><input placeholder=0 type="number" name="p50" id="p50"></div>
                             <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
                         </li>
                         <li class="item">
                             <div class="itemMoneda"><p>$</p><p class="monedaValue">20</p></div>
-                            <div class="itemCantidad"><input type="number" name="p20" id="p20"></div>
+                            <div class="itemCantidad"><input placeholder=0 type="number" name="p20" id="p20"></div>
                             <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
                         </li>
                         <li class="item">
                             <div class="itemMoneda"><p>$</p><p class="monedaValue">10</p></div>
-                            <div class="itemCantidad"><input type="number" name="p10" id="p10"></div>
+                            <div class="itemCantidad"><input placeholder=0 type="number" name="p10" id="p10"></div>
                             <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
                         </li>
-                        <li class="item">
-                            <div class="itemMoneda"><p>$</p><p class="monedaValue">5</p></div>
-                            <div class="itemCantidad"><input type="number" name="p5" id="p5"></div>
-                            <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
-                        </li>
-                        <li class="item">
-                            <div class="itemMoneda"><p>$</p><p class="monedaValue">2</p></div>
-                            <div class="itemCantidad"><input type="number" name="p2" id="p2"></div>
-                            <div class="itemImporte"><p>$</p><p class="importeValue">0</p></div>
-                        </li>
-                        
                     </ul>
+                </div>
+
+                <div class="totalesWrapper">
                     <ul class="detalleTotales">
                         <li class="total">
                             <input type="hidden" name="totalPlanillaEfectivo" id="totalPlanillaEfectivoInput" value="0">
                             <div class="totalTittle"> <p>Total Planilla de Efectivo</p> </div>
-                            <div class="totalImporte"><p>$ </p><p id="totalPlanillaEfectivo" class="totalImporteValue">0</p></div>
+                            <div class="totalImporte"><p id="totalPlanillaEfectivo" class="totalImporteValue">$0</p></div>
                         </li>
                         <li class="total">
-                            <input type="hidden" name="saldoSegunCaja" id="saldoSegunCajaInput" value="0">
+                            <input
+                                type="hidden"
+                                name="saldoSegunCaja"
+                                id="saldoSegunCajaInput"
+                                value="{{ saldo_diario|default:0 }}"
+                            >
                             <div class="totalTittle"> <p>Saldo según diario de caja</p> </div>
-                            <div class="totalImporte"><p>$ </p><p id ="saldoSegunCaja" class="totalImporteValue">{{movs}}</p></div>
+                            <div class="totalImporte">
+                                <p id="saldoSegunCaja" class="totalImporteValue">{{ saldo_diario|default:0 }}</p>
+                            </div>
                         </li>
                         
                         <li class="total">
                             <input type="hidden" name="diferencia" id="diferenciaInput" value="0">
                             <div class="totalTittle"> <p>Diferencia</p> </div>
-                            <div class="totalImporte"><p>$ </p><p id ="diferenciaText" class="totalImporteValue">0</p></div>
+                            <div class="totalImporte"><p id ="diferenciaText" class="totalImporteValue">$0</p></div>
                         </li>
                     </ul>
-                </div>
+                </div>          
                
             </div>
 
-            <div class="observacionesWrapper">
-                <div class="obsTittle">
-                    <h2>Observaciones</h2>
-                </div>
-                <div class="inputObs">
-                    <textarea name="observaciones" id="observaciones" cols="30" rows="10"></textarea>
-                </div>
-            </div>
+            
         </form>
-    </div>
-    <div class="options">
-        <div class="inputWrapper" id="sucursalWrapper">
-            <label for="sucursalInput">Elige la sucursal...</label>
-            <input type="text" name="sucursal" id="sucursalInput" required="required" autocomplete="off" maxlength="50" value ="{{sucursal}}" form="formArqueoCaja" class="selectInput">
-            <ul id="contenedorAgencia" class="select">
-                {% for agencia in sucursales %}
-                    <li>{{agencia.localidad}}, {{agencia.provincia}}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="buttons">
-            <a href="{% url 'sales:oldArqueos' %}" id="oldArqueos"> Ver arqueos anteriores</a>
-            <button id="confirmArqueoCaja" type="button" form="formArqueoCaja">Confirmar cierre</button>   
-        </div>
     </div>
     
     
 {% endblock content %}
 
 {% block js %}
-    <script src="{% static 'js/sales/redirectToPDFArqueo.js' %}"></script>
+<script>
+  var ARQUEO_SALDO_ENDPOINT = "{% url 'sales:arqueoSaldo' %}";
+</script>
+<script src="{% static 'js/sales/arqueoCaja.js' %}"></script>
+<script src="{% static 'js/vanilla_components/inputSelectOnly.js' %}"></script>
+<script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
 {% endblock js %}

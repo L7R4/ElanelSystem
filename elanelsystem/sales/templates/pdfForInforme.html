@@ -1,50 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informe</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Informe</title>
 </head>
 <body>
-    <h1 class="tittleOfSections">Detalle de cierre de caja</h1>
+  <h1 class="tittleOfSections">Detalle de cierre de caja</h1>
 
-    <table>
+  {% if data %}
+  <table>
+    <tr>
+      {% for clave in data.0.keys %}
+        <th><p>{{ clave }}</p></th>
+      {% endfor %}
+    </tr>
+    {% for dicc in data %}
+      <tr>
+        {% for k,v in dicc.items %}
+          <td><p>{{ v }}</p></td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+    <p style="font-size:14px;opacity:.75;">Sin resultados.</p>
+  {% endif %}
+
+  <h1 class="tittleOfSections">Resúmen de dinero según métodos de pagos</h1>
+  <div class="resumTableWrapper">
+    <table class="resum_table">
+      <thead>
         <tr>
-            {% for clave in data.0.keys %}
-                <th><p>{{clave}}</p></th>
-            {% endfor %}
+          <th>Tipo de caja</th>
+          <th>Saldo</th>
         </tr>
-        {% for dicc in data %}
-            <tr>
-                {% for k,v in dicc.items %}
-                    <td>
-                        <p>{{v}}</p>               
-                    </td>
-                {% endfor %}
-            </tr>
-            
-        {% endfor %} 
+      </thead>
+      <tbody>
+        {% for metodo in metodosPagosResumen %}
+          <tr class="{{ metodo.name_clean }}">
+            <td>{{ metodo.verbose_name }}</td>
+            <td>{{ metodo.neto|default:metodo.money }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
-    
-    <h1 class="tittleOfSections">Resúmen de dinero según métodos de pagos</h1>
-    <div class="resumTableWrapper">
-        <table class="resum_table">
-          <thead>
-            <tr>
-                <th>Tipo de caja</th>
-                <th>Saldo</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for metodo in metodosPagosResumen %}
-                <tr class="{{metodo.name_clean}}">
-                    <td>{{metodo.verbose_name}}</td>
-                    <td>${{metodo.money}}</td>
-                </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-    </div>
-    
+  </div>
 </body>
 </html>

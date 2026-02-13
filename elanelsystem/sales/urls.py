@@ -58,8 +58,9 @@ urlpatterns = [
 
     #region URLs Caja -----------------------------------------------------
     path("ventas/caja/",Caja.as_view(),name="caja"),
-    path("ventas/caja/arqueo/",CierreCaja.as_view(),name="cierreDeCaja"),
-    path("ventas/caja/arqueosanteriores",OldArqueosView.as_view(),name="oldArqueos"),
+    path("arqueo/", CierreCaja.as_view(), name="arqueo"),
+    path("arqueo/old/", OldArqueosView.as_view(), name="oldArqueos"),
+    path("arqueo/saldo/", ArqueoSaldoAPI.as_view(), name="arqueoSaldo"),
 
     path("ventas/movs_pagos/", movs_pagos_list_api, name="movs_pagos_list"),
     path("ventas/movs_pagos/<str:kind>/<int:pk>/", movs_pagos_detail_api, name="movs_pagos_detail"),
@@ -69,8 +70,8 @@ urlpatterns = [
     path("ventas/pdf/baja/<int:pk>",viewsPDFBaja,name="bajaPDF"),
     path("ventas/pdf/titularidad/<int:pk>/<int:idCambio>",viewPDFTitularidad,name="tituPDF"),
     path("ventas/pdf/arqueo/<int:pk>/",viewPDFArqueo,name="arqueoPDF"),
-    path('ventas/pdf/informe/', viewsPDFInforme, name='informePDF'),
-    path('ventas/pdf/informesend/', viewPDFInformeAndSend, name='informeSend'),
+    path("ventas/pdf/informe/", viewsPDFInforme, name="ventas_pdf_informe"),
+    path("ventas/excel/informe/", viewsExcelInforme, name="ventas_excel_informe"),
     # path('ventas/detalle_venta/recibo/pago/<int:pk>/', viewPDFReciboCuota, name='getReciboCuota'),
     #     path(
     #     "ventas/detalle_venta/recibo-json/pago/<int:pk>/",
@@ -95,7 +96,5 @@ urlpatterns = [
     path('create_new_mov/', createNewMov, name='create_new_mov'),
     #endregion --------------------------------------------------------------------------------
 
-    #region URLS API PARA EL CRM
-    # path('requestmovscrm/', requestMovimientosCRM, name='requestMovsCRM'),
-    #endregion
+    path("api/cotizaciones/dolar/", cotizaciones_dolar, name="cotizaciones_dolar"),
 ]

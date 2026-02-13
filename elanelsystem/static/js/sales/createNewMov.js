@@ -2,6 +2,8 @@ let formNewMov;
 
 function templateFormIngreso(uniqueFechaId) {
   return `
+        <h2 class="tittleModal">Añadir ingreso</h2>
+        
         <form method="POST" class="modal_form" id="formNewMov">
             ${CSRF_TOKEN}
             <input name="movimiento" id="typeMov" type="hidden" value="ingreso">
@@ -178,6 +180,8 @@ function templateFormIngreso(uniqueFechaId) {
 
 function templateFormEgreso(uniqueFechaId) {
   return `
+        <h2 class="tittleModal">Añadir egreso</h2>
+
         <form method="POST" class="modal_form" id="formNewMov">
             ${CSRF_TOKEN}
             <input name="movimiento" id="typeMov" type="hidden" value="egreso">

@@ -2,47 +2,55 @@
 {% load static %}
 
 {% block css %}
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/vanilla_table.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 <link rel="stylesheet" href="{% static 'css/historialArqueos.css' %}">
+
+<style>
+  .vt-table tbody tr { cursor: pointer; }
+</style>
 {% endblock css %}
 
 {% block content %}
-<div class="filters">
-      <h1>HISTORIAL DE ARQUEOS</h1>
-    <div>
-        <input 
-        type="text"
-        class = "customer"
-        id="customer">
-        <img src="{% static 'images/icons/search.svg' %}" alt="">
+<div class="header_section">
+    <div class="titleHeaderWrapper">
+        <img src="{% static 'images/icons_sider/caja.svg' %}" alt="">
+        <h1 class="titleHeader">HISTORIAL DE ARQUEOS</h1>
     </div>
+
+    {% comment %} <div class="buttons">
+        <a href="{% url 'sales:oldArqueos' %}" id="oldArqueos"> Ver arqueos anteriores</a>
+        <button id="confirmArqueoCaja" type="button" form="formArqueoCaja">Confirmar cierre</button>   
+    </div> {% endcomment %}
 </div>
 
-<div class="information">
-    <div class="tittlesWrapper">
-      <ul class="tittles">
-          <li>Sucursal</li>
-          <li>Fecha</li>
-          <li>Admin</li>
-          <li>Responsable</li>
-          <li>Total de planilla</li>
-      </ul>   
-    </div>
-
-    <div class="valuesWrapper">
-        <ul class="values">
-          {% for arqueo in arqueos %}
-            <a class ="item" href="{% url 'sales:arqueoPDF' arqueo.pk %}" target="_blank">
-              <div><p>{{arqueo.sucursal|truncatechars:24}}</p></div>
-              <div><p>{{arqueo.fecha}}</p></div>
-              <div><p>{{arqueo.admin}}</p></div>
-              <div><p>{{arqueo.responsable}}</p></div>
-              <div><p>{{arqueo.totalPlanilla}}</p></div>
-            </a>
-          {% endfor %} 
-        </ul>       
-    </div>
-</div> 
-
+<div class="informationWrapper">
+  <div id="arqueos_table" class="vt-sticky"></div>
+</div>
 {% endblock content %}
+
 {% block js %}
+<script>
+  // urls para el fetch y el PDF
+  var urlOldArqueos = "{% url 'sales:oldArqueos' %}";
+  var urlPDFBase = "{% url 'sales:arqueoPDF' 0 %}";
+  var imgNext = "{% static 'images/icons/arrowDown.png' %}";
+
+  // sucursales para el select del filtro
+  var sucursalesDisponibles = [
+    {% for s in sucursales %}
+      { id: {{ s.id }}, pseudonimo: "{{ s.pseudonimo|escapejs }}" },
+    {% endfor %}
+  ];
+</script>
+
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
+
+<!-- tu select custom (el que ya usás en otras pantallas) -->
+<script src="{% static 'js/vanilla_components/inputSelectOnly.js' %}"></script>
+<script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
+
+<!-- tabla -->
+<script type="module" src="{% static 'js/sales/arqueos_table.js' %}"></script>
 {% endblock js %}

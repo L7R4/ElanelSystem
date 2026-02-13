@@ -882,6 +882,19 @@ class PagoCannon(models.Model):
         help_text="Ej. 'Marzo 2025'. Se calcula en el save()."
     )
 
+    moneda = models.CharField(
+        "Moneda",
+        max_length=4,
+        default="ARS",
+        help_text="Moneda en la que se realizó el pago."
+    )
+
+    tipo_cambio = models.FloatField(
+        "Tipo de cambio",
+        default=1.0,
+        help_text="Tipo de cambio aplicado al momento del pago."
+    )
+
     monto = models.PositiveIntegerField(
         "Monto",
         validators=[MinValueValidator(1)],
@@ -934,6 +947,8 @@ class PagoCannon(models.Model):
             "nro_cuota": self.nro_cuota,
             "fecha": self.fecha,
             "campana_de_pago": self.campana_de_pago,
+            "moneda": self.moneda,
+            "tipo_cambio": self.tipo_cambio,
             "monto": self.monto,
             "metodo_pago": self.metodo_pago.alias if self.metodo_pago else None,
             "cobrador": self.cobrador.alias if self.cobrador else None,
@@ -947,7 +962,7 @@ class PagoCannon(models.Model):
             raise ValidationError({
                 'nro_cuota': f"Esta venta tiene solo {self.venta.nro_cuotas} cuotas."
             })
-
+    
     def save(self, *args, **kwargs):
         # si no vino explícito, lo genero aquí
         if not self.campana_de_pago:
@@ -964,7 +979,7 @@ class PagoCannon(models.Model):
             # formatea a tu gusto, p.e. RC-000001
             self.nro_recibo = f"RC-{next_num:06d}"
         super().save(*args, **kwargs)
-
+    
     def __str__(self):
         return f"{self.nro_recibo} – Venta {self.venta.nro_operacion} / Cuota {self.nro_cuota} / Campaña {self.campana_de_pago} / Monto: {self.monto}"
     

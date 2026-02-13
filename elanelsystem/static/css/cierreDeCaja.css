@@ -1,337 +1,386 @@
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.wrapper_content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100vh;
+}
+.header_section {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 2rem 3.5rem;
+  flex: 0 0 auto;
+  background-color: var(--blue-1);
+  border-bottom: 1px solid var(--white-800-20);
 }
 
-
-.wrapper_content{
-    display: flex;
+.header_section .titleHeaderWrapper {
+  display: flex;
+  align-items: center;
+  gap: 1.5em;
+  margin-right: auto;
 }
-.options{
-    box-sizing: border-box;
-    padding:2.5rem 0;
-    width: 40%;
-    display: flex;
-    flex-flow: column;
-    justify-content: space-between;
-}
-.buttons{
-    display: flex;
-    /* height: 100%; */
-    column-gap:1rem;
-    align-items: flex-end;
-    
-}
-.buttons > a{
-    font-size: clamp(1rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    color: white;
-    text-decoration: none;
-    min-width: fit-content;
-    padding: 0rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--primary-color);
-    box-sizing: border-box;
-    border-radius: 0.6rem;
-    height: 4rem;
-}
-.buttons > button{
-    padding: 1rem 2rem;
-    height: 4rem;
-    min-width: fit-content;
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-    font-family: raleway-semibold;
-    background-color: var(--primary-color);
-    color: white;
-    outline: none;
-    border-color: transparent;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    
+.header_section .titleHeaderWrapper h1 {
+  font-size: clamp(3rem, 1.6vw, 5rem);
+  font-family: raleway-bold;
+  color: var(--white-color-800);
+  letter-spacing: 0.06rem;
+  padding: 0.5rem 0;
 }
 
-
-/* SELECCION DE SUCURSAL */
-.inputWrapper {
-    position: relative;
-    display: flex;
-    flex-flow: column;
-    row-gap: .5rem;
-    justify-content: center;
-    color: white;
-    font-family: raleway-semibold;
-    font-size: clamp(1.3rem, 1.1vw, 2rem);
-}
-.inputWrapper > input {
-    /* height: 2rem; */
-    width: 70%;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway;
-    background-color: #304361;
-    border: 2px solid var(--third-color);
-    border-radius: 0.6rem;
-    display: flex;
-    align-items: center;
-    padding: 0.6rem;
-    text-indent: 1rem;
-    outline: none;
-    position: relative;
-    z-index: 2;
-    box-sizing:border-box ;
-    color: white;
-}
-.inputWrapper > .select {
-    position: absolute;
-    height: 0;
-    max-height: 20rem;
-    overflow-y: auto;
-    top: 70%;
-    /* left: 3px; */
-    transition: all .4s ease;
-    width: 70%;
-    z-index: 1;
-    background: white;
-    border-radius: 0.5rem;
-    /* border: 3px solid var(--third-color); */
+.header_section .titleHeaderWrapper img {
+  width: 3vw;
+  height: 3vw;
+  min-width: 3.5rem;
+  min-height: 3.5rem;
+  max-width: 6rem;
+  max-height: 6rem;
 }
 
-.inputWrapper > .select > li:first-child {
-    padding-top: 3rem;
+.buttons {
+  display: flex;
+  /* height: 100%; */
+  column-gap: 1rem;
+  align-items: flex-end;
+}
+.buttons > a {
+  font-size: clamp(1rem, 1vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: white;
+  text-decoration: none;
+  min-width: fit-content;
+  padding: 0rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--primary-color);
+  box-sizing: border-box;
+  border-radius: 0.6rem;
+  height: 4rem;
+}
+.buttons > button {
+  padding: 1rem 2rem;
+  height: 4rem;
+  min-width: fit-content;
+  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+  font-family: raleway-semibold;
+  background-color: var(--primary-color);
+  color: white;
+  outline: none;
+  border-color: transparent;
+  border-radius: 0.6rem;
+  cursor: pointer;
 }
 
-.inputWrapper > .select > li {
-    padding: 1rem;
-    font-family: raleway;
-    font-size: 1.4rem;
-    color: black;
+.arqueo {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  overflow-y: hidden;
+  padding: 0 3rem;
+}
+.arqueoWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  overflow-y: auto;
 }
 
-.inputWrapper > .select > li:hover {
-    background-color: #3d7bd867;
-    cursor: pointer;
+.arqueoWrapper > div {
+  border-radius: 0.6rem;
+  width: 90%;
+  height: fit-content;
+  background-color: var(--blue-1);
+  border: 1px solid var(--white-800-20);
+  padding: 2rem;
+}
+.arqueoWrapper > h2 {
+  font-size: clamp(1.6rem, 1.6vw, 2.5rem);
+  font-family: raleway-bold;
+  color: var(--blue-accent-color);
+  color: var(--white-color-800);
 }
 
-.arqueo{
-    width: 60%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.subtittleWrapper {
+  margin-bottom: 2rem;
 }
-.arqueoWrapper{
-    box-shadow: 0px 0px 20px 2px #027df13b;
-    border: 2px solid #027df14d;
-    height: 93%;
-    width: 80%;
-    border-radius: .8rem;
-    overflow:auto;
+
+.arqueoWrapper > div.subtittleWrapper > ul {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: nowrap;
+  list-style: none;
+}
+.arqueoWrapper > div.subtittleWrapper > ul li {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.3rem;
+}
+.arqueoWrapper > div.subtittleWrapper > ul li .inputWrapper .labelInput {
+  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
+  width: fit-content;
+  padding-left: 0.5rem;
+  padding-bottom: 0.3rem;
+}
+.arqueoWrapper > div.subtittleWrapper ul li.data label {
+  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+  font-family: raleway-semibold;
+  color: var(--white-800-80);
+  width: fit-content;
+  padding-left: 0.5rem;
+  padding-bottom: 0.3rem;
+}
+
+.arqueoWrapper > div.subtittleWrapper ul li.data p {
+  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+  font-family: raleway;
+  color: var(--white-800-80);
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+.detalleWrapper {
+  display: flex;
+  gap: 3rem;
+}
+.detalleWrapper div {
+  flex: 1 1 auto;
+}
+
+.totalesWrapper ul.detalleTotales {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.totalesWrapper ul.detalleTotales li {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--blue-2);
+  padding: 1rem 2rem;
+  border-radius: 0.6rem;
+}
+
+.totalesWrapper ul.detalleTotales li .totalTittle {
+  color: var(--white-color-800);
+  font-size: clamp(1.3rem, 1.1vw, 1.5rem);
+  font-family: raleway-semibold;
+  text-align: start;
+  color: var(--blue-accent-color);
+}
+.totalesWrapper ul.detalleTotales li .totalImporteValue {
+  font-size: clamp(1.5rem, 1.2vw, 1.8rem);
+  font-family: raleway-semibold;
+  text-align: end;
+  color: var(--white-color-800);
 }
 /* -------------------------------------------------------- */
 /* TITULO */
 
-.tittleWrapper{
-    width: 100%;
+.tittleWrapper {
+  width: 100%;
 }
-.tittleWrapper > h1{
-    font-size: clamp(1.6rem, 1.4vw, 2rem);
-    color: white;
-    font-family: raleway-semibold;
-    text-align: center;
-    padding: 1rem;
-    background-color: #027df14d;
+.tittleWrapper > h1 {
+  font-size: clamp(1.6rem, 1.4vw, 2rem);
+  color: white;
+  font-family: raleway-semibold;
+  text-align: center;
+  padding: 1rem;
+  background-color: #027df14d;
 }
 
 /* -------------------------------------------------------- */
 /* SUBITULO */
 
-.subtittleWrapper > ul > .data{
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
-    padding: 0rem 2rem;
+.data > .dataValue {
+  margin-left: 2rem;
 }
-.subtittleWrapper > ul > .data > div{
-    width: 50%;
-}
-.subtittleWrapper > ul > .data > div > h3{
-    font-size: clamp(1.3rem, 1.1vw, 1.5rem);
-    color: white;
-    font-family: raleway-semibold;
-    padding: .4rem 0;
-}
-.data > .dataTittle{
-    border-right: 1px solid white;
-}
-.data > .dataValue{
-    margin-left: 2rem;
-}
-.data > .dataValue > input{
-    height: 2rem;
-    width: 80%;
-    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-    font-family: raleway-semibold;
-    background-color: rgba(253,253,253,0.07);
-    border: 1px solid #3d7bd880;
-    border-radius: .5rem;
-    display: flex;
-    align-items: center;
-    padding: 0 0.7rem;
-    outline: none;
-    color: white;
-    margin: .4rem 0;
+.data > .dataValue > input {
+  height: 2rem;
+  width: 80%;
+  font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+  font-family: raleway-semibold;
+  background-color: rgba(253, 253, 253, 0.07);
+  border: 1px solid #3d7bd880;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0 0.7rem;
+  outline: none;
+  color: white;
+  margin: 0.4rem 0;
 }
 
 /* -------------------------------------------------------- */
 /* DETALLE */
 
-.tittleEfectivo > h2{
-    border-top: 1px solid white;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
-    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-    color: white;
-    font-family: raleway-semibold;
-    padding: .5rem 2rem;
-    background-color: #ffffff3a;
+.tittleEfectivo > h2 {
+  border-top: 1px solid white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+  font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+  color: white;
+  font-family: raleway-semibold;
+  padding: 0.5rem 2rem;
+  background-color: #ffffff3a;
 }
 
-.tittlesDetalles > ul{
-    display: flex;
-    /* column-gap: calc(100% / 6); */
-    list-style: none;
-    width: 100%;
-    justify-content: space-around;
+.tittlesDetalles > ul {
+  display: flex;
+  /* column-gap: calc(100% / 6); */
+  list-style: none;
+  width: 100%;
+  justify-content: space-around;
 }
 
-.tittlesDetalles > ul > li{
-    color: white;
-    font-size: clamp(1.3rem, 1.1vw, 1.5rem);
-    font-family: raleway-semibold;
-    padding: 1rem 0;
-    width: 33.333%;
-    text-align: center;
+.tittlesDetalles > ul > li {
+  color: var(--blue-accent-color);
+  font-size: clamp(1.3rem, 1.1vw, 1.5rem);
+  font-family: raleway-semibold;
+  padding: 1rem 0;
+  width: 33.333%;
+  text-align: center;
 }
 
-
-.valuesWrapper > ul.detalleItems > li{
-    display: flex;
-    font-size: 1.4rem;
-    align-items: center;
-    justify-content: space-around;
-    font-family: raleway;
-    position: relative;
-    padding: .4rem 0;
-    width: 100%;
-    color: rgb(241, 237, 237);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+.valuesWrapper > ul.detalleItems > li {
+  display: flex;
+  font-size: clamp(1.3rem, 1.1vw, 1.5rem);
+  align-items: center;
+  justify-content: space-around;
+  font-family: raleway;
+  position: relative;
+  padding: 1rem 0;
+  width: 100%;
+  color: var(--white-color-800);
+  border-bottom: 1px solid var(--white-800-20);
 }
-.valuesWrapper > ul.detalleItems > li > div{
-    width: 33.333%;
-    text-align: center;
+.valuesWrapper > ul.detalleItems > li > div {
+  width: 33.333%;
+  text-align: center;
 }
-.valuesWrapper > ul.detalleItems > li > div.itemMoneda>p{
-    display: inline;
+.valuesWrapper > ul.detalleItems > li > div.itemMoneda > p {
+  display: inline;
 }
-.valuesWrapper > ul.detalleItems > li > div.itemImporte>p{
-    display: inline;
-}
-
-.valuesWrapper > ul.detalleItems > li > div.itemCantidad{
-    display: flex;
-    justify-content: center;
-}
-.valuesWrapper > ul.detalleItems > li > div.itemCantidad > input{
-    height: 2rem;
-    width: 4rem;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    background-color: rgba(253,253,253,0.07);
-    border: 1px solid #3d7bd880;
-    border-radius: .5rem;
-    display: flex;
-    align-items: center;
-    padding: 0 .7rem;
-    outline: none;
-    color: white;
-    text-align: center;
-}
-.valuesWrapper > ul.detalleTotales {
-    border-top: 1px solid white;
-}
-.valuesWrapper > ul.detalleTotales > .total{
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
-    padding: 0rem 2rem;
+.valuesWrapper > ul.detalleItems > li > div.itemImporte > p {
+  display: inline;
 }
 
-.valuesWrapper > ul.detalleTotales > .total > div{
-    width: 50%;
+.valuesWrapper > ul.detalleItems > li > div.itemCantidad {
+  display: flex;
+  justify-content: center;
 }
-.valuesWrapper > ul.detalleTotales > .total > div.totalImporte > input{
-    height: 2rem;
-    width: 8rem;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    background-color: rgba(253,253,253,0.07);
-    border: 1px solid #3d7bd880;
-    border-radius: .5rem;
-    display: flex;
-    align-items: center;
-    padding: 0 0.7rem;
-    outline: none;
-    color: white;
-    margin-left: .6rem;
-}
-.valuesWrapper > ul.detalleTotales > .total > div.totalImporte{
-    display: flex;
-    align-items: center;
-}
-.valuesWrapper > ul.detalleTotales > .total > div > p{
-    font-size: clamp(1.3rem, 1.1vw, 1.5rem);
-    color: white;
-    font-family: raleway-semibold;
-    padding: .6rem 0;
-}
-.total > .totalTittle{
-    border-right: 1px solid white;
-}
-.total> .totalImporte{
-    margin-left: 2rem;
+.valuesWrapper > ul.detalleItems > li > div.itemCantidad > input {
+  height: 2rem;
+  width: 4rem;
+  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
+  font-family: raleway-semibold;
+  background-color: rgba(253, 253, 253, 0.07);
+  border: 1px solid #3d7bd880;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0 0.7rem;
+  outline: none;
+  color: white;
+  text-align: center;
 }
 
 /* OBSERVACIONES */
-.observacionesWrapper > .obsTittle > h2{
-    border-top: 1px solid white;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
-    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-    color: white;
-    font-family: raleway-semibold;
-    padding: .5rem 2rem;
-    background-color: #ffffff3a;
+.observacionesWrapper > .obsTittle > h2 {
+  border-top: 1px solid white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+  font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+  color: white;
+  font-family: raleway-semibold;
+  padding: 0.5rem 2rem;
+  background-color: #ffffff3a;
 }
-.observacionesWrapper > .inputObs{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
+.observacionesWrapper > .inputObs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
 }
-.observacionesWrapper > .inputObs > textarea{
-    height: 10rem;
-    width: 90%;
-    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-    font-family: raleway;
-    background-color: rgba(253,253,253,0.07);
-    border: 1px solid #3d7bd880;
-    border-radius: .5rem;
-    padding: .7rem;
-    outline: none;
-    color: white;
+.observacionesWrapper > .inputObs > textarea {
+  height: 10rem;
+  width: 90%;
+  font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+  font-family: raleway;
+  background-color: rgba(253, 253, 253, 0.07);
+  border: 1px solid #3d7bd880;
+  border-radius: 0.5rem;
+  padding: 0.7rem;
+  outline: none;
+  color: white;
 }
 
+/* ============================================= */
 
+/* ====== Arqueo: filas de billetes con columnas FIJAS (no bailan) ====== */
 
+.tittlesDetalles > ul {
+  display: grid;
+  grid-template-columns: 1fr 140px 1fr; /* moneda | cantidad (fijo) | importe */
+  list-style: none;
+  width: 100%;
+  align-items: center;
+  justify-items: center;
+}
 
+.tittlesDetalles > ul > li {
+  width: 100%;
+  text-align: center;
+}
 
+.valuesWrapper > ul.detalleItems > li.item {
+  display: grid;
+  grid-template-columns: 1fr 140px 1fr;
+  align-items: center;
+  justify-items: center;
+
+  /* mantené tu look */
+  font-size: clamp(1.3rem, 1.1vw, 1.5rem);
+  font-family: raleway;
+  padding: 1rem 0;
+  width: 100%;
+  color: var(--white-color-800);
+  border-bottom: 1px solid var(--white-800-20);
+}
+
+.valuesWrapper > ul.detalleItems > li.item > div {
+  width: 100%;
+  text-align: center;
+  min-width: 0;
+}
+
+/* números más “parejos” */
+.valuesWrapper .monedaValue,
+.valuesWrapper .importeValue,
+.totalImporteValue {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* input fijo y sin cambiar el layout */
+.valuesWrapper > ul.detalleItems > li.item .itemCantidad {
+  display: flex;
+  justify-content: center;
+  width: 140px; /* fija la columna */
+}
+
+.valuesWrapper > ul.detalleItems > li.item .itemCantidad > input {
+  width: 96px; /* fijo */
+  max-width: 96px;
+  box-sizing: border-box;
+}

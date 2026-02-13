@@ -61,6 +61,9 @@
 }
 
 /* #region ESTILOS DE TABLA DE MOVIMIENTOS */
+#vt_filter {
+  gap: 0.5rem;
+}
 .vt-header-actions {
   display: flex;
   align-items: center;
@@ -80,6 +83,10 @@
   overflow: hidden; /* Oculta el texto que se desborda */
   text-overflow: ellipsis; /* Añade los puntos suspensivos */
 }
+#caja_table tbody tr td {
+  cursor: pointer;
+}
+
 /* #endregion */
 
 /* #region SECTOR DE MOVIMIENTOS DE CAJA */
@@ -434,6 +441,68 @@ table.resum_table > tbody > tr > td:last-child {
 
 /* #endregion */
 
+/* #region MODAL FILTRO DE MOVIMIENTOS */
+.modalContainerFilter .tittleModal {
+  font-size: clamp(1.6rem, 1.3vw, 2rem);
+  font-family: raleway-semibold;
+  color: var(--white-color-800);
+  margin-bottom: 1rem;
+}
+.modalContainerFilter .tittleModal.sub {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--white-800-20);
+}
+
+.modal_filter .detail_grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.modal_filter .detail_grid > div {
+  width: 45%;
+  min-width: 20rem;
+  display: flex;
+  flex-direction: column;
+}
+.modalContainerFilter div label {
+  font-size: clamp(1rem, 1vw, 1.3rem);
+  font-family: raleway;
+  color: var(--white-800-50);
+  margin-bottom: 0.5rem;
+  padding-left: 0.3rem;
+}
+.modalContainerFilter div h3.labelInput {
+  font-size: clamp(1rem, 1vw, 1.3rem);
+  font-family: raleway;
+  color: var(--white-800-50);
+  margin-bottom: 0.5rem;
+  padding-left: 0.3rem;
+}
+.modalContainerFilter .detail_grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+.modalContainerFilter .detail_grid div.detail_item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 45%;
+}
+.modalContainerFilter .detail_grid div.detail_item p {
+  display: flex;
+  align-items: center;
+  color: var(--white-color-800);
+}
+
+.modalContainerFilter .tingle-modal-box__content {
+  /* min-height: 60vh; */
+  padding: 5rem;
+}
+
+/* #endregion */
 /* #region TEXTO DE FILTROS DE MOVIMIENTOS */
 .wrapperFiltroTexto {
   width: 80%;
@@ -563,12 +632,6 @@ table.resum_table > tbody > tr > td:last-child {
   height: fit-content;
 }
 
-.modal_form > div.wrapperInput > .labelInput {
-  font-size: clamp(1.2rem, 1.2vw, 1.5rem);
-  font-family: raleway-semibold;
-  color: var(--background-color);
-}
-
 .movimiento-info,
 .cannon-info {
   display: flex;
@@ -619,3 +682,5 @@ table.resum_table > tbody > tr > td:last-child {
   font-size: clamp(1.3rem, 1.2vw, 1.5rem);
   font-family: raleway-semibold;
 }
+
+/* ================================================= */

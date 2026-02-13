@@ -559,7 +559,9 @@
 
 .inputs > div > h3 {
   font: clamp(1.1rem, 1vw, 1.4rem) raleway-semibold;
-  font-feature-settings: "pnum" on, "lnum" on;
+  font-feature-settings:
+    "pnum" on,
+    "lnum" on;
   color: var(--third-color);
   padding: 1rem;
   word-break: break-all;
@@ -1697,4 +1699,18 @@ button#btnReciboCuota:hover {
 
 .inline-loader {
   margin-top: 1rem;
+}
+
+.montoMonedaWrapper {
+  display: flex;
+  align-items: center;
+  column-gap: 0.8rem;
+}
+
+.montoMonedaWrapper #selectWrapperSelectMoneda {
+  flex: 1 0 40%;
+}
+
+.montoMonedaWrapper .pickedAmount {
+  flex: 1 0 60%;
 }
