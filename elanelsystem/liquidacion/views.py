@@ -26,6 +26,7 @@ from .utils import (
     liquidaciones_countFaltas,
     liquidaciones_countTardanzas,
     get_comision_total,
+    get_config_para_campania,
     detalles_ventas_propias,
     detalle_cuota_1_adelantadas,
     detalles_ventas_x_equipo,
@@ -72,7 +73,7 @@ class LiquidacionesComisiones(TestLogin,generic.View):
             context = {}
             pago = PagoCannon.objects.filter(nro_recibo="RC-223583").first()
             # print(f"\n AAAAA\n {pago.id}")
-            request.session["ajustes_comisiones"] = [] # Reiniciar posibles ajustes de la comisiones que existan
+            # Ajustes ahora persisten en DB (AjusteComision), no en sesión
             # print(len(Ventas.objects.all()))
             context["urlPDFLiquidacion"] = reverse_lazy("liquidacion:viewPDFLiquidacion")
             # context["defaultSucursal"] = Sucursal.objects.first()
@@ -97,17 +98,46 @@ class LiquidacionesComisiones(TestLogin,generic.View):
                 return JsonResponse({"status": False, "message": "No existen datos para procesar la liquidacion de honorarios."}, safe=False)
                 
             
-            #2 --- Verificamos que no haya otra liquidacion de ese periodo y agencia ---
-            if Liquidacion.objects.filter(campania=campania, agencia=sucursalObject).exists():
-                return JsonResponse({"status": False, "message": "Ya existe una liquidación para esta campaña y agencia."}, safe=False)
+            #2 --- Verificamos si ya existe una liquidacion cerrada (posible reliquidación) ---
+            liq_existente = Liquidacion.objects.filter(
+                campania=campania, agencia=sucursalObject, cerrada=True
+            ).order_by("-version").first()
 
+            if liq_existente:
+                if not form.get("confirmar_reliquidacion"):
+                    return JsonResponse({
+                        "status": "requiere_confirmacion",
+                        "version_actual": liq_existente.version,
+                        "fecha_original": liq_existente.fecha,
+                        "message": f"Ya existe la versión {liq_existente.version} cerrada el {liq_existente.fecha}.",
+                    }, safe=False)
+                motivo = form.get("motivo_reliquidacion", "")
+                Liquidacion.objects.filter(
+                    campania=campania, agencia=sucursalObject
+                ).update(es_vigente=False)
+                nueva_version = liq_existente.version + 1
+            else:
+                motivo = ""
+                nueva_version = 1
 
-            #3 --- Crearmos la liquidacion ---
+            #3 --- Creamos la liquidacion ---
+            config_usada = get_config_para_campania(campania)
             new_liquidacion = Liquidacion()
             new_liquidacion.agencia = sucursalObject
             new_liquidacion.campania = campania
             new_liquidacion.fecha = datetime.date.today().strftime("%d/%m/%Y")
             new_liquidacion.json_data_liquidacion = datos
+            new_liquidacion.cerrada = True
+            new_liquidacion.version = nueva_version
+            new_liquidacion.es_vigente = True
+            new_liquidacion.motivo_reliquidacion = motivo
+            new_liquidacion.total_liquidado = sum(c.get("comisionTotal", 0) for c in datos)
+            new_liquidacion.cant_ventas = sum(
+                c.get("info_total_de_comision", {}).get("detalle", {})
+                 .get("ventasPropias", {}).get("cant_ventas_total", 0)
+                for c in datos
+            )
+            new_liquidacion.config_snapshot = config_usada
             new_liquidacion.save()
           
             
@@ -139,10 +169,7 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
     tipo_colaborador_formated = tipo_colaborador.capitalize() if tipo_colaborador else None
 
     if tipo_colaborador_formated and tipo_colaborador_formated in rangos:
-        colaboradores = colaboradores.filter(rango=tipo_colaborador_formated)
-
-    # Tomamos todos los ajustes en sesión
-    ajustes_sesion = request.session.get("ajustes_comisiones", [])
+        colaboradores = [c for c in colaboradores if c.rango == tipo_colaborador_formated]
 
     colaboradores_list = []
 
@@ -150,14 +177,19 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
         if item.rango in ["Admin","Administrativa","Administrativo"] or item.is_superuser:
             continue
 
-        # Filtrar los ajustes de este usuario
-        ajustes_usuario = [
-            a for a in ajustes_sesion
-            if int(a["user_id"]) == item.pk
-            and a["campania"] == campania
-            and a["agencia"] == str(sucursalObject.id)
-        ]
-        
+        # Leer ajustes activos desde DB
+        ajustes_usuario = list(
+            AjusteComision.objects
+            .filter(usuario_id=item.pk, campania=campania, agencia=sucursalObject, activo=True)
+            .order_by("creado_en")
+            .values("id", "ajuste_tipo", "dinero", "observaciones")
+        )
+        # Agregar campos de compatibilidad usados por get_comision_total
+        for a in ajustes_usuario:
+            a["user_id"] = str(item.pk)
+            a["agencia"]  = str(sucursalObject.id)
+            a["campania"] = campania
+
         comision_data = get_comision_total(item, campania, sucursalObject, ajustes_usuario)
 
         colaboradores_list.append({
@@ -170,7 +202,7 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
             "ajustes_comision": ajustes_usuario,
             "comisionTotal": comision_data["comision_total"],
             "info_total_de_comision": comision_data,
-            "egreso": 1 if item.fec_egreso else 0
+            "egreso": 1 if comision_data.get("egreso_en_campana") else 0
         })
 
     totalDeComisiones = sum([user["comisionTotal"] for user in colaboradores_list])
@@ -211,78 +243,136 @@ def requestColaboradoresWithComisiones(request):
     return JsonResponse(context, safe=False)
 
 
+def _liquidacion_cerrada_vigente(campania, agencia_id):
+    """True si ya existe una liquidación cerrada y vigente para esa campaña+agencia."""
+    return Liquidacion.objects.filter(
+        campania=campania, agencia_id=agencia_id, cerrada=True, es_vigente=True
+    ).exists()
+
+
+def _ajustes_db_para_usuario(user_id, campania, agencia_id):
+    """Devuelve lista de ajustes activos de DB con campos de compatibilidad incluidos."""
+    qs = list(
+        AjusteComision.objects
+        .filter(usuario_id=user_id, campania=campania, agencia_id=agencia_id, activo=True)
+        .order_by("creado_en")
+        .values("id", "ajuste_tipo", "dinero", "observaciones")
+    )
+    for a in qs:
+        a["user_id"] = str(user_id)
+        a["agencia"]  = str(agencia_id)
+        a["campania"] = campania
+    return qs
+
+
 def crearAjusteComision(request):
-    if request.method == "POST":
-        body = json.loads(request.body)
-        user_id = body.get("user_id")
-        ajuste_tipo = body.get("ajuste")
-        dinero = body.get("dinero")
-        observaciones = body.get("observaciones", "")
-        campania = body.get("campania")
-        agencia = body.get("agencia")
-        tipo_colaborador = body.get("tipoColaborador")
-
-        total_comisiones = int(body.get("total_comisiones", 0))
-
-        if not user_id or not campania or not agencia:
-            return JsonResponse({"status": False, "message": "Faltan datos obligatorios"}, status=400)
-
-        # Se arma el ajuste y se guarda en sesión
-        ajuste = {
-            "user_id": user_id,
-            "ajuste_tipo": ajuste_tipo,
-            "dinero": int(dinero) if dinero else 0,
-            "observaciones": observaciones,
-            "campania": campania,
-            "agencia": agencia
-        }
-        ajustes_sesion = request.session.get("ajustes_comisiones", [])
-        ajustes_sesion.append(ajuste)
-        request.session["ajustes_comisiones"] = ajustes_sesion
-        request.session.modified = True
-
-        # -- OPCIONAL: recalculamos la liquidación entera para 
-        # actualizar 'liquidacion_data' en la misma sesión --
-        # (Si tu interfaz llama a requestColaboradoresWithComisiones luego,
-        #  puedes omitir esto. Pero si quieres reflejarlo de inmediato en
-        #  'liquidacion_data', se hace así:)
-        colaboradores_list, totalDeComisionesRecalc = recalcular_liquidacion_data(
-            request=request,
-            campania=campania,
-            sucursal_id=agencia,
-            tipo_colaborador=tipo_colaborador  # O define si usas uno en particular
-        )
-        request.session["liquidacion_data"] = colaboradores_list
-        request.session.modified = True
-
-        # Cálculo de comisión final del usuario con esos nuevos ajustes
-        # (si deseas devolverlo inmediatamente al front)
-        sucursalObject = Sucursal.objects.get(id=agencia)
-        usuario = Usuario.objects.get(pk=user_id)
-        datos_comision = get_comision_total(
-            usuario, 
-            campania, 
-            sucursalObject, 
-            [ a for a in ajustes_sesion
-              if int(a["user_id"]) == int(user_id)
-              and a["campania"] == campania
-              and a["agencia"] == agencia
-            ]
-        )
-        comision_base = datos_comision["comision_total"]
-
-        return JsonResponse({
-            "status": True,
-            "message": "Ajuste de comisión creado en sesión.",
-            "user_id": user_id,
-            "user_name": usuario.nombre,
-            "new_comision": comision_base,
-            "nuevo_total_comisiones": str(int(totalDeComisionesRecalc)),
-            "ajuste_sesion": ajustes_sesion
-        })
-
-    else:
+    if request.method != "POST":
         return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
+
+    body = json.loads(request.body)
+    user_id        = body.get("user_id")
+    ajuste_tipo    = body.get("ajuste")
+    dinero         = body.get("dinero")
+    observaciones  = body.get("observaciones", "")
+    campania       = body.get("campania")
+    agencia        = body.get("agencia")
+    tipo_colaborador = body.get("tipoColaborador")
+
+    if not user_id or not campania or not agencia:
+        return JsonResponse({"status": False, "message": "Faltan datos obligatorios"}, status=400)
+
+    if _liquidacion_cerrada_vigente(campania, agencia):
+        return JsonResponse(
+            {"status": False, "message": "Esta campaña ya tiene una liquidación cerrada. Realice una reliquidación para modificar ajustes."},
+            status=400
+        )
+
+    sucursalObject = Sucursal.objects.get(id=agencia)
+    usuario = Usuario.objects.get(pk=user_id)
+
+    AjusteComision.objects.create(
+        usuario=usuario,
+        agencia=sucursalObject,
+        campania=campania,
+        ajuste_tipo=ajuste_tipo,
+        dinero=int(dinero) if dinero else 0,
+        observaciones=observaciones,
+    )
+
+    colaboradores_list, totalDeComisionesRecalc = recalcular_liquidacion_data(
+        request=request,
+        campania=campania,
+        sucursal_id=agencia,
+        tipo_colaborador=tipo_colaborador,
+    )
+    request.session["liquidacion_data"] = colaboradores_list
+    request.session.modified = True
+
+    ajustes_usuario = _ajustes_db_para_usuario(user_id, campania, agencia)
+    datos_comision = get_comision_total(usuario, campania, sucursalObject, ajustes_usuario)
+
+    return JsonResponse({
+        "status": True,
+        "message": "Ajuste de comisión guardado.",
+        "user_id": user_id,
+        "user_name": usuario.nombre,
+        "new_comision": datos_comision["comision_total"],
+        "nuevo_total_comisiones": str(int(totalDeComisionesRecalc)),
+        "ajustes_usuario": ajustes_usuario,
+    })
+
+
+def eliminarAjusteComision(request):
+    if request.method != "POST":
+        return JsonResponse({"status": False, "message": "Método no permitido"}, status=405)
+
+    body = json.loads(request.body)
+    ajuste_id        = body.get("ajuste_id")
+    campania         = body.get("campania")
+    agencia          = body.get("agencia")
+    tipo_colaborador = body.get("tipoColaborador")
+
+    if not ajuste_id:
+        return JsonResponse({"status": False, "message": "Falta ajuste_id"}, status=400)
+
+    try:
+        ajuste = AjusteComision.objects.get(id=ajuste_id)
+    except AjusteComision.DoesNotExist:
+        return JsonResponse({"status": False, "message": "Ajuste no encontrado"}, status=404)
+
+    if _liquidacion_cerrada_vigente(campania, agencia):
+        return JsonResponse(
+            {"status": False, "message": "Esta campaña ya tiene una liquidación cerrada. Realice una reliquidación para modificar ajustes."},
+            status=400
+        )
+
+    user_id = ajuste.usuario_id
+    ajuste.activo = False
+    ajuste.save()
+
+    colaboradores_list, totalDeComisionesRecalc = recalcular_liquidacion_data(
+        request=request,
+        campania=campania,
+        sucursal_id=agencia,
+        tipo_colaborador=tipo_colaborador,
+    )
+    request.session["liquidacion_data"] = colaboradores_list
+    request.session.modified = True
+
+    sucursalObject = Sucursal.objects.get(id=agencia)
+    usuario = Usuario.objects.get(pk=user_id)
+    ajustes_usuario = _ajustes_db_para_usuario(user_id, campania, agencia)
+    datos_comision = get_comision_total(usuario, campania, sucursalObject, ajustes_usuario)
+
+    return JsonResponse({
+        "status": True,
+        "message": "Ajuste eliminado.",
+        "user_id": str(user_id),
+        "user_name": usuario.nombre,
+        "new_comision": datos_comision["comision_total"],
+        "nuevo_total_comisiones": str(int(totalDeComisionesRecalc)),
+        "ajustes_usuario": ajustes_usuario,
+    })
 
 
 # def ajustesCoeficiente_gerente_sucursal(request):
@@ -627,22 +717,20 @@ class HistorialLiquidaciones(generic.ListView):
 
         if sucursal:
             sucursalObject = Sucursal.objects.filter(pseudonimo=sucursal).first()
-            filtros["sucursal"] = sucursalObject
+            filtros["agencia"] = sucursalObject
 
-        liquidacion_qs = LiquidacionCompleta.objects.all() if not filtros else LiquidacionCompleta.objects.filter(**filtros)
-            
+        liquidacion_qs = Liquidacion.objects.filter(cerrada=True) if not filtros else Liquidacion.objects.filter(cerrada=True, **filtros)
+
         context["sucursales"] = Sucursal.objects.all()
         context["campaniasDisponibles"] = getTodasCampaniasDesdeInicio()
 
         liquidaciones = [{
             "id": l.id,
-            "sucursal": l.sucursal.pseudonimo,
+            "sucursal": l.agencia.pseudonimo,
             "campania": l.campania,
             "fecha": l.fecha,
             "cantVentas": l.cant_ventas,
-            "totalProyectado": f"${l.total_proyectado}",
-            "totalRecaudado": f"${l.total_recaudado}",
-            "totalLiquidado": f"${l.total_liquidado}"
+            "totalLiquidado": f"${int(l.total_liquidado):,}",
 
         } for l in liquidacion_qs]
 

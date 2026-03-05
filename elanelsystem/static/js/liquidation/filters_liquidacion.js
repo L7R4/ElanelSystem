@@ -372,7 +372,16 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
     } else {
         ajustes.forEach(aj => {
             const signo = aj.ajuste_tipo === "positivo" ? "+" : "-";
-            html += `<p> <strong>${signo}$${aj.dinero}</strong> – ${aj.observaciones || "Sin observaciones"}</p> `;
+            html += `
+            <div class="ajusteRow">
+                <p><strong>${signo}$${aj.dinero}</strong> – ${aj.observaciones || "Sin observaciones"}</p>
+                <button
+                    class="btn-delete-ajuste"
+                    title="Eliminar ajuste"
+                    onclick="eliminar_ajuste(${aj.id}, ${user_id}, '${tipo_colaborador}')">
+                    ✕
+                </button>
+            </div>`;
         });
         html += `<p> <strong>Total ajustes:</strong> $${total_ajuste}</p> `;
     }

@@ -310,12 +310,15 @@ class Ausencia(models.Model):
         verbose_name_plural = "Ausencias/Tardanzas"
 
     def save(self, *args, **kwargs):
-        # si no vino explícito, lo genero aquí
-        if not self.a:
-            self.a = obtenerCampaña_atraves_fecha(self.fecha)
+        # Si no tiene campaña asignada, derivarla de la fecha de carga
+        if not self.campania:
+            fecha_str = self.fecha_de_carga.split(' ')[0] if self.fecha_de_carga else ''
+            if fecha_str:
+                self.campania = obtenerCampaña_atraves_fecha(fecha_str)
+        super(Ausencia, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.usuario.nombre} – {self.tipo} el {self.fecha}"
+        return f"{self.usuario.nombre} – {self.tipo} el {self.dia or self.fecha_de_carga}"
 
 
 class Descuento(models.Model):

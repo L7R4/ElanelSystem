@@ -27,16 +27,51 @@ class MontoTardanzaAusencia(models.Model):
         configuracion, created = MontoTardanzaAusencia.objects.get_or_create()
         return configuracion
 
-class Asegurado(models.Model):
-    dinero = models.IntegerField("Dinero")
-    dirigido = models.CharField("Dirigido", max_length=80)
-    # objetivo = models.IntegerField("Objetivo", default=0)
+class ConfiguracionLiquidacion(models.Model):
+    vigencia_desde = models.DateField("Vigente desde")
+    descripcion = models.CharField("Descripción", max_length=100)
+    parametros = models.JSONField("Parámetros")
+
+    class Meta:
+        ordering = ["-vigencia_desde"]
+        verbose_name = "Configuración de liquidación"
+        verbose_name_plural = "Configuraciones de liquidación"
 
     def __str__(self):
-        return str(self.dinero) + "--" + str(self.dirigido)
+        return f"{self.descripcion} (desde {self.vigencia_desde})"
+
 
 class Liquidacion(models.Model):
     agencia = models.ForeignKey(Sucursal, on_delete=models.DO_NOTHING, related_name="liquidacion_agencia")
     campania = models.CharField("Campaña", max_length=50)
     fecha = models.CharField("Fecha", max_length=15)
     json_data_liquidacion = models.JSONField(default=list)
+    cerrada = models.BooleanField("Cerrada", default=False)
+    total_liquidado = models.FloatField("Total liquidado", default=0)
+    cant_ventas = models.IntegerField("Cantidad de ventas", default=0)
+    config_snapshot = models.JSONField("Snapshot de configuración", default=dict)
+    version = models.PositiveIntegerField("Versión", default=1)
+    es_vigente = models.BooleanField("Es vigente", default=True)
+    motivo_reliquidacion = models.TextField("Motivo de reliquidación", blank=True, default="")
+
+
+class AjusteComision(models.Model):
+    TIPO_CHOICES = [("positivo", "Positivo"), ("negativo", "Negativo")]
+
+    usuario     = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="ajustes_comision")
+    agencia     = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name="ajustes_comision")
+    campania    = models.CharField("Campaña", max_length=50)
+    ajuste_tipo = models.CharField("Tipo", max_length=10, choices=TIPO_CHOICES)
+    dinero      = models.PositiveIntegerField("Monto")
+    observaciones = models.TextField("Observaciones", blank=True, default="")
+    creado_en   = models.DateTimeField("Creado en", auto_now_add=True)
+    activo      = models.BooleanField("Activo", default=True)
+
+    class Meta:
+        ordering = ["creado_en"]
+        verbose_name = "Ajuste de comisión"
+        verbose_name_plural = "Ajustes de comisión"
+
+    def __str__(self):
+        signo = "+" if self.ajuste_tipo == "positivo" else "-"
+        return f"{signo}${self.dinero} → {self.usuario.nombre} ({self.campania})"

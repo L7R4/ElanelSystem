@@ -822,6 +822,55 @@ def reportar_nans(df, cols, id_field = 'id_venta'):
     return errores
 
 
+_MESES_ABREV = {
+    'ene': 'Enero',  'feb': 'Febrero',  'mar': 'Marzo',
+    'abr': 'Abril',  'may': 'Mayo',     'jun': 'Junio',
+    'jul': 'Julio',  'ago': 'Agosto',   'sep': 'Septiembre',
+    'set': 'Septiembre',
+    'oct': 'Octubre','nov': 'Noviembre','dic': 'Diciembre',
+}
+
+def mapear_campania_excel(valor_raw):
+    """
+    Convierte el valor de la columna CAMPAÑA del Excel al formato del sistema.
+
+    - "FEB 2026" / "feb 2026"  → "Febrero 2026"
+    - "ENE 2026"               → "Enero 2026"
+    - Número (ej: 12, "12")    → None  (señal para usar fecha_incripcion)
+    - Vacío / NaN              → None
+    - Formato desconocido      → None
+    """
+    if valor_raw is None:
+        return None
+    try:
+        import pandas as pd
+        if pd.isna(valor_raw):
+            return None
+    except (TypeError, ValueError):
+        pass
+
+    valor = str(valor_raw).strip()
+    if not valor or valor.lower() in ('nan', 'nat', 'none'):
+        return None
+
+    # Si es un numero (campaña por numero) → usar fallback de fecha
+    try:
+        float(valor.replace(',', '.'))
+        return None
+    except ValueError:
+        pass
+
+    # Formato esperado: "MMM YYYY"  ej: "FEB 2026"
+    parts = valor.split()
+    if len(parts) == 2:
+        mes_abrev = parts[0].lower()[:3]
+        anio = parts[1]
+        if mes_abrev in _MESES_ABREV and anio.isdigit() and len(anio) == 4:
+            return f"{_MESES_ABREV[mes_abrev]} {anio}"
+
+    return None  # formato no reconocido → fallback
+
+
 def preprocesar_excel_ventas(file_path):
     from elanelsystem.utils import obtenerCampaña_atraves_fecha,formatar_fecha
 
@@ -865,6 +914,16 @@ def preprocesar_excel_ventas(file_path):
     df_res['producto_key'] = (df_res['producto_raw'].str.lower().str.replace(' ', '', regex=False))
 
     df_res['comentarios__observaciones'] = df_res['comentarios__observaciones'].fillna('')
+
+    # Columna CAMPAÑA del Excel → normalizada al formato del sistema ("Febrero 2026").
+    # Si la columna no existe o el valor es numérico/vacío → campania_procesada = None
+    # (señal para que la vista use el fallback por fecha_incripcion).
+    if 'campa_a' in df_res.columns:          # pandas a veces codifica ñ como a_a en Windows
+        df_res['campania_procesada'] = df_res['campa_a'].apply(mapear_campania_excel)
+    elif 'campaña' in df_res.columns:
+        df_res['campania_procesada'] = df_res['campaña'].apply(mapear_campania_excel)
+    else:
+        df_res['campania_procesada'] = None
 
     campos_int_est = ['importe_cuotas', 'cuotas','estado','fecha_venc']
     errores_est = reportar_nans(df_est, campos_int_est, id_field='id_venta')

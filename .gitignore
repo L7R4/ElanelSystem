@@ -140,3 +140,5 @@ GitHub.sublime-settings
 .history
 
 node_modules/
+docs_agent/
+.claude/
