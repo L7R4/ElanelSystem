@@ -10,6 +10,7 @@ urlpatterns = [
     path("ventas/liquidaciones/comisiones/", LiquidacionesComisiones.as_view(),name="liquidacionesComisiones"),
     path("ventas/liquidaciones/requestColaboradores/", requestColaboradoresWithComisiones,name="requestColaboradoresWithComisiones"),
     path('ventas/liquidaciones/comisiones/nuevo_ajuste/', crearAjusteComision, name='crearAjusteComision'),
+    path('ventas/liquidaciones/comisiones/eliminar_ajuste/', eliminarAjusteComision, name='eliminarAjusteComision'),
     # path("ventas/liquidaciones/new_ausencia_tardanza/", newAusenciaTardanza,name="newAusenciaTardanza"),
     path("ventas/liquidaciones/requestColaboradores_tardanzasAusencias/", requestColaboradores_TardanzasAusencias,name="requestColaboradores_TardanzasAusencias"),
     path("ventas/liquidaciones/ranking/", LiquidacionesRanking.as_view(),name="liquidacionesRanking"),

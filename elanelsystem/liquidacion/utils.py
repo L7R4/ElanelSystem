@@ -1,6 +1,6 @@
-from collections import defaultdict
+﻿from collections import defaultdict
 from datetime import timedelta
-from elanelsystem.utils import parse_fecha
+from elanelsystem.utils import parse_fecha, parse_fecha_to_date
 from sales.models import Ventas,MovimientoExterno
 from .models import *
 from django.db.models import Q
@@ -8,6 +8,28 @@ import datetime
 import calendar
 import math
 from users.utils import snapshot_usuario_by_campana
+
+
+def _parse_bandas(bandas):
+    """Convierte bandas del config (None → inf) a tuplas usables en loops."""
+    return [(low, high if high is not None else float("inf"), val) for low, high, val in bandas]
+
+
+def get_config_para_campania(campania_str):
+    """
+    Devuelve el dict de parámetros de la ConfiguracionLiquidacion cuya
+    vigencia_desde sea la más reciente <= primer día de la campaña.
+    """
+    primer_dia, _ = parse_campania_to_dates(campania_str)
+    config_obj = (
+        ConfiguracionLiquidacion.objects
+        .filter(vigencia_desde__lte=primer_dia)
+        .order_by("-vigencia_desde")
+        .first()
+    )
+    if not config_obj:
+        raise ValueError(f"No existe configuración de liquidación para '{campania_str}'")
+    return config_obj.parametros
 
 def liquidaciones_countFaltas(colaborador):
     data = colaborador.faltas_tardanzas
@@ -50,10 +72,11 @@ def calcular_productividad_ventasPropias(ventas):
 
     return productividad_x_suc
 
-def get_detalle_comision_x_cantidad_ventasPropias(ventas):
+def get_detalle_comision_x_cantidad_ventasPropias(ventas, config=None):
     """
     Recorre las ventas y determina la comisión. Aplico math.ceil al final.
     """
+    cv = config["comision_vendedor"] if config else None
 
     cantVentas2 = sum(len(v.cantidadContratos) for v in ventas)
     coeficienteSelected = 0
@@ -74,33 +97,22 @@ def get_detalle_comision_x_cantidad_ventasPropias(ventas):
         "comision": 0.0,
         "ventas": []
     }
-    
+
+    _bandas_motos        = _parse_bandas(cv["motos_24_30"])         if cv else [(0, 9, 0.0240), (10, 19, 0.0250), (20, 29, 0.0260), (30, float("inf"), 0.0270)]
+    _bandas_solucion     = _parse_bandas(cv["solucion_combo_24_30"]) if cv else [(0, 9, 0.0270), (10, 19, 0.0280), (20, 29, 0.0290), (30, float("inf"), 0.0310)]
+    _bandas_48_60        = _parse_bandas(cv["cuotas_48_60"])         if cv else [(0, 9, 0.0135), (10, 19, 0.0140), (20, 29, 0.0145), (30, float("inf"), 0.0155)]
+
     for venta in ventas:
         if (venta.nro_cuotas in [24, 30] and venta.producto.tipo_de_producto == "Moto"):
             typePlan = "com_24_30_motos"
-            bandas = [
-                (0, 9, 0.0240),
-                (10, 19, 0.0250),
-                (20, 29, 0.0260),
-                (30, float("inf"), 0.0270),
-            ]
-        elif (venta.nro_cuotas in [24, 30] and 
+            bandas = _bandas_motos
+        elif (venta.nro_cuotas in [24, 30] and
             (venta.producto.tipo_de_producto == "Solucion" or venta.producto.tipo_de_producto == "Combo")):
             typePlan = "com_24_30_prestamo_combo"
-            bandas = [
-                (0, 9, 0.0270),
-                (10, 19, 0.0280),
-                (20, 29, 0.0290),
-                (30, float("inf"), 0.0310),
-            ]
+            bandas = _bandas_solucion
         elif (venta.nro_cuotas in [48, 60]):
             typePlan = "com_48_60"
-            bandas = [
-                (0, 9, 0.0135),
-                (10, 19, 0.0140),
-                (20, 29, 0.0145),
-                (30, float("inf"), 0.0155),
-            ]
+            bandas = _bandas_48_60
         else:
             continue
         for (low, high, coef) in bandas:
@@ -135,32 +147,32 @@ def get_detalle_comision_x_cantidad_ventasPropias(ventas):
 
     return response
 
-def get_premio_x_productividad_ventasPropias(ventas):
+def get_premio_x_productividad_ventasPropias(ventas, config=None):
     """
-    Devuelve un premio fijo según la productividad. 
-    Ojo con la lógica: si las bandas devuelven un entero, no hace falta,
-    pero si multiplicas, sí. Ejemplo actual no multiplica, 
-    excepto en la parte 'bandas' -> no se hace un * coef, sino un valor fijo.
-    Aun así, por seguridad uso math.ceil.
+    Devuelve un premio fijo según la productividad.
     """
-
     productividad = sum(v.importe for v in ventas)
 
-    bandas = [
-        (0, 6000000, 0),
-        (6000000, 8000000, 10000),
-        (8000000, 10000000, 15000),
-        (10000000, float("inf"), 20000),
-    ]
+    if config:
+        bandas = _parse_bandas(config["premio_productividad_vendedor"]["bandas"])
+    else:
+        bandas = [
+            (0, 10000000, 0),
+            (10000000, 15000000, 50000),
+            (15000000, 20000000, 75000),
+            (20000000, 25000000, 100000),
+            (25000000, 30000000, 125000),
+            (30000000, float("inf"), 150000),
+        ]
     premio = 0
     for low, high, dinero in bandas:
         if low <= productividad < high:
             premio = dinero
             break
 
-    return math.ceil(premio)  # Por si acaso (aquí igual es entero)
+    return math.ceil(premio)
 
-def get_detalle_cuotas1(usuario, campania, agencia_id=None):
+def get_detalle_cuotas1(usuario, campania, agencia_id=None, config=None):
     from sales.models import PagoCannon
     """
     Cuotas 1 pagadas dentro de 15 días -> comision del 10% de la cuota 2.
@@ -206,10 +218,12 @@ def get_detalle_cuotas1(usuario, campania, agencia_id=None):
         if vid not in fecha_alta_cache:
             fecha_alta_cache[vid] = parse_fecha(venta.fecha)
 
-        # 2) comprobar plazo de 15 días
+        # 2) comprobar plazo configurable
+        dias_ventana = config["cuotas_1"]["dias_ventana"] if config else 15
+        porc_cuota2  = config["cuotas_1"]["porcentaje_sobre_cuota2"] if config else 0.10
         fecha_pago = parse_fecha(pago.fecha)
         dias = (fecha_pago - fecha_alta_cache[vid]).days
-        if dias > 15:
+        if dias > dias_ventana:
             continue
 
         # 3) cantidad de contratos de esa venta
@@ -219,11 +233,11 @@ def get_detalle_cuotas1(usuario, campania, agencia_id=None):
             contratos_detalle[vid] = venta.cantidadContratos
         cant_contratos = contratos_por_venta[vid]
         contratos_detalle = contratos_detalle[vid]
-        # 4) calculamos la comisión de esta venta (10% de cuota 2)
+        # 4) calculamos la comisión de esta venta
         cuota2_total = venta.cuotas[2]['total'] if len(venta.cuotas) > 2 else 0
-        comision_venta = math.ceil(cuota2_total * 0.10)
+        comision_venta = math.ceil(cuota2_total * porc_cuota2)
 
-        # 5) armamos el dict de detalle para esta “cuota 1”
+        # 5) armamos el dict de detalle para esta "cuota 1"
         #    combinamos la dict original venta.cuotas[1] con los nuevos campos
         cuota1_info = venta.cuotas[1].copy()
         cuota1_info.update({
@@ -244,20 +258,19 @@ def get_detalle_cuotas1(usuario, campania, agencia_id=None):
     }
 
 
-def comisiones_brutas_vendedor(usuario, campania, ventas):
+def comisiones_brutas_vendedor(usuario, campania, ventas, config=None):
     """
-    Devuelve la comision bruta del vendedor. 
+    Devuelve la comision bruta del vendedor.
     """
-    comision_x_cantidad_ventas = get_detalle_comision_x_cantidad_ventasPropias(ventas)["comision"]
-    
-    comision_x_cuotas1 = get_detalle_cuotas1(usuario, campania)["comision_total"]
-    comision_x_productividad = get_premio_x_productividad_ventasPropias(ventas)
-    
+    comision_x_cantidad_ventas = get_detalle_comision_x_cantidad_ventasPropias(ventas, config)["comision"]
+    comision_x_cuotas1 = get_detalle_cuotas1(usuario, campania, config=config)["comision_total"]
+    comision_x_productividad = get_premio_x_productividad_ventasPropias(ventas, config)
+
     return {
         "comision_total": math.ceil(comision_x_cantidad_ventas + comision_x_cuotas1 + comision_x_productividad),
         "comision_x_cantidad_ventas": comision_x_cantidad_ventas,
         "comision_x_cuotas1": comision_x_cuotas1,
-        "comision_x_productividad": comision_x_productividad       
+        "comision_x_productividad": comision_x_productividad,
     }
 
 #endregion
@@ -277,59 +290,65 @@ def calcular_productividad_supervisor(ventas):
     total = sum(v.importe for v in ventas)
     return math.ceil(total)
 
-def get_premio_x_productividad_supervisor(ventas):
+def get_premio_x_productividad_supervisor(ventas, config=None):
     """
     Multiplicamos total_prod * coef. => ahí puede salir decimal => math.ceil
     """
     total_prod = calcular_productividad_supervisor(ventas)
     premio = 0
-    bandas = [
-        (0, 16000000, 0),
-        (16000000, 18000000, 0.00020),
-        (18000000, 22000000, 0.00030),
-        (22000000, 26000000, 0.00050),
-        (26000000, 30000000, 0.00075),
-        (30000000, float("inf"), 0.001),
-    ]
+    if config:
+        bandas = _parse_bandas(config["premio_productividad_supervisor"]["bandas"])
+    else:
+        bandas = [
+            (0, 16000000, 0),
+            (16000000, 18000000, 0.00020),
+            (18000000, 22000000, 0.00030),
+            (22000000, 26000000, 0.00050),
+            (26000000, 30000000, 0.00070),
+            (30000000, float("inf"), 0.001),
+        ]
     for low, high, coef in bandas:
         if low <= total_prod < high:
             premio = total_prod * coef
             break
     return math.ceil(premio)
 
-def get_premio_x_cantidad_ventas_equipo(ventas):
+def get_premio_x_cantidad_ventas_equipo(ventas, config=None):
     """
-    Devuelve dineroAsegurado si la suma de ventas > 80, sino 0. 
-    No hace falta ceil, pues dineroAsegurado es un entero. 
-    Igual, por seguridad, podría hacerse math.ceil.
+    Devuelve dineroAsegurado si la suma de ventas >= umbral, sino 0.
     """
-    # asegurado = Asegurado.objects.get(dirigido="Supervisor")
-    # dineroAsegurado = asegurado.dinero
+    if config:
+        dineroAsegurado = config["asegurado_equipo"]["monto"]
+        umbral = config["asegurado_equipo"]["umbral_ventas"]
+    else:
+        dineroAsegurado = 300000
+        umbral = 80
 
-    dineroAsegurado = 200000 # fijo por ahora - - - - - - - - - - - - - - - - - - - - - - -
-    
     cantidad_ventas_x_equipo = calcular_ventas_supervisor(ventas)
-    
-    if cantidad_ventas_x_equipo >= 80:
+
+    if cantidad_ventas_x_equipo >= umbral:
         return math.ceil(dineroAsegurado)
     return 0
 
-def get_comision_x_cantidad_ventas_equipo(ventas):
+def get_comision_x_cantidad_ventas_equipo(ventas, config=None):
     """
     total += venta.importe * coef => decimal => uso ceil en el final.
     """
     cantVentas = sum(len(v.cantidadContratos) for v in ventas)
 
-    bandas = [
-        (0, 30, 0),
-        (30, 40, 0.0027),
-        (40, 50, 0.0029),
-        (50, 60, 0.0031),
-        (60, 70, 0.0033),
-        (70, 80, 0.0035),
-        (80, 90, 0.0037),
-        (90, float("inf"), 0.0039),
-    ]
+    if config:
+        bandas = _parse_bandas(config["comision_supervisor_equipo"]["bandas"])
+    else:
+        bandas = [
+            (0, 30, 0),
+            (30, 40, 0.0027),
+            (40, 50, 0.0029),
+            (50, 60, 0.0031),
+            (60, 70, 0.0033),
+            (70, 80, 0.0035),
+            (80, 90, 0.0037),
+            (90, float("inf"), 0.0039),
+        ]
 
     coef = 0
     for low, high, c in bandas:
@@ -343,13 +362,13 @@ def get_comision_x_cantidad_ventas_equipo(ventas):
 
     return math.ceil(total)
 
-def comisiones_brutas_supervisor(ventas):
+def comisiones_brutas_supervisor(ventas, config=None):
     """
-    Devuelve la comision bruta del supervisor. 
+    Devuelve la comision bruta del supervisor.
     """
-    comision_x_cantidad_ventas = get_comision_x_cantidad_ventas_equipo(ventas)
-    comision_x_productividad = get_premio_x_productividad_supervisor(ventas)
-    comision_x_ventas_equipo = get_premio_x_cantidad_ventas_equipo(ventas)
+    comision_x_cantidad_ventas = get_comision_x_cantidad_ventas_equipo(ventas, config)
+    comision_x_productividad = get_premio_x_productividad_supervisor(ventas, config)
+    comision_x_ventas_equipo = get_premio_x_cantidad_ventas_equipo(ventas, config)
 
     return {
         "comision_total": math.ceil(comision_x_cantidad_ventas + comision_x_productividad + comision_x_ventas_equipo),
@@ -360,13 +379,21 @@ def comisiones_brutas_supervisor(ventas):
 #endregion
 
 #region Funciones enfocadas a los gerentes de sucursal
-def get_detalle_cuotas_x2(pagos_sucursal, porcentaje_x_cuota):
+def get_detalle_cuotas_x2(pagos_sucursal, porcentaje_x_cuota, cantidad_cuotas_0, config=None):
     """
     Comision de cuotas 1,2,3,4 => math.ceil en comision_total_cuotas.
     Ahora usamos solo PagoCannon para extraer los pagos ya filtrados.
     """
-    
-    cuotas_numeros = [1, 2, 3, 4]
+    print(f"\n Cantidad de cuotas 0 -> {cantidad_cuotas_0}\n")
+    if config:
+        g = config["gerente_sucursal"]
+        umbral = g["umbral_cuotas0_ampliar_rango"]
+        cuotas_numeros = g["cuotas_ampliadas"] if cantidad_cuotas_0 > umbral else g["cuotas_base"]
+    else:
+        cuotas_numeros = [1, 2, 3, 4, 5, 6] if cantidad_cuotas_0 > 100 else [1, 2, 3, 4]
+
+    print(f"\n Cuotas numeros -> {cuotas_numeros}\n")
+
     # Estructura base para acumular
     stats = {
         nro: {"cantidad": 0, "dinero": 0, "detalle": [], "cuotas": []}
@@ -434,8 +461,6 @@ def get_detalle_cuotas_02(pagos_sucursal):
     pagos0 = [p for p in pagos_sucursal if p.nro_cuota == 0]
     for p in pagos0:
         cliente_nombre = p.venta.nro_cliente.nombre if p.venta.nro_cliente else None
-        if "cabral belen" in cliente_nombre.lower():
-            print(f"\n Nro: {p.venta.nro_operacion}, Cliente: {cliente_nombre}\n")
     cantidad_cuotas_0 = sum(len(p.venta.cantidadContratos) for p in pagos0)
     dinero_recaudado_cuotas_0 = sum(p.monto for p in pagos0)
 
@@ -457,26 +482,36 @@ def get_detalle_cuotas_02(pagos_sucursal):
     }
 
 
-def get_premio_x_cantidad_ventas_sucursal2(pagos_0, objetivo_gerente=0):
-    # from elanelsystem.utils import get_subAgencias_por_provincia
-    
+def get_premio_x_cantidad_ventas_sucursal2(pagos_0, objetivo_gerente=0, config=None):
     """
-    1000 * cantidad_cuotas_0 si >= objetivo => se multiplica => potencial decimal no,
-    pero se hace un int. Por seguridad, math.ceil.
+    multiplicador * cantidad_cuotas_0 según banda correspondiente.
     """
-    # objetivo_gerente = 200
     cantidad_cuotas_0 = get_detalle_cuotas_02(pagos_0)["cantidad_cuotas_0"]
+    if config:
+        bandas = _parse_bandas(config["gerente_sucursal"]["premio_cuotas0"]["bandas"])
+    else:
+        bandas = [
+            (0, 100, 0),
+            (100, 119, 1000),
+            (120, 149, 1200),
+            (150, 179, 1500),
+            (180, 199, 1800),
+            (200, float("inf"), 2000),
+        ]
+    umbralSeleccionado = 0
+    for (low, high, dinero) in bandas:
+        if low <= cantidad_cuotas_0 <= high:
+            umbralSeleccionado = dinero
+            break
+    print(f"\n Umbral seleccionado -> {umbralSeleccionado}\n")
+    return math.ceil(umbralSeleccionado * cantidad_cuotas_0)
 
-    if cantidad_cuotas_0 >= objetivo_gerente:
-        return math.ceil(1000 * cantidad_cuotas_0)
-    return 0
 
-
-def get_detalle_sucursales_de_region2(gerente, agencia, campania):
+def get_detalle_sucursales_de_region2(gerente, agencia, campania, config=None):
     from sales.models import PagoCannon
     from elanelsystem.utils import get_subAgencias_por_provincia
 
-    # 1) Obtener todos los pagos que es del gerente SEGUN el atributo "venta__gerente" 
+    # 1) Obtener todos los pagos que es del gerente SEGUN el atributo "venta__gerente"
     all_pagos_by_gerente = (
         PagoCannon.objects
         .filter(
@@ -488,18 +523,30 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
         .select_related("venta", "venta__agencia")
     )
 
-
-    # 2) Setear las agencias que le corresponden un determinado % (por ej: 8% o 6%) y su premio de por objetivo de ventas
-    agencias_8_porc = [
-        "Corrientes, Corrientes", "Concordia, Entre Rios", "Resistencia, Chaco",
-        "Posadas, Misiones", "Santiago Del Estero, Santiago Del Estero",
-        "Formosa, Formosa", "Saenz Peña, Chaco"
-    ]
-    agencias_6_porc = ["Paso De Los Libres, Corrientes", "Goya, Corrientes"]
-    agencias_objs_200_ventas = [
-        "Corrientes, Corrientes", "Concordia, Entre Rios", "Resistencia, Chaco",
-        "Posadas, Misiones", "Santiago Del Estero, Santiago Del Estero", "Formosa, Formosa"
-    ]
+    # 2) Porcentajes y listas de agencias — desde config o hardcoded
+    if config:
+        g = config["gerente_sucursal"]
+        agencias_8_porc         = g["agencias_8_porc"]
+        agencias_6_porc         = g["agencias_6_porc"]
+        agencias_objs_200_ventas = g["agencias_objs_200_ventas"]
+        porc_8                  = g["porcentaje_agencias_8"]
+        porc_6                  = g["porcentaje_agencias_6"]
+        porc_subagencia         = g["porcentaje_subagencias"]
+        obj_grande              = g["objetivo_ventas_grande"]
+        obj_chico               = g["objetivo_ventas_chico"]
+    else:
+        agencias_8_porc = [
+            "Corrientes, Corrientes", "Concordia, Entre Rios", "Resistencia, Chaco",
+            "Posadas, Misiones", "Santiago Del Estero, Santiago Del Estero",
+            "Formosa, Formosa", "Saenz Peña, Chaco",
+        ]
+        agencias_6_porc = ["Paso De Los Libres, Corrientes", "Goya, Corrientes"]
+        agencias_objs_200_ventas = [
+            "Corrientes, Corrientes", "Concordia, Entre Rios", "Resistencia, Chaco",
+            "Posadas, Misiones", "Santiago Del Estero, Santiago Del Estero", "Formosa, Formosa",
+        ]
+        porc_8 = 0.08; porc_6 = 0.06; porc_subagencia = 0.03
+        obj_grande = 200; obj_chico = 150
 
     # 3) Diccionario de resultado
     result = {
@@ -521,18 +568,17 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
         suc_obj = Sucursal.objects.filter(id=key).first()
         suc_clean = suc_obj.pseudonimo.replace(" ", "").replace(",", "").lower()
 
-        # print(f"\n Sucursal a trabajar -> {suc_clean}")
-        porcentage_x_cuota = 0.08 if suc_obj.pseudonimo in agencias_8_porc else 0.06
+        porcentage_x_cuota = porc_8 if suc_obj.pseudonimo in agencias_8_porc else porc_6
         premios_por_venta = 0
-        # print(f"\n Procentaje seleccionado -> {porcentage_x_cuota}")
 
-        pagos_1_4 = get_detalle_cuotas_x2(value, porcentage_x_cuota)
         pagos_0 = get_detalle_cuotas_02(value)
+        cantidad_cuotas_0 = pagos_0["cantidad_cuotas_0"]
+        pagos_1_4 = get_detalle_cuotas_x2(value, porcentage_x_cuota, cantidad_cuotas_0, config)
 
-        if(suc_obj.pseudonimo in agencias_objs_200_ventas):
-            premios_por_venta = get_premio_x_cantidad_ventas_sucursal2(value, 200)
+        if suc_obj.pseudonimo in agencias_objs_200_ventas:
+            premios_por_venta = get_premio_x_cantidad_ventas_sucursal2(value, obj_grande, config)
         else:
-            premios_por_venta = get_premio_x_cantidad_ventas_sucursal2(value, 150)
+            premios_por_venta = get_premio_x_cantidad_ventas_sucursal2(value, obj_chico, config)
 
         result["porcetage_x_cuota"] = porcentage_x_cuota
 
@@ -544,12 +590,10 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
             "sub_total": math.ceil(pagos_1_4["comision_total_cuotas"] + premios_por_venta)
         }
 
-
         result["cantidad_total_cuotas"] += math.ceil(pagos_1_4["cantidad_total_cuotas"])
         result["dinero_total_cuotas"] += math.ceil(pagos_1_4["dinero_total_cuotas"])
         result["comision_total_cuotas"] += math.ceil(pagos_1_4["comision_total_cuotas"])
         result["dinero_recadudado_cuotas_0"] += math.ceil(pagos_0["dinero_recaudado_cuotas_0"])
-                
 
     # 6) Luego en caso que corresponda, obtener la cartera de pagos de las subagencias
     subAgencias = get_subAgencias_por_provincia(agencia)
@@ -557,7 +601,7 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
         sucursales_region_objs = list(
             Sucursal.objects.filter(pseudonimo__in=subAgencias)
         )
-        
+
         all_pagos_by_subAgencias = (
             PagoCannon.objects
             .filter(
@@ -577,11 +621,12 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
             suc_obj = Sucursal.objects.filter(id=key).first()
             suc_clean = suc_obj.pseudonimo.replace(" ", "").replace(",", "").lower()
 
-            porcentage_x_cuota = 0.03
+            porcentage_x_cuota = porc_subagencia
             premios_por_venta = 0
 
-            pagos_1_4 = get_detalle_cuotas_x2(value, porcentage_x_cuota)
             pagos_0 = get_detalle_cuotas_02(value)
+            cantidad_cuotas_0 = pagos_0["cantidad_cuotas_0"]
+            pagos_1_4 = get_detalle_cuotas_x2(value, porcentage_x_cuota, cantidad_cuotas_0, config)
 
             result["porcetage_x_cuota"] = porcentage_x_cuota
 
@@ -609,11 +654,11 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania):
     return result
 
 
-def comisiones_brutas_gerente(gerente, agencia,campania):
+def comisiones_brutas_gerente(gerente, agencia, campania, config=None):
     """
     Devuelve la comision bruta del gerente.
     """
-    detalle_region = get_detalle_sucursales_de_region2(gerente, agencia, campania)
+    detalle_region = get_detalle_sucursales_de_region2(gerente, agencia, campania, config)
     
     total_premios = 0
     for r in detalle_region["detalleRegion"].values():
@@ -666,19 +711,29 @@ def parse_campania_to_dates(campania_str):
     return (primer_dia, ultimo_dia)
 
 
-def calcular_dias_trabajados(usuario, campania_str):
+def calcular_dias_trabajados(usuario_o_snap, campania_str):
+    """
+    Calcula los días trabajados dentro del período de campaña.
+
+    Acepta tanto el objeto Usuario live como un snapshot histórico
+    (HistoricalUsuario), ya que ambos exponen fec_ingreso y fec_egreso.
+
+    Regla de negocio: si no hay fec_egreso se asume que el usuario sigue activo,
+    usando la fecha de hoy como limite superior antes del min() con fin_campania.
+    """
     inicio_campania, fin_campania = parse_campania_to_dates(campania_str)
 
-    fecha_ingreso = usuario.fec_ingreso
+    fecha_ingreso = usuario_o_snap.fec_ingreso
     if isinstance(fecha_ingreso, str):
         fecha_ingreso = datetime.datetime.strptime(fecha_ingreso, "%d/%m/%Y")
 
-    fecha_egreso = usuario.fec_egreso if usuario.fec_egreso else None
+    fecha_egreso = usuario_o_snap.fec_egreso if usuario_o_snap.fec_egreso else None
     if fecha_egreso and isinstance(fecha_egreso, str):
         fecha_egreso = datetime.datetime.strptime(fecha_egreso, "%d/%m/%Y")
 
+    # Sin egreso → sigue activo, se usa la fecha de hoy como límite
     if not fecha_egreso:
-        fecha_egreso = datetime.datetime.now()
+        fecha_egreso = datetime.date.today()
 
     if isinstance(fecha_ingreso, datetime.datetime):
         fecha_ingreso = fecha_ingreso.date()
@@ -690,62 +745,52 @@ def calcular_dias_trabajados(usuario, campania_str):
 
     if fecha_inicio_real > fecha_fin_real:
         return 0
-    else:
-        return (fecha_fin_real - fecha_inicio_real).days + 1
+    return (fecha_fin_real - fecha_inicio_real).days + 1
 
 
 
 def calcular_asegurado_segun_dias_trabajados(dinero, usuario, campania_str):
+    inicio_campania, fin_campania = parse_campania_to_dates(campania_str)
+    total_dias_campania = (fin_campania - inicio_campania).days + 1
+
     dias_trabajados_campania = calcular_dias_trabajados(usuario, campania_str)
 
-    # print(f"Dias trabajados {dias_trabajados_campania}")
-    if dias_trabajados_campania >= 30:
+    # Si trabajó todos los días de la campaña → asegurado completo.
+    # Se compara contra los días reales del mes, no contra 30 fijo
+    # (evita que meses cortos como febrero nunca alcancen el umbral).
+    if dias_trabajados_campania >= total_dias_campania:
         return math.ceil(dinero)
     else:
-        proporcional = (dinero / 30) * dias_trabajados_campania
+        proporcional = (dinero / total_dias_campania) * dias_trabajados_campania
         return math.ceil(proporcional)
 
-def get_asegurado(usuario, campania_str):
-    snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania_str)
+def get_asegurado(usuario, campania_str, snapshot=None, config=None):
+    """
+    Devuelve el monto asegurado proporcional a los días trabajados.
+    Usa config["asegurado_por_rol"] si está disponible.
+    """
+    if snapshot is None:
+        snapshot, _ = snapshot_usuario_by_campana(usuario, campania_str)
+    if not snapshot:
+        raise ValueError("El usuario no tiene historial para esta campaña.")
 
-    rango = snapshot_usuario_by_campania[0].rango.lower()
-    if rango == "vendedor":
-        asegurado_obj = Asegurado.objects.get(dirigido="Vendedor")
-        dineroAsegurado = asegurado_obj.dinero
-        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, snapshot_usuario_by_campania[0], campania_str)
-    elif rango == "supervisor":
-        asegurado_obj = Asegurado.objects.get(dirigido="Supervisor")
-        dineroAsegurado = asegurado_obj.dinero
-        return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, snapshot_usuario_by_campania[0], campania_str)
-    elif rango == "gerente sucursal":
-        # Podrías hacer math.ceil si quieres 
-        asegurado_obj = Asegurado.objects.get(dirigido="Gerente sucursal")
-        return math.ceil(asegurado_obj.dinero)
-    else:
-        raise ValueError("Error al obtener el asegurado: rango no reconocido.")
-    
+    rango = snapshot.rango.lower()
 
-    # rango = usuario.rango.lower()
-    # if rango == "vendedor":
-    #     asegurado_obj = Asegurado.objects.get(dirigido="Vendedor")
-    #     dineroAsegurado = asegurado_obj.dinero
-    #     return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario, campania_str)
-    # elif rango == "supervisor":
-    #     asegurado_obj = Asegurado.objects.get(dirigido="Supervisor")
-    #     dineroAsegurado = asegurado_obj.dinero
-    #     return calcular_asegurado_segun_dias_trabajados(dineroAsegurado, usuario, campania_str)
-    # elif rango == "gerente sucursal":
-    #     # Podrías hacer math.ceil si quieres 
-    #     asegurado_obj = Asegurado.objects.get(dirigido="Gerente sucursal")
-    #     return math.ceil(asegurado_obj.dinero)
-    # else:
-    #     raise ValueError("Error al obtener el asegurado: rango no reconocido."
+    _fallback = {"vendedor": 300000, "supervisor": 500000, "gerente sucursal": 1000000}
+    montos = (config or {}).get("asegurado_por_rol") or _fallback
+    dinero = montos.get(rango)
+    if dinero is None:
+        raise ValueError(f"Error al obtener el asegurado: rango '{rango}' no reconocido.")
+
+    if rango == "gerente sucursal":
+        return math.ceil(dinero)
+    return calcular_asegurado_segun_dias_trabajados(dinero, snapshot, campania_str)
 
 #endregion
 
 #region Funciones enfocadas en los descuentos
 
-def get_ausencias_tardanzas(usuario, campania):
+def get_ausencias_tardanzas(usuario, campania, config=None):
     from users.models import Ausencia
     """
     Retorna faltas/tardanzas del modelo Ausencia para el usuario y campaña dada,
@@ -760,10 +805,14 @@ def get_ausencias_tardanzas(usuario, campania):
     faltas = [a for a in qs if a.tipo.lower() == "falta"]
     tardanzas = [a for a in qs if a.tipo.lower() == "tardanza"]
 
-    # 4) Obtener montos
-    objMonto = MontoTardanzaAusencia.objects.first()
-    montoPorFalta = objMonto.monto_ausencia
-    montoPorTardanza = objMonto.monto_tardanza
+    # 4) Obtener montos — desde config si está disponible, sino desde el modelo
+    if config:
+        montoPorFalta    = config["faltas_tardanzas"]["monto_ausencia"]
+        montoPorTardanza = config["faltas_tardanzas"]["monto_tardanza"]
+    else:
+        objMonto = MontoTardanzaAusencia.objects.first()
+        montoPorFalta    = objMonto.monto_ausencia
+        montoPorTardanza = objMonto.monto_tardanza
 
     # 5) Total descuentos
     total_desc = math.ceil(len(faltas) * montoPorFalta + len(tardanzas) * montoPorTardanza)
@@ -803,13 +852,12 @@ def get_ausencias_tardanzas(usuario, campania):
 # Las funciones detalle_liquidado_ventasPropias, detalle_descuestos, etc.
 # ya usan las de arriba, pero revisemos si necesitan un math.ceil extra.
 
-def detalle_liquidado_ventasPropias(usuario, campania):
+def detalle_liquidado_ventasPropias(usuario, campania, config=None):
     """
     Al final sumas la subcomisión. Ya viene redondeada de get_detalle_comision_x_cantidad_ventasPropias
-    y get_detalle_cuotas1. 
-    Podrías forzar un math.ceil en 'subtotal'.
+    y get_detalle_cuotas1.
     """
-    ventas_qs = Ventas.objects.filter(vendedor= usuario, campania=campania, is_commissionable=True)
+    ventas_qs = Ventas.objects.filter(vendedor=usuario, campania=campania, is_commissionable=True)
     comisiones_brutas_dict = comisiones_brutas_vendedor(usuario, campania, ventas_qs)
     
         
@@ -840,10 +888,10 @@ def detalle_liquidado_ventasPropias(usuario, campania):
         # 2) Calcular productividad por ventas propias
         productividad_x_ventas_propias = calcular_productividad_ventasPropias(ventas)
 
-        premio_x_productividad = get_premio_x_productividad_ventasPropias(ventas)
+        premio_x_productividad = get_premio_x_productividad_ventasPropias(ventas, config)
 
         # 3) Obtener detalle de comisiones por cantidad de ventas propias
-        dict_comision_cant_ventas = get_detalle_comision_x_cantidad_ventasPropias(ventas)
+        dict_comision_cant_ventas = get_detalle_comision_x_cantidad_ventasPropias(ventas, config)
         if(usuario.nombre == "Cremonte Sofia Andrea "):
             print(f"Cantidad de ventas -> {cantidad_ventas}")
             print(dict_comision_cant_ventas)
@@ -851,7 +899,7 @@ def detalle_liquidado_ventasPropias(usuario, campania):
         # coeficienteSelected = dict_comision_cant_ventas["coeficienteSelected"]
 
         # 4) Obtener detalle de cuotas 1
-        dict_cuotas1 = get_detalle_cuotas1(usuario, campania, suc)
+        dict_cuotas1 = get_detalle_cuotas1(usuario, campania, suc, config)
         cantidad_cuotas1 = dict_cuotas1["cantidadCuotas1"]
         detalle_cuotas1 = dict_cuotas1["detalle"]
 
@@ -883,13 +931,11 @@ def detalle_liquidado_ventasPropias(usuario, campania):
 
     return response
 
-def detalle_descuestos(usuario, campania, agencia):
+def detalle_descuestos(usuario, campania, agencia, config=None):
     """
     Aplica get_ausencias_tardanzas (que ya usa ceil).
-    No se hace multiplicación extra, 
-    así que con eso basta.
     """
-    aus_tard_dict = get_ausencias_tardanzas(usuario, campania)
+    aus_tard_dict = get_ausencias_tardanzas(usuario, campania, config)
     descuento_x_tardanzas_faltas = aus_tard_dict["total_descuentos"]
     detalle_descuento_x_tardanzas_faltas = aus_tard_dict["detalle"]
 
@@ -902,14 +948,21 @@ def detalle_descuestos(usuario, campania, agencia):
     }
     return resultado
 
-def detalle_liquidado_x_rol(usuario, campania, suc):
+def detalle_liquidado_x_rol(usuario, campania, suc, snapshot=None, config=None):
+    """
+    Acepta un snapshot pre-computado para evitar una consulta extra al history.
+    Si no se pasa, lo resuelve internamente.
+    """
+    if snapshot is None:
+        snapshot, _ = snapshot_usuario_by_campana(usuario, campania)
+    if not snapshot:
+        return {"comision_total": 0, "detalle": {}}
 
-    snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania)
-    rango_lower = snapshot_usuario_by_campania[0].rango.lower()
+    rango_lower = snapshot.rango.lower()
     print(f"\n\nRango de {usuario.nombre} -> {rango_lower}")
     if rango_lower == "supervisor":
-        ventas_qs = Ventas.objects.filter(supervisor= usuario, campania=campania, is_commissionable=True)
-        comisiones_brutas_dict = comisiones_brutas_supervisor(ventas_qs)
+        ventas_qs = Ventas.objects.filter(supervisor=usuario, campania=campania, is_commissionable=True)
+        comisiones_brutas_dict = comisiones_brutas_supervisor(ventas_qs, config)
         
         ventas_x_suc = defaultdict(list)
         for v in ventas_qs:
@@ -928,7 +981,7 @@ def detalle_liquidado_x_rol(usuario, campania, suc):
 
             cantidad_ventas_x_equipo = calcular_ventas_supervisor(ventas)
             productividad_x_equipo = calcular_productividad_supervisor(ventas)
-            comisiones_brutas_dict_x_sucursal = comisiones_brutas_supervisor(ventas)
+            comisiones_brutas_dict_x_sucursal = comisiones_brutas_supervisor(ventas, config)
 
             # 5) Sumar resultados al response
             response["cantidadVentasXEquipo_total"] += cantidad_ventas_x_equipo
@@ -945,9 +998,9 @@ def detalle_liquidado_x_rol(usuario, campania, suc):
         return response
 
     elif rango_lower == "gerente sucursal":
-        detalleRegion = get_detalle_sucursales_de_region2(usuario, suc, campania)
+        detalleRegion = get_detalle_sucursales_de_region2(usuario, suc, campania, config)
 
-        comisiones_brutas_dict = comisiones_brutas_gerente(usuario, suc, campania)
+        comisiones_brutas_dict = comisiones_brutas_gerente(usuario, suc, campania, config)
 
         response = {
             **comisiones_brutas_dict,
@@ -966,101 +1019,120 @@ def detalle_liquidado_x_rol(usuario, campania, suc):
             "detalle": {}
         }
 
-def get_comision_total(usuario, campania, agencia, ajustes_usuario=None):
-    """
-    Finalmente, en la suma final se pueden generar decimales. 
-    Aplicamos math.ceil en comision_bruta y comision_neta 
-    si quieres “siempre redondear hacia arriba”.
-    """
+def get_comision_total(usuario, campania, agencia, ajustes_usuario=None, config=None):
+    # Calcula la comision total de un usuario para una campania y agencia dadas.
+    # El snapshot historico se resuelve UNA sola vez al inicio y se propaga a todas
+    # las subfunciones, evitando consultas redundantes al history y garantizando que
+    # siempre se use el estado del usuario en el momento en que finalizo la campania.
     if ajustes_usuario is None:
         ajustes_usuario = []
 
+    # Resolver config UNA sola vez aquí y propagarla a todas las subfunciones
+    if config is None:
+        config = get_config_para_campania(campania)
+
+    # 0) Snapshot: estado histórico del usuario al cierre de la campaña (una sola consulta)
+    snap, days_worked = snapshot_usuario_by_campana(usuario, campania)
+    if not snap:
+        return {
+            "comision_total": 0,
+            "comision_bruta": 0,
+            "asegurado": 0,
+            "dias_trabajados": 0,
+            "egreso_en_campana": False,
+            "detalle": {
+                "ventasPropias": {},
+                "descuentos": {},
+                "rol": {},
+                "ajustes": {"ajustes_positivos": 0, "ajustes_negativos": 0},
+            },
+            "descuentoTotal": 0,
+        }
+
+    # ¿El usuario se dio de baja DURANTE esta campaña?
+    # Usa el snapshot (ya con parches retroactivos aplicados) para determinarlo.
+    # Si el egreso cae dentro del período → aparece como "de baja" en esta campaña.
+    # Si el egreso es posterior al período (o no tiene) → estaba activo en este lapso.
+    inicio_campania, fin_campania = parse_campania_to_dates(campania)
+    egreso_en_campana = False
+    if snap.fec_egreso:
+        egreso_date = parse_fecha_to_date(snap.fec_egreso)
+        egreso_en_campana = bool(egreso_date and egreso_date <= fin_campania)
+
+    rango_lower = snap.rango.lower()
+
     # 1) Comisiones de ventas propias
-    ventas_propias_dict = detalle_liquidado_ventasPropias(usuario, campania)
+    ventas_propias_dict = detalle_liquidado_ventasPropias(usuario, campania, config)
     comision_bruta_vendedor = ventas_propias_dict["comision_total"]
-    # print(f"\n ✅ Detalle de ventas propias liquidadas de -------- {usuario.nombre} --------:\n")
-    # print(f"{ventas_propias_dict}")
 
     # 2) Descuentos
-    descuentos_dict = detalle_descuestos(usuario, campania, agencia)
+    descuentos_dict = detalle_descuestos(usuario, campania, agencia, config)
     total_descuentos = descuentos_dict["total_descuentos"]
 
+    # 3) Comisión / bonos de rol (snapshot pre-computado para no re-consultar history)
+    rol_dict = detalle_liquidado_x_rol(usuario, campania, agencia, snapshot=snap, config=config)
 
-    # 4) Comisión / bonos de rol
-    rol_dict = detalle_liquidado_x_rol(usuario, campania, agencia)
-    
-    # print(f"\n ✅ Detalle de rol liquidadas de -------- {usuario.nombre} --------:\n")
-    # print(f"{rol_dict}")
-    
-    snapshot_usuario_by_campania = snapshot_usuario_by_campana(usuario, campania)
-    rango_lower = snapshot_usuario_by_campania[0].rango.lower()
-    # rango_lower = usuario.rango.lower()
+    # 4) Comisión inicial según rango del snapshot
     comision_bruta_inicial = 0
     if rango_lower == "vendedor":
         comision_bruta_inicial = comision_bruta_vendedor
     elif rango_lower == "supervisor":
         comision_bruta_inicial = rol_dict["comision_total"]
     elif rango_lower == "gerente sucursal":
-        print(f"USUARIO : {usuario.nombre}DETALLE KEYS: {list((rol_dict.get('detalle') or {}).keys())}")
         suc_clean = agencia.pseudonimo.replace(" ", "").replace(",", "").lower()
         comision_bruta_inicial = rol_dict["detalle"][suc_clean]["sub_total"]
 
-    # 5) Asegurado
+    # 5) Asegurado (snapshot pre-computado para no re-consultar history)
     try:
-        asegurado_completo = get_asegurado(usuario, campania)
-        # print(f"\n ASEGURADO DE {usuario.nombre} -> {asegurado_completo}\n")
-    except ValueError as e:
-        # print("\nError en get_asegurado()\n")
-        # print(e)
+        asegurado_completo = get_asegurado(usuario, campania, snapshot=snap, config=config)
+    except ValueError:
         asegurado_completo = 0
 
-    # Comparamos con el asegurado
+    # 6) Comparar con el asegurado y calcular diferencia
     diferencia_asegurado = 0
     if comision_bruta_inicial < asegurado_completo:
         diferencia_asegurado = asegurado_completo - comision_bruta_inicial
         comision_bruta_final = comision_bruta_inicial + diferencia_asegurado
         if rango_lower == "gerente sucursal":
             comision_bruta_final = rol_dict["comision_total"] + diferencia_asegurado
-
     else:
         comision_bruta_final = rol_dict["comision_total"] if rango_lower != "vendedor" else comision_bruta_vendedor
 
-    # 6) Ajustes y descuentos
+    # 7) Ajustes manuales
     ajustes_positivos = sum(a["dinero"] for a in ajustes_usuario if a["ajuste_tipo"] == "positivo")
     ajustes_negativos = sum(a["dinero"] for a in ajustes_usuario if a["ajuste_tipo"] == "negativo")
 
     total_descuentos += ajustes_negativos
     comision_bruta_final += ajustes_positivos
 
-    # Si no es vendedor, sumamos comisiones de ventas propias nuevamente (+ premios) 
+    # Para roles distintos de vendedor, se suman también las ventas propias
     if rango_lower != "vendedor":
         comision_bruta_final += comision_bruta_vendedor
 
     comision_neta = comision_bruta_final - total_descuentos
 
-    # Aplico math.ceil para que ambos sean redondeados hacia arriba
     comision_bruta_final = math.ceil(comision_bruta_final)
     comision_neta = math.ceil(comision_neta)
     diferencia_asegurado = math.ceil(diferencia_asegurado)
 
-    resultado_final = {
+    return {
         "comision_total": comision_neta,
         "comision_bruta": comision_bruta_final,
         "asegurado": diferencia_asegurado,
-        "dias_trabajados" : calcular_dias_trabajados(usuario,campania),
+        "dias_trabajados": days_worked,
+        # True solo si el usuario se dio de baja DURANTE esta campaña específica
+        "egreso_en_campana": egreso_en_campana,
         "detalle": {
             "ventasPropias": ventas_propias_dict,
             "descuentos": descuentos_dict,
             "rol": rol_dict,
             "ajustes": {
                 "ajustes_positivos": ajustes_positivos,
-                "ajustes_negativos": ajustes_negativos
-            }
+                "ajustes_negativos": ajustes_negativos,
+            },
         },
         "descuentoTotal": total_descuentos,
     }
-
-    return resultado_final
 
 
 

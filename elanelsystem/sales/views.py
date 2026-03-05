@@ -1174,13 +1174,23 @@ def importVentas(request):
                 print(f"Finalizando grupo de {group['cod_cli'].iloc[0]} - Contratos: {contratos}")
                 # ------------------------------------------------------------------
                 
+                # Campaña: usar la columna CAMPAÑA del Excel si existe y es válida
+                # (ej: "FEB 2026" → "Febrero 2026"); si es un número o está vacía,
+                # derivarla desde la fecha de inscripción (comportamiento original).
+                cp_raw = group['campania_procesada'].iloc[0] if 'campania_procesada' in group.columns else None
+                campania_val = (
+                    cp_raw
+                    if isinstance(cp_raw, str) and cp_raw
+                    else obtenerCampaña_atraves_fecha(formatar_fecha(fecha_incripcion))
+                )
+
                 ventas_to_create.append(Ventas(
                     nro_cliente        = clientes[cod_cli],
                     agencia            = sucursal_obj,
                     modalidad          = 'Mensual',
                     nro_cuotas         = len(cuotas_agg)-1,
                     nro_operacion      = id_venta_unica,
-                    campania           = obtenerCampaña_atraves_fecha(formatar_fecha(fecha_incripcion)),
+                    campania           = campania_val,
                     suspendida         = False,
                     importe            = importe_sum,
                     tasa_interes       = round(tasa_int_sum, 2),

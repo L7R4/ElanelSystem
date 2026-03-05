@@ -68,7 +68,7 @@ function modal_ajuste_comision(id_usuario, nombre_usuario, comision) {
 
         if (response.status) {
             console.log("Salio todo bien");
-            update_colaborador(response.user_id, response.user_name, response.new_comision, response.ajuste_sesion)
+            update_colaborador(response.user_id, response.user_name, response.new_comision, response.ajustes_usuario)
             update_total_comisiones(response.nuevo_total_comisiones)
         } else {
             console.log("Salio mal")
@@ -108,7 +108,7 @@ function update_colaborador(colaborador_id, colaborador_nombre, new_comision, nu
     const index = itemsColaboradores.findIndex(c => c.id == colaborador_id);
     if (index !== -1) {
         itemsColaboradores[index].comisionTotal = new_comision;
-        itemsColaboradores[index].ajustes_comision = nuevos_ajustes;
+        itemsColaboradores[index].ajustes_comision = nuevos_ajustes || [];
     }
 }
 
@@ -116,8 +116,44 @@ function update_total_comisiones(new_total) {
     const textTotal = document.querySelector("#dineroTotalComisiones")
     let inputDinero = document.querySelector("#totalComisionesInput");
 
-
     const dineroFormateado = new Intl.NumberFormat("es-AR").format(new_total);
     textTotal.textContent = dineroFormateado
     inputDinero.value = new_total
+}
+
+async function eliminar_ajuste(ajuste_id, user_id, tipo_colaborador) {
+    const campania = document.querySelector("#campaniaInput").value;
+    const agencia  = document.querySelector("#sucursalInput").value;
+
+    const body = {
+        ajuste_id: ajuste_id,
+        user_id: user_id,
+        campania: campania,
+        agencia: agencia,
+        tipoColaborador: tipo_colaborador,
+    };
+
+    const response = await fetchFunction(body, '/ventas/liquidaciones/comisiones/eliminar_ajuste/');
+
+    if (response.status) {
+        update_colaborador(response.user_id, response.user_name, response.new_comision, response.ajustes_usuario);
+        update_total_comisiones(response.nuevo_total_comisiones);
+
+        // Actualizar el modal de detalle si está abierto
+        const colaborador = itemsColaboradores.find(c => c.id == response.user_id);
+        if (colaborador) {
+            const modalContent = document.querySelector('.tingle-modal--visible .tingle-modal-box__content');
+            if (modalContent) {
+                modalContent.innerHTML = render_detalle_comision(
+                    colaborador.id,
+                    colaborador.nombre,
+                    colaborador.tipo_colaborador,
+                    colaborador.ajustes_comision,
+                    colaborador,
+                );
+            }
+        }
+    } else {
+        alert(response.message || "Error al eliminar el ajuste.");
+    }
 }

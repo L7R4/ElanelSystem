@@ -1,4 +1,4 @@
-from django.template.loader import get_template
+﻿from django.template.loader import get_template
 from weasyprint import HTML,CSS
 import elanelsystem.settings as settings
 import os
@@ -7,6 +7,7 @@ import datetime
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.core.exceptions import PermissionDenied
+from django.utils import timezone
 
 def printPDFNewUSer(data,url,productoName):
     template = get_template("pdfCreateUser.html")
@@ -108,30 +109,66 @@ def preprocesar_excel_clientes(file_path):
 
     return df
 
-def snapshot_usuario_by_campana(user,campania_str):
-    from elanelsystem.utils import obtener_fechas_campania,parse_fecha_to_date
+def snapshot_usuario_by_campana(user, campania_str):
+    """
+    Devuelve (snapshot, dias_trabajados) para un usuario en una campaña dada.
+
+    CONCEPTO: dado el lapso de tiempo que cubre la campaña, se toma el ÚLTIMO
+    registro histórico que cayó dentro de ese lapso (o antes de él si no hubo
+    cambios durante la campaña). Esto garantiza que siempre se usa el estado
+    real del usuario en ese momento, sin importar cuántos cambios haya tenido.
+
+    CORRECCIONES RETROACTIVAS: si fec_ingreso o fec_egreso fueron cargadas en
+    el sistema DESPUÉS de que terminó la campaña pero su valor corresponde a una
+    fecha dentro del período, se aplican igual (patch en memoria, sin persistir).
+
+    Devuelve (None, 0) si el usuario no participó en la campaña.
+    """
+    from elanelsystem.utils import obtener_fechas_campania, parse_fecha_to_date
 
     inicio_camp, fin_camp = obtener_fechas_campania(campania_str)
 
-    history_list_by_user = []
-    for h in user.history.all():
-            fecha_ing = parse_fecha_to_date(h.fec_ingreso)
-            if fecha_ing and fecha_ing <= fin_camp:
-                history_list_by_user.append(h)
+    # Fin de campaña al final del día para incluir cambios hechos ese mismo día
+    fin_dt = datetime.datetime.combine(fin_camp, datetime.time.max)
+    if timezone.is_naive(fin_dt):
+        fin_dt = timezone.make_aware(fin_dt, timezone.get_current_timezone())
 
-    if not history_list_by_user:
+    # Último estado dentro o antes del fin de campaña.
+    # Si hubo N cambios en ese lapso, se toma el más reciente.
+    h = (
+        user.history
+        .filter(history_date__lte=fin_dt)
+        .order_by("-history_date")
+        .first()
+    )
+
+    if not h:
         return None, 0
-    elif len(history_list_by_user) == 1 and history_list_by_user[0].history_type == "+": # Si solo hay un ingreso y es de tipo +, quiere decir que desde que se registró no salio
-        pass
-    elif len(history_list_by_user) > 1:
-        history_list_by_user = [h for h in history_list_by_user if h.history_type != "+"]
 
-    history_list_by_user.sort(key=lambda h: parse_fecha_to_date(h.fec_ingreso))
+    # ── Retroactivo fec_ingreso ───────────────────────────────────────────────
+    # Si el ingreso fue corregido después del cierre de la campaña y la nueva
+    # fecha cae dentro del período, se aplica la corrección antes de validar
+    # la participación (porque afecta si el usuario participa o no).
+    if user.fec_ingreso and user.fec_ingreso != h.fec_ingreso:
+        live_ingreso = parse_fecha_to_date(user.fec_ingreso)
+        if live_ingreso and live_ingreso <= fin_camp:
+            h.fec_ingreso = user.fec_ingreso  # patch en memoria, no se persiste
 
-    ultima_version = history_list_by_user[-1]
-    days_worked = count_days_worked_by_user(ultima_version, campania_str)
-    return ultima_version, days_worked
+    # Validación de participación: si ingresó después de que terminó la campaña
+    fecha_ing = parse_fecha_to_date(h.fec_ingreso)
+    if not fecha_ing or fecha_ing > fin_camp:
+        return None, 0
 
+    # ── Retroactivo fec_egreso ────────────────────────────────────────────────
+    # Si el egreso fue cargado después del cierre de la campaña pero la fecha
+    # corresponde a un día dentro del período, se aplica para el cálculo de días.
+    if not h.fec_egreso and user.fec_egreso:
+        live_egreso = parse_fecha_to_date(user.fec_egreso)
+        if live_egreso and live_egreso <= fin_camp:
+            h.fec_egreso = user.fec_egreso  # patch en memoria, no se persiste
+
+    days_worked = count_days_worked_by_user(h, campania_str)
+    return h, days_worked
 
 def obtener_usuarios_segun_campana(campania_str,sucursal):
     # from elanelsystem.utils import obtener_fechas_campania,parse_fecha_to_date
@@ -152,19 +189,28 @@ def obtener_usuarios_segun_campana(campania_str,sucursal):
     return usuarios_activos
 
 
-def count_days_worked_by_user(user_last_version, compania_str):
-    from elanelsystem.utils import obtener_fechas_campania,parse_fecha_to_date
-    inicio_camp, fin_camp = obtener_fechas_campania(compania_str)
-    fecha_ingreso = parse_fecha_to_date(user_last_version.fec_ingreso)
-    fecha_egreso = parse_fecha_to_date(user_last_version.fec_egreso) if user_last_version.fec_egreso else datetime.datetime.today().date()
+def count_days_worked_by_user(user_last_version, campania_str):
+    from elanelsystem.utils import obtener_fechas_campania, parse_fecha_to_date
 
+    inicio_camp, fin_camp = obtener_fechas_campania(campania_str)
+
+    fecha_ingreso = parse_fecha_to_date(user_last_version.fec_ingreso)
+    if not fecha_ingreso:
+        return 0
+
+    # Si fec_egreso viene vacía / inválida -> sigue activo, se usa hoy como límite
+    fecha_egreso = None
+    if user_last_version.fec_egreso:
+        fecha_egreso = parse_fecha_to_date(user_last_version.fec_egreso)
+
+    if not fecha_egreso:
+        import datetime as _dt
+        fecha_egreso = _dt.date.today()
 
     fecha_inicio_real = max(fecha_ingreso, inicio_camp)
     fecha_fin_real = min(fecha_egreso, fin_camp)
-    dias_trabajados_campania = 0
-    if fecha_inicio_real > fecha_fin_real:
-        dias_trabajados_campania = 0
-    else:
-        dias_trabajados_campania = (fecha_fin_real - fecha_inicio_real).days + 1
 
-    return dias_trabajados_campania
+    if fecha_inicio_real > fecha_fin_real:
+        return 0
+
+    return (fecha_fin_real - fecha_inicio_real).days + 1

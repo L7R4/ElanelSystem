@@ -9,6 +9,7 @@ class Plan(models.Model):
     
     suscripcion = models.IntegerField(default=0)
     primer_cuota = models.IntegerField(default=0)
+    activo = models.BooleanField(default=True)
 
     c24_porcentage = models.FloatField("Porcentaje de 24 c",default=0)
     c30_porcentage = models.FloatField("Porcentaje de 30 c",default=0)
@@ -64,7 +65,7 @@ class Plan(models.Model):
    
         
     def validation_valor_nominal(self):
-        if Plan.objects.filter(valor_nominal=self.valor_nominal).exists():
+        if Plan.objects.filter(valor_nominal=self.valor_nominal).exists() and self.activo:
             raise ValidationError({'valor_nominal': 'Este valor nominal ya esta registrado'})
 
         
