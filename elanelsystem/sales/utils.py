@@ -932,7 +932,19 @@ def preprocesar_excel_ventas(file_path):
 
     # Preparamos ESTADOS
     df_est['id_venta']     = df_est['id_venta'].astype(int)
-    df_est['importe_cuotas']= df_est['importe_cuotas'].replace('[\$,]', '', regex=True).fillna(0).astype(float).astype(int)
+    print('importeeeeeeeeeeeeeeeeeeeeee3')
+    # Detectar filas problemáticas en importe_cuotas
+    col_limpia = df_est['importe_cuotas'].replace('[\$,]', '', regex=True)
+
+    mask_error = pd.to_numeric(col_limpia, errors='coerce').isna()
+    if mask_error.any():
+        print("Filas con error en 'importe_cuotas':")
+        # Muestra el índice (que corresponde a la fila del Excel) y algunas columnas útiles
+        print(df_est.loc[mask_error, ['id_venta', 'importe_cuotas']])
+        # Opcional: lanzar excepción para cortar el proceso
+        raise ValueError("Hay valores no numéricos en la columna 'importe_cuotas'")
+
+    df_est['importe_cuotas'] = col_limpia.fillna(0).astype(float).astype(int)
     print('importeeeeeeeeeeeeeeeeeeeeee2')
     # df_est['importe_cuotas']= df_est['importe_cuotas']\
         # .replace('[\$,]', '', regex=True).fillna(0).astype(int)
