@@ -1114,12 +1114,7 @@ def importVentas(request):
                 cantidad_chances   = len(group)
                 importe_sum= int(group['importe'].sum())
                 tasa_int_sum  = float(group['tasa_de_inte'].sum())
-                # if cod_cli == "cli_049":
-                #     print("========================================================")
-                #     print(keys)
-                #     print("========================================================")
-                #     print(group)
-                #     break
+                
                 # Lista de contratos / órdenes
                 contratos = group[['contrato','nro_de_orden']]\
                     .apply(lambda r: {

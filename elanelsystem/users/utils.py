@@ -143,7 +143,22 @@ def snapshot_usuario_by_campana(user, campania_str):
     )
 
     if not h:
-        return None, 0
+        # ── Retroactivo: usuario dado de alta DESPUÉS del cierre de campaña ──
+        # Si el usuario fue registrado en el sistema luego de que la campaña
+        # terminó (history_date > fin_dt), pero su fec_ingreso cae dentro del
+        # período, se toma el registro histórico más reciente como snapshot y
+        # se parchea fec_ingreso en memoria (no se persiste).
+        if user.fec_ingreso:
+            live_ingreso = parse_fecha_to_date(user.fec_ingreso)
+            if live_ingreso and live_ingreso <= fin_camp:
+                h = user.history.order_by("-history_date").first()
+                if not h:
+                    return None, 0
+                h.fec_ingreso = user.fec_ingreso  # patch en memoria, no se persiste
+            else:
+                return None, 0
+        else:
+            return None, 0
 
     # ── Retroactivo fec_ingreso ───────────────────────────────────────────────
     # Si el ingreso fue corregido después del cierre de la campaña y la nueva
