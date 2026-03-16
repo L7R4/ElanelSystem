@@ -73,6 +73,20 @@
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.cantidad}}</td>
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.comision|currency_ar}}</td>
                                     </tr>
+                                    {% if agencia.suc_info.detalleCuota.cuotas5 %}
+                                    <tr>
+                                        <td>Cuotas 5</td>
+                                        <td>{{agencia.suc_info.detalleCuota.cuotas5.cantidad}}</td>
+                                        <td>{{agencia.suc_info.detalleCuota.cuotas5.comision|currency_ar}}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if agencia.suc_info.detalleCuota.cuotas6 %}
+                                    <tr>
+                                        <td>Cuotas 6</td>
+                                        <td>{{agencia.suc_info.detalleCuota.cuotas6.cantidad}}</td>
+                                        <td>{{agencia.suc_info.detalleCuota.cuotas6.comision|currency_ar}}</td>
+                                    </tr>
+                                    {% endif %}
                                     {% if recibo.sucursal == agencia.suc_name %}
                                     <tr>
                                         <td>Asegurado</td>
@@ -286,6 +300,20 @@
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.cantidad}}</td>
                                         <td>{{agencia.suc_info.detalleCuota.cuotas4.comision|currency_ar}}</td>
                                     </tr>
+                                    {% if agencia.suc_info.detalleCuota.cuotas5 %}
+                                    <tr>
+                                        <td>Cuotas 5</td>
+                                        <td>{{agencia.suc_info.detalleCuota.cuotas5.cantidad}}</td>
+                                        <td>{{agencia.suc_info.detalleCuota.cuotas5.comision|currency_ar}}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if agencia.suc_info.detalleCuota.cuotas6 %}
+                                    <tr>
+                                        <td>Cuotas 6</td>
+                                        <td>{{agencia.suc_info.detalleCuota.cuotas6.cantidad}}</td>
+                                        <td>{{agencia.suc_info.detalleCuota.cuotas6.comision|currency_ar}}</td>
+                                    </tr>
+                                    {% endif %}
                                     {% if recibo.sucursal == agencia.suc_name %}
                                     <tr>
                                         <td>Asegurado</td>

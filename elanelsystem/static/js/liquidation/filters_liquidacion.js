@@ -332,17 +332,18 @@ function render_detalle_comision(user_id, user_name, tipo_colaborador, otros_aju
         <div class= "subDetalleGroup">
               <h3>Ventas de la agencia</h3>
               <div>
-                <p>Cuotas 0<strong>${rp_suc.suc_info.cantidad_cuotas_0 || 0}</strong></p>
-                <p>Premio cuota 0<strong>${formatMoney(rp_suc.premios_por_venta || 0)}</strong></p>
+                <p>Cuotas 0 <strong>${rp_suc.suc_info.cantidad_cuotas_0 || 0}</strong></p>
+                <p>Premio cuota 0 <strong>${formatMoney(rp_suc.premios_por_venta || 0)}</strong></p>
               `;
-                ["1", "2", "3", "4"].forEach(nro => {
-                    const det = rp_suc.suc_info.detalleCuota?.[`cuotas${nro}`] || {};
+                ["1", "2", "3", "4", "5", "6"].forEach(nro => {
+                    const det = rp_suc.suc_info.detalleCuota?.[`cuotas${nro}`];
+                    if (!det) return;
                     html += `
                 <p>Cuota ${nro} <strong>${det.cantidad || 0} - ${formatMoney(det.comision || 0)}</strong></p>`;
                 });
                 // sub‐total sucursal
                 html += `
-                <p class="subTotalAgenciaGerente">Sub‐total de sucursal<strong>${formatMoney(rp_suc.sub_total || 0)}</strong></p></div>
+                <p class="subTotalAgenciaGerente">Sub‐total de sucursal <strong>${formatMoney(rp_suc.sub_total || 0)}</strong></p></div>
                 </div> `;
             }
 
