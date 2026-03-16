@@ -66,11 +66,12 @@ function modal_ajuste_comision(id_usuario, nombre_usuario, comision) {
         showLoader('.moda_container_ajusteComision')
         let response = await fetchFunction(body, '/ventas/liquidaciones/comisiones/nuevo_ajuste/')
 
-        if (response.status) {
+        if (response && response.status) {
             console.log("Salio todo bien");
             update_colaborador(response.user_id, response.user_name, response.new_comision, response.ajustes_usuario)
             update_total_comisiones(response.nuevo_total_comisiones)
         } else {
+            alert(response.message || "Error al procesar el ajuste.")
             console.log("Salio mal")
         }
 
@@ -123,7 +124,7 @@ function update_total_comisiones(new_total) {
 
 async function eliminar_ajuste(ajuste_id, user_id, tipo_colaborador) {
     const campania = document.querySelector("#campaniaInput").value;
-    const agencia  = document.querySelector("#sucursalInput").value;
+    const agencia = document.querySelector("#sucursalInput").value;
 
     const body = {
         ajuste_id: ajuste_id,
