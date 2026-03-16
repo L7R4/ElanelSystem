@@ -517,7 +517,7 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania, config=None):
         .filter(
             Q(venta__gerente=gerente),
             venta__is_commissionable=True,
-            nro_cuota__in=[0, 1, 2, 3, 4],
+            nro_cuota__in=[0, 1, 2, 3, 4, 5, 6],
             campana_de_pago=campania
         )
         .select_related("venta", "venta__agencia")
@@ -607,7 +607,7 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania, config=None):
             .filter(
                 Q(venta__agencia__in=sucursales_region_objs),
                 venta__is_commissionable=True,
-                nro_cuota__in=[1, 2, 3, 4],
+                nro_cuota__in=[1, 2, 3, 4, 5, 6],
                 campana_de_pago=campania
             )
             .select_related("venta", "venta__agencia")
@@ -1009,7 +1009,32 @@ def detalle_liquidado_x_rol(usuario, campania, suc, snapshot=None, config=None):
             "dinero_recadudado_cuotas_0": detalleRegion["dinero_recadudado_cuotas_0"],
             "detalle" : detalleRegion["detalleRegion"] 
         }
-        # print(f"\n\n Detalle de region de gerente {usuario.nombre} -> \n{response} \n\n")
+        # ─── Detalle de comisión del gerente en consola ───
+        print(f"\n{'='*60}")
+        print(f"  DETALLE COMISIÓN GERENTE: {usuario.nombre}")
+        print(f"  Campaña: {campania} | Agencia base: {suc.pseudonimo}")
+        print(f"{'='*60}")
+        for suc_key, suc_data in response["detalle"].items():
+            info = suc_data.get("suc_info", {})
+            cuotas0 = info.get("cantidad_cuotas_0", 0)
+            print(f"\n  Sucursal: {suc_data.get('suc_name', suc_key)}")
+            print(f"    Cuotas 0:  {cuotas0} ventas | Premio: ${suc_data.get('premios_por_venta', 0):,.0f}")
+            detalle_cuota = info.get("detalleCuota", {})
+            for nro in range(1, 7):
+                dc = detalle_cuota.get(f"cuotas{nro}")
+                if dc:
+                    pagos_lista = dc.get("cuotas", [])
+                    fechas = ", ".join(p.get("fecha_pago", "?") for p in pagos_lista[:5])
+                    if len(pagos_lista) > 5:
+                        fechas += f" (+{len(pagos_lista)-5} más)"
+                    print(f"    Cuota {nro}:   {dc['cantidad']} cant | ${dc['dinero_x_cuota']:,.0f} recaudado | Comisión: ${dc['comision']:,.0f}")
+                    if fechas:
+                        print(f"             Cobros: {fechas}")
+            print(f"    ─── Sub-total: ${suc_data.get('sub_total', 0):,.0f}")
+        print(f"\n  COMISIÓN TOTAL REGION:  ${response['comision_total']:,.0f}")
+        print(f"  └ Por cuotas:           ${response['comision_total_cuotas']:,.0f}")
+        print(f"  └ Premios cuotas 0:     ${response['total_premios']:,.0f}")
+        print(f"{'='*60}\n")
 
         return response
 
@@ -1222,7 +1247,7 @@ def detalle_pagos_x_gerente(gerente,campania):
         .filter(
             Q(venta__gerente=gerente),
             venta__is_commissionable=True,
-            nro_cuota__in=[0, 1, 2, 3, 4],
+            nro_cuota__in=[0, 1, 2, 3, 4, 5, 6],
             campana_de_pago=campania
         )
         .select_related("venta", "venta__agencia")
