@@ -1105,7 +1105,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None, config=
         comision_bruta_inicial = rol_dict["comision_total"]
     elif rango_lower == "gerente sucursal":
         suc_clean = agencia.pseudonimo.replace(" ", "").replace(",", "").lower()
-        comision_bruta_inicial = rol_dict["detalle"][suc_clean]["sub_total"]
+        comision_bruta_inicial = rol_dict["detalle"].get(suc_clean, {}).get("sub_total", 0)
 
     # 5) Asegurado (snapshot pre-computado para no re-consultar history)
     try:

@@ -281,12 +281,6 @@ def crearAjusteComision(request):
     if not user_id or not campania or not agencia:
         return JsonResponse({"status": False, "message": "Faltan datos obligatorios"}, status=400)
 
-    if _liquidacion_cerrada_vigente(campania, agencia):
-        return JsonResponse(
-            {"status": False, "message": "Esta campaña ya tiene una liquidación cerrada. Realice una reliquidación para modificar ajustes."},
-            status=400
-        )
-
     sucursalObject = Sucursal.objects.get(id=agencia)
     usuario = Usuario.objects.get(pk=user_id)
 
@@ -339,12 +333,6 @@ def eliminarAjusteComision(request):
         ajuste = AjusteComision.objects.get(id=ajuste_id)
     except AjusteComision.DoesNotExist:
         return JsonResponse({"status": False, "message": "Ajuste no encontrado"}, status=404)
-
-    if _liquidacion_cerrada_vigente(campania, agencia):
-        return JsonResponse(
-            {"status": False, "message": "Esta campaña ya tiene una liquidación cerrada. Realice una reliquidación para modificar ajustes."},
-            status=400
-        )
 
     user_id = ajuste.usuario_id
     ajuste.activo = False
