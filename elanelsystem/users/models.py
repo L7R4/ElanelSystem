@@ -373,8 +373,8 @@ class Cliente(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["agencia_registrada", "nro_cliente"],
-                name="uniq_nro_cliente_por_agencia",
+                fields=["agencia_registrada", "nro_cliente", "dni"],
+                name="uniq_nro_cliente_dni_por_agencia",
             ),
         ]
 
