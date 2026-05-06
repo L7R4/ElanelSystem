@@ -453,7 +453,45 @@ async function create_excel_detail_info(userId, campania, agenciaId) {
     const blob = await resp.blob();
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = resp.headers.get("filename");
+    link.download = resp.headers.get("filename") || "detalle_comision.xlsx";
     link.click();
+}
+
+async function create_excel_all_detail_info() {
+    if (inputCampania.value == "" || inputSucursal.value == "") {
+        alertMessage("Debe seleccionar una sucursal y una campaña", "warning");
+        return;
+    }
+
+    const body = { 
+        campania: inputCampania.value, 
+        agencia_id: inputSucursal.value 
+    };
+    const csrftoken = getCookie("csrftoken");
+
+    showLoader();
+    try {
+        const resp = await fetch(urlExportDetallesComision, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrftoken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!resp.ok) throw new Error("Error al generar Excel");
+
+        const blob = await resp.blob();
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Recibos_${inputCampania.value.replace(/ /g, '_')}.xlsx`;
+        link.click();
+    } catch (error) {
+        console.error(error);
+        alertMessage("Error al exportar los recibos", "error");
+    } finally {
+        hiddenLoader();
+    }
 }
 // #endregion

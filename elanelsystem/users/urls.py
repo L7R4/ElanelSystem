@@ -23,7 +23,11 @@ urlpatterns = [
     path("usuario/administracion/",PanelAdmin.as_view(),name="panelAdmin"),
     path("usuario/administracion/permisos/",PanelPermisos.as_view(),name="panelPermisos"),
     path("usuario/configurar_perfil/",ConfiguracionPerfil.as_view(),name="configurarPerfil"),
-
+    path("usuario/administracion/importar_preview/", preview_import_colaboradores, name="preview_import_colaboradores"),
+    path("usuario/administracion/importar_confirm/", confirm_import_colaboradores, name="confirm_import_colaboradores"),
+    path("usuario/administracion/clean_excel_preview/", clean_excel_preview, name="clean_excel_preview"),
+    path("usuario/administracion/clean_excel_execute/", clean_excel_execute, name="clean_excel_execute"),
+    path("usuario/administracion/sync_payment_dates_execute/", sync_payment_dates_execute, name="sync_payment_dates_execute"),
 
     #region Sucursal CRUD - - - - - - - -
     path("usuario/administracion/sucursales/",PanelSucursales.as_view(),name="panelSucursales"),

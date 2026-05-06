@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{% static 'css/list_customers.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
-<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet"/>
+<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="{% static 'css/vanilla_table.css' %}" />
 
 {% endblock css %}
@@ -17,12 +17,12 @@
 
 <div class="filters">
 
-  
+
   <div class="titleHeaderWrapper">
     <img src="{% static 'images/icons_sider/clientes.svg' %}" alt="">
     <h1 class="titleHeader">CLIENTES</h1>
   </div>
-  
+
   <div class="buttonsActionsWrapper">
     <a href="{% url 'users:create_customer' %}" class="add-button-default" id="create_customer">Agregar</a>
     {% if perms.cliente.importar %}
@@ -34,14 +34,14 @@
 <div class="informationWrapper">
   <div id=""></div>
   <div id="customers_table" class="vt-sticky"></div>
-</div> 
+</div>
 
 {% endblock content %}
 {% block js %}
 <script>
   var csrf_token = '{%csrf_token%}'
   var urlImportData = "{% url 'users:importClientes' %}"
-  var sucursalesDisponibles = {{ sucursalesDisponibles|safe }};
+  var sucursalesDisponibles = {{ sucursalesDisponibles| safe }};
   var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
   var imgNext = "{% static 'images/icons/arrowDown.png' %}";
 </script>

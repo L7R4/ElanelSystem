@@ -1431,3 +1431,731 @@ def removeSucursal(request):
             return JsonResponse(response_data)
 
 #endregion  - - - - - - - - - - - - - - - - - - - - - - - -
+
+@login_required
+def preview_import_colaboradores(request):
+    if request.method == "POST":
+        uploaded_file = request.FILES.get('file')
+        agencia_id = request.POST.get('agencia')
+
+        if not uploaded_file or not agencia_id:
+            return JsonResponse({"status": False, "message": "Faltan datos (archivo o agencia)."})
+
+        try:
+            agencia = Sucursal.objects.get(pk=agencia_id)
+        except (Sucursal.DoesNotExist, ValueError):
+            return JsonResponse({"status": False, "message": "Agencia no encontrada."})
+
+        try:
+            try:
+                df_raw = pd.read_excel(uploaded_file, sheet_name="DATOS", header=None)
+            except ValueError:
+                # Si no existe DATOS, intentar por defecto
+                df_raw = pd.read_excel(uploaded_file, header=None)
+
+            header_row_idx = 0
+            for i, row in df_raw.iterrows():
+                row_str = " ".join([str(c).lower() for c in row.values if pd.notna(c)])
+                if "vendedor" in row_str and "supervisor" in row_str and "dni" in row_str:
+                    header_row_idx = i
+                    break
+            
+            df_raw.columns = df_raw.iloc[header_row_idx]
+            df = df_raw.iloc[header_row_idx + 1:].reset_index(drop=True)
+            df.columns = [str(c).replace('\n', ' ').strip() for c in df.columns]
+            
+            col_vendedor, col_vendedor_alta, col_vendedor_baja = None, None, None
+            col_dni, col_alias, col_cbu, col_entidad = None, None, None, None
+
+            columns_list = list(df.columns)
+            for i, col in enumerate(columns_list):
+                c_lower = str(col).lower().strip()
+                if c_lower == "vendedor":
+                    col_vendedor = i
+                    if i + 1 < len(columns_list) and "alta" in str(columns_list[i+1]).lower(): col_vendedor_alta = i+1
+                    if i + 2 < len(columns_list) and "baja" in str(columns_list[i+2]).lower(): col_vendedor_baja = i+2
+                elif c_lower == "dni": col_dni = i
+                elif "alias" in c_lower:
+                    if col_alias is None: col_alias = i
+                elif "cbu" in c_lower or "cvu" in c_lower:
+                    if col_cbu is None: col_cbu = i
+                elif "entidad" in c_lower or "banco" in c_lower:
+                    if col_entidad is None: col_entidad = i
+
+            if col_vendedor is None:
+                return JsonResponse({"status": False, "message": "El excel debe contener la columna VENDEDOR."})
+
+            vendedores_to_update = []
+            supervisores_to_update = []
+            gerentes_to_update = []
+            users_to_create = []
+
+            processed_names = set()
+
+            def safe_date(val):
+                if pd.isna(val) or str(val).lower() in ["nan", "none", "", "np", "n/p"]: return ""
+                if isinstance(val, pd.Timestamp): return val.strftime("%d/%m/%Y")
+                val_str = str(val).strip()
+                if " " in val_str:
+                    try: return datetime.datetime.strptime(val_str.split(" ")[0], "%Y-%m-%d").strftime("%d/%m/%Y")
+                    except: pass
+                if "-" in val_str:
+                    try: return pd.to_datetime(val_str).strftime("%d/%m/%Y")
+                    except: pass
+                # A veces pandas lee la fecha como Excel epoch int
+                try: 
+                    if str(val_str).isdigit():
+                        return pd.to_datetime('1899-12-30') + pd.to_timedelta(int(val_str), 'D')
+                except: pass
+                return val_str
+
+            for index, row in df.iterrows():
+                def get_val(idx):
+                    if idx is None: return ""
+                    return row.iloc[idx]
+
+                nombre_vendedor = " ".join(str(get_val(col_vendedor)).split()).title()
+                if not nombre_vendedor or nombre_vendedor.lower() in ["nan", "none", "", "np", "n/p"]:
+                    continue
+                
+                if nombre_vendedor in processed_names:
+                    continue
+                processed_names.add(nombre_vendedor)
+                
+                f_alta_vendedor = safe_date(get_val(col_vendedor_alta))
+                f_baja_vendedor = safe_date(get_val(col_vendedor_baja))
+
+                dni_excel = str(get_val(col_dni)).strip()
+                if dni_excel.endswith(".0"): dni_excel = dni_excel[:-2]
+                if dni_excel.lower() in ["nan", "none"]: dni_excel = ""
+                
+                alias_excel = str(get_val(col_alias)).strip()
+                cbu_excel = str(get_val(col_cbu)).strip()
+                entidad_excel = str(get_val(col_entidad)).strip()
+                
+                if alias_excel.lower() in ["nan", "none", "nan.0"]: alias_excel = ""
+                if cbu_excel.lower() in ["nan", "none", "nan.0", "nan.00"]: cbu_excel = ""
+                if entidad_excel.lower() in ["nan", "none", "nan.0"]: entidad_excel = ""
+                
+                if cbu_excel.endswith(".0"): cbu_excel = cbu_excel[:-2]
+                cbu_excel = cbu_excel.replace(" ", "").replace("-", "")[:22]
+                alias_excel = alias_excel[:50]
+                entidad_excel = entidad_excel[:100]
+
+                match = Usuario.objects.filter(nombre__iexact=nombre_vendedor, sucursales=agencia).first()
+                if not match: match = Usuario.objects.filter(nombre__iexact=nombre_vendedor).first()
+                
+                if match:
+                    changed_fields = []
+                    if dni_excel and match.dni != dni_excel: changed_fields.append("dni")
+                    if alias_excel and match.alias != alias_excel: changed_fields.append("alias")
+                    if cbu_excel and match.cbu != cbu_excel: changed_fields.append("cbu")
+                    if entidad_excel and match.entidad_bancaria != entidad_excel: changed_fields.append("entidad_bancaria")
+                    if f_alta_vendedor and match.fec_ingreso != f_alta_vendedor: changed_fields.append("fec_ingreso")
+                    if f_baja_vendedor and match.fec_egreso != f_baja_vendedor: changed_fields.append("fec_egreso")
+
+                    needs_update = len(changed_fields) > 0
+
+                    if needs_update or not match.dni or not match.alias or not match.cbu or not match.fec_ingreso:
+                        obj = {
+                            "index": len(processed_names),
+                            "user_id": match.pk,
+                            "nombre": match.nombre,
+                            "rango": match.rango,
+                            "dni": dni_excel or match.dni,
+                            "alias": alias_excel or match.alias,
+                            "cbu": cbu_excel or match.cbu,
+                            "entidad_bancaria": entidad_excel or match.entidad_bancaria,
+                            "fec_ingreso": f_alta_vendedor or match.fec_ingreso,
+                            "fec_egreso": f_baja_vendedor or match.fec_egreso,
+                            "agencia_actual": ", ".join([s.pseudonimo for s in match.sucursales.all()]),
+                            "changed": changed_fields
+                        }
+                        if match.rango == "Supervisor": supervisores_to_update.append(obj)
+                        elif match.rango == "Gerente sucursal": gerentes_to_update.append(obj)
+                        else: vendedores_to_update.append(obj)
+                else:
+                    users_to_create.append({
+                        "index": len(processed_names),
+                        "nombre": nombre_vendedor,
+                        "dni": dni_excel,
+                        "alias": alias_excel,
+                        "cbu": cbu_excel,
+                        "entidad_bancaria": entidad_excel,
+                        "fec_ingreso": f_alta_vendedor,
+                        "fec_egreso": f_baja_vendedor,
+                        "rango": "Vendedor"
+                    })
+
+            return JsonResponse({
+                "status": True, 
+                "vendedores": vendedores_to_update,
+                "supervisores": supervisores_to_update,
+                "gerentes": gerentes_to_update,
+                "nuevos": users_to_create
+            })
+
+        except Exception as e:
+            return JsonResponse({"status": False, "message": str(e)})
+
+    return JsonResponse({"status": False, "message": "Método HTTP no permitido."})
+
+@login_required
+def clean_excel_preview(request):
+    if request.method == "POST":
+        try:
+            uploaded_file = request.FILES.get('file')
+            if not uploaded_file:
+                return JsonResponse({"status": False, "message": "No se subió ningún archivo."})
+
+            # Intentar abrir con openpyxl por defecto
+            try:
+                xl = pd.ExcelFile(uploaded_file, engine='openpyxl')
+            except Exception as e:
+                # Si falla, intentar sin motor explícito (podría ser .xls)
+                try:
+                    xl = pd.ExcelFile(uploaded_file)
+                except Exception as e2:
+                    return JsonResponse({"status": False, "message": f"No se pudo abrir el archivo Excel: {str(e2)}"})
+
+            sheet_names = xl.sheet_names
+            
+            # Normalizar nombres de hojas (quitar espacios y pasar a mayúsculas)
+            normalized_sheets = {s.strip().upper(): s for s in sheet_names}
+            
+            required_sheets = {
+                "ESTADO": ["ESTADO", "ESTADOS"],
+                "RESUMEN": ["RESUMEN"],
+                "CLIENTES": ["CLIENTES", "CLIENTE"],
+                "DATOS": ["DATOS"]
+            }
+            
+            results = {}
+            for key, variants in required_sheets.items():
+                found = False
+                for variant in variants:
+                    if variant.upper() in normalized_sheets:
+                        results[key] = {
+                            "found": True,
+                            "real_name": normalized_sheets[variant.upper()]
+                        }
+                        found = True
+                        break
+                if not found:
+                    results[key] = {"found": False, "real_name": None}
+            
+            return JsonResponse({"status": True, "sheets": results})
+        except Exception as e:
+            return JsonResponse({"status": False, "message": f"Error interno: {str(e)}"})
+    return JsonResponse({"status": False, "message": "Método no permitido."})
+
+@login_required
+def clean_excel_execute(request):
+    if request.method == "POST":
+        try:
+            uploaded_file = request.FILES.get('file')
+            if not uploaded_file:
+                return JsonResponse({"status": False, "message": "No se subió ningún archivo."})
+
+            # Intentar determinar el motor
+            engine = 'openpyxl' if uploaded_file.name.endswith('.xlsx') or uploaded_file.name.endswith('.xlsm') else None
+
+            try:
+                xl = pd.ExcelFile(uploaded_file, engine=engine)
+            except Exception as e:
+                xl = pd.ExcelFile(uploaded_file)
+
+            sheet_names = xl.sheet_names
+            normalized_sheets = {s.strip().upper(): s for s in sheet_names}
+            
+            output_sheets_map = {
+                "ESTADO": ["ESTADO", "ESTADOS"],
+                "RESUMEN": ["RESUMEN"],
+                "CLIENTES": ["CLIENTES", "CLIENTE"],
+                "DATOS": ["DATOS"]
+            }
+            
+            import io
+            output = io.BytesIO()
+            
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                for out_name, variants in output_sheets_map.items():
+                    real_name = None
+                    for v in variants:
+                        if v.upper() in normalized_sheets:
+                            real_name = normalized_sheets[v.upper()]
+                            break
+                    
+                    if real_name:
+                        # Para leer los datos, usamos el mismo objeto de archivo
+                        # Aseguramos que el puntero esté al inicio si es necesario
+                        uploaded_file.seek(0)
+                        
+                        # Usar engine_kwargs solo si el motor es openpyxl
+                        engine_kwargs = {"data_only": True} if engine == 'openpyxl' else {}
+                        
+                        df = pd.read_excel(
+                            uploaded_file, 
+                            sheet_name=real_name, 
+                            dtype=str, 
+                            engine=engine,
+                            engine_kwargs=engine_kwargs
+                        )
+                        df = df.fillna("")
+                    else:
+                        df = pd.DataFrame()
+                    
+                    df.to_excel(writer, sheet_name=out_name, index=False)
+            
+            output.seek(0)
+            
+            response = HttpResponse(
+                output.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            base_name, _ = os.path.splitext(uploaded_file.name)
+            response['Content-Disposition'] = f'attachment; filename="clean_{base_name}.xlsx"'
+            return response
+            
+        except Exception as e:
+            return JsonResponse({"status": False, "message": f"Error al procesar: {str(e)}"})
+    return JsonResponse({"status": False, "message": "Método no permitido."})
+
+@login_required
+@transaction.atomic
+def confirm_import_colaboradores(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            agencia_id = data.get("agencia")
+            if not agencia_id:
+                return JsonResponse({"status": False, "message": "Falta seleccionar la agencia."})
+            agencia = Sucursal.objects.get(pk=agencia_id)
+            
+            updates = data.get("updates", [])
+            creates = data.get("creates", [])
+            
+            # Phase 1: Create and Update
+            for c in updates:
+                user = Usuario.objects.filter(pk=c["user_id"]).first()
+                if user:
+                    user.dni = str(c.get("dni", "")).strip()[:12]
+                    user.alias = str(c.get("alias", "")).strip()[:50]
+                    cbu_raw = str(c.get("cbu", "")).strip()
+                    if cbu_raw.endswith(".0"): cbu_raw = cbu_raw[:-2]
+                    user.cbu = cbu_raw.replace(" ", "").replace("-", "")[:22]
+                    user.entidad_bancaria = str(c.get("entidad_bancaria", "")).strip()[:100]
+                    
+                    user.fec_ingreso = str(c.get("fec_ingreso", "")).strip()[:10]
+                    user.save() # Trigger model hook before assigning egreso
+                    
+                    user.fec_egreso = str(c.get("fec_egreso", "")).strip()[:10]
+                    user.suspendido = True if user.fec_egreso else False
+                    
+                    if not user.sucursales.filter(pk=agencia.pk).exists():
+                        user.sucursales.add(agencia)
+                        
+                    user.save()
+            
+            for c in creates:
+                nombre = str(c.get("nombre", "")).strip().title()
+                if not nombre: continue
+                dni_excel = str(c.get("dni", "")).strip()[:12]
+                rango_str = str(c.get("rango", "Vendedor")).strip()
+                base_email = f"{nombre.replace(' ', '').lower()}@gmail.com"
+                
+                try: rango_group = Group.objects.get(name=rango_str)
+                except Group.DoesNotExist: rango_group = Group.objects.get(name="Vendedor")
+                
+                # Verify DNI
+                if dni_excel and Usuario.objects.filter(dni=dni_excel).exists():
+                    dni_excel = ""
+                
+                # Ensure unique email
+                if Usuario.objects.filter(email=base_email).exists():
+                    import uuid
+                    base_email = f"{nombre.replace(' ', '').lower()}{str(uuid.uuid4())[:4]}@gmail.com"
+                
+                new_user = Usuario.objects.create_user(
+                    email=base_email,
+                    nombre=nombre,
+                    dni=dni_excel,
+                    rango=rango_str,
+                    password="klf781CL"
+                )
+                
+                new_user.c = "klf781CL"
+                new_user.alias = str(c.get("alias", "")).strip()[:50]
+                cbu_raw = str(c.get("cbu", "")).strip()
+                if cbu_raw.endswith(".0"): cbu_raw = cbu_raw[:-2]
+                new_user.cbu = cbu_raw.replace(" ", "").replace("-", "")[:22]
+                new_user.entidad_bancaria = str(c.get("entidad_bancaria", "")).strip()[:100]
+                
+                new_user.fec_ingreso = str(c.get("fec_ingreso", "")).strip()[:10]
+                new_user.save() # Trigger model hook before assigning egreso
+                
+                new_user.fec_egreso = str(c.get("fec_egreso", "")).strip()[:10]
+                new_user.suspendido = True if new_user.fec_egreso else False
+                
+                new_user.sucursales.add(agencia)
+                new_user.groups.add(rango_group)
+                new_user.setAdditionalPasswords()
+                new_user.save()
+
+            return JsonResponse({"status": True, "message": "Datos de colaboradores guardados y actualizados correctamente."})
+        except Exception as e:
+            return JsonResponse({"status": False, "message": str(e)})
+            
+    return JsonResponse({"status": False, "message": "Método HTTP no permitido."})
+
+@login_required
+def sync_payment_dates_execute(request):
+    if request.method == "POST":
+        try:
+            file_actual = request.FILES.get('file_actual')
+            file_backup = request.FILES.get('file_backup')
+            if not file_actual or not file_backup:
+                return JsonResponse({"status": False, "message": "Faltan archivos para procesar."})
+
+            engine_backup = 'openpyxl' if file_backup.name.endswith(('.xlsx', '.xlsm')) else None
+            engine_actual = 'openpyxl' if file_actual.name.endswith(('.xlsx', '.xlsm')) else None
+
+            try:
+                xl_backup = pd.ExcelFile(file_backup, engine=engine_backup)
+            except Exception:
+                xl_backup = pd.ExcelFile(file_backup)
+
+            import re
+            
+            def normalize_txt(s):
+                if s is None or str(s).lower() == 'nan': return ""
+                return re.sub(r'[^a-z0-9]', '', str(s).lower())
+                
+            key_columns = ["Cod.Cli", "Nombre y Apell", "cuotas", "ID Venta", "NRO DE ORDEN"]
+            norm_key_cols = [normalize_txt(c) for c in key_columns]
+            
+            # --- Encontrar hoja en Backup donde esten las columnas ---
+            sheet_datos_backup = None
+            for s_name in xl_backup.sheet_names:
+                if s_name.strip().upper() in ["ESTADO", "ESTADOS"]:
+                    sheet_datos_backup = s_name
+                    break
+                    
+            if not sheet_datos_backup:
+                return JsonResponse({"status": False, "message": "El archivo Backup debe contener alguna hoja llamada ESTADO o ESTADOS."})
+
+            df_raw = pd.read_excel(file_backup, sheet_name=sheet_datos_backup, header=None, dtype=str, engine=engine_backup)
+            df_raw = df_raw.fillna("")
+            
+            header_idx_backup = -1
+            vistos_backup = []
+            
+            for idx, row in df_raw.head(30).iterrows():
+                row_vals = [normalize_txt(v) for v in row.values]
+                vistos_backup.append([str(v) for v in row.values if str(v).strip()])
+                
+                found_all = True
+                for col in norm_key_cols:
+                    if not any((col in v or v in col) for v in row_vals if v):
+                        found_all = False
+                        break
+                        
+                if found_all:
+                    header_idx_backup = idx
+                    break
+                
+            if header_idx_backup == -1:
+                return JsonResponse({"status": False, "message": f"No se encontraron las columnas clave en la hoja {sheet_datos_backup} del Backup. Vistas guardadas: {vistos_backup[:4]}"})
+
+            file_backup.seek(0)
+            df_backup = pd.read_excel(file_backup, sheet_name=sheet_datos_backup, header=header_idx_backup, dtype=str, engine=engine_backup)
+            df_backup = df_backup.fillna("")
+            
+            col_map_backup = {}
+            for expected in norm_key_cols:
+                exact_match = None
+                fuzzy_match = None
+                for c in df_backup.columns:
+                    c_norm = normalize_txt(c)
+                    if c_norm == expected:
+                        exact_match = c
+                        break
+                    elif c_norm and (expected in c_norm or c_norm in expected):
+                        fuzzy_match = c
+                col_map_backup[expected] = exact_match if exact_match else fuzzy_match
+            
+            fecha_col = None
+            for c in df_backup.columns:
+                c_norm = normalize_txt(c)
+                if c_norm and ('fechadepago' in c_norm):
+                    fecha_col = c
+                    break
+                    
+            if not fecha_col:
+                return JsonResponse({"status": False, "message": f"La columna 'Fecha de Pago' no se detectó en la hoja detectada ({sheet_datos_backup}) del Backup."})
+
+            def clean_key_val(val):
+                if val is None or str(val).strip().lower() in ['nan', 'none', '']: return ""
+                v = str(val).strip().replace('.0', '').lower()
+                return ' '.join(v.split())
+
+            backup_dict = {}
+            for _, row in df_backup.iterrows():
+                row_key = []
+                for expected in norm_key_cols:
+                    exact_col = col_map_backup.get(expected)
+                    if exact_col:
+                        row_key.append(clean_key_val(row[exact_col]))
+                    else:
+                        row_key.append("")
+                
+                k = tuple(row_key)
+                val = str(row[fecha_col]).strip()
+                if val and val.lower() != 'nan':
+                    backup_dict[k] = val
+                    
+            print(f"\n==============================================")
+            print(f"✅ DEBUG: DATOS EXTRAIDOS DEL BACKUP")
+            print(f"==============================================")
+            print(f"✔️  Mapeo de Columnas: {col_map_backup}")
+            print(f"✔️  Columna de Fecha Detectada: {fecha_col}")
+            print(f"✔️  Total Fechas de Backup en Memoria: {len(backup_dict)}")
+            ejemplos_backup = list(backup_dict.items())[:2] if backup_dict else []
+            print(f"✔️  Ejemplo 2 Filas en Backup: {ejemplos_backup}")
+            print(f"==============================================\n")
+
+            # Procesar el archivo Actual usando win32com para hacer puente nativo con Excel y evadir errores de openpyxl
+            import tempfile
+            import os
+            try:
+                import pythoncom
+                import win32com.client
+            except ImportError:
+                return JsonResponse({"status": False, "message": "Falta la librería pywin32 para procesar archivos con macros. Corre pip install pywin32"})
+            
+            ext = os.path.splitext(file_actual.name)[1].lower()
+            if not ext: ext = ".xlsx"
+            
+            file_actual.seek(0)
+            with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
+                tmp.write(file_actual.read())
+                tmp_actual_path = tmp.name
+
+            updated_count = 0
+            pythoncom.CoInitialize()
+            excel = None
+            wb_actual = None
+            try:
+                excel = win32com.client.DispatchEx("Excel.Application")
+                excel.Visible = False
+                excel.DisplayAlerts = False
+                excel.AskToUpdateLinks = False
+                excel.EnableEvents = False  # MUY IMPORTANTE: Suprime popups de VBA como el Worksheet_Change
+                
+                wb_actual = excel.Workbooks.Open(tmp_actual_path, UpdateLinks=0, ReadOnly=False)
+                excel.Calculation = -4135  # Apagar recálculo automático mientras iteramos (Acelera 1000x)
+                
+                sheet_actual = None
+                for sh in wb_actual.Sheets:
+                    if str(sh.Name).strip().upper() in ["ESTADO", "ESTADOS"]:
+                        sheet_actual = sh
+                        break
+                        
+                if not sheet_actual:
+                    raise Exception("El archivo Actual debe contener la hoja ESTADO o ESTADOS.")
+                    
+                try:
+                    sheet_actual.Unprotect("12841")
+                except Exception as e:
+                    print(f"DEBUG: No se pudo desproteger la hoja: {e}")
+
+                max_c = min(sheet_actual.UsedRange.Columns.Count, 200)
+                max_r_header = min(sheet_actual.UsedRange.Rows.Count, 50)
+                if max_c < 1 or max_r_header < 1:
+                    raise Exception("La hoja de estado parece vacía.")
+                    
+                header_vals = sheet_actual.Range(sheet_actual.Cells(1, 1), sheet_actual.Cells(max_r_header, max_c)).Value
+                if not isinstance(header_vals, tuple):
+                    header_vals = ((header_vals,),)
+                    
+                header_row = -1
+                col_map_actual = {}
+                vistos_actual = []
+                
+                for r_idx, row_tuple in enumerate(header_vals):
+                    r = r_idx + 1 
+                    row_vals = {}
+                    vistos_row = []
+                    for c_idx, val in enumerate(row_tuple):
+                        c = c_idx + 1
+                        if val is not None:
+                            val_norm = normalize_txt(val)
+                            row_vals[val_norm] = c
+                            vistos_row.append(str(val))
+                    if vistos_row: vistos_actual.append(vistos_row)
+                            
+                    found_all = True
+                    for expected in norm_key_cols:
+                        if not any((expected in v or v in expected) for v in row_vals.keys() if v):
+                            found_all = False
+                            break
+                            
+                    if found_all:
+                        header_row = r
+                        for expected in norm_key_cols:
+                            exact_m = None
+                            fuzzy_m = None
+                            for v, c_idx in row_vals.items():
+                                if v == expected:
+                                    exact_m = c_idx
+                                    break
+                                elif v and (expected in v or v in expected):
+                                    fuzzy_m = c_idx
+                            col_map_actual[expected] = exact_m if exact_m else fuzzy_m
+                                    
+                        fecha_c_idx = None
+                        for v, c_idx in row_vals.items():
+                            if v and ('fechadepago' in v):
+                                fecha_c_idx = c_idx
+                                break
+                        if fecha_c_idx:
+                            col_map_actual['fechadepago'] = fecha_c_idx
+                        break
+                        
+                if header_row == -1:
+                    raise Exception(f"No se encontraron las columnas clave. Vistas: {str(vistos_actual[:4])}")
+                    
+                if 'fechadepago' not in col_map_actual:
+                    fecha_col_idx = sheet_actual.UsedRange.Columns.Count + 1
+                    sheet_actual.Cells(header_row, fecha_col_idx).Value = "Fecha de Pago"
+                    col_map_actual['fechadepago'] = fecha_col_idx
+                else:
+                    fecha_col_idx = col_map_actual['fechadepago']
+                    
+                total_rows = sheet_actual.UsedRange.Rows.Count
+                start_r = header_row + 1
+                end_r = min(total_rows, 200000)
+                
+                actual_keys_debug = []
+                
+                if start_r <= end_r:
+                    # Leer bloque de una vez es infinitamente mas rapido para iterar
+                    block_vals = sheet_actual.Range(sheet_actual.Cells(start_r, 1), sheet_actual.Cells(end_r, sheet_actual.UsedRange.Columns.Count)).Value
+                    if not isinstance(block_vals, tuple):
+                        block_vals = ((block_vals,),)
+                        
+                    # Extraer LA COLUMNA de fechas actual exactamente como esta
+                    rng_fechas = sheet_actual.Range(sheet_actual.Cells(start_r, fecha_col_idx), sheet_actual.Cells(end_r, fecha_col_idx))
+                    fechas_vals = rng_fechas.Value
+                    if not isinstance(fechas_vals, tuple):
+                        fechas_vals = ((fechas_vals,),)
+                    fechas_mutables = [list(r) for r in fechas_vals]
+                        
+                    matches_debug = []
+                    clientes_actualizados_log = []
+                    
+                    for block_r_idx, row_tuple in enumerate(block_vals):
+                        r = start_r + block_r_idx
+                        row_key = []
+                        for expected in norm_key_cols:
+                            c_idx = col_map_actual.get(expected)
+                            if c_idx and c_idx <= len(row_tuple):
+                                row_key.append(clean_key_val(row_tuple[c_idx - 1]))
+                            else:
+                                row_key.append("")
+                                
+                        k_tuple = tuple(row_key)
+                        if any(row_key):
+                            if len(actual_keys_debug) < 2:
+                                actual_keys_debug.append(k_tuple)
+                        
+                        current_val = fechas_mutables[block_r_idx][0]
+                        current_str = str(current_val).strip() if current_val is not None else ""
+                        if current_str.lower() in ['nan', 'none']: 
+                            current_str = ""
+                            
+                        # Si la fila tiene sentido y la fecha actual está Vacia, inyectamos la de Backup dinamicamente
+                        if any(row_key) and not current_str and k_tuple in backup_dict:
+                            fechas_mutables[block_r_idx][0] = backup_dict[k_tuple]
+                            updated_count += 1
+                            if len(matches_debug) < 5:
+                                matches_debug.append((r, k_tuple, backup_dict[k_tuple]))
+                                
+                            nombre_cliente = k_tuple[1] if len(k_tuple) > 1 else str(k_tuple)
+                            clientes_actualizados_log.append(f"{nombre_cliente} se agregó la Fecha: {backup_dict[k_tuple]}")
+                            
+                    if updated_count > 0:
+                        # Asegurar el marshalling COM exigiendo una tupla de tuplas e ignorando Nones puros
+                        for fix_r in range(len(fechas_mutables)):
+                            val_t = fechas_mutables[fix_r][0]
+                            if val_t is None or str(val_t).lower() in ['nan', 'none']:
+                                fechas_mutables[fix_r][0] = ""
+                            else:
+                                v_n = str(val_t)
+                                if "+00:00" in v_n: v_n = v_n.split("+")[0].strip()
+                                if " 00:00:00" in v_n: v_n = v_n.replace(" 00:00:00", "").strip()
+                                fechas_mutables[fix_r][0] = v_n
+                                
+                        safe_array = tuple(tuple(row) for row in fechas_mutables)
+                        # INYECCIÓN ATÓMICA ULTRA RÁPIDA DE MILISEGUNDOS
+                        rng_fechas = sheet_actual.Range(sheet_actual.Cells(start_r, fecha_col_idx), sheet_actual.Cells(end_r, fecha_col_idx))
+                        rng_fechas.Value = safe_array
+                            
+                    print(f"\n==============================================")
+                    print(f"✅ DEBUG: DATOS EXTRAIDOS DEL ACTUAL")
+                    print(f"==============================================")
+                    print(f"✔️  Fila del Encabezado (Actual): {header_row}")
+                    print(f"✔️  Mapeo de Columnas (ID Columna): {col_map_actual}")
+                    print(f"✔️  Columna donde escribirá ID: {fecha_col_idx}")
+                    print(f"✔️  Ejemplo 2 Filas evaluadas: {actual_keys_debug}")
+                    print(f"✔️  Primeros 5 Exitos (Fila, Clave, Fecha Asignada):")
+                    for m in matches_debug:
+                        print(f"     -> {m}")
+                    print(f"\n✔️  LISTADO COMPLETO DE CLIENTES ACTUALIZADOS:")
+                    for cli_log in clientes_actualizados_log:
+                        print(f"     * {cli_log}")
+                    print(f"\n✔️  Filas Actualizadas Total: {updated_count}")
+                    print(f"==============================================\n")
+                            
+                try:
+                    sheet_actual.Protect("12841")
+                except Exception:
+                    pass
+                    
+                excel.Calculation = -4105 # xlCalculationAutomatic 
+                wb_actual.Save()
+                wb_actual.Close(False)
+                wb_actual = None
+                
+            except Exception as e:
+                return JsonResponse({"status": False, "message": f"Error modificando el Excel nativo (COM): {str(e)}"})
+            finally:
+                try:
+                    if wb_actual: wb_actual.Close(False)
+                except: pass
+                try:
+                    if excel is not None: excel.Quit()
+                except: pass
+                
+            with open(tmp_actual_path, "rb") as f:
+                output_data = f.read()
+            os.remove(tmp_actual_path)
+            
+            content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            if ext == '.xlsm':
+                content_type = 'application/vnd.ms-excel.sheet.macroEnabled.12'
+
+            response = HttpResponse(
+                output_data,
+                content_type=content_type
+            )
+            base_name, _ = os.path.splitext(file_actual.name)
+            response['Content-Disposition'] = f'attachment; filename="synced_{base_name}{ext}"'
+            response['Access-Control-Expose-Headers'] = 'X-Sync-Count'
+            response['X-Sync-Count'] = str(updated_count)
+            return response
+
+        except Exception as e:
+            return JsonResponse({"status": False, "message": f"Error al procesar: {str(e)}"})
+            
+    return JsonResponse({"status": False, "message": "Método HTTP no permitido."})

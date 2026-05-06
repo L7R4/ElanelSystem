@@ -3,50 +3,48 @@ const list_menu = document.querySelectorAll(".list > li > a");
 const button_menu = document.querySelector(".toggle-button");
 const menu = document.getElementById("menu");
 
-if (path_name.includes("resumen")) {
+function setActiveMenu(id) {
   ClearClass();
-  resumen.parentElement.classList.add("in_path");
-} else if (path_name.includes("cliente")) {
-  ClearClass();
-  clientes.parentElement.classList.add("in_path");
-} else if (path_name.includes("detalle_venta")) {
-  ClearClass();
-  clientes.parentElement.classList.add("in_path");
-} else if (path_name.includes("administracion")) {
-  ClearClass();
-  panelAdmin.parentElement.classList.add("in_path");
-} else if (path_name.includes("caja")) {
-  ClearClass();
-  caja.parentElement.classList.add("in_path");
-} else if (path_name.includes("usuario")) {
-  ClearClass();
-  colaboradores.parentElement.classList.add("in_path");
-} else if (path_name.includes("liquidaciones")) {
-  ClearClass();
-  liquidaciones.parentElement.classList.add("in_path");
-} else if (path_name.includes("graficos")) {
-  ClearClass();
-  graficos.parentElement.classList.add("in_path");
-} else if (path_name.includes("planes")) {
-  ClearClass();
-  planes.parentElement.classList.add("in_path");
-} else if (path_name.includes("postventas")) {
-  ClearClass();
-  postVenta.parentElement.classList.add("in_path");
+  const el = document.getElementById(id);
+  if (el && el.parentElement) {
+    el.parentElement.classList.add("in_path");
+  }
 }
 
-button_menu.addEventListener("click", () => {
-  menu.classList.toggle("active");
-  if (!menu.classList.contains("active")) {
-    list_menu.forEach((element) => {
-      element.children[1].style.display = "none";
-    });
-  } else if (menu.classList.contains("active")) {
-    list_menu.forEach((element) => {
-      element.children[1].style.display = "block";
-    });
-  }
-});
+if (path_name.includes("resumen")) {
+  setActiveMenu("resumen");
+} else if (path_name.includes("cliente") || path_name.includes("detalle_venta")) {
+  setActiveMenu("clientes");
+} else if (path_name.includes("administracion")) {
+  setActiveMenu("configuracion");
+} else if (path_name.includes("caja")) {
+  setActiveMenu("caja");
+} else if (path_name.includes("usuario")) {
+  setActiveMenu("usuarios");
+} else if (path_name.includes("liquidaciones")) {
+  setActiveMenu("liquidaciones");
+} else if (path_name.includes("graficos")) {
+  setActiveMenu("graficos");
+} else if (path_name.includes("planes")) {
+  setActiveMenu("planes");
+} else if (path_name.includes("postventas")) {
+  setActiveMenu("auditorias");
+}
+
+if (button_menu) {
+  button_menu.addEventListener("click", () => {
+    menu.classList.toggle("active");
+    if (!menu.classList.contains("active")) {
+      list_menu.forEach((element) => {
+        element.children[1].style.display = "none";
+      });
+    } else if (menu.classList.contains("active")) {
+      list_menu.forEach((element) => {
+        element.children[1].style.display = "block";
+      });
+    }
+  });
+}
 
 function ClearClass() {
   list_menu.forEach((element) => {

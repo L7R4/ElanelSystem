@@ -1,4 +1,8 @@
 import os
+import subprocess
+import glob
+import json
+import tempfile
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views import generic
@@ -195,6 +199,7 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
         colaboradores_list.append({
             "tipo_colaborador": item.rango,
             "nombre": item.nombre,
+            "fec_ingreso": str(item.fec_ingreso) if item.fec_ingreso else "N/A",
             "id": item.pk,
             "dni": item.dni,
             "sucursal": int(sucursalObject.id),
@@ -202,7 +207,12 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
             "ajustes_comision": ajustes_usuario,
             "comisionTotal": comision_data["comision_total"],
             "info_total_de_comision": comision_data,
-            "egreso": 1 if comision_data.get("egreso_en_campana") else 0
+            "egreso": 1 if comision_data.get("egreso_en_campana") else 0,
+            "suspendido": item.suspendido,
+            "sucursal_name": sucursalObject.pseudonimo,
+            "alias": item.alias,
+            "cbu": item.cbu,
+            "entidad_bancaria": item.entidad_bancaria,
         })
 
     totalDeComisiones = sum([user["comisionTotal"] for user in colaboradores_list])
@@ -955,4 +965,64 @@ def export_excel_detalle_comisionado(request):
         # llamo al formateador central
         filename_prefix = f"Detalle de {user.nombre} _ {campania.replace(' ','')}"
         return exportar_excel2(sheets, filename_prefix)
+
+def exportar_recibos_python_script(request):
+    """
+    Ejecuta el script externo exportar_resumen_comisiones.py utilizando los datos
+    de liquidación guardados en la sesión y retorna el Excel generado.
+    """
+    try:
+        # 1. Obtener datos de la sesión
+        datos = request.session.get('liquidacion_data', [])
+        if not datos:
+            return JsonResponse({"status": False, "message": "No hay datos cargados para exportar. Seleccione sucursal y campaña primero."}, status=400)
+
+        base_dir   = settings.ROOT_DIR.parent
+        script_dir = os.path.join(base_dir, "extraer_recibos", "venv")
+        python_exe = os.path.join(script_dir, "Scripts", "python.exe")
+        script_py  = os.path.join(script_dir, "exportar_resumen_comisiones.py") # El nuevo script
+        
+        # 2. Guardar datos en un archivo JSON temporal para que el script los lea
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json', encoding='utf-8') as tmp:
+            json.dump(datos, tmp, ensure_ascii=False)
+            json_tmp_path = tmp.name
+
+        # 3. Definir ruta de salida del Excel
+        sucursal_name = datos[0].get("sucursal_name", "Agencia") if datos else "Agencia"
+        excel_name = f"Resumen de comisiones - {sucursal_name}.xlsx"
+        excel_path = os.path.join(tempfile.gettempdir(), excel_name)
+        
+        # 4. Ejecutar el script
+        result = subprocess.run(
+            [python_exe, script_py, json_tmp_path, excel_path],
+            capture_output=True,
+            text=True,
+            cwd=script_dir
+        )
+        
+        # Limpiar JSON temporal
+        if os.path.exists(json_tmp_path):
+            os.remove(json_tmp_path)
+
+        if result.returncode != 0:
+            return JsonResponse({"status": False, "message": f"Error en el script: {result.stderr}"}, status=500)
+        
+        # 5. Retornar el Excel
+        if os.path.exists(excel_path):
+            with open(excel_path, 'rb') as excel_file:
+                response = HttpResponse(excel_file.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                response['Content-Disposition'] = f'attachment; filename="{excel_name}"'
+                
+                # Intentar limpiar el Excel después de cargarlo en memoria
+                try:
+                    os.remove(excel_path)
+                except:
+                    pass
+                
+                return response
+        else:
+            return JsonResponse({"status": False, "message": "No se encontró el archivo Excel generado."}, status=500)
+            
+    except Exception as e:
+        return JsonResponse({"status": False, "message": f"Error interno: {str(e)}"}, status=500)
     

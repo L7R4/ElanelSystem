@@ -37,8 +37,8 @@ function renderFormImportData() {
 function renderMessage(message, iconMessage) {
   return `
     <div id="messageStatusContainer">
-      <img src="\${iconMessage}" alt="">
-      <h2>\${message}</h2>
+      <img src="${iconMessage}" alt="">
+      <h2>${message}</h2>
     </div>
   `;
 }
