@@ -874,9 +874,24 @@ def mapear_campania_excel(valor_raw):
 def preprocesar_excel_ventas(file_path):
     from elanelsystem.utils import obtenerCampaña_atraves_fecha,formatar_fecha
 
-    # Leer la hoja del archivo Excel
-    df_res = pd.read_excel(file_path, sheet_name="RESUMEN")
-    df_est = pd.read_excel(file_path, sheet_name="ESTADOS")
+    # Leer la hoja del archivo Excel manejando posibles variaciones de nombre de la hoja
+    try:
+        xls = pd.ExcelFile(file_path)
+    except Exception as e:
+        raise ValueError(f"No se pudo leer el archivo Excel: {e}")
+        
+    sheet_names = {str(name).strip().upper(): name for name in xls.sheet_names}
+    
+    resumen_sheet = sheet_names.get("RESUMEN") or sheet_names.get("RESÚMEN")
+    estados_sheet = sheet_names.get("ESTADOS") or sheet_names.get("ESTADO")
+    
+    if not resumen_sheet:
+        raise ValueError("No se encontró la hoja 'RESUMEN' en el archivo Excel.")
+    if not estados_sheet:
+        raise ValueError("No se encontró la hoja 'ESTADOS' en el archivo Excel.")
+        
+    df_res = pd.read_excel(file_path, sheet_name=resumen_sheet)
+    df_est = pd.read_excel(file_path, sheet_name=estados_sheet)
     
     # Renombrar las columnas
     df_res.columns = [

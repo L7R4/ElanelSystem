@@ -1,4 +1,4 @@
-﻿from collections import defaultdict
+from collections import defaultdict
 from datetime import timedelta
 from elanelsystem.utils import parse_fecha, parse_fecha_to_date
 from sales.models import Ventas,MovimientoExterno
@@ -751,17 +751,16 @@ def calcular_dias_trabajados(usuario_o_snap, campania_str):
 
 def calcular_asegurado_segun_dias_trabajados(dinero, usuario, campania_str):
     inicio_campania, fin_campania = parse_campania_to_dates(campania_str)
-    total_dias_campania = (fin_campania - inicio_campania).days + 1
+    total_dias_reales = (fin_campania - inicio_campania).days + 1
 
     dias_trabajados_campania = calcular_dias_trabajados(usuario, campania_str)
 
-    # Si trabajó todos los días de la campaña → asegurado completo.
-    # Se compara contra los días reales del mes, no contra 30 fijo
-    # (evita que meses cortos como febrero nunca alcancen el umbral).
-    if dias_trabajados_campania >= total_dias_campania:
+    # Si trabajó todos los días reales del mes o llegó al límite comercial de 30 días, se paga completo.
+    if dias_trabajados_campania >= total_dias_reales or dias_trabajados_campania >= 30:
         return math.ceil(dinero)
     else:
-        proporcional = (dinero / total_dias_campania) * dias_trabajados_campania
+        # Se calcula base comercial usando 30 días redondos
+        proporcional = (dinero / 30) * dias_trabajados_campania
         return math.ceil(proporcional)
 
 def get_asegurado(usuario, campania_str, snapshot=None, config=None):

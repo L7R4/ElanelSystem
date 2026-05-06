@@ -23,4 +23,5 @@ urlpatterns = [
 
     path("ventas/liquidaciones/historial/", HistorialLiquidaciones.as_view(), name="historialLiquidaciones"),
     path("export-comision-excel/", export_excel_detalle_comisionado, name="export_comision_excel"),
+    path("exportar-recibos-script/", exportar_recibos_python_script, name="exportar_recibos_python_script"),
 ]

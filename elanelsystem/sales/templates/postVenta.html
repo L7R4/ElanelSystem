@@ -1,33 +1,29 @@
-{% extends 'molde.html' %} 
-{% load static %} 
-{% load humanize %} 
+{% extends 'molde.html' %}
+{% load static %}
+{% load humanize %}
 {% load i18n %}
-{% load util %} 
+{% load util %}
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/postVenta.css' %}" />
 <link rel="stylesheet" href="{% static 'css/loader.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 
-{% endblock css %} 
+{% endblock css %}
 {% block content %}
 <div id="wrapperLoader">
     <span id="loader"></span>
 </div>
 <div class="filters">
     <h1 class="titleHeader">AUDITORIAS</h1>
-    
+
     <form method="POST" id="formFilterVentas">
         {% csrf_token %}
         <div>
             <div class="wrapperSearchFilter">
                 {% comment %} <label class="labelInput">Buscar</label> {% endcomment %}
                 <div>
-                    <input
-                        type="text"
-                        class="input-read-write-default inputFilterVentas"
-                        id="inputSearch"
-                        placeholder="Buscar..."
-                    />
+                    <input type="text" class="input-read-write-default inputFilterVentas" id="inputSearch"
+                        placeholder="Buscar..." />
                     <img src="{% static 'images/icons/search.svg' %}" alt="" />
                 </div>
             </div>
@@ -35,53 +31,57 @@
             <div id="sucursalWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
                 <h3 class="labelInput">Sucursal</h3>
                 <div class="containerInputAndOptions">
-                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                  <input type="hidden" class="filterInput" name="sucursal" id="sucursalInput" placeholder="Seleccionar" autocomplete="off" readonly>
-                  <div class="onlySelect pseudo-input-select-wrapper">
+                    <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                    <input type="hidden" class="filterInput" name="sucursal" id="sucursalInput"
+                        placeholder="Seleccionar" autocomplete="off" readonly>
+                    <div class="onlySelect pseudo-input-select-wrapper">
                         <h3></h3>
-                  </div>
-                  <ul id="contenedorSucursal" class="list-select-custom options">
-                    {% for sucursal in sucursales %}
+                    </div>
+                    <ul id="contenedorSucursal" class="list-select-custom options">
+                        {% for sucursal in sucursales %}
                         <li data-value={{sucursal.id}}>{{sucursal}}</li>
-                    {% endfor %}
-                </ul>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
-            
+
             <div id="campaniaWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
                 <h3 class="labelInput">Campaña</h3>
                 <div class="containerInputAndOptions">
-                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                  <input type="hidden" class="filterInput" name="campania" id="campaniaInput" placeholder="Seleccionar" autocomplete="off" readonly>
-                  <div class="onlySelect pseudo-input-select-wrapper">
+                    <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                    <input type="hidden" class="filterInput" name="campania" id="campaniaInput"
+                        placeholder="Seleccionar" autocomplete="off" readonly>
+                    <div class="onlySelect pseudo-input-select-wrapper">
                         <h3></h3>
-                  </div>
-                  <ul id="contenedorCampania" class="list-select-custom options">
-                    {% for campania in campanias %}
-                         <li data-value="{{campania}}">{{campania}}</li>
-                    {% endfor %}
-                  </ul>
+                    </div>
+                    <ul id="contenedorCampania" class="list-select-custom options">
+                        {% for campania in campanias %}
+                        <li data-value="{{campania}}">{{campania}}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
             <div id="campaniaWrapper" class="wrapperTypeFilter wrapperSelectCustom inputWrapper">
                 <h3 class="labelInput">Estado</h3>
                 <div class="containerInputAndOptions">
-                  <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                  <input type="hidden" name="estado" value="" readonly class="input-select-custom onlySelect inputFilterVentas filterInput" required id="inputEstado" />
-                 
-                  <div class="onlySelect pseudo-input-select-wrapper">
-                        <h3></h3>
-                  </div>
+                    <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                    <input type="hidden" name="estado" value="" readonly
+                        class="input-select-custom onlySelect inputFilterVentas filterInput" required
+                        id="inputEstado" />
 
-                  <ul id="contenedorCampania" class="list-select-custom options">
-                    <li data-value="r">Realizadas</li>
-                    <li data-value="p">Pendientes</li>
-                    <li data-value="a">Aprobadas</li>
-                    <li data-value="d">Desaprobadas</li>
-                </ul>
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3></h3>
+                    </div>
+
+                    <ul id="contenedorCampania" class="list-select-custom options">
+                        <li data-value="r">Realizadas</li>
+                        <li data-value="p">Pendientes</li>
+                        <li data-value="a">Aprobadas</li>
+                        <li data-value="d">Desaprobadas</li>
+                    </ul>
                 </div>
             </div>
-            
+
         </div>
     </form>
 </div>
@@ -90,7 +90,7 @@
     <div class="operations">
         <div class="operationsWrapper">
             <ul class="operationsList">
-               
+
             </ul>
         </div>
     </div>
@@ -123,17 +123,12 @@
             </div>
         </div>
         <div class="buttonsWrapper">
-            <a
-                id="makeInforme"
-                target="_blank"
-                href="{% url 'sales:postVentaPDF'%}"
-                >Hacer informe</a
-            >
+            <a id="makeInforme" target="_blank" href="{% url 'sales:postVentaPDF'%}">Hacer informe</a>
         </div>
     </div>
 </div>
 
-{% endblock content %} 
+{% endblock content %}
 {% block js %}
 <script>
     var CSRF_TOKEN = '{% csrf_token %}';
@@ -141,8 +136,8 @@
     var campania_actual = "{{campania_actual}}";
 </script>
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
-<script src="{% static 'js/vanilla_components/vanilla_components/z_index_orders_selects.js.js' %}"></script>
-<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
+<script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
+<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js' %}"></script>
 <script type="module" src="{% static 'js/vanilla_components/async_ui.js' %}"></script>
 <script type="module" src="{% static 'js/sales/postVenta.js' %}"></script>
 {% endblock js %}

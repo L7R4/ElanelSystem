@@ -6,8 +6,8 @@ excel_clean_per_file.py
 
 - Recorre carpetas que empiezan con "a_"
 - Dentro busca archivos Excel que empiezan con "sistema_" y terminan en .xls/.xlsx/.xlsm
-- Extrae SOLO: ESTADO (o ESTADOS), RESUMEN, CLIENTES
-- Por cada archivo "sistema_*" genera un ÚNICO Excel limpio con 3 hojas
+- Extrae SOLO: ESTADO (o ESTADOS), RESUMEN, CLIENTES, DATOS
+- Por cada archivo "sistema_*" genera un ÚNICO Excel limpio con 4 hojas
   y lo guarda en la misma carpeta como:
     clean_<nombre_archivo>_<YYYY-MM-DD_HH-MM-SS>.xlsx
 
@@ -37,14 +37,15 @@ Uso (un archivo puntual):
 """
 
 
-# Siempre generar estas 3 hojas (en este orden)
-OUTPUT_SHEETS = ("ESTADO", "RESUMEN", "CLIENTES")
+# Siempre generar estas 4 hojas (en este orden)
+OUTPUT_SHEETS = ("ESTADO", "RESUMEN", "CLIENTES", "DATOS")
 
 # Variantes aceptadas en el Excel fuente (ESTADOS -> ESTADO)
 INPUT_SHEET_VARIANTS = {
     "ESTADO": ("ESTADO", "ESTADOS"),
     "RESUMEN": ("RESUMEN",),
     "CLIENTES": ("CLIENTES","CLIENTE"),
+    "DATOS": ("DATOS",),
 }
 
 
@@ -165,7 +166,7 @@ def process_one_file(src: Path) -> Path | None:
             real_name = _get_real_sheet_name(xl, INPUT_SHEET_VARIANTS[out_sheet])
 
             if real_name is None:
-                # Igual creamos la hoja vacía para que el output tenga SIEMPRE 3 hojas
+                # Igual creamos la hoja vacía para que el output tenga SIEMPRE 4 hojas
                 print(f"⚠️  {src.name}: no existe hoja {INPUT_SHEET_VARIANTS[out_sheet]} -> creo '{out_sheet}' vacía.")
                 df = pd.DataFrame()
             else:
@@ -183,7 +184,7 @@ def process_one_file(src: Path) -> Path | None:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Genera por cada sistema_* un Excel limpio (3 hojas) en la misma carpeta."
+        description="Genera por cada sistema_* un Excel limpio (4 hojas) en la misma carpeta."
     )
     parser.add_argument(
         "input",

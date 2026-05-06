@@ -1,4 +1,4 @@
-import VanillaTable from "./vanilla_table_module.js";
+import VanillaTable from "../vanilla_components/vanilla_table_module.js";
 
 const table = new VanillaTable(document.getElementById("users_table"), {
   columns: [
