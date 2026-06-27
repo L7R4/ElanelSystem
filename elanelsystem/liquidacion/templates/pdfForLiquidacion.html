@@ -147,11 +147,23 @@
                                         <td> - - - </td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_productividad|currency_ar}} </td>
                                     </tr>
-                                    <tr>
-                                        <td>Otros premios</td>
-                                        <td>- - -</td>
-                                        <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
-                                    </tr>                              
+                                    {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                        {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% if ajuste.ajuste_tipo == "positivo" %}
+                                            <tr>
+                                                <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                <td>- - -</td>
+                                                <td>{{ ajuste.dinero|currency_ar }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td>Otros premios</td>
+                                            <td>- - -</td>
+                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
+                                        </tr>
+                                    {% endif %}                              
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
@@ -189,17 +201,23 @@
                                         <td>{{0|currency_ar}}</td>      
                                     </tr>
         
-                                    <tr>
-                                        <td>Adelantos/Descuestos</td>
-                                        <td> - - - </td>
-                                        <td>{{0|currency_ar}}</td>      
-                                    </tr>
-
-                                    <tr>
-                                        <td>Otros</td>
-                                        <td>- - -</td>
-                                        <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
-                                    </tr>
+                                    {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                        {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% if ajuste.ajuste_tipo == "negativo" %}
+                                            <tr>
+                                                <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                <td>- - -</td>
+                                                <td>{{ ajuste.dinero|currency_ar }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td>Adelantos/Descuestos</td>
+                                            <td> - - - </td>
+                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
+                                        </tr>
+                                    {% endif %}
 
                                     <tr class="subTotalWrapper">
                                         <td colspan="2">Sub-total de descuentos</td> 
@@ -374,11 +392,23 @@
                                         <td> - - - </td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_productividad|currency_ar}} </td>
                                     </tr>
-                                    <tr>
-                                        <td>Otros premios</td>
-                                        <td>- - -</td>
-                                        <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
-                                    </tr>                              
+                                    {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                        {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% if ajuste.ajuste_tipo == "positivo" %}
+                                            <tr>
+                                                <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                <td>- - -</td>
+                                                <td>{{ ajuste.dinero|currency_ar }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td>Otros premios</td>
+                                            <td>- - -</td>
+                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
+                                        </tr>
+                                    {% endif %}                              
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
@@ -416,17 +446,23 @@
                                         <td>{{0|currency_ar}}</td>      
                                     </tr>
         
-                                    <tr>
-                                        <td>Adelantos/Descuestos</td>
-                                        <td> - - - </td>
-                                        <td>{{0|currency_ar}}</td>      
-                                    </tr>
-
-                                    <tr>
-                                        <td>Otros</td>
-                                        <td>- - -</td>
-                                        <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
-                                    </tr>
+                                    {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                        {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% if ajuste.ajuste_tipo == "negativo" %}
+                                            <tr>
+                                                <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                <td>- - -</td>
+                                                <td>{{ ajuste.dinero|currency_ar }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td>Adelantos/Descuestos</td>
+                                            <td> - - - </td>
+                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
+                                        </tr>
+                                    {% endif %}
 
                                     <tr class="subTotalWrapper">
                                         <td colspan="2">Sub-total de descuentos</td> 
@@ -582,11 +618,23 @@
                                         <td> - - - </td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_productividad|currency_ar}} </td>
                                     </tr>
-                                    <tr>
-                                        <td>Otros premios</td>
-                                        <td>- - -</td>
-                                        <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
-                                    </tr>                              
+                                    {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                        {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% if ajuste.ajuste_tipo == "positivo" %}
+                                            <tr>
+                                                <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                <td>- - -</td>
+                                                <td>{{ ajuste.dinero|currency_ar }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td>Otros premios</td>
+                                            <td>- - -</td>
+                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
+                                        </tr>
+                                    {% endif %}                              
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
@@ -621,16 +669,23 @@
                                         <td>{{0|currency_ar}}</td>      
                                     </tr>
         
-                                    <tr>
-                                        <td>Adelantos/Descuestos</td>
-                                        <td> - - - </td>
-                                        <td>{{0|currency_ar}}</td>      
-                                    </tr>
-                                    <tr>
-                                        <td>Otros</td>
-                                        <td>- - -</td>
-                                        <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
-                                    </tr>
+                                    {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                        {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% if ajuste.ajuste_tipo == "negativo" %}
+                                            <tr>
+                                                <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                <td>- - -</td>
+                                                <td>{{ ajuste.dinero|currency_ar }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td>Adelantos/Descuestos</td>
+                                            <td> - - - </td>
+                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
+                                        </tr>
+                                    {% endif %}
                                     <tr class="subTotalWrapper">
                                         <td colspan="2">Sub-total de descuentos</td> 
                                         <td>{{recibo.info_total_de_comision.descuentoTotal|currency_ar}}</td>
@@ -683,11 +738,23 @@
                                             <td> - - - </td>
                                             <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_productividad|currency_ar}} </td>
                                         </tr>
-                                        <tr>
-                                            <td>Otros premios</td>
-                                            <td>- - -</td>
-                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
-                                        </tr>                              
+                                        {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                                {% if ajuste.ajuste_tipo == "positivo" %}
+                                                <tr>
+                                                    <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                    <td>- - -</td>
+                                                    <td>{{ ajuste.dinero|currency_ar }}</td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td>Otros premios</td>
+                                                <td>- - -</td>
+                                                <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
+                                            </tr>
+                                        {% endif %}                              
                                         
                                         <tr>
                                             <td>Cuotas 1</td>
@@ -719,16 +786,23 @@
                                             <td>{{0|currency_ar}}</td>      
                                         </tr>
             
-                                        <tr>
-                                            <td>Adelantos/Descuestos</td>
-                                            <td> - - - </td>
-                                            <td>{{0|currency_ar}}</td>      
-                                        </tr>
-                                        <tr>
-                                            <td>Otros</td>
-                                            <td> - - - </td>
-                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
-                                        </tr>
+                                        {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                                {% if ajuste.ajuste_tipo == "negativo" %}
+                                                <tr>
+                                                    <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                    <td>- - -</td>
+                                                    <td>{{ ajuste.dinero|currency_ar }}</td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td>Adelantos/Descuestos</td>
+                                                <td> - - - </td>
+                                                <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
+                                            </tr>
+                                        {% endif %}
                                         <tr class="subTotalWrapper">
                                             <td colspan="2">Sub-total de descuentos</td> 
                                             <td>{{recibo.info_total_de_comision.descuentoTotal|currency_ar}}</td>
@@ -874,11 +948,23 @@
                                         <td> - - - </td>
                                         <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_productividad|currency_ar}} </td>
                                     </tr>
-                                    <tr>
-                                        <td>Otros premios</td>
-                                        <td>- - -</td>
-                                        <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
-                                    </tr>                              
+                                    {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                        {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% if ajuste.ajuste_tipo == "positivo" %}
+                                            <tr>
+                                                <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                <td>- - -</td>
+                                                <td>{{ ajuste.dinero|currency_ar }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td>Otros premios</td>
+                                            <td>- - -</td>
+                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
+                                        </tr>
+                                    {% endif %}                              
                                     
                                     <tr>
                                         <td>Cuotas 1</td>
@@ -913,16 +999,23 @@
                                         <td>{{0|currency_ar}}</td>      
                                     </tr>
         
-                                    <tr>
-                                        <td>Adelantos/Descuestos</td>
-                                        <td> - - - </td>
-                                        <td>{{0|currency_ar}}</td>      
-                                    </tr>
-                                    <tr>
-                                        <td>Otros</td>
-                                        <td>- - -</td>
-                                        <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
-                                    </tr>
+                                    {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                        {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% if ajuste.ajuste_tipo == "negativo" %}
+                                            <tr>
+                                                <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                <td>- - -</td>
+                                                <td>{{ ajuste.dinero|currency_ar }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td>Adelantos/Descuestos</td>
+                                            <td> - - - </td>
+                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
+                                        </tr>
+                                    {% endif %}
                                     <tr class="subTotalWrapper">
                                         <td colspan="2">Sub-total de descuentos</td> 
                                         <td>{{recibo.info_total_de_comision.descuentoTotal|currency_ar}}</td>
@@ -975,11 +1068,23 @@
                                             <td> - - - </td>
                                             <td>{{recibo.info_total_de_comision.detalle.ventasPropias.comision_x_productividad|currency_ar}} </td>
                                         </tr>
-                                        <tr>
-                                            <td>Otros premios</td>
-                                            <td>- - -</td>
-                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
-                                        </tr>                              
+                                        {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                                {% if ajuste.ajuste_tipo == "positivo" %}
+                                                <tr>
+                                                    <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                    <td>- - -</td>
+                                                    <td>{{ ajuste.dinero|currency_ar }}</td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td>Otros premios</td>
+                                                <td>- - -</td>
+                                                <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_positivos|currency_ar }}</td>
+                                            </tr>
+                                        {% endif %}                              
                                         
                                         <tr>
                                             <td>Cuotas 1</td>
@@ -1011,16 +1116,23 @@
                                             <td>{{0|currency_ar}}</td>      
                                         </tr>
             
-                                        <tr>
-                                            <td>Adelantos/Descuestos</td>
-                                            <td> - - - </td>
-                                            <td>{{0|currency_ar}}</td>      
-                                        </tr>
-                                        <tr>
-                                            <td>Otros</td>
-                                            <td> - - - </td>
-                                            <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
-                                        </tr>
+                                        {% if recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                            {% for ajuste in recibo.info_total_de_comision.detalle.ajustes.listado %}
+                                                {% if ajuste.ajuste_tipo == "negativo" %}
+                                                <tr>
+                                                    <td>{{ ajuste.observaciones }}{% if ajuste.fecha_ajuste %} ({{ ajuste.fecha_ajuste }}){% endif %}</td>
+                                                    <td>- - -</td>
+                                                    <td>{{ ajuste.dinero|currency_ar }}</td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td>Adelantos/Descuestos</td>
+                                                <td> - - - </td>
+                                                <td>{{ recibo.info_total_de_comision.detalle.ajustes.ajustes_negativos|currency_ar }}</td>
+                                            </tr>
+                                        {% endif %}
                                         <tr class="subTotalWrapper">
                                             <td colspan="2">Sub-total de descuentos</td> 
                                             <td>{{recibo.info_total_de_comision.descuentoTotal|currency_ar}}</td>

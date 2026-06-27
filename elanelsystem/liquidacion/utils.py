@@ -775,14 +775,18 @@ def get_asegurado(usuario, campania_str, snapshot=None, config=None):
 
     rango = snapshot.rango.lower()
 
+    if rango == "gerente sucursal":
+        # El sueldo asegurado de los gerentes es de 1000000, pero ahora el gerente de Posadas y Corrientes es de 1500000.
+        if usuario.sucursales.filter(pseudonimo__in=["Posadas, Misiones", "Corrientes, Corrientes"]).exists():
+            return 1500000
+        return 1000000
+
     _fallback = {"vendedor": 300000, "supervisor": 500000, "gerente sucursal": 1000000}
     montos = (config or {}).get("asegurado_por_rol") or _fallback
     dinero = montos.get(rango)
     if dinero is None:
         raise ValueError(f"Error al obtener el asegurado: rango '{rango}' no reconocido.")
 
-    if rango == "gerente sucursal":
-        return math.ceil(dinero)
     return calcular_asegurado_segun_dias_trabajados(dinero, snapshot, campania_str)
 
 #endregion
@@ -1153,6 +1157,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None, config=
             "ajustes": {
                 "ajustes_positivos": ajustes_positivos,
                 "ajustes_negativos": ajustes_negativos,
+                "listado": ajustes_usuario,
             },
         },
         "descuentoTotal": total_descuentos,

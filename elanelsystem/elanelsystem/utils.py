@@ -287,11 +287,10 @@ def formatar_fecha(value, with_time = False):
     else:
         return dt.strftime("%d/%m/%Y")
     
-
 def get_subAgencias_por_provincia(agencia):
     agencia_clean = agencia.pseudonimo.replace(" ", "").lower()
     sucursales ={
-        "corrientes,corrientes": ["Paso De Los Libres, Corrientes", "Goya, Corrientes"],
+        "corrientes,corrientes": ["Paso De Los Libres, Corrientes", "Goya, Corrientes", "Concordia, Entre Rios"],
         "pasodeloslibres,corrientes":[],
         "goya,corrientes":[],
         "resistencia,chaco":[],
@@ -302,4 +301,4 @@ def get_subAgencias_por_provincia(agencia):
         "posadas,misiones":[]
         }
         
-    return sucursales[agencia_clean]
+    return sucursales.get(agencia_clean, [])

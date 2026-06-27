@@ -1,0 +1,24 @@
+{% load i18n %}
+<h3>{% blocktrans with filter_title=title %} Por {{ filter_title }} {% endblocktrans %}</h3>
+<ul style="padding-left: 10px;">
+    <li>
+        <form method="GET" action="" style="display: flex; flex-direction: column; gap: 5px;">
+            {% for k, v in choices.0.query_parts %}
+                <input type="hidden" name="{{ k }}" value="{{ v }}" />
+            {% endfor %}
+            <input type="number"
+                   value="{{ spec.value|default_if_none:'' }}"
+                   name="{{ spec.parameter_name }}"
+                   placeholder="Ingrese número..."
+                   style="width: 100%; padding: 4px; box-sizing: border-box;"/>
+            <div style="display: flex; gap: 5px;">
+                <button type="submit" style="flex: 1; cursor: pointer;">Buscar</button>
+                {% if spec.value %}
+                    <button type="button" style="flex: 1; cursor: pointer;" onclick="location.href='?{% for k, v in choices.0.query_parts %}{{ k }}={{ v }}&{% endfor %}'">
+                        Limpiar
+                    </button>
+                {% endif %}
+            </div>
+        </form>
+    </li>
+</ul>

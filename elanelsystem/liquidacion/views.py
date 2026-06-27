@@ -24,6 +24,7 @@ import json
 from elanelsystem.utils import obtener_todos_los_contratos, printPDF
 from .utils import (
     calcular_cantidad_ventasPropias,
+    calcular_productividad_ventasPropias,
     calcular_productividad_supervisor,
     calcular_ventas_supervisor,
     get_detalle_cuotas1,
@@ -186,13 +187,15 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
             AjusteComision.objects
             .filter(usuario_id=item.pk, campania=campania, agencia=sucursalObject, activo=True)
             .order_by("creado_en")
-            .values("id", "ajuste_tipo", "dinero", "observaciones")
+            .values("id", "ajuste_tipo", "dinero", "observaciones", "fecha_ajuste")
         )
         # Agregar campos de compatibilidad usados por get_comision_total
         for a in ajustes_usuario:
             a["user_id"] = str(item.pk)
             a["agencia"]  = str(sucursalObject.id)
             a["campania"] = campania
+            if a.get("fecha_ajuste"):
+                a["fecha_ajuste"] = str(a["fecha_ajuste"])
 
         comision_data = get_comision_total(item, campania, sucursalObject, ajustes_usuario)
 
@@ -266,12 +269,14 @@ def _ajustes_db_para_usuario(user_id, campania, agencia_id):
         AjusteComision.objects
         .filter(usuario_id=user_id, campania=campania, agencia_id=agencia_id, activo=True)
         .order_by("creado_en")
-        .values("id", "ajuste_tipo", "dinero", "observaciones")
+        .values("id", "ajuste_tipo", "dinero", "observaciones", "fecha_ajuste")
     )
     for a in qs:
         a["user_id"] = str(user_id)
         a["agencia"]  = str(agencia_id)
         a["campania"] = campania
+        if a.get("fecha_ajuste"):
+            a["fecha_ajuste"] = str(a["fecha_ajuste"])
     return qs
 
 
@@ -284,6 +289,7 @@ def crearAjusteComision(request):
     ajuste_tipo    = body.get("ajuste")
     dinero         = body.get("dinero")
     observaciones  = body.get("observaciones", "")
+    fecha_ajuste   = body.get("fecha_ajuste")
     campania       = body.get("campania")
     agencia        = body.get("agencia")
     tipo_colaborador = body.get("tipoColaborador")
@@ -301,6 +307,7 @@ def crearAjusteComision(request):
         ajuste_tipo=ajuste_tipo,
         dinero=int(dinero) if dinero else 0,
         observaciones=observaciones,
+        fecha_ajuste=fecha_ajuste if fecha_ajuste else None,
     )
 
     colaboradores_list, totalDeComisionesRecalc = recalcular_liquidacion_data(
@@ -559,17 +566,18 @@ class LiquidacionesRanking(TestLogin,generic.View):
 
         # Calcular ventas y productividad de vendedores
         for usuario in Usuario.objects.filter(sucursales__in=[sucursalObject]):
-            ventasPropias = calcular_cantidad_ventasPropias(usuario,campania,sucursalObject)
-            # productividadPropia = calcular_productividad_vendedor(usuario,campania,sucursalObject)
-            cuotas1Adelantadas = get_detalle_cuotas1(usuario,campania,sucursalObject)
-
+            ventas_propias_qs = Ventas.objects.filter(vendedor=usuario, campania=campania, agencia=sucursalObject, is_commissionable=True)
+            resVentasPropias = calcular_cantidad_ventasPropias(ventas_propias_qs)
+            ventasPropias = resVentasPropias["cant_ventas"]
+            productividadPropia = calcular_productividad_ventasPropias(ventas_propias_qs)
+            
+            cuotas1Adelantadas = get_detalle_cuotas1(ventas_propias_qs, sucursalObject.id)
             vendedores.append({
                 'email_usuario':usuario.email,
                 'nombre_usuario':usuario.nombre,
                 'rango_usuario': usuario.rango,
                 'cantidadVentas':ventasPropias,
-                # 'productividad':productividadPropia,
-                'productividad':0,
+                'productividad':productividadPropia,
 
                 'cuotas1Adelantadas':cuotas1Adelantadas["cantidadCuotas1"]
             })
@@ -580,8 +588,9 @@ class LiquidacionesRanking(TestLogin,generic.View):
         # Calcular ventas y productividad de supervisores
         totalSuper ={}
         for usuario in Usuario.objects.filter(rango="Supervisor",sucursales__in=[sucursalObject]):
-                ventasPorEquipo = calcular_ventas_supervisor(usuario,campania,sucursalObject)
-                productividadEquipo = calcular_productividad_supervisor(usuario,campania,sucursalObject)
+                ventas_equipo_qs = Ventas.objects.filter(supervisor=usuario, campania=campania, agencia=sucursalObject, is_commissionable=True)
+                ventasPorEquipo = calcular_ventas_supervisor(ventas_equipo_qs)
+                productividadEquipo = calcular_productividad_supervisor(ventas_equipo_qs)
                 vendedoresACargo = get_vendedores_a_cargo(usuario,campania,sucursalObject)
                 
                 # Filtrar y ordenar vendedores a cargo
@@ -593,13 +602,15 @@ class LiquidacionesRanking(TestLogin,generic.View):
 
                 vendedoresACargo.sort(key=lambda x: x['cantidadVentas'], reverse=True)
 
+                cantidadTotal_ventas = sum([vendedor["cantidadVentas"] for vendedor in vendedoresACargo])
+                productividadTotal = sum([vendedor["productividad"] for vendedor in vendedoresACargo])
                 cantidadTotal_cuotas1 = sum([vendedor["cuotas1Adelantadas"] for vendedor in vendedoresACargo])
 
                 supervisores.append({
                     'email_usuario':usuario.email,
                     'nombre_usuario':usuario.nombre,
-                    'cantidadVentas': ventasPorEquipo,
-                    'productividad': productividadEquipo,
+                    'cantidadVentas': cantidadTotal_ventas,
+                    'productividad': productividadTotal,
                     'cuotas_1_total': cantidadTotal_cuotas1,
                     'vendedoresACargo': vendedoresACargo
                 })

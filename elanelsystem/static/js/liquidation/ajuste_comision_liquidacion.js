@@ -20,9 +20,13 @@ function render_form_ajuse_comision(nombre_usuario, comision) {
                 <h3 class="labelInput">Dinero</h3>
                 <input type="number" name="dinero" id="dineroAjusteInput" class="input-read-write-default">
             </div>
+            <div class="wrapperInputDinero">
+                <h3 class="labelInput">Fecha (opcional)</h3>
+                <input type="date" name="fecha_ajuste" id="fechaAjusteInput" class="input-read-write-default">
+            </div>
             <div class="wrapperInputObservaciones">
                 <h3>Observaciones</h3>
-                <textarea class="input-read-write-default" name="observaciones" id="observacionesInput" rows="10"></textarea>
+                <textarea class="input-read-write-default" name="observaciones" id="observacionesInput" rows="5"></textarea>
             </div>
         </form>`
 }
@@ -56,6 +60,7 @@ function modal_ajuste_comision(id_usuario, nombre_usuario, comision) {
             ajuste: document.querySelector('input[name="ajuste"]:checked').value,
             dinero: document.getElementById("dineroAjusteInput").value,
             observaciones: document.getElementById("observacionesInput").value,
+            fecha_ajuste: document.getElementById("fechaAjusteInput").value,
             campania: document.querySelector("#campaniaInput").value,
             tipoColaborador: colaboradoresAFiltrar,
             agencia: document.querySelector("#sucursalInput").value,
