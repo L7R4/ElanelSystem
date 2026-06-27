@@ -97,4 +97,6 @@ urlpatterns = [
     #endregion --------------------------------------------------------------------------------
 
     path("api/cotizaciones/dolar/", cotizaciones_dolar, name="cotizaciones_dolar"),
+    path("sorteo/", SorteoView.as_view(), name="sorteo"),
+    path("api/sorteo/generar/", GenerarSorteoAPI.as_view(), name="api_generar_sorteo"),
 ]
