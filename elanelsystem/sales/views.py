@@ -1300,6 +1300,11 @@ def importVentas(request):
             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": True})
 
         except Exception as e:
+            try:
+                if fs.exists(filename):
+                    fs.delete(filename)
+            except Exception:
+                pass
             print(f"Error al importar: {e}")
             iconMessage = "/static/images/icons/error_icon.svg"
             message = "Error al procesar el archivo"
@@ -3799,4 +3804,125 @@ def cotizaciones_dolar(request):
             return JsonResponse({"cached": True, "stale": True, **stale}, status=200)
 
         return JsonResponse({"error": str(e)}, status=502)
+#endregion -----------------------------------------------------------------------------
+
+#region SORTEO -------------------------------------------------------------------------
+class SorteoView(TestLogin, generic.View):
+    template_name = "sorteo.html"
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GenerarSorteoAPI(TestLogin, generic.View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            min_val = int(data.get("min_val", 1))
+            max_val = int(data.get("max_val", 999))
+            cantidad = int(data.get("cantidad", 1))
+            unicos = bool(data.get("unicos", True))
+        except (ValueError, TypeError, json.JSONDecodeError):
+            return JsonResponse({"status": False, "message": "Datos de entrada inválidos."}, status=400)
+
+        # Forzar límites estrictos de 1 a 999
+        if min_val < 1:
+            min_val = 1
+        if max_val > 999:
+            max_val = 999
+        if min_val > max_val:
+            min_val, max_val = max_val, min_val
+        
+        if cantidad < 1 or cantidad > 999:
+            return JsonResponse({"status": False, "message": "La cantidad debe estar entre 1 y 999."}, status=400)
+
+        # 1. Obtener todas las ventas activas del año corriente
+        import datetime as dt
+        current_year = str(dt.datetime.now().year)
+        active_sales = Ventas.objects.filter(suspendida=False)
+        active_sales = [v for v in active_sales if not v.deBaja or (isinstance(v.deBaja, dict) and v.deBaja.get("status") is not True)]
+        # Year filter removed: include all active sales regardless of date
+
+        # 2. Contar la frecuencia de aparición de cada nro_orden
+        from collections import Counter
+        orden_counts = Counter()
+        
+        now_dt = dt.datetime.now()
+
+        for v in active_sales:
+            # Verificar si la venta está al día (no tiene cuotas impagas vencidas)
+            al_dia = True
+            cuotas = v.cuotas or []
+            for c in cuotas:
+                status = c.get('status')
+                if status == 'Pagado':
+                    continue
+                    
+                due_str = c.get('fechaDeVencimiento')
+                if not due_str:
+                    if c.get('cuota') == 'Cuota 0':
+                        al_dia = False
+                        break
+                    continue
+                    
+                try:
+                    due_date = dt.datetime.strptime(due_str[:16], '%d/%m/%Y %H:%M')
+                except Exception:
+                    try:
+                        due_date = dt.datetime.strptime(due_str[:10], '%d/%m/%Y')
+                    except Exception:
+                        continue
+                        
+                if due_date < now_dt:
+                    al_dia = False
+                    break
+            
+            if not al_dia:
+                continue
+
+            contratos = v.cantidadContratos or []
+            for c in contratos:
+                nro_ord = c.get("nro_orden")
+                if nro_ord:
+                    try:
+                        nro_ord_int = int(nro_ord)
+                        orden_counts[nro_ord_int] += 1
+                    except (ValueError, TypeError):
+                        pass
+
+        # 3. Filtrar números activos del año actual en el rango [1, 999] con frecuencia menor a 3 (1 o 2)
+        valid_pool = []
+        for num in range(min_val, max_val + 1):
+            freq = orden_counts[num]
+            if freq == 1:
+                valid_pool.append(num)
+
+        if not valid_pool:
+            # No numbers with exactly 1 active client; fallback to those with exactly 2 active clients
+            for fallback_num in range(min_val, max_val + 1):
+                if orden_counts[fallback_num] == 2:
+                    valid_pool.append(fallback_num)
+            # Additional fallback: include any numbers with at least one occurrence
+            if not valid_pool:
+                for fallback_num in range(min_val, max_val + 1):
+                    if orden_counts[fallback_num] > 0:
+                        valid_pool.append(fallback_num)
+                # Ultimate fallback: use full range if still empty
+                if not valid_pool:
+                    valid_pool = list(range(min_val, max_val + 1))
+
+        # 4. Seleccionar los números aleatorios
+        import random
+        if unicos:
+            if len(valid_pool) < cantidad:
+                selected = valid_pool.copy()
+                random.shuffle(selected)
+            else:
+                selected = random.sample(valid_pool, cantidad)
+        else:
+            selected = random.choices(valid_pool, k=cantidad)
+
+        return JsonResponse({
+            "status": True,
+            "numeros": selected
+        })
 #endregion -----------------------------------------------------------------------------

@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Números Aleatorios | AppSorteos</title>
+    
+    <!-- Bootstrap 4 CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- FontAwesome 5 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f6fb;
+            color: #1a1a2e;
+            padding-top: 80px;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 0.8rem 1.5rem;
+            z-index: 1050;
+        }
+
+        .logo-appsorteos {
+            height: 32px;
+        }
+
+        .navbar-nav .nav-link {
+            color: #4a4a6a !important;
+            font-weight: 500;
+            font-size: 15px;
+            padding: 0.5rem 1rem !important;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #d11b84 !important;
+        }
+
+        .btn-primary {
+            background-color: #d11b84;
+            border-color: #d11b84;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 0.5rem 1.2rem;
+            font-size: 15px;
+        }
+
+        .btn-primary:hover {
+            background-color: #b0126c;
+            border-color: #b0126c;
+        }
+
+        /* App Hero */
+        .app-hero {
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .app-icon {
+            background-color: #e2f7f0;
+            color: #0da895;
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 1.5rem;
+        }
+
+        .app-hero__title {
+            font-size: clamp(2rem, 3vw, 2.8rem);
+            font-weight: 800;
+            color: #1a1a2e;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-hero__desc {
+            font-size: 16px;
+            color: #666666;
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.6;
+        }
+
+        /* Formulario Sorteo sin tarjeta */
+        .sorteo-card {
+            max-width: 520px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-text-custom {
+            width: 100%;
+            height: 50px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0 1.2rem;
+            font-size: 16px;
+            color: #333333;
+            outline: none;
+            box-sizing: border-box;
+            background: #ffffff;
+            transition: border-color 0.2s;
+        }
+
+        .input-text-custom:focus {
+            border-color: #d11b84;
+        }
+
+        /* Inputs de números con flechas a los costados */
+        .number-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            height: 50px;
+            background: #ffffff;
+            transition: border-color 0.2s;
+        }
+
+        .number-input-wrapper:focus-within {
+            border-color: #d11b84;
+        }
+
+        .chevron-btn {
+            width: 45px;
+            height: 100%;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #718096;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none !important;
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .chevron-btn:hover {
+            color: #d11b84;
+            background-color: #f7fafc;
+        }
+
+        .chevron-btn:first-of-type {
+            border-top-left-radius: 9px;
+            border-bottom-left-radius: 9px;
+        }
+
+        .chevron-btn:last-of-type {
+            border-top-right-radius: 9px;
+            border-bottom-right-radius: 9px;
+        }
+
+        .number-input-field {
+            flex: 1;
+            height: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a2e;
+            outline: none;
+        }
+
+        /* Dropdowns */
+        .number-dropdown-list {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .number-dropdown-list.open {
+            display: block;
+        }
+
+        .number-dropdown-list li {
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 15px;
+            color: #333333;
+            transition: background-color 0.2s;
+        }
+
+        .number-dropdown-list li:hover {
+            background-color: #f7fafc;
+            color: #d11b84;
+        }
+
+        /* Enlaces rápidos */
+        .quick-ranges {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 0.5rem 0.8rem;
+            margin-top: 0.6rem;
+            overflow-x: auto;
+            white-space: nowrap;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .quick-ranges::-webkit-scrollbar {
+            display: none;
+        }
+
+        .quick-range-link {
+            font-size: 13px;
+            font-weight: 700;
+            color: #d11b84;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .quick-range-link:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+
+        /* Checkbox */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-top: 1.5rem;
+        }
+
+        .checkbox-container input {
+            display: none;
+        }
+
+        .custom-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .checkbox-container input:checked + .custom-checkbox {
+            background-color: #1565c0;
+            border-color: #1565c0;
+        }
+
+        .custom-checkbox::after {
+            content: "";
+            display: none;
+            width: 6px;
+            height: 11px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            margin-bottom: 2px;
+        }
+
+        .checkbox-container input:checked + .custom-checkbox::after {
+            display: block;
+        }
+
+        /* Botón Rosa */
+        .sorteo-btn-submit {
+            display: block;
+            width: 100%;
+            background-color: #d11b84;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            height: 52px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 2rem;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 12px rgba(209, 27, 132, 0.2);
+            outline: none !important;
+        }
+
+        .sorteo-btn-submit:hover {
+            background-color: #b0126c;
+        }
+
+        .sorteo-btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        /* Spinner Loader circular fino */
+        .sorteo-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(209, 27, 132, 0.15);
+            border-top: 3px solid #d11b84;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 3rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Resultados */
+        .sorteo-results-wrapper {
+            display: none;
+            text-align: center;
+        }
+
+        .sorteo-results-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 3rem auto;
+            max-width: 600px;
+        }
+
+        /* Tarjeta ganadora */
+        .winner-card {
+            background: #ffffff;
+            border: 2px solid #d4e157;
+            border-radius: 14px;
+            width: 100px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            font-weight: 800;
+            color: #1a1a2e;
+            position: relative;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .winner-card-badge {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            background-color: #d4e157;
+            color: #333333;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 3px 7px;
+            border-radius: 6px;
+        }
+
+        .results-btn-reset {
+            display: inline-block;
+            background-color: #d11b84;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            height: 52px;
+            padding: 0 2.5rem;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 12px rgba(209, 27, 132, 0.2);
+            outline: none !important;
+        }
+
+        .results-btn-reset:hover {
+            background-color: #b0126c;
+        }
+
+        .save-results-link {
+            display: block;
+            margin-top: 1.5rem;
+            color: #d11b84;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .save-results-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Enlaces de pie de sorteos */
+        .footer-sorteos-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 4rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-sorteos-links a {
+            color: #d11b84;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+        }
+
+        .footer-sorteos-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Sección Cómo Funciona */
+        .how-it-works-section {
+            max-width: 800px;
+            margin: 5rem auto 3rem;
+            text-align: left;
+        }
+
+        .how-it-works-section h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1a1a2e;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .how-it-works-section p {
+            color: #666666;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        /* Contenedor principal flex para centrar */
+        .container.main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+
+
+    <!-- MENU SUPERIOR DE APPSORTEOS PIXEL-PERFECT -->
+    <nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white">
+        <div class="container">
+            <a class="navbar-brand ml-3 ml-lg-0" href="/sorteo/">
+                <img class="logo-appsorteos" src="https://app-sorteos.com/img/logo.svg" alt="AppSorteos Logo">
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ml-auto align-items-center">
+                    <li class="nav-item dropdown mr-lg-3">
+                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                            <i class="fas fa-th mr-1"></i> Aplicaciones
+                        </a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="/sorteo/">Generador de Números</a>
+                        </div>
+                    </li>
+                    <li class="nav-item mr-lg-3">
+                        <a href="#" class="nav-link">
+                            DM Automation <span class="badge badge-primary badge-xs ml-2" style="background-color: #0da895;">Nuevo</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mr-lg-3">
+                        <a href="#" class="nav-link">Precios</a>
+                    </li>
+                    <li class="nav-item dropdown mr-lg-3">
+                        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">Ayuda</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">FAQs</a>
+                        </div>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ml-auto align-items-center">
+                    <li class="nav-item mr-lg-3">
+                        <a href="#" class="nav-link">Ingresar</a>
+                    </li>
+                    <li class="nav-item mr-lg-2">
+                        <a href="#" class="btn btn-primary text-white">Crear cuenta</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">ES</a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="#">Español</a>
+                            <a class="dropdown-item" href="#">English</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO DEL SORTEADOR -->
+    <div class="container main">
+        <div id="random-numbers-app" class="app-hero">
+            
+            <!-- Pantalla del Formulario y Loader -->
+            <div id="sorteo-form-screen">
+                <div class="app-icon">
+                    <i class="fas fa-sort-numeric-up"></i>
+                </div>
+                <h1 class="app-hero__title">Generador de Números Aleatorios</h1>
+                <p class="app-hero__desc">Genera una secuencia de <strong>números aleatorios online y gratis</strong> con nuestra app para <strong>Sorteos de Números</strong>.</p>
+                
+                <!-- Spinner Loader circular fino -->
+                <div id="sorteo-loader-screen" style="display: none; text-align: center;">
+                    <div class="sorteo-spinner"></div>
+                </div>
+
+                <div class="sorteo-card" id="sorteo-card-form">
+                    <form id="sorteo-form" onsubmit="event.preventDefault(); startRaffle();">
+                        
+                        <!-- Nombre del sorteo -->
+                        <div class="form-group">
+                            <label>Nombre del Sorteo</label>
+                            <input type="text" id="raffle-name" class="input-text-custom" placeholder="Sorteo de Empresa 2038!">
+                        </div>
+                        
+
+                        
+                        <!-- Número mínimo y máximo -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <label>Número mínimo</label>
+                                <div class="number-input-wrapper">
+                                    <button type="button" class="chevron-btn" onclick="decrementVal('min-val', 1)"><i class="fas fa-chevron-down"></i></button>
+                                    <input type="number" id="min-val" class="number-input-field" value="1" min="1" max="999">
+                                    <button type="button" class="chevron-btn" onclick="incrementVal('min-val', 999)"><i class="fas fa-chevron-up"></i></button>
+                                    <ul class="number-dropdown-list" id="min-val-list"></ul>
+                                </div>
+                                <div class="quick-ranges">
+                                    <span class="quick-range-link" onclick="setQuickRange(1, 12)">1-12</span>
+                                    <span class="quick-range-link" onclick="setQuickRange(1, 20)">1-20</span>
+                                    <span class="quick-range-link" onclick="setQuickRange(1, 30)">1-30</span>
+                                    <span class="quick-range-link" onclick="setQuickRange(1, 45)">1-45</span>
+                                    <span class="quick-range-link" onclick="setQuickRange(1, 50)">1-50</span>
+                                    <span class="quick-range-link" onclick="setQuickRange(1, 90)">1-90</span>
+                                    <span class="quick-range-link" onclick="setQuickRange(1, 99)">1-99</span>
+                                    <span class="quick-range-link" onclick="setQuickRange(1, 100)">1-100</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-6">
+                                <label>Número máximo</label>
+                                <div class="number-input-wrapper">
+                                    <button type="button" class="chevron-btn" onclick="decrementVal('max-val', 1)"><i class="fas fa-chevron-down"></i></button>
+                                    <input type="number" id="max-val" class="number-input-field" value="999" min="1" max="999">
+                                    <button type="button" class="chevron-btn" onclick="incrementVal('max-val', 999)"><i class="fas fa-chevron-up"></i></button>
+                                    <ul class="number-dropdown-list" id="max-val-list"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Números a generar -->
+                        <div class="form-group">
+                            <label>Números a generar</label>
+                            <div class="number-input-wrapper">
+                                <button type="button" class="chevron-btn" onclick="decrementVal('qty-val', 1)"><i class="fas fa-chevron-down"></i></button>
+                                <input type="number" id="qty-val" class="number-input-field" value="1" min="1" max="999">
+                                <button type="button" class="chevron-btn" onclick="incrementVal('qty-val', 999)"><i class="fas fa-chevron-up"></i></button>
+                                <ul class="number-dropdown-list" id="qty-val-list"></ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Números únicos -->
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="unique-val" checked>
+                            <span class="custom-checkbox"></span>
+                            Números únicos (sin repetir)
+                        </label>
+                        
+                        <!-- Botón Generar -->
+                        <button type="submit" class="sorteo-btn-submit">Generar números</button>
+                        
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Pantalla de Resultados -->
+            <div id="sorteo-results-screen" class="sorteo-results-wrapper">
+                <h1 class="sorteo-title" id="display-raffle-name">Nombre del Sorteo</h1>
+                <p class="sorteo-subtitle" id="display-raffle-tag">Generados aleatoriamente por app-sorteos.com</p>
+                
+                <div class="sorteo-results-grid" id="results-grid">
+                    <!-- Tarjetas inyectadas por JS -->
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <button class="results-btn-reset" onclick="resetRaffle()">Generar nuevos números</button>
+                    <a class="save-results-link" onclick="alert('Los resultados han sido guardados temporalmente en el sistema.');">Guardar resultados</a>
+                </div>
+            </div>
+            
+
+            
+        </div>
+    </div>
+
+    <!-- Bootstrap & JQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            initDropdown("min-val", "min-val-list");
+            initDropdown("max-val", "max-val-list");
+            initDropdown("qty-val", "qty-val-list");
+            
+            setupInputDropdownToggle("min-val", "min-val-list");
+            setupInputDropdownToggle("max-val", "max-val-list");
+            setupInputDropdownToggle("qty-val", "qty-val-list");
+            
+            document.addEventListener("click", function(event) {
+                if (!event.target.closest(".number-input-wrapper")) {
+                    document.querySelectorAll(".number-dropdown-list").forEach(el => {
+                        el.classList.remove("open");
+                    });
+                }
+            });
+        });
+
+        function initDropdown(inputId, listId) {
+            const listEl = document.getElementById(listId);
+            const inputEl = document.getElementById(inputId);
+            const fragment = document.createDocumentFragment();
+            
+            for (let i = 1; i <= 999; i++) {
+                const li = document.createElement("li");
+                li.textContent = i;
+                li.addEventListener("click", function() {
+                    inputEl.value = i;
+                    listEl.classList.remove("open");
+                    validateInputs();
+                });
+                fragment.appendChild(li);
+            }
+            listEl.appendChild(fragment);
+        }
+        
+        function setupInputDropdownToggle(inputId, listId) {
+            const inputEl = document.getElementById(inputId);
+            const listEl = document.getElementById(listId);
+            
+            inputEl.addEventListener("focus", function(e) {
+                document.querySelectorAll(".number-dropdown-list").forEach(el => {
+                    if(el !== listEl) el.classList.remove("open");
+                });
+                listEl.classList.add("open");
+                
+                const currentVal = parseInt(inputEl.value);
+                if (currentVal > 0) {
+                    const itemEl = listEl.children[currentVal - 1];
+                    if (itemEl) {
+                        listEl.scrollTop = itemEl.offsetTop - 80;
+                    }
+                }
+            });
+
+            inputEl.addEventListener("input", function() {
+                const query = inputEl.value.trim();
+                const items = listEl.children;
+                listEl.classList.add("open");
+                
+                for (let i = 0; i < items.length; i++) {
+                    const val = items[i].textContent;
+                    if (query === "" || val.startsWith(query)) {
+                        items[i].style.display = "block";
+                    } else {
+                        items[i].style.display = "none";
+                    }
+                }
+                validateInputs();
+            });
+
+            inputEl.addEventListener("blur", function() {
+                setTimeout(() => {
+                    listEl.classList.remove("open");
+                    let val = parseInt(inputEl.value) || 1;
+                    if (val < 1) val = 1;
+                    if (val > 999) val = 999;
+                    inputEl.value = val;
+                    validateInputs();
+                }, 200);
+            });
+        }
+
+        function incrementVal(inputId, maxLimit) {
+            const inputEl = document.getElementById(inputId);
+            let val = parseInt(inputEl.value) || 1;
+            if (val < maxLimit) {
+                inputEl.value = val + 1;
+                validateInputs();
+            }
+        }
+
+        function decrementVal(inputId, minLimit) {
+            const inputEl = document.getElementById(inputId);
+            let val = parseInt(inputEl.value) || 1;
+            if (val > minLimit) {
+                inputEl.value = val - 1;
+                validateInputs();
+            }
+        }
+
+        function validateInputs() {
+            const minEl = document.getElementById("min-val");
+            const maxEl = document.getElementById("max-val");
+            let minVal = parseInt(minEl.value) || 1;
+            let maxVal = parseInt(maxEl.value) || 10;
+            
+            if (minVal > maxVal) {
+                maxEl.value = minVal;
+            }
+        }
+
+        function setQuickRange(min, max) {
+            document.getElementById("min-val").value = min;
+            document.getElementById("max-val").value = max;
+            validateInputs();
+        }
+
+        let loadingConfettiInterval = null;
+
+        function startRaffle() {
+            const raffleName = document.getElementById("raffle-name").value.trim() || "Sorteo";
+            const minVal = parseInt(document.getElementById("min-val").value) || 1;
+            const maxVal = parseInt(document.getElementById("max-val").value) || 999;
+            const qtyVal = parseInt(document.getElementById("qty-val").value) || 1;
+            const uniqueVal = document.getElementById("unique-val").checked;
+            
+            document.getElementById("sorteo-card-form").style.display = "none";
+            document.getElementById("sorteo-loader-screen").style.display = "block";
+            
+            if (loadingConfettiInterval) clearInterval(loadingConfettiInterval);
+            loadingConfettiInterval = setInterval(() => {
+                confetti({
+                    particleCount: 4,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0, y: 0.8 },
+                    colors: ['#d11b84', '#1565c0', '#d4e157']
+                });
+                confetti({
+                    particleCount: 4,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1, y: 0.8 },
+                    colors: ['#d11b84', '#1565c0', '#d4e157']
+                });
+            }, 200);
+            
+            setTimeout(() => {
+                fetch("{% url 'sales:api_generar_sorteo' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({
+                        min_val: minVal,
+                        max_val: maxVal,
+                        cantidad: qtyVal,
+                        unicos: uniqueVal
+                    })
+                })
+                .then(res => {
+                    if (res.redirected) {
+                        window.location.href = res.url;
+                        return;
+                    }
+                    if (!res.ok) {
+                        return res.text().then(text => {
+                            throw new Error(`HTTP ${res.status}: ${text.substring(0, 150)}`);
+                        });
+                    }
+                    const contentType = res.headers.get("content-type");
+                    if (!contentType || !contentType.includes("application/json")) {
+                        return res.text().then(text => {
+                            throw new TypeError(`Respuesta no JSON (${contentType}): ${text.substring(0, 150)}`);
+                        });
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                    if (loadingConfettiInterval) {
+                        clearInterval(loadingConfettiInterval);
+                        loadingConfettiInterval = null;
+                    }
+                    if (data.status) {
+                        displayResults(raffleName, data.numeros);
+                    } else {
+                        alert(data.message || "Error al generar el sorteo.");
+                        resetRaffle();
+                    }
+                })
+                .catch(err => {
+                    if (loadingConfettiInterval) {
+                        clearInterval(loadingConfettiInterval);
+                        loadingConfettiInterval = null;
+                    }
+                    console.error(err);
+                    alert("Error al generar el sorteo: " + err.message);
+                    resetRaffle();
+                });
+            }, 1500);
+        }
+
+        function displayResults(raffleName, numbers) {
+            document.getElementById("sorteo-form-screen").style.display = "none";
+            document.getElementById("sorteo-loader-screen").style.display = "none";
+            document.getElementById("sorteo-results-screen").style.display = "block";
+            
+            document.getElementById("display-raffle-name").textContent = raffleName;
+            
+            const gridEl = document.getElementById("results-grid");
+            gridEl.innerHTML = "";
+            
+            numbers.forEach((num, index) => {
+                const card = document.createElement("div");
+                card.className = "winner-card";
+                
+                const badge = document.createElement("span");
+                badge.className = "winner-card-badge";
+                badge.textContent = index + 1;
+                
+                card.appendChild(badge);
+                card.appendChild(document.createTextNode(num));
+                gridEl.appendChild(card);
+            });
+            
+            launchConfetti();
+        }
+
+        function launchConfetti() {
+            const duration = 2 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        function resetRaffle() {
+            if (loadingConfettiInterval) {
+                clearInterval(loadingConfettiInterval);
+                loadingConfettiInterval = null;
+            }
+            document.getElementById("sorteo-results-screen").style.display = "none";
+            document.getElementById("sorteo-loader-screen").style.display = "none";
+            document.getElementById("sorteo-card-form").style.display = "block";
+            document.getElementById("sorteo-form-screen").style.display = "block";
+        }
+    </script>
+</body>
+</html>
