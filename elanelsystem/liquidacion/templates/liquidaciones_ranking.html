@@ -2,26 +2,29 @@
 {% load static %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/ranking_liquidaciones.css' %}">
+<link rel="stylesheet" href="{% static 'css/ranking_liquidaciones_modern.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/vanilla_table.css' %}">
 {% endblock css %}
 
 {% block content %}
-    <div class="filterContainer">
-        <h2>Ranking</h2>
-        <div class="filtersWrapper">
-            <div id="selectWrapperSelectAgencia" class="wrapperSelectFilter">
-                <label class="labelInput">Sucursal</label>
+<div class="wrapper_content">
+    <!-- Header & Filters -->
+    <div class="filters">
+        <div class="titleHeaderWrapper">
+            <img src="{% static 'images/icons_sider/liquidacion.svg' %}" alt="Ranking">
+            <h1 class="titleHeader">RANKING</h1>
+        </div>
+
+        <div class="filtersActionWrapper">
+            <div class="wrapperSelectFilter wrapperSelectCustom">
+                <label>Sucursal</label>
                 <div class="containerInputAndOptions">
                     <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                    <input
-                        type="text"
-                        name="agencia"
-                        class="onlySelect input-select-custom inputFilter"
-                        id="inputSucursal"
-                        autocomplete="off"
-                        readonly=""
-                        value="{{defaultSucursal.pseudonimo}}"
-                    />
+                    <input type="hidden" name="agencia" id="inputSucursal" value="{{defaultSucursal.pseudonimo}}">
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3>{{defaultSucursal.pseudonimo}}</h3>
+                    </div>
                     <ul class="list-select-custom options">
                         {% for sucursal in sucursales %}
                         <li data-value="{{sucursal.pseudonimo}}">{{sucursal.pseudonimo}}</li>
@@ -29,24 +32,15 @@
                     </ul>
                 </div>
             </div>
-    
-            <div id="selectWrapperSelectCampania"class="inputWrapper wrapperSelectFilter">
-                <label class="labelInput">Campaña</label>
+
+            <div class="wrapperSelectFilter wrapperSelectCustom">
+                <label>Campaña</label>
                 <div class="containerInputAndOptions">
-                    <img
-                        id="tipoComprobanteIconDisplay"
-                        class="iconDesplegar"
-                        src="{% static 'images/icons/arrowDown.png' %}"
-                        alt=""
-                    />
-                    <input
-                        type="text"
-                        name="campania"
-                        value="{{defaultCampania}}"
-                        readonly
-                        class="input-select-custom onlySelect inputFilter"
-                        id="inputCampania"
-                    />
+                    <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
+                    <input type="hidden" name="campania" id="inputCampania" value="{{defaultCampania}}">
+                    <div class="onlySelect pseudo-input-select-wrapper">
+                        <h3>{{defaultCampania}}</h3>
+                    </div>
                     <ul class="list-select-custom options">
                         {% for campania in campaniasDisponibles %}
                         <li data-value="{{campania}}">{{campania}}</li>
@@ -56,150 +50,143 @@
             </div>
         </div>
     </div>
-    <div class="containerBoth">
-        <div class="colaborators_type_buttons_wrapper">
-            <div id="supervisoresWrapper" class="on">
-                <h2>Supervisores</h2>
-            </div>
-            <div id="vendedoresWrapper">
-                <h2>Vendedores</h2>
-            </div>
-        </div>
-        <div class="containerUsers containerSupervisores on">
-            <div class="information">
-                <div class="tittleAndOrder">
-                    <h2>Supervisores</h2>
-                    <div id="selectWrapperSelectOrder1">
-                        {% comment %} <label class="labelInput">Ordenar por</label> {% endcomment %}
-                        <div class="filter-iconWrapper">
-                            <input type="hidden" class="inputFilter" name="tipoOrdenamientoSupervisores" id="order1">
-                            <img src="{% static 'images/icons/icons_sort.svg' %}" alt="">
-                            <ul class="filter-select">
-                                <li class="filter-option selected" data-value="cantidadVentas">Cantidad de ventas</li>
-                                <li class="filter-option" data-value="productividad">Productividad</li>
-                            </ul>
-                        </div>
-                    </div>
 
-                </div>
-                <div class="tittlesWrapper">
-                    <ul class="tittles">
-                        <li>Supervisor</li>
-                        <li>Dinero total</li>
-                        <li>Cantidad ventas</li>
-                        <li>Cuotas 1</li>
-                    </ul>   
-                </div>
-
-                <div class="valuesWrapper">
-                    <ul class="values">
-                        <li class ="item">
-                            {% for super in supervisores %}
-                                <div class="backgroundItem">
-                                    <img class="imageMore" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                                    <div><p>{{super.nombre_usuario}}</p></div>
-                                    <div><p>${{super.productividad}}</p></div>
-                                    <div><p>{{super.cantidadVentas}}</p></div>
-                                    <div><p>{{super.cuotas_1_total}}</p></div>
-                                </div>
-                                <ul class="detallesItem">
-                                    <h2>Vendedores a cargo</h2>
-                                    <div class="tittlesWrapperItem">
-                                        <ul class="tittles">
-                                            <li>Vendedor</li>
-                                            <li>Dinero total</li>
-                                            <li>Cantidad ventas</li>
-                                            <li>Cuotas 1</li>
-                                        </ul>   
-                                    </div>
-                                    <div class="valuesWrapperItem">
-                                        <ul>
-                                            {% for v in super.vendedoresACargo %}
-                                                <li class="itemValores">
-                                                    <div class="backgroundItemVendedores">
-                                                        <div><p>{{v.nombre_usuario}}</p></div>
-                                                        <div><p>${{v.productividad}}</p></div>
-                                                        <div><p>{{v.cantidadVentas}}</p></div>
-                                                        <div><p>{{v.cuotas1Adelantadas}}</p></div>
-                                                    </div>
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                </ul>
-                            {% endfor %}
-                            
-                        </li>
-                    </ul>       
-                </div>
-
-                <div class="totalWrapper">
-                    <ul class="tittles">
-                        <li>Total</li>
-                        <li>{{totalSuper.productividad}}</li>
-                        <li>{{totalSuper.cantVentas}}</li>
-                        <li>{{totalSuper.cuotas_1}}</li>
-                    </ul>   
-                </div>
-            </div> 
-        </div>
-
-        <div class="containerUsers containerVendedores">
-            <div class="information">
-                <div class="tittleAndOrder">
-                    <h2>Vendedores</h2>
-                    <div id="selectWrapperSelectOrder2">
-                        {% comment %} <label class="labelInput">Ordenar por</label> {% endcomment %}
-                        <div class="filter-iconWrapper">
-                            <input type="hidden" class="inputFilter" name="tipoOrdenamientoVendedores" id="order2">
-                            
-                            <img src="{% static 'images/icons/icons_sort.svg' %}" alt="">
-                            <ul class="filter-select">
-                                <li class="filter-option selected" data-value="cantidadVentas">Cantidad de ventas</li>
-                                <li class="filter-option" data-value="productividad">Productividad</li>
-                                <li class="filter-option" data-value="cuotas1Adelantadas">Cuotas 1</li>
-                                
-                            </ul>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="tittlesWrapper">
-                    <ul class="tittles">
-                        <li>Vendedor</li>
-                        <li>Dinero total</li>
-                        <li>Cantidad total</li>
-                        <li>Cuotas adel.</li>
-                    </ul>   
-                </div>
-
-                <div class="valuesWrapper">
-                    <ul class="values">
-                        {% for vendedor in vendedores %}
-                            <li class="itemValores">
-                                <div class="backgroundItemVendedores">
-                                    <div><p>{{vendedor.nombre_usuario}}</p></div>
-                                    <div><p>${{vendedor.productividad}}</p></div>
-                                    <div><p>{{vendedor.cantidadVentas}}</p></div>
-                                    <div><p>{{vendedor.cuotas1Adelantadas}}</p></div>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </ul>       
-                </div>
-            </div> 
+    <!-- Segmented Control (Tabs) -->
+    <div class="segmented-control-wrapper">
+        <div class="segmented-control">
+            <button class="segmented-btn active" data-target="containerSupervisores">Supervisores</button>
+            <button class="segmented-btn" data-target="containerVendedores">Vendedores</button>
         </div>
     </div>
-    
+
+    <!-- Information Area -->
+    <div class="informationWrapper">
+        
+        <!-- Supervisores Table -->
+        <div id="containerSupervisores" class="containerUsers active">
+            <div class="vt-table-wrap">
+                <table class="vt-table">
+                    <thead>
+                        <tr>
+                            <th>Supervisor</th>
+                            <th>Dinero Total</th>
+                            <th>Cantidad Ventas</th>
+                            <th>Cuotas 1</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for super in supervisores %}
+                        <tr class="expandable-row" onclick="toggleRow(this)">
+                            <td>{{super.nombre_usuario}}</td>
+                            <td class="badge-amount">${{super.productividad}}</td>
+                            <td><span class="badge-count">{{super.cantidadVentas}}</span></td>
+                            <td>{{super.cuotas_1_total}}</td>
+                            <td><img class="icon-expand" src="{% static 'images/icons/arrowDown.png' %}" alt=""></td>
+                        </tr>
+                        <tr class="details-row">
+                            <td colspan="5" style="padding: 0;">
+                                <div class="details-container">
+                                    <h4 style="color: var(--white-800-50); margin-bottom: 1rem; font-size: 1.2rem;">Vendedores a Cargo</h4>
+                                    <table class="sub-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Vendedor</th>
+                                                <th>Productividad</th>
+                                                <th>Ventas</th>
+                                                <th>Cuotas 1</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for v in super.vendedoresACargo %}
+                                            <tr>
+                                                <td>{{v.nombre_usuario}}</td>
+                                                <td class="badge-amount">${{v.productividad}}</td>
+                                                <td>{{v.cantidadVentas}}</td>
+                                                <td>{{v.cuotas1Adelantadas}}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Vendedores Table -->
+        <div id="containerVendedores" class="containerUsers">
+            <div class="vt-table-wrap">
+                <table class="vt-table">
+                    <thead>
+                        <tr>
+                            <th>Vendedor</th>
+                            <th>Dinero Total</th>
+                            <th>Cantidad Total</th>
+                            <th>Cuotas Adelantadas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vendedor in vendedores %}
+                        <tr>
+                            <td>{{vendedor.nombre_usuario}}</td>
+                            <td class="badge-amount">${{vendedor.productividad}}</td>
+                            <td><span class="badge-count">{{vendedor.cantidadVentas}}</span></td>
+                            <td>{{vendedor.cuotas1Adelantadas}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
 {% endblock content %}
+
 {% block js %}
-{% comment %} <script src="{% static 'js/displayItemsRanking.js' %}"></script> {% endcomment %}
-<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
-{% comment %} <script src="{% static 'js/filterRanking.js' %}"></script> {% endcomment %}
+<script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
+<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js' %}"></script>
 <script src="{% static 'js/vanilla_components/iconFIlterEvent.js' %}"></script>
 
+<script>
+    // Tab switching logic
+    document.querySelectorAll('.segmented-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update buttons
+            document.querySelectorAll('.segmented-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
 
+            // Update containers
+            const target = btn.getAttribute('data-target');
+            document.querySelectorAll('.containerUsers').forEach(container => {
+                container.classList.remove('active');
+            });
+            document.getElementById(target).classList.add('active');
+        });
+    });
 
-    
+    // Row expansion logic
+    function toggleRow(row) {
+        row.classList.toggle('open');
+        const detailsContainer = row.nextElementSibling.querySelector('.details-container');
+        detailsContainer.classList.toggle('open');
+    }
+
+    // Filter handling
+    const inputSucursal = document.getElementById('inputSucursal');
+    const inputCampania = document.getElementById('inputCampania');
+
+    [inputSucursal, inputCampania].forEach(input => {
+        input.addEventListener('input', () => {
+            const params = new URLSearchParams(window.location.search);
+            params.set('agencia', inputSucursal.value);
+            params.set('campania', inputCampania.value);
+            window.location.href = `${window.location.pathname}?${params.toString()}`;
+        });
+    });
+</script>
 {% endblock js %}

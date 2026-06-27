@@ -1,0 +1,229 @@
+/* ranking_liquidaciones_modern.css */
+
+.wrapper_content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--background-color);
+}
+
+/* Header & Filters */
+.filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 3.5rem;
+    background-color: var(--blue-1);
+    border-bottom: 1px solid var(--white-800-20);
+    flex: 0 0 auto;
+}
+
+.titleHeaderWrapper {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.titleHeaderWrapper img {
+    width: 3.5rem;
+    height: 3.5rem;
+    filter: brightness(0) invert(1);
+}
+
+.titleHeader {
+    font-size: clamp(2.4rem, 2vw, 3.2rem);
+    font-family: raleway-bold;
+    color: var(--white-color-800);
+    letter-spacing: 0.05rem;
+    margin: 0;
+}
+
+.filtersActionWrapper {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.wrapperSelectFilter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 18rem;
+}
+
+.wrapperSelectFilter label {
+    font-size: 1.2rem;
+    font-family: raleway-semibold;
+    color: var(--white-800-50);
+    padding-left: 0.5rem;
+}
+
+/* Segmented Control (Tabs) */
+.segmented-control-wrapper {
+    padding: 1.5rem 3.5rem 0.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.segmented-control {
+    display: flex;
+    background-color: var(--blue-2);
+    padding: 0.4rem;
+    border-radius: 1.2rem;
+    width: fit-content;
+    border: 1px solid var(--white-800-20);
+}
+
+.segmented-btn {
+    padding: 0.8rem 2.5rem;
+    border-radius: 0.8rem;
+    border: none;
+    background: transparent;
+    color: var(--white-800-50);
+    font-family: raleway-semibold;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.segmented-btn.active {
+    background-color: var(--blue-accent-color);
+    color: var(--white-color-800);
+    box-shadow: 0 4px 12px rgba(6, 137, 250, 0.3);
+}
+
+/* Information Area */
+.informationWrapper {
+    padding: 1.5rem 3.5rem;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.containerUsers {
+    display: none;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.containerUsers.active {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Table Styling (mimicking vt-table) */
+.vt-table-wrap {
+    border: 1px solid var(--white-800-20);
+    border-radius: 1.2rem;
+    overflow: hidden;
+    background: var(--blue-1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.vt-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.vt-table thead th {
+    background: var(--blue-2);
+    color: var(--white-800-80);
+    font-family: raleway-bold;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08rem;
+    padding: 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--white-800-20);
+}
+
+.vt-table tbody td {
+    padding: 1.5rem;
+    color: var(--white-color-800);
+    font-family: raleway;
+    font-size: 1.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.vt-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.vt-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Row Expansion (Supervisor details) */
+.expandable-row {
+    cursor: pointer;
+}
+
+.details-row {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.details-container {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.details-container.open {
+    max-height: 1000px;
+    padding: 1.5rem;
+    border-top: 1px solid var(--blue-accent-color);
+}
+
+.sub-table {
+    width: 100%;
+    border-radius: 0.8rem;
+    overflow: hidden;
+    background: var(--blue-0);
+}
+
+.sub-table th {
+    background: var(--blue-2);
+    color: var(--white-800-50);
+    font-size: 1.1rem;
+    padding: 1rem;
+}
+
+.sub-table td {
+    padding: 1rem;
+    font-size: 1.3rem;
+}
+
+/* Utils */
+.badge-amount {
+    font-family: 'Babapro', sans-serif;
+    color: var(--success-color);
+    font-weight: bold;
+}
+
+.badge-count {
+    background: var(--blue-accent-color);
+    color: white;
+    padding: 0.2rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 1.2rem;
+    font-family: 'Babapro', sans-serif;
+}
+
+.icon-expand {
+    width: 1.4rem;
+    transition: transform 0.3s ease;
+    filter: invert(1);
+    opacity: 0.5;
+}
+
+.expandable-row.open .icon-expand {
+    transform: rotate(180deg);
+}

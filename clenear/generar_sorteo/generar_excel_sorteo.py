@@ -1,16 +1,22 @@
 import pandas as pd
 import os
 import re
+import sys
 
 def normalize_sheet_name(name):
     # Remove leading/trailing spaces and make uppercase
     return name.strip().upper()
 
 def main():
-    folder = r"c:\Users\Administrador\Documents\ElanelSystem\sorteo"
-    output_file = r"c:\Users\Administrador\Documents\ElanelSystem\pagos_sorteo_abril_2026.xlsx"
+    folder = r"c:\Users\Administrador\Documents\ElanelSystem\clenear\generar_sorteo"
+    output_file = r"c:\Users\Administrador\Documents\ElanelSystem\pagos_sorteo_mayo_2026.xlsx"
     
-    files = [f for f in os.listdir(folder) if f.endswith(('.xls', '.xlsx', '.xlsm')) and not f.startswith('~')]
+    if len(sys.argv) > 1:
+        # User provided file names as arguments
+        files = sys.argv[1:]
+    else:
+        # Process all files in folder
+        files = [f for f in os.listdir(folder) if f.endswith(('.xls', '.xlsx', '.xlsm')) and not f.startswith('~')]
     
     all_branches_data = {}
     
@@ -74,15 +80,15 @@ def main():
             # Remove anything not looking like a date, e.g. "PENDIENTE", " "
             df['Fecha Parseada'] = pd.to_datetime(df[fecha_col], errors='coerce', dayfirst=True)
             
-            # Extract date range exactly from 2026-04-01 to 2026-04-10
-            start_date = pd.to_datetime('2026-04-01')
-            end_date = pd.to_datetime('2026-04-10')
+            # Extract date range exactly from 2026-05-01 to 2026-05-10
+            start_date = pd.to_datetime('2026-05-01')
+            end_date = pd.to_datetime('2026-05-10')
             
             mask = (df['Fecha Parseada'] >= start_date) & (df['Fecha Parseada'] <= end_date)
             df_filtered = df[mask].copy()
             
             if df_filtered.empty:
-                print(f"No hay pagos entre el 01/04/2026 y 10/04/2026 en {file}.")
+                print(f"No hay pagos entre el 01/05/2026 y 10/05/2026 en {file}.")
                 continue
                 
             # Select required columns

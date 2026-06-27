@@ -65,6 +65,7 @@ class AjusteComision(models.Model):
     dinero      = models.PositiveIntegerField("Monto")
     observaciones = models.TextField("Observaciones", blank=True, default="")
     creado_en   = models.DateTimeField("Creado en", auto_now_add=True)
+    fecha_ajuste = models.DateField("Fecha ajuste", null=True, blank=True)
     activo      = models.BooleanField("Activo", default=True)
 
     class Meta:

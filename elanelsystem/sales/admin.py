@@ -64,6 +64,49 @@ class YearFilter(admin.SimpleListFilter):
 
 CONTRACT_KEYS = ("nroContrato", "nro_contrato", "numero", "nro", "contrato")
 
+class InputFilter(admin.SimpleListFilter):
+    template = 'admin/input_filter.html'
+
+    def lookups(self, request, model_admin):
+        return ((),)
+
+    def choices(self, changelist):
+        all_choice = next(super().choices(changelist))
+        all_choice['query_parts'] = (
+            (k, v)
+            for k, v in changelist.get_filters_params().items()
+            if k != self.parameter_name
+        )
+        yield all_choice
+
+class NumeroOrdenFilter(InputFilter):
+    parameter_name = 'nro_orden'
+    title = 'Número de Orden'
+
+    def queryset(self, request, queryset):
+        term = self.value()
+        if term:
+            term = term.strip()
+            values_to_try = [term]
+            if term.isdigit():
+                values_to_try.append(int(term))
+            
+            from django.db import connection
+            from django.db.models import Q, TextField
+            from django.db.models.functions import Cast
+            
+            extra = Q()
+            if connection.vendor == "postgresql":
+                for v in values_to_try:
+                    extra |= Q(cantidadContratos__contains=[v])
+                    extra |= Q(**{"cantidadContratos__contains": [{"nro_orden": v}]})
+                    extra |= Q(**{"cantidadContratos__contains": {"nro_orden": v}})
+            else:
+                extra |= Q(Cast('cantidadContratos', TextField()).icontains(term))
+                
+            return queryset.filter(extra)
+        return queryset
+
 @admin.register(Ventas)
 class VentasAdmin(admin.ModelAdmin):
     list_display = (
@@ -74,7 +117,7 @@ class VentasAdmin(admin.ModelAdmin):
         'nro_operacion', 'nro_cliente__nombre', 'producto__nombre',
         'fecha', 'campania', 'nro_cuotas',
     )
-    list_filter = ('supervisor', "vendedor", "agencia", "campania")
+    list_filter = (NumeroOrdenFilter, 'supervisor', "vendedor", "agencia", "campania")
 
     def get_cliente(self, obj):
         return obj.nro_cliente.nombre
@@ -127,6 +170,8 @@ class VentasAdmin(admin.ModelAdmin):
         values_to_try = [term]
         if term.isdigit():
             values_to_try.append(int(term))  # exact match numérico
+            # Búsqueda exacta por nro_operacion
+            qs = qs | queryset.filter(nro_operacion=int(term))
 
         if connection.vendor == "postgresql":
             extra = Q()
