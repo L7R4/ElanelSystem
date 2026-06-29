@@ -19,8 +19,9 @@
             background-color: #f7f6fb;
             color: #1a1a2e;
             padding-top: 80px;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
             margin: 0;
@@ -63,7 +64,7 @@
 
         /* App Hero */
         .app-hero {
-            padding: 3rem 0;
+            padding: 6rem 0;
             text-align: center;
         }
 
@@ -298,6 +299,9 @@
             display: block;
         }
 
+        .sorteo-title {
+            font-weight: 700;
+        }
         /* Botón Rosa */
         .sorteo-btn-submit {
             display: block;
@@ -370,18 +374,19 @@
             color: #1a1a2e;
             position: relative;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
         }
 
         .winner-card-badge {
             position: absolute;
-            top: -8px;
-            left: -8px;
+            top: 0;
+            left: 0;
             background-color: #d4e157;
             color: #333333;
             font-size: 11px;
             font-weight: 800;
-            padding: 3px 7px;
-            border-radius: 6px;
+            padding: 4px 10px;
+            border-bottom-right-radius: 8px;
         }
 
         .results-btn-reset {
@@ -408,7 +413,7 @@
             display: block;
             margin-top: 1.5rem;
             color: #d11b84;
-            font-weight: 700;
+            font-weight: 500;
             font-size: 14px;
             text-decoration: none;
             cursor: pointer;
@@ -418,20 +423,32 @@
             text-decoration: underline;
         }
 
+        /* Wrapper para la sección con fondo blanco */
+        .results-footer-section {
+            background-color: #ffffff;
+            width: 100vw;
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
+            padding: 1rem 0;
+            margin-top: 8rem;
+        }
+
         /* Enlaces de pie de sorteos */
         .footer-sorteos-links {
             display: flex;
             justify-content: center;
-            gap: 1.5rem;
-            margin-top: 4rem;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 2rem;
+            gap: 3.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
             flex-wrap: wrap;
         }
 
         .footer-sorteos-links a {
             color: #d11b84;
-            font-weight: 600;
+            font-weight: 400;
             font-size: 15px;
             text-decoration: none;
         }
@@ -443,7 +460,7 @@
         /* Sección Cómo Funciona */
         .how-it-works-section {
             max-width: 800px;
-            margin: 5rem auto 3rem;
+            margin: 3rem auto 0;
             text-align: left;
         }
 
@@ -452,11 +469,10 @@
             font-weight: 800;
             color: #1a1a2e;
             margin-bottom: 1.5rem;
-            text-align: center;
+            text-align: left;
         }
 
         .how-it-works-section p {
-            color: #666666;
             line-height: 1.7;
             font-size: 15px;
         }
@@ -468,7 +484,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            overflow: visible;
         }
     </style>
 </head>
@@ -554,7 +570,7 @@
                         <!-- Nombre del sorteo -->
                         <div class="form-group">
                             <label>Nombre del Sorteo</label>
-                            <input type="text" id="raffle-name" class="input-text-custom" placeholder="Sorteo de Empresa 2038!">
+                            <input type="text" id="raffle-name" class="input-text-custom" placeholder="Sorteo de Empresa 2038!" required>
                         </div>
                         
 
@@ -629,6 +645,25 @@
                 <div style="margin-top: 2rem;">
                     <button class="results-btn-reset" onclick="resetRaffle()">Generar nuevos números</button>
                     <a class="save-results-link" onclick="alert('Los resultados han sido guardados temporalmente en el sistema.');">Guardar resultados</a>
+                </div>
+
+                <!-- Sección con fondo blanco de resultados -->
+                <div class="results-footer-section">
+                    <div class="container">
+                        <!-- Enlaces de pie de sorteos -->
+                        <div class="footer-sorteos-links">
+                            <a href="#">Ruleta Aleatoria</a>
+                            <a href="#">Dados Virtuales</a>
+                            <a href="#">Equipos Aleatorios</a>
+                            <a href="#">Lanza una Moneda</a>
+                        </div>
+
+                        <!-- Sección Cómo Funciona -->
+                        <div class="how-it-works-section">
+                            <h2>¿Cómo funciona el Generador de Números<br>Aleatorios?</h2>
+                            <p>El <strong>Selector de Números aleatorios</strong> es una herramienta <strong>online</strong> y <strong>gratuita</strong> que te permite realizar un <strong>sorteo de Números al azar</strong>.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -774,24 +809,6 @@
             document.getElementById("sorteo-card-form").style.display = "none";
             document.getElementById("sorteo-loader-screen").style.display = "block";
             
-            if (loadingConfettiInterval) clearInterval(loadingConfettiInterval);
-            loadingConfettiInterval = setInterval(() => {
-                confetti({
-                    particleCount: 4,
-                    angle: 60,
-                    spread: 55,
-                    origin: { x: 0, y: 0.8 },
-                    colors: ['#d11b84', '#1565c0', '#d4e157']
-                });
-                confetti({
-                    particleCount: 4,
-                    angle: 120,
-                    spread: 55,
-                    origin: { x: 1, y: 0.8 },
-                    colors: ['#d11b84', '#1565c0', '#d4e157']
-                });
-            }, 200);
-            
             setTimeout(() => {
                 fetch("{% url 'sales:api_generar_sorteo' %}", {
                     method: "POST",
@@ -876,25 +893,37 @@
         }
 
         function launchConfetti() {
-            const duration = 2 * 1000;
-            const animationEnd = Date.now() + duration;
-            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+            const duration = 100 * 1000;
+            const end = Date.now() + duration;
+            let frameCount = 0;
+            const confettiColors = [
+                '#d11b84', '#1565c0', '#d4e157', '#ff9800', '#9c27b0', 
+                '#00ebc7', '#ff5b7f', '#25d366', '#ffeb3b', '#ff5722', 
+                '#00bcd4', '#e91e63', '#4caf50', '#ffc107', '#03a9f4', 
+                '#e040fb', '#f44336', '#009688', '#ff1744', '#795548'
+            ];
 
-            function randomInRange(min, max) {
-                return Math.random() * (max - min) + min;
-            }
-
-            const interval = setInterval(function() {
-                const timeLeft = animationEnd - Date.now();
-
-                if (timeLeft <= 0) {
-                    return clearInterval(interval);
+            (function frame() {
+                frameCount++;
+                if (frameCount % 4 === 0) {
+                    const randomColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                    confetti({
+                        particleCount: 1,
+                        angle: 270,
+                        spread: 100,
+                        startVelocity: 30,
+                        gravity: 3,
+                        ticks: 400,
+                        origin: { x: Math.random(), y: -0.2 },
+                        colors: [randomColor],
+                        zIndex: 2000
+                });
                 }
 
-                const particleCount = 50 * (timeLeft / duration);
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-            }, 250);
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
         }
 
         function resetRaffle() {
