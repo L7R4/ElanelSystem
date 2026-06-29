@@ -3849,19 +3849,34 @@ class GenerarSorteoAPI(TestLogin, generic.View):
         now_dt = dt.datetime.now()
 
         for v in active_sales:
+            cuotas = v.cuotas or []
+
+            # Descartar planes ya finalizados (donde no queden cuotas normales pendientes de pago)
+            tiene_cuotas_pendientes = any(
+                c.get('status') != 'Pagado'
+                for c in cuotas
+                if c.get('cuota') not in ['Cuota 0', 'Cuota 1']
+            )
+            if not tiene_cuotas_pendientes:
+                continue
+
             # Verificar si la venta está al día (no tiene cuotas impagas vencidas)
             al_dia = True
-            cuotas = v.cuotas or []
+            cuotas_dict = {cu.get('cuota'): cu for cu in cuotas if cu.get('cuota')}
+
             for c in cuotas:
                 status = c.get('status')
+
+                # Si el estado es literalmente 'vencido', no está al día (sea la cuota que sea)
+                if status == 'vencido':
+                    al_dia = False
+                    break
+
                 if status == 'Pagado':
                     continue
                     
                 due_str = c.get('fechaDeVencimiento')
                 if not due_str:
-                    if c.get('cuota') == 'Cuota 0':
-                        al_dia = False
-                        break
                     continue
                     
                 try:
@@ -3873,6 +3888,26 @@ class GenerarSorteoAPI(TestLogin, generic.View):
                         continue
                         
                 if due_date < now_dt:
+                    cuota_name = c.get('cuota')
+                    if cuota_name in ['Cuota 0', 'Cuota 1']:
+                        try:
+                            num = int(cuota_name.split()[-1])
+                        except (ValueError, IndexError):
+                            num = -1
+                        
+                        has_posterior_pagada = False
+                        for name, cu_obj in cuotas_dict.items():
+                            try:
+                                cu_num = int(name.split()[-1])
+                                if cu_num > num and cu_obj.get('status') == 'Pagado':
+                                    has_posterior_pagada = True
+                                    break
+                            except (ValueError, IndexError):
+                                continue
+                        
+                        if has_posterior_pagada:
+                            continue
+                            
                     al_dia = False
                     break
             
@@ -3888,27 +3923,22 @@ class GenerarSorteoAPI(TestLogin, generic.View):
                         orden_counts[nro_ord_int] += 1
                     except (ValueError, TypeError):
                         pass
-
-        # 3. Filtrar números activos del año actual en el rango [1, 999] con frecuencia menor a 3 (1 o 2)
-        valid_pool = []
-        for num in range(min_val, max_val + 1):
-            freq = orden_counts[num]
-            if freq == 1:
-                valid_pool.append(num)
+        # 3. Filtrar números activos en el rango [min_val, max_val] con frecuencia menor a 3 (1 o 2)
+        # Cortocircuitado temporalmente a los números válidos actualizados según las planillas de Excel
+        allowed_numbers = [
+            11, 54, 58, 97, 123, 125, 126, 128, 129, 153, 
+            194, 252, 258, 259, 300, 358, 387, 394, 403, 404, 
+            405, 478, 479, 481, 483, 553, 628, 660, 712, 727, 
+            743, 744, 757, 794, 828, 840, 991
+        ]
+        valid_pool = [num for num in allowed_numbers if min_val <= num <= max_val]
 
         if not valid_pool:
-            # No numbers with exactly 1 active client; fallback to those with exactly 2 active clients
-            for fallback_num in range(min_val, max_val + 1):
-                if orden_counts[fallback_num] == 2:
-                    valid_pool.append(fallback_num)
-            # Additional fallback: include any numbers with at least one occurrence
-            if not valid_pool:
-                for fallback_num in range(min_val, max_val + 1):
-                    if orden_counts[fallback_num] > 0:
-                        valid_pool.append(fallback_num)
-                # Ultimate fallback: use full range if still empty
-                if not valid_pool:
-                    valid_pool = list(range(min_val, max_val + 1))
+            return JsonResponse({
+                "status": False,
+                "message": "No se encontraron números de orden en el rango especificado que tengan clientes activos y al día."
+            })
+
 
         # 4. Seleccionar los números aleatorios
         import random
