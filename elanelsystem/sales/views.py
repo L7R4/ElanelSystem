@@ -3926,10 +3926,9 @@ class GenerarSorteoAPI(TestLogin, generic.View):
         # 3. Filtrar números activos en el rango [min_val, max_val] con frecuencia menor a 3 (1 o 2)
         # Cortocircuitado temporalmente a los números válidos actualizados según las planillas de Excel
         allowed_numbers = [
-            11, 54, 58, 97, 123, 125, 126, 128, 129, 153, 
-            194, 252, 258, 259, 300, 358, 387, 394, 403, 404, 
-            405, 478, 479, 481, 483, 553, 628, 660, 712, 727, 
-            743, 744, 757, 794, 828, 840, 991
+            54, 58, 97, 129, 153, 188, 194, 252, 258, 299, 303, 304, 323, 387, 
+            394, 403, 404, 405, 478, 479, 483, 628, 658, 660, 712, 727, 743, 
+            744, 757, 794, 828, 839
         ]
         valid_pool = [num for num in allowed_numbers if min_val <= num <= max_val]
 
