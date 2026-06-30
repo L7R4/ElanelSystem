@@ -64,13 +64,16 @@ def main():
             # Find required columns
             nombre_col = None
             fecha_col = None
+            dni_col = None
             
             for col in df.columns:
-                col_up = col.upper()
+                col_up = str(col).upper().strip()
                 if 'NOMBRE Y APELL' in col_up or 'APELLIDO Y NOMBRE' in col_up:
                     nombre_col = col
                 if 'FECHA DE PAGO' in col_up:
                     fecha_col = col
+                if 'DNI' in col_up:
+                    dni_col = col
                     
             if not nombre_col or not fecha_col:
                 print(f"Falta columna de Nombre o Fecha en {file}.")
@@ -91,22 +94,36 @@ def main():
                 print(f"No hay pagos entre el 01/05/2026 y 10/05/2026 en {file}.")
                 continue
                 
-            # Select required columns
-            result_df = df_filtered[[nombre_col, fecha_col]].copy()
-            
             # Extract branch name from file
-            # E.g. "AGENCIA CHACO - ELANEL SRL..." -> "CHACO"
-            # Attempt to split by "-"
-            branch_name = file.split('-')[0].strip()
-            # Clean up known prefixes like "AGENCIA"
-            branch_name = branch_name.replace('AGENCIA', '').strip()
-            # If the name is too long, crop to 31 chars
-            # But branch names should be short
+            # E.g. "chaco.xlsm" -> "CHACO"
+            # or "AGENCIA CHACO - ELANEL SRL..." -> "CHACO"
+            branch_name = file.split('.')[0].strip().upper()
+            if '-' in file:
+                branch_name = file.split('-')[0].strip()
+                branch_name = branch_name.replace('AGENCIA', '').strip().upper()
             if len(branch_name) > 31:
                 branch_name = branch_name[:31]
-                
+
+            # Select required columns
+            cols_to_select = [nombre_col, fecha_col]
+            if dni_col:
+                cols_to_select.append(dni_col)
+            
+            result_df = df_filtered[cols_to_select].copy()
+            result_df['Sucursal'] = branch_name
+            
             all_branches_data[branch_name] = result_df
-            print(f"  -> Encontrados {len(result_df)} registros en {branch_name}")
+            print(f"  -> Encontrados {len(result_df)} registros en {branch_name}:")
+            for idx, row in result_df.iterrows():
+                nombre_val = row[nombre_col]
+                dni_val = row[dni_col] if dni_col and dni_col in row else 'N/A'
+                if pd.notna(dni_val):
+                    try:
+                        if isinstance(dni_val, (int, float)) or (isinstance(dni_val, str) and dni_val.strip().replace('.0', '').isdigit()):
+                            dni_val = str(int(float(dni_val)))
+                    except:
+                        pass
+                print(f"     * NOMBRE: {nombre_val} | SUCURSAL: {branch_name} | DNI: {dni_val}")
             
         except Exception as e:
             print(f"Error procesando los datos de {file}: {e}")
