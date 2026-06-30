@@ -104,8 +104,8 @@
         }
 
         .app-hero__title {
-            font-size: clamp(2rem, 3vw, 2.8rem);
-            font-weight: 800;
+            font-size: clamp(2rem, 3vw, 2.4rem);
+            font-weight: 1000;
             color: #1a1a2e;
             margin-bottom: 0.5rem;
         }
@@ -113,7 +113,7 @@
         .app-hero__desc {
             font-size: 16px;
             color: #666666;
-            max-width: 600px;
+            max-width: 720px;
             margin: 0 auto 2.5rem;
             line-height: 1.6;
         }
@@ -127,7 +127,7 @@
 
         .form-group label {
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 500;
             color: #1a1a2e;
             margin-bottom: 0.5rem;
         }
@@ -137,13 +137,17 @@
             height: 50px;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            padding: 0 1.2rem;
-            font-size: 16px;
+            padding: 0 1.6rem;
+            font-size: 14px;
             color: #333333;
             outline: none;
             box-sizing: border-box;
             background: #ffffff;
             transition: border-color 0.2s;
+        }
+
+        input::placeholder {
+            color: #8383839d;
         }
 
         .input-text-custom:focus {
@@ -187,11 +191,13 @@
         }
 
         .chevron-btn:first-of-type {
+            border-right: 1px solid #e2e8f0;
             border-top-left-radius: 9px;
             border-bottom-left-radius: 9px;
         }
 
         .chevron-btn:last-of-type {
+            border-left: 1px solid #e2e8f0;
             border-top-right-radius: 9px;
             border-bottom-right-radius: 9px;
         }
@@ -279,7 +285,7 @@
             cursor: pointer;
             user-select: none;
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 500;
             color: #1a1a2e;
             margin-top: 1.5rem;
         }
@@ -538,7 +544,7 @@
                     </li>
                     <li class="nav-item mr-lg-3">
                         <a href="#" class="nav-link">
-                            DM Automation <span class="badge badge-primary badge-xs ml-2" style="background-color: #0da895;">Nuevo</span>
+                            DM Automation <span class="badge badge-primary badge-xs ml-2" style="background-color: #e1effe; color:#1e429f; font-weight: 500;">Nuevo</span>
                         </a>
                     </li>
                     <li class="nav-item mr-lg-3">
