@@ -16,7 +16,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f6fb;
+            background: linear-gradient(180deg, #FFFFFF 0%, #FFFFFF 200px, #E9E9F7 1000px);
             color: #1a1a2e;
             padding-top: 80px;
             min-height: 100vh;
@@ -28,13 +28,35 @@
         }
 
         .navbar {
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-bottom: 1px solid #e2e8f0;
             padding: 0.8rem 1.5rem;
             z-index: 1050;
         }
 
+        .navbar-dos {
+            gap: 0.5rem; 
+        }
+
+        .container-fluid {
+            padding-left: 14rem;
+            padding-right: 14rem;
+        }
+
+        @media (min-width: 992px) {
+            .navbar-dos {
+                display: flex !important;
+            }
+            .navbar-dos .navbar-nav:first-child {
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            .navbar-dos .navbar-nav:last-child {
+                margin-left: 0 !important;
+            }
+        }
+
         .logo-appsorteos {
-            height: 32px;
+            height: 38px;
         }
 
         .navbar-nav .nav-link {
@@ -181,7 +203,7 @@
             background: transparent;
             text-align: center;
             font-size: 18px;
-            font-weight: 700;
+            font-weight: 500;
             color: #1a1a2e;
             outline: none;
         }
@@ -226,9 +248,8 @@
         .quick-ranges {
             display: flex;
             flex-wrap: nowrap;
-            gap: 0.5rem 0.8rem;
+            gap: 0.5rem 1.8rem;
             margin-top: 0.6rem;
-            overflow-x: auto;
             white-space: nowrap;
             -ms-overflow-style: none;
             scrollbar-width: none;
@@ -239,7 +260,7 @@
 
         .quick-range-link {
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 500;
             color: #d11b84;
             text-decoration: none;
             cursor: pointer;
@@ -305,16 +326,17 @@
         /* Botón Rosa */
         .sorteo-btn-submit {
             display: block;
-            width: 100%;
+            justify-self: center;
+            width: 40%;
             background-color: #d11b84;
             color: #ffffff;
             border: none;
             border-radius: 12px;
-            height: 52px;
+            height: 44px;
             font-size: 17px;
             font-weight: 700;
             cursor: pointer;
-            margin-top: 2rem;
+            margin-top: 4rem;
             transition: background-color 0.2s, transform 0.1s;
             box-shadow: 0 4px 12px rgba(209, 27, 132, 0.2);
             outline: none !important;
@@ -494,7 +516,7 @@
 
     <!-- MENU SUPERIOR DE APPSORTEOS PIXEL-PERFECT -->
     <nav class="navbar navbar-expand-lg fixed-top navbar-light bg-white">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand ml-3 ml-lg-0" href="/sorteo/">
                 <img class="logo-appsorteos" src="https://app-sorteos.com/img/logo.svg" alt="AppSorteos Logo">
             </a>
@@ -503,7 +525,8 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <div class="collapse navbar-collapse navbar-dos" id="navbarSupportedContent">
+                
                 <ul class="navbar-nav ml-auto align-items-center">
                     <li class="nav-item dropdown mr-lg-3">
                         <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
@@ -528,6 +551,7 @@
                         </div>
                     </li>
                 </ul>
+
                 <ul class="navbar-nav ml-auto align-items-center">
                     <li class="nav-item mr-lg-3">
                         <a href="#" class="nav-link">Ingresar</a>
@@ -581,7 +605,7 @@
                                 <label>Número mínimo</label>
                                 <div class="number-input-wrapper">
                                     <button type="button" class="chevron-btn" onclick="decrementVal('min-val', 1)"><i class="fas fa-chevron-down"></i></button>
-                                    <input type="number" id="min-val" class="number-input-field" value="1" min="1" max="999">
+                                    <input type="number" id="min-val" class="number-input-field" value="0" min="0" max="999">
                                     <button type="button" class="chevron-btn" onclick="incrementVal('min-val', 999)"><i class="fas fa-chevron-up"></i></button>
                                     <ul class="number-dropdown-list" id="min-val-list"></ul>
                                 </div>
