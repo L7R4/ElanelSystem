@@ -3807,8 +3807,9 @@ def cotizaciones_dolar(request):
 #endregion -----------------------------------------------------------------------------
 
 #region SORTEO -------------------------------------------------------------------------
-class SorteoView(TestLogin, generic.View):
+class SorteoView(TestLogin, PermissionRequiredMixin, generic.View):
     template_name = "sorteo.html"
+    permission_required = "sales.my_ver_sorteo"
     def get(self, request, *args, **kwargs):
         return render(request, self.template_name)
 
@@ -3923,19 +3924,15 @@ class GenerarSorteoAPI(TestLogin, generic.View):
                         orden_counts[nro_ord_int] += 1
                     except (ValueError, TypeError):
                         pass
-        # 3. Filtrar números activos en el rango [min_val, max_val] con frecuencia menor a 3 (1 o 2)
-        # Cortocircuitado temporalmente a los números válidos actualizados según las planillas de Excel
-        allowed_numbers = [
-            54, 58, 97, 129, 153, 188, 194, 252, 258, 299, 303, 304, 323, 387, 
-            394, 403, 404, 405, 478, 479, 483, 628, 658, 660, 712, 727, 743, 
-            744, 757, 794, 828, 839
-        ]
+        # 3. Filtrar números activos en el rango [min_val, max_val]
+        # Cortocircuitado temporalmente a los números que tienen exactamente UN (1) cliente deudor con más de 3 cuotas impagas
+        allowed_numbers = [74, 88, 115, 204, 272, 285, 732, 735]
         valid_pool = [num for num in allowed_numbers if min_val <= num <= max_val]
 
         if not valid_pool:
             return JsonResponse({
                 "status": False,
-                "message": "No se encontraron números de orden en el rango especificado que tengan clientes activos y al día."
+                "message": "No se encontraron números de orden en el rango especificado."
             })
 
 
