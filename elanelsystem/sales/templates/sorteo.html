@@ -615,8 +615,8 @@
                                 <label>Número mínimo</label>
                                 <div class="number-input-wrapper">
                                     <button type="button" class="chevron-btn" onclick="decrementVal('min-val', 1)"><i class="fas fa-chevron-down"></i></button>
-                                    <input type="number" id="min-val" class="number-input-field" value="0" min="0" max="999">
-                                    <button type="button" class="chevron-btn" onclick="incrementVal('min-val', 999)"><i class="fas fa-chevron-up"></i></button>
+                                    <input type="number" id="min-val" class="number-input-field" value="0" min="0" max="99999">
+                                    <button type="button" class="chevron-btn" onclick="incrementVal('min-val', 99999)"><i class="fas fa-chevron-up"></i></button>
                                     <ul class="number-dropdown-list" id="min-val-list"></ul>
                                 </div>
                                 <div class="quick-ranges">
@@ -635,8 +635,8 @@
                                 <label>Número máximo</label>
                                 <div class="number-input-wrapper">
                                     <button type="button" class="chevron-btn" onclick="decrementVal('max-val', 1)"><i class="fas fa-chevron-down"></i></button>
-                                    <input type="number" id="max-val" class="number-input-field" value="999" min="1" max="999">
-                                    <button type="button" class="chevron-btn" onclick="incrementVal('max-val', 999)"><i class="fas fa-chevron-up"></i></button>
+                                    <input type="number" id="max-val" class="number-input-field" value="99999" min="1" max="99999">
+                                    <button type="button" class="chevron-btn" onclick="incrementVal('max-val', 99999)"><i class="fas fa-chevron-up"></i></button>
                                     <ul class="number-dropdown-list" id="max-val-list"></ul>
                                 </div>
                             </div>
@@ -718,9 +718,9 @@
             initDropdown("max-val", "max-val-list");
             initDropdown("qty-val", "qty-val-list");
             
-            setupInputDropdownToggle("min-val", "min-val-list");
-            setupInputDropdownToggle("max-val", "max-val-list");
-            setupInputDropdownToggle("qty-val", "qty-val-list");
+            setupInputDropdownToggle("min-val", "min-val-list", 99999);
+            setupInputDropdownToggle("max-val", "max-val-list", 99999);
+            setupInputDropdownToggle("qty-val", "qty-val-list", 999);
             
             document.addEventListener("click", function(event) {
                 if (!event.target.closest(".number-input-wrapper")) {
@@ -749,7 +749,7 @@
             listEl.appendChild(fragment);
         }
         
-        function setupInputDropdownToggle(inputId, listId) {
+        function setupInputDropdownToggle(inputId, listId, maxLimit = 999) {
             const inputEl = document.getElementById(inputId);
             const listEl = document.getElementById(listId);
             
@@ -789,7 +789,7 @@
                     listEl.classList.remove("open");
                     let val = parseInt(inputEl.value) || 1;
                     if (val < 1) val = 1;
-                    if (val > 999) val = 999;
+                    if (val > maxLimit) val = maxLimit;
                     inputEl.value = val;
                     validateInputs();
                 }, 200);
@@ -836,7 +836,7 @@
         function startRaffle() {
             const raffleName = document.getElementById("raffle-name").value.trim() || "Sorteo";
             const minVal = parseInt(document.getElementById("min-val").value) || 1;
-            const maxVal = parseInt(document.getElementById("max-val").value) || 999;
+            const maxVal = parseInt(document.getElementById("max-val").value) || 99999;
             const qtyVal = parseInt(document.getElementById("qty-val").value) || 1;
             const uniqueVal = document.getElementById("unique-val").checked;
             
