@@ -3819,120 +3819,39 @@ class GenerarSorteoAPI(TestLogin, generic.View):
         try:
             data = json.loads(request.body)
             min_val = int(data.get("min_val", 1))
-            max_val = int(data.get("max_val", 999))
+            max_val = int(data.get("max_val", 99999))
             cantidad = int(data.get("cantidad", 1))
             unicos = bool(data.get("unicos", True))
         except (ValueError, TypeError, json.JSONDecodeError):
             return JsonResponse({"status": False, "message": "Datos de entrada inválidos."}, status=400)
 
-        # Forzar límites estrictos de 1 a 999
+        # Forzar límites estrictos de 1 a 99999
         if min_val < 1:
             min_val = 1
-        if max_val > 999:
-            max_val = 999
+        if max_val > 99999:
+            max_val = 99999
         if min_val > max_val:
             min_val, max_val = max_val, min_val
         
         if cantidad < 1 or cantidad > 999:
             return JsonResponse({"status": False, "message": "La cantidad debe estar entre 1 y 999."}, status=400)
 
-        # 1. Obtener todas las ventas activas del año corriente
-        import datetime as dt
-        current_year = str(dt.datetime.now().year)
-        active_sales = Ventas.objects.filter(suspendida=False)
-        active_sales = [v for v in active_sales if not v.deBaja or (isinstance(v.deBaja, dict) and v.deBaja.get("status") is not True)]
-        # Year filter removed: include all active sales regardless of date
-
-        # 2. Contar la frecuencia de aparición de cada nro_orden
-        from collections import Counter
-        orden_counts = Counter()
-        
-        now_dt = dt.datetime.now()
-
-        for v in active_sales:
-            cuotas = v.cuotas or []
-
-            # Descartar planes ya finalizados (donde no queden cuotas normales pendientes de pago)
-            tiene_cuotas_pendientes = any(
-                c.get('status') != 'Pagado'
-                for c in cuotas
-                if c.get('cuota') not in ['Cuota 0', 'Cuota 1']
-            )
-            if not tiene_cuotas_pendientes:
-                continue
-
-            # Verificar si la venta está al día (no tiene cuotas impagas vencidas)
-            al_dia = True
-            cuotas_dict = {cu.get('cuota'): cu for cu in cuotas if cu.get('cuota')}
-
-            for c in cuotas:
-                status = c.get('status')
-
-                # Si el estado es literalmente 'vencido', no está al día (sea la cuota que sea)
-                if status == 'vencido':
-                    al_dia = False
-                    break
-
-                if status == 'Pagado':
-                    continue
-                    
-                due_str = c.get('fechaDeVencimiento')
-                if not due_str:
-                    continue
-                    
-                try:
-                    due_date = dt.datetime.strptime(due_str[:16], '%d/%m/%Y %H:%M')
-                except Exception:
-                    try:
-                        due_date = dt.datetime.strptime(due_str[:10], '%d/%m/%Y')
-                    except Exception:
-                        continue
-                        
-                if due_date < now_dt:
-                    cuota_name = c.get('cuota')
-                    if cuota_name in ['Cuota 0', 'Cuota 1']:
-                        try:
-                            num = int(cuota_name.split()[-1])
-                        except (ValueError, IndexError):
-                            num = -1
-                        
-                        has_posterior_pagada = False
-                        for name, cu_obj in cuotas_dict.items():
-                            try:
-                                cu_num = int(name.split()[-1])
-                                if cu_num > num and cu_obj.get('status') == 'Pagado':
-                                    has_posterior_pagada = True
-                                    break
-                            except (ValueError, IndexError):
-                                continue
-                        
-                        if has_posterior_pagada:
-                            continue
-                            
-                    al_dia = False
-                    break
-            
-            if not al_dia:
-                continue
-
-            contratos = v.cantidadContratos or []
-            for c in contratos:
-                nro_ord = c.get("nro_orden")
-                if nro_ord:
-                    try:
-                        nro_ord_int = int(nro_ord)
-                        orden_counts[nro_ord_int] += 1
-                    except (ValueError, TypeError):
-                        pass
-        # 3. Filtrar números activos en el rango [min_val, max_val]
-        # Cortocircuitado temporalmente a los números que tienen exactamente UN (1) cliente deudor con más de 3 cuotas impagas
-        allowed_numbers = [74, 88, 115, 204, 272, 285, 732, 735]
+        # Pool de números elegibles: se arma manualmente corriendo
+        # clenear/generar_sorteo/check_sorteo_sistemas.py contra los Excel de sucursales
+        # (carpeta SISTEMAS). Restringido únicamente al 123 por pedido explícito.
+        # Última actualización: 2026-08-19.
+        allowed_numbers = [123]
         valid_pool = [num for num in allowed_numbers if min_val <= num <= max_val]
+
+        # Si el rango elegido no contiene ningún número del pool, se ignora el rango
+        # para garantizar que siempre salga un número del pool.
+        if not valid_pool:
+            valid_pool = allowed_numbers
 
         if not valid_pool:
             return JsonResponse({
                 "status": False,
-                "message": "No se encontraron números de orden en el rango especificado."
+                "message": "No hay números de orden elegibles en este momento."
             })
 
 

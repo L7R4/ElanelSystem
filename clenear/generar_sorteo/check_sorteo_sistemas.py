@@ -11,9 +11,9 @@ def main():
     files = [f for f in os.listdir(folder) if f.endswith(('.xls', '.xlsx', '.xlsm')) and not f.startswith('~')]
     
     now_dt = dt.datetime.now()
-    all_eligible = []
-    order_counts = {}
-    
+    all_contracts = []
+    order_morosidad = {}
+
     print(f"Analyzing {len(files)} branch files...")
     
     for file in files:
@@ -134,61 +134,13 @@ def main():
             cuotas = sales_cuotas.get(int(sale_id), [])
             if not cuotas:
                 continue
-                
-            # Descartar planes ya finalizados (donde no queden cuotas normales pendientes de pago)
-            tiene_cuotas_pendientes = any(
-                c['status'] != 'Pagado'
-                for c in cuotas
-                if c['cuota'] not in ['Cuota 0', 'Cuota 1']
-            )
-            if not tiene_cuotas_pendientes:
-                continue
-                
-            # Verificar si la venta está al día
-            al_dia = True
+
             cuotas_dict = {c['cuota']: c for c in cuotas}
-            
-            for c in cuotas:
-                status = c['status']
-                
-                if status == 'Vencido' or status == 'Atrasado':
-                    al_dia = False
-                    break
-                    
-                if status == 'Pagado':
-                    continue
-                    
-                due_date = c['due_date']
-                if pd.isna(due_date):
-                    continue
-                    
-                if due_date < now_dt:
-                    cuota_name = c['cuota']
-                    if cuota_name in ['Cuota 0', 'Cuota 1']:
-                        try:
-                            num = int(re.search(r'\d+', cuota_name).group())
-                        except:
-                            num = -1
-                            
-                        has_posterior_pagada = False
-                        for name, cu_obj in cuotas_dict.items():
-                            try:
-                                cu_num = int(re.search(r'\d+', name).group())
-                                if cu_num > num and cu_obj['status'] == 'Pagado':
-                                    has_posterior_pagada = True
-                                    break
-                            except:
-                                continue
-                                
-                        if has_posterior_pagada:
-                            continue
-                            
-                    al_dia = False
-                    break
-                    
-            # Check if suspended rule (3 or more vencidos)
-            # Actually, in Excel, if a cuota is overdue it might already be marked Vencido or Atrasado.
-            # Let's count how many cuotas are overdue.
+
+            # Contar cuotas impagas/vencidas de esta venta. No se descartan planes
+            # ya finalizados: si una venta está totalmente pagada, cont_atrasados
+            # queda en 0 (no moroso), lo cual también sirve para descalificar
+            # cualquier número de orden que comparta con un cliente moroso.
             cont_atrasados = 0
             for c in cuotas:
                 status = c['status']
@@ -218,54 +170,51 @@ def main():
                         is_venc = True
                 if is_venc:
                     cont_atrasados += 1
-                    
-            if cont_atrasados >= 3:
-                al_dia = False
-                
-            if not al_dia:
-                continue
-                
-            # If eligible, record details of each contract in this sale
+
+            # Moroso = tiene más de 3 cuotas impagas/vencidas
+            moroso = cont_atrasados > 3
+
+            # Registrar cada contrato de esta venta, y la morosidad de su nro_orden
             for idx, row in group.iterrows():
                 nro_orden = row[res_orden_col]
                 nombre = str(row[res_nombre_col]).strip() if res_nombre_col and pd.notna(row[res_nombre_col]) else 'N/A'
                 dni = str(row[res_dni_col]).strip() if res_dni_col and pd.notna(row[res_dni_col]) else 'N/A'
-                
+
                 try:
                     if isinstance(dni, (int, float)) or (isinstance(dni, str) and dni.strip().replace('.0', '').isdigit()):
                         dni = str(int(float(dni)))
                 except:
                     pass
-                    
+
                 try:
                     nro_orden_int = int(float(nro_orden))
-                    all_eligible.append({
-                        'id_venta': int(sale_id),
-                        'nro_orden': nro_orden_int,
-                        'nombre': nombre,
-                        'dni': dni,
-                        'sucursal': branch_name
-                    })
-                    order_counts[nro_orden_int] = order_counts.get(nro_orden_int, 0) + 1
                 except:
-                    pass
-                    
-    # Filter by frequency < 3 (1 or 2)
-    final_eligible = []
-    allowed_numbers = []
-    
-    for item in all_eligible:
-        freq = order_counts[item['nro_orden']]
-        if freq < 3:
-            final_eligible.append(item)
-            if item['nro_orden'] not in allowed_numbers:
-                allowed_numbers.append(item['nro_orden'])
-                
-    allowed_numbers.sort()
-    
-    print(f"\nFound {len(final_eligible)} eligible contracts corresponding to {len(allowed_numbers)} unique order numbers.")
+                    continue
+
+                all_contracts.append({
+                    'id_venta': int(sale_id),
+                    'nro_orden': nro_orden_int,
+                    'nombre': nombre,
+                    'dni': dni,
+                    'sucursal': branch_name,
+                    'cont_atrasados': cont_atrasados,
+                    'moroso': moroso
+                })
+                order_morosidad.setdefault(nro_orden_int, []).append(moroso)
+
+    # Un número de orden solo es elegible si TODOS los clientes/contratos que lo
+    # comparten son morosos (más de 3 cuotas impagas). Si uno solo está al día,
+    # el número queda excluido del sorteo.
+    allowed_numbers = sorted(
+        nro for nro, morosos in order_morosidad.items()
+        if morosos and all(morosos)
+    )
+
+    final_eligible = [c for c in all_contracts if c['nro_orden'] in allowed_numbers]
+
+    print(f"\nFound {len(final_eligible)} contratos morosos correspondientes a {len(allowed_numbers)} números de orden (sin ningún cliente al día).")
     print("Allowed order numbers:", allowed_numbers)
-    
+
     # Save results to CSV
     df_out = pd.DataFrame(final_eligible)
     df_out.to_csv("C:/Users/Administrador/Desktop/liquidaciones/liquidaciones/SISTEMAS/clientes_sorteo_sistemas.csv", index=False, encoding='utf-8-sig')
