@@ -3837,10 +3837,11 @@ class GenerarSorteoAPI(TestLogin, generic.View):
             return JsonResponse({"status": False, "message": "La cantidad debe estar entre 1 y 999."}, status=400)
 
         # Pool de números elegibles: se arma manualmente corriendo
-        # clenear/generar_sorteo/check_sorteo_sistemas.py contra los Excel de sucursales
-        # (carpeta SISTEMAS). Restringido únicamente al 123 por pedido explícito.
-        # Última actualización: 2026-08-19.
-        allowed_numbers = [123]
+        # clenear/generar_sorteo/check_sorteo_octubre_2026.py + analizar_sorteo_octubre_2026.py
+        # contra los Excel de sucursales (carpeta SISTEMAS). 323: todos sus clientes
+        # activos adeudan 2 o más cuotas (sorteo septiembre 2026).
+        # Última actualización: 2026-10-01.
+        allowed_numbers = [323]
         valid_pool = [num for num in allowed_numbers if min_val <= num <= max_val]
 
         # Si el rango elegido no contiene ningún número del pool, se ignora el rango
