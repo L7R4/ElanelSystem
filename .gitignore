@@ -165,3 +165,12 @@ elanelsystem/import_chaco_to_django*.py
 elanelsystem/import_calculate_and_generate_pdf.py
 elanelsystem/generate_report_*.py
 clenear/generar_sorteo/inspect_*.py
+
+# Scripts administrativos (uso interno, no hacen falta para el CRM)
+clenear/generar_sorteo/generar_excel_sorteo_*_2026.py
+elanelsystem/sales/management/commands/corregir_clientes_posadas.py
+elanelsystem/sales/management/commands/limpiar_ventas_duplicadas_posadas.py
+elanelsystem/sales/management/commands/cargar_pagos_faltantes_posadas.py
+elanelsystem/sales/management/commands/auditar_ventas_puntuales.py
+elanelsystem/products/management/commands/definir_productos_vigentes.py
+elanelsystem/products/data/
