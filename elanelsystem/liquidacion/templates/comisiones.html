@@ -25,6 +25,28 @@
     #exportarRecibosScriptButton:hover {
         background-color: #218838;
     }
+
+    #descargarReciboGerenteButton {
+        font-size: clamp(1rem, 1vw, 1.5rem);
+        height: fit-content;
+        font-family: raleway-semibold;
+        background-color: transparent;
+        color: #17a2b8;
+        outline: none;
+        padding: .8rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.6rem;
+        cursor: pointer;
+        text-decoration: none;
+        border: 1px solid #17a2b8;
+    }
+
+    #descargarReciboGerenteButton:hover {
+        background-color: #17a2b8;
+        color: white;
+    }
 </style>
 {% endblock css %}
 
@@ -134,6 +156,8 @@
             <div class="wrapperButtonsActions hidden" id="wrapperButtonsActions">
                 <a href="{% url 'liquidacion:exportar_recibos_python_script' %}"
                     id="exportarRecibosScriptButton">Exportar Resumen</a>
+                <a href="#" id="descargarReciboGerenteButton"
+                    target="_blank">Recibo Gerente</a>
                 <a href="{% url 'liquidacion:preViewPDFLiquidacion' %}" id="previsualizarButton"
                     target="_blank">Previsualizar</a>
                 <button type="button" id="liquidarButton" onclick="newModalLiquidacion()">Liquidar</button>
@@ -162,6 +186,39 @@
 <script src="{% static 'js/liquidation/ajuste_comision_liquidacion.js' %}"></script>
 <script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
 <script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const btnReciboGerente = document.getElementById("descargarReciboGerenteButton");
+        const inputSuc = document.getElementById("sucursalInput");
+        const inputCamp = document.getElementById("campaniaInput");
 
+        function actualizarLinkReciboGerente() {
+            const sucVal = inputSuc.value;
+            const campVal = inputCamp.value;
+            if (sucVal && campVal) {
+                btnReciboGerente.href = `/ventas/liquidaciones/comisiones/descargar-recibo-gerente/?sucursal=${sucVal}&campania=${encodeURIComponent(campVal)}`;
+            } else {
+                btnReciboGerente.href = "#";
+            }
+        }
 
+        // Usamos MutationObserver o eventos input para vigilar los inputs ocultos de Django que cambian de valor
+        const observerConfig = { attributes: true };
+        const callback = (mutationsList, observer) => {
+            actualizarLinkReciboGerente();
+        };
+
+        const observerSuc = new MutationObserver(callback);
+        const observerCamp = new MutationObserver(callback);
+
+        if (inputSuc) observerSuc.observe(inputSuc, observerConfig);
+        if (inputCamp) observerCamp.observe(inputCamp, observerConfig);
+
+        // También escuchar eventos de cambio normales por si acaso
+        if (inputSuc) inputSuc.addEventListener("change", actualizarLinkReciboGerente);
+        if (inputCamp) inputCamp.addEventListener("change", actualizarLinkReciboGerente);
+        if (inputSuc) inputSuc.addEventListener("input", actualizarLinkReciboGerente);
+        if (inputCamp) inputCamp.addEventListener("input", actualizarLinkReciboGerente);
+    });
+</script>
 {% endblock js %}

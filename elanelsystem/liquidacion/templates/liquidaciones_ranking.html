@@ -21,9 +21,9 @@
                 <label>Sucursal</label>
                 <div class="containerInputAndOptions">
                     <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                    <input type="hidden" name="agencia" id="inputSucursal" value="{{defaultSucursal.pseudonimo}}">
+                    <input type="hidden" name="agencia" id="inputSucursal" value="{{selectedSucursal}}">
                     <div class="onlySelect pseudo-input-select-wrapper">
-                        <h3>{{defaultSucursal.pseudonimo}}</h3>
+                        <h3>{{selectedSucursal}}</h3>
                     </div>
                     <ul class="list-select-custom options">
                         {% for sucursal in sucursales %}
@@ -37,9 +37,9 @@
                 <label>Campaña</label>
                 <div class="containerInputAndOptions">
                     <img class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                    <input type="hidden" name="campania" id="inputCampania" value="{{defaultCampania}}">
+                    <input type="hidden" name="campania" id="inputCampania" value="{{selectedCampania}}">
                     <div class="onlySelect pseudo-input-select-wrapper">
-                        <h3>{{defaultCampania}}</h3>
+                        <h3>{{selectedCampania}}</h3>
                     </div>
                     <ul class="list-select-custom options">
                         {% for campania in campaniasDisponibles %}

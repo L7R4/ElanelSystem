@@ -179,7 +179,7 @@ def recalcular_liquidacion_data(request, campania, sucursal_id, tipo_colaborador
     colaboradores_list = []
 
     for item in colaboradores:
-        if item.rango in ["Admin","Administrativa","Administrativo"] or item.is_superuser:
+        if item.rango not in ["Gerente sucursal", "Gerente de sucursal", "Supervisor", "Vendedor"] or item.is_superuser:
             continue
 
         # Leer ajustes activos desde DB
@@ -555,6 +555,8 @@ class LiquidacionesRanking(TestLogin,generic.View):
         
         context["defaultSucursal"] = defaultSucursal
         context["defaultCampania"] = defaultCampania
+        context["selectedSucursal"] = sucursal
+        context["selectedCampania"] = campania
         context["defaultOrder"] = "Cantidad de ventas"
         context["sucursales"] = Sucursal.objects.all()
         context["campaniasDisponibles"] = getTodasCampaniasDesdeInicio()
@@ -571,7 +573,7 @@ class LiquidacionesRanking(TestLogin,generic.View):
             ventasPropias = resVentasPropias["cant_ventas"]
             productividadPropia = calcular_productividad_ventasPropias(ventas_propias_qs)
             
-            cuotas1Adelantadas = get_detalle_cuotas1(ventas_propias_qs, sucursalObject.id)
+            cuotas1Adelantadas = get_detalle_cuotas1(usuario, campania, sucursalObject.id)
             vendedores.append({
                 'email_usuario':usuario.email,
                 'nombre_usuario':usuario.nombre,
@@ -761,16 +763,33 @@ class DetallesComisionesView(generic.View):
 
     def get(self, request, tipo_slug):
         # Obtén los datos del modelo basado en el slug
-        sucursal = request.GET.get("agencia") if request.GET.get("agencia") else str(Sucursal.objects.first().id)
-        campania = request.GET.get("campania") if request.GET.get("campania") else ""
+        defaultSucursal = Sucursal.objects.filter(pseudonimo="Resistencia, Chaco").first() or Sucursal.objects.first()
+        
+        # Calcular campaña de hace 1 mes
+        from dateutil.relativedelta import relativedelta
+        import datetime
+        from sales.utils import getCampaniaByFecha
+        fecha_hace_un_mes = datetime.datetime.now() - relativedelta(months=1)
+        defaultCampania = getCampaniaByFecha(fecha_hace_un_mes)
+
+        sucursal_param = request.GET.get("agencia") if request.GET.get("agencia") else str(defaultSucursal.id)
+        campania = request.GET.get("campania") if request.GET.get("campania") else defaultCampania
+
+        if sucursal_param.isdigit():
+            sucursal_obj = Sucursal.objects.filter(id=int(sucursal_param)).first()
+        else:
+            sucursal_obj = Sucursal.objects.filter(pseudonimo=sucursal_param).first()
+
+        if not sucursal_obj:
+            sucursal_obj = defaultSucursal
 
         print(request)
-        MODELOS = {
-            'cuotas_1': dataStructureCannons(sucursal),
-            'ventas': dataStructureVentas(sucursal),
-        }
-
-        datos = MODELOS.get(tipo_slug)
+        if tipo_slug == 'cuotas_1':
+            datos = dataStructureCannons(sucursal_obj.pseudonimo, campania)
+        elif tipo_slug == 'ventas':
+            datos = dataStructureVentas(sucursal_obj.pseudonimo, campania)
+        else:
+            datos = []
 
         # Definir atributos a mostrar según el modelo
         datos = filterDataBy_campania(datos,campania) if campania != "" else datos
@@ -845,8 +864,9 @@ class DetallesComisionesView(generic.View):
                 'tipo': tipo_slug,
                 'data': data_paginated,
                 'sucursales': Sucursal.objects.all(),
-                "campanias": getTodasCampaniasDesdeInicio()
-                # 'sucursalDefault': Sucursal.objects.first()
+                "campanias": getTodasCampaniasDesdeInicio(),
+                'selectedSucursal': sucursal_obj,
+                'selectedCampania': campania,
             }
         )
 
@@ -1036,4 +1056,64 @@ def exportar_recibos_python_script(request):
             
     except Exception as e:
         return JsonResponse({"status": False, "message": f"Error interno: {str(e)}"}, status=500)
+
+def descargarReciboGerente(request):
+    sucursal_id = request.GET.get("sucursal")
+    campania = request.GET.get("campania")
+    if not sucursal_id or not campania:
+        return HttpResponse("Faltan parámetros", status=400)
+    
+    try:
+        sucursalObject = Sucursal.objects.get(id=int(sucursal_id))
+    except Sucursal.DoesNotExist:
+        return HttpResponse("Sucursal no encontrada", status=404)
+
+    gerente = sucursalObject.gerente
+    if not gerente:
+        return HttpResponse(f"La sucursal {sucursalObject.pseudonimo} no tiene un gerente asignado.", status=404)
+
+    ajustes_usuario = list(
+        AjusteComision.objects
+        .filter(usuario_id=gerente.pk, campania=campania, agencia=sucursalObject, activo=True)
+        .order_by("creado_en")
+        .values("id", "ajuste_tipo", "dinero", "observaciones", "fecha_ajuste")
+    )
+    for a in ajustes_usuario:
+        a["user_id"] = str(gerente.pk)
+        a["agencia"]  = str(sucursalObject.id)
+        a["campania"] = campania
+        if a.get("fecha_ajuste"):
+            a["fecha_ajuste"] = str(a["fecha_ajuste"])
+
+    comision_data = get_comision_total(gerente, campania, sucursalObject, ajustes_usuario)
+
+    recibo_ctx = {
+        "tipo_colaborador": "Gerente sucursal",
+        "sucursal": sucursalObject.pseudonimo,
+        "fecha": datetime.date.today().strftime("%d-%m-%Y"),
+        "campania": campania,
+        "nombre": gerente.nombre,
+        "egreso_user": 1 if comision_data.get("egreso_en_campana") else 0,
+        "info_total_de_comision": comision_data
+    }
+
+    filename = f"Recibo - {gerente.nombre} - {campania}.pdf"
+    
+    urlPDF = os.path.join(settings.PDF_STORAGE_DIR, f"recibo_gerente_{gerente.pk}.pdf")
+    
+    printPDF({"data": [recibo_ctx]}, request.build_absolute_uri(), urlPDF, "pdfForLiquidacion.html", "static/css/pdfLiquidacion.css")
+    
+    if os.path.exists(urlPDF):
+        with open(urlPDF, 'rb') as pdf_file:
+            response = HttpResponse(pdf_file.read(), content_type="application/pdf")
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            
+            try:
+                os.remove(urlPDF)
+            except:
+                pass
+            return response
+    else:
+        return HttpResponse("Error al generar el PDF", status=500)
+
     

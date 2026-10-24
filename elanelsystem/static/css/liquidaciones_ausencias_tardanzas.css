@@ -57,7 +57,7 @@
 }
 
 .wrapperInputsSearchs #sucursalInput+ul.list-select-custom {
-    z-index: 6;
+    z-index: 506;
 }
 
 .wrapperInputsSearchs #rangoIconDisplay {
@@ -69,7 +69,7 @@
 }
 
 .wrapperInputsSearchs #rangoInput+ul.list-select-custom {
-    z-index: 3;
+    z-index: 503;
 }
 /*#endregion  */
 

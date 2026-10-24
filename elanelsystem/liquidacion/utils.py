@@ -258,12 +258,12 @@ def get_detalle_cuotas1(usuario, campania, agencia_id=None, config=None):
     }
 
 
-def comisiones_brutas_vendedor(usuario, campania, ventas, config=None):
+def comisiones_brutas_vendedor(usuario, campania, ventas, config=None, agencia_id=None):
     """
     Devuelve la comision bruta del vendedor.
     """
     comision_x_cantidad_ventas = get_detalle_comision_x_cantidad_ventasPropias(ventas, config)["comision"]
-    comision_x_cuotas1 = get_detalle_cuotas1(usuario, campania, config=config)["comision_total"]
+    comision_x_cuotas1 = get_detalle_cuotas1(usuario, campania, agencia_id, config=config)["comision_total"]
     comision_x_productividad = get_premio_x_productividad_ventasPropias(ventas, config)
 
     return {
@@ -569,6 +569,8 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania, config=None):
         suc_clean = suc_obj.pseudonimo.replace(" ", "").replace(",", "").lower()
 
         porcentage_x_cuota = porc_8 if suc_obj.pseudonimo in agencias_8_porc else porc_6
+        if gerente.nombre == "Gauna Octavio Alexis":
+            porcentage_x_cuota = 0.03
         premios_por_venta = 0
 
         pagos_0 = get_detalle_cuotas_02(value)
@@ -622,6 +624,8 @@ def get_detalle_sucursales_de_region2(gerente, agencia, campania, config=None):
             suc_clean = suc_obj.pseudonimo.replace(" ", "").replace(",", "").lower()
 
             porcentage_x_cuota = porc_subagencia
+            if gerente.nombre == "Gauna Octavio Alexis":
+                porcentage_x_cuota = 0.03
             premios_por_venta = 0
 
             pagos_0 = get_detalle_cuotas_02(value)
@@ -663,6 +667,9 @@ def comisiones_brutas_gerente(gerente, agencia, campania, config=None):
     total_premios = 0
     for r in detalle_region["detalleRegion"].values():
         total_premios += r["premios_por_venta"]
+
+    if gerente.nombre == "Gomez Ricardo Javier":
+        total_premios += 500000
 
     return {
         "comision_total": math.ceil(detalle_region["comision_total_cuotas"]) + math.ceil(total_premios),
@@ -775,8 +782,13 @@ def get_asegurado(usuario, campania_str, snapshot=None, config=None):
 
     rango = snapshot.rango.lower()
 
+    if rango == "vendedor":
+        return 0
+
     if rango == "gerente sucursal":
         # El sueldo asegurado de los gerentes es de 1000000, pero ahora el gerente de Posadas y Corrientes es de 1500000.
+        if usuario.nombre == "Gomez Ricardo Javier":
+            return 1000000
         if usuario.sucursales.filter(pseudonimo__in=["Posadas, Misiones", "Corrientes, Corrientes"]).exists():
             return 1500000
         return 1000000
@@ -855,13 +867,18 @@ def get_ausencias_tardanzas(usuario, campania, config=None):
 # Las funciones detalle_liquidado_ventasPropias, detalle_descuestos, etc.
 # ya usan las de arriba, pero revisemos si necesitan un math.ceil extra.
 
-def detalle_liquidado_ventasPropias(usuario, campania, config=None):
+def detalle_liquidado_ventasPropias(usuario, campania, config=None, agencia=None):
     """
     Al final sumas la subcomisión. Ya viene redondeada de get_detalle_comision_x_cantidad_ventasPropias
     y get_detalle_cuotas1.
+    Si se pasa agencia, solo se consideran las ventas de esa sucursal.
     """
     ventas_qs = Ventas.objects.filter(vendedor=usuario, campania=campania, is_commissionable=True)
-    comisiones_brutas_dict = comisiones_brutas_vendedor(usuario, campania, ventas_qs)
+    if agencia is not None:
+        ventas_qs = ventas_qs.filter(agencia=agencia)
+    comisiones_brutas_dict = comisiones_brutas_vendedor(
+        usuario, campania, ventas_qs, agencia_id=agencia.id if agencia is not None else None
+    )
     
         
     response ={
@@ -964,7 +981,7 @@ def detalle_liquidado_x_rol(usuario, campania, suc, snapshot=None, config=None):
     rango_lower = snapshot.rango.lower()
     print(f"\n\nRango de {usuario.nombre} -> {rango_lower}")
     if rango_lower == "supervisor":
-        ventas_qs = Ventas.objects.filter(supervisor=usuario, campania=campania, is_commissionable=True)
+        ventas_qs = Ventas.objects.filter(supervisor=usuario, campania=campania, agencia=suc, is_commissionable=True)
         comisiones_brutas_dict = comisiones_brutas_supervisor(ventas_qs, config)
         
         ventas_x_suc = defaultdict(list)
@@ -1090,7 +1107,7 @@ def get_comision_total(usuario, campania, agencia, ajustes_usuario=None, config=
     rango_lower = snap.rango.lower()
 
     # 1) Comisiones de ventas propias
-    ventas_propias_dict = detalle_liquidado_ventasPropias(usuario, campania, config)
+    ventas_propias_dict = detalle_liquidado_ventasPropias(usuario, campania, config, agencia)
     comision_bruta_vendedor = ventas_propias_dict["comision_total"]
 
     # 2) Descuentos

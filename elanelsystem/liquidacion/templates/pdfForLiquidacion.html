@@ -705,7 +705,7 @@
                                 Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
                                 {% endif %}
                             </div>
-                        {% elif recibo.tipo_colaborador == "Vendedor" %}
+                        {% elif recibo.tipo_colaborador == "Vendedor" or recibo.tipo_colaborador == "Administrativa" %}
                             <div class="detalle">
                                 <table>
                                     <thead>
@@ -1035,7 +1035,7 @@
                                 Con la firma de este recibo, el Proveedor reconoce haber recibido de ELANEL SERVICIOS SRL la suma expresada, correspondiente al período detallado, otorgando por este acto finiquito parcial de sus honorarios de dicho mes, sin perjuicio de sus derechos para futuros períodos.</p>
                                 {% endif %}
                             </div>
-                        {% elif recibo.tipo_colaborador == "Vendedor" %}
+                        {% elif recibo.tipo_colaborador == "Vendedor" or recibo.tipo_colaborador == "Administrativa" %}
                             <div class="detalle">
                                 <table>
                                     <thead>
