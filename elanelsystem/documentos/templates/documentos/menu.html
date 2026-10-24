@@ -1,0 +1,37 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/documentos.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock css %}
+
+{% block content %}
+<div class="documentos-dashboard-container">
+    <div class="modern-header">
+        <div class="header-icon-wrapper">
+            <i class="fa-solid fa-folder-open"></i>
+        </div>
+        <div class="header-text">
+            <span class="header-subtitle">ARCHIVOS</span>
+            <h1 class="header-title">Documentos</h1>
+            <span class="header-desc">Elegí qué tipo de archivo querés subir</span>
+        </div>
+    </div>
+
+    <div class="documentos-categorias-grid">
+        {% for valor, etiqueta in categorias %}
+        <a class="categoria-tile" href="{% url 'documentos:subir' valor %}">
+            <i class="fa-solid fa-file"></i>
+            <span>{{ etiqueta }}</span>
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="buttonsActions" style="margin-top:2rem;">
+        <a class="add-button-default" href="{% url 'documentos:listado' %}">
+            <i class="fa-solid fa-list"></i> Ver todos los documentos
+        </a>
+    </div>
+</div>
+{% endblock content %}

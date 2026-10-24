@@ -1,0 +1,44 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/documentos.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock css %}
+
+{% block content %}
+<div class="documentos-dashboard-container">
+    <div class="modern-header">
+        <div class="header-icon-wrapper">
+            <i class="fa-solid fa-upload"></i>
+        </div>
+        <div class="header-text">
+            <span class="header-subtitle">SUBIR ARCHIVO</span>
+            <h1 class="header-title">{{ categoria_label }}</h1>
+            <span class="header-desc">El archivo se va a guardar de forma privada en Supabase</span>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" class="subir-form-wrapper">
+        {% csrf_token %}
+        <label for="archivo_input">Archivo</label>
+        <input type="file" name="archivo" id="archivo_input" required>
+
+        <label for="descripcion_input">Descripción (opcional)</label>
+        <textarea name="descripcion" id="descripcion_input" rows="3" placeholder="Nota u observación sobre este archivo"></textarea>
+
+        <div class="buttonsActions">
+            <button class="add-button-default" type="submit">
+                <i class="fa-solid fa-upload"></i> Subir
+            </button>
+            <a class="button-default-style" href="{% url 'documentos:menu' %}">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock content %}

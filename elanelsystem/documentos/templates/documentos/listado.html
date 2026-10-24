@@ -1,0 +1,167 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/documentos.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock css %}
+
+{% block content %}
+<div class="documentos-dashboard-container">
+    <div class="modern-header">
+        <div class="header-icon-wrapper">
+            <i class="fa-solid fa-folder-open"></i>
+        </div>
+        <div class="header-text">
+            <span class="header-subtitle">ARCHIVOS</span>
+            <h1 class="header-title">Documentos subidos</h1>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <div class="documentos-toolbar">
+        <div class="documentos-filtros">
+            <a href="{% url 'documentos:listado' %}" class="{% if not categoria_activa %}active{% endif %}">Todas</a>
+            {% for valor, etiqueta in categorias %}
+            <a href="?categoria={{ valor }}" class="{% if categoria_activa == valor %}active{% endif %}">{{ etiqueta }}</a>
+            {% endfor %}
+        </div>
+
+        <div class="documentos-vista-switch" id="documentosVistaSwitch">
+            <button type="button" class="vista-btn" data-vista="lista" title="Lista">
+                <i class="fa-solid fa-list"></i>
+            </button>
+            <button type="button" class="vista-btn" data-vista="grande" title="Mosaico grande">
+                <i class="fa-solid fa-table-cells-large"></i>
+            </button>
+            <button type="button" class="vista-btn" data-vista="mediano" title="Mosaico mediano">
+                <i class="fa-solid fa-table-cells"></i>
+            </button>
+            <button type="button" class="vista-btn" data-vista="chico" title="Mosaico chico">
+                <i class="fa-solid fa-grip"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="documentosVista" class="documentos-vista" data-vista="mediano">
+
+        <div class="documentos-tabla-wrapper">
+            <table class="modern-table documentos-tabla">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th>Subido por</th>
+                        <th>Fecha</th>
+                        <th class="actions-th">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for documento in page_obj %}
+                    <tr class="documento-fila" data-url="{{ documento.archivo.url }}" data-previsualizable="{% if documento.es_previsualizable %}1{% else %}0{% endif %}" data-tipo="{% if documento.es_imagen %}imagen{% elif documento.es_pdf %}pdf{% endif %}">
+                        <td class="doc-fila-thumb"{% if documento.es_pdf %} data-pdf-url="{{ documento.archivo.url }}"{% endif %}>
+                            {% if documento.es_imagen %}
+                            <img src="{{ documento.archivo.url }}" alt="" loading="lazy">
+                            {% else %}
+                            <i class="fa-solid {{ documento.icono_fa }} doc-icon-{{ documento.icono_color }}"></i>
+                            {% endif %}
+                        </td>
+                        <td>{{ documento.nombre_original }}</td>
+                        <td>{{ documento.get_categoria_display }}</td>
+                        <td>{{ documento.descripcion }}</td>
+                        <td>{{ documento.subido_por }}</td>
+                        <td>{{ documento.fecha_subida|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <div class="documentos-acciones">
+                                <a class="doc-download-btn" href="{{ documento.archivo.url }}" target="_blank" rel="noopener" title="Descargar">
+                                    <i class="fa-solid fa-download"></i>
+                                </a>
+                                <form method="POST" action="{% url 'documentos:eliminar' documento.pk %}" onsubmit="return confirm('¿Eliminar este documento?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="doc-delete-btn" title="Eliminar">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7">Todavía no se subió ningún archivo en esta categoría.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="documentos-grid">
+            {% for documento in page_obj %}
+            <div class="doc-card" data-url="{{ documento.archivo.url }}" data-previsualizable="{% if documento.es_previsualizable %}1{% else %}0{% endif %}" data-tipo="{% if documento.es_imagen %}imagen{% elif documento.es_pdf %}pdf{% endif %}">
+                <div class="doc-card-thumb"{% if documento.es_pdf %} data-pdf-url="{{ documento.archivo.url }}"{% endif %}>
+                    {% if documento.es_imagen %}
+                    <img src="{{ documento.archivo.url }}" alt="" loading="lazy">
+                    {% else %}
+                    <i class="fa-solid {{ documento.icono_fa }} doc-icon-{{ documento.icono_color }}"></i>
+                    {% endif %}
+                </div>
+                <div class="doc-card-info">
+                    <span class="doc-card-nombre" title="{{ documento.nombre_original }}">{{ documento.nombre_original }}</span>
+                    <span class="doc-card-categoria">{{ documento.get_categoria_display }}</span>
+                </div>
+                <div class="documentos-acciones">
+                    <a class="doc-download-btn" href="{{ documento.archivo.url }}" target="_blank" rel="noopener" title="Descargar" onclick="event.stopPropagation();">
+                        <i class="fa-solid fa-download"></i>
+                    </a>
+                    <form method="POST" action="{% url 'documentos:eliminar' documento.pk %}" onsubmit="event.stopPropagation(); return confirm('¿Eliminar este documento?');" onclick="event.stopPropagation();">
+                        {% csrf_token %}
+                        <button type="submit" class="doc-delete-btn" title="Eliminar">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <p class="documentos-vacio">Todavía no se subió ningún archivo en esta categoría.</p>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="buttonsActions">
+        {% if page_obj.has_previous %}
+        <a class="button-default-style" href="?page={{ page_obj.previous_page_number }}{% if categoria_activa %}&categoria={{ categoria_activa }}{% endif %}">Anterior</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <a class="button-default-style" href="?page={{ page_obj.next_page_number }}{% if categoria_activa %}&categoria={{ categoria_activa }}{% endif %}">Siguiente</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="buttonsActions">
+        <a class="add-button-default" href="{% url 'documentos:menu' %}">
+            <i class="fa-solid fa-plus"></i> Subir otro archivo
+        </a>
+    </div>
+</div>
+
+<div id="documentoPreviewModal" class="documento-preview-modal">
+    <div class="documento-preview-backdrop"></div>
+    <div class="documento-preview-content">
+        <button type="button" class="documento-preview-close" id="documentoPreviewClose">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div id="documentoPreviewBody"></div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="{% static 'js/documentos/vista_documentos.js' %}"></script>
+{% endblock js %}

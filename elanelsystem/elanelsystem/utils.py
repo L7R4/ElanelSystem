@@ -298,7 +298,7 @@ def get_subAgencias_por_provincia(agencia):
         "concordia,entrerios":[],
         "santiagodelestero,santiagodelestero":[],
         "formosa,formosa":[],
-        "posadas,misiones":[]
+        "posadas,misiones":["Obera, Misiones"]
         }
         
     return sucursales.get(agencia_clean, [])

@@ -30,6 +30,7 @@ urlpatterns = [
     path("",include("users.urls", namespace="users")),
     path("",include("products.urls", namespace="products")),
     path("",include("liquidacion.urls", namespace="liquidacion")),
+    path("",include("documentos.urls", namespace="documentos")),
 
     # Path para manejo de filtros
     # path("data/filter/",filterManage, name="filterManage"),
@@ -43,3 +44,5 @@ urlpatterns = [
     
     #endregion --------------------------------------
 ]+ static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
+
+handler403 = 'elanelsystem.views.handler403'

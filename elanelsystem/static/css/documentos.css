@@ -1,0 +1,487 @@
+/* ==========================================================================
+   DOCUMENTOS (FILE MANAGER) STYLES
+   ========================================================================== */
+
+.documentos-dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    font-family: 'Raleway', sans-serif;
+    color: var(--white-color-800);
+}
+
+/* Header (misma estética que panel_planes.css) */
+.modern-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(24, 31, 46, 0.85), rgba(32, 43, 68, 0.85));
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.header-icon-wrapper {
+    font-size: 2.4rem;
+    color: var(--blue-accent-color);
+    background: rgba(6, 137, 250, 0.12);
+    width: 5.5rem;
+    height: 5.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid rgba(6, 137, 250, 0.25);
+    box-shadow: 0 0 15px rgba(6, 137, 250, 0.15);
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.header-subtitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--blue-accent-color);
+    text-transform: uppercase;
+}
+
+.header-title {
+    font-size: clamp(2rem, 2vw, 3rem);
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+.header-desc {
+    font-size: 1.25rem;
+    color: var(--white-800-80);
+    margin-top: 0.2rem;
+}
+
+/* Grilla de categorias */
+.documentos-categorias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.25rem;
+}
+
+.categoria-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2.5rem 1rem;
+    border-radius: 14px;
+    background: rgba(24, 31, 46, 0.7);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    text-decoration: none;
+    color: var(--white-color-800);
+    font-family: 'Raleway-SemiBold', sans-serif;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.categoria-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    border-color: var(--blue-accent-color);
+}
+
+.categoria-tile i {
+    font-size: 2rem;
+    color: var(--blue-accent-color);
+}
+
+.categoria-tile span {
+    text-align: center;
+    font-size: 1.3rem;
+}
+
+/* Toolbar: filtros + selector de vista */
+.documentos-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.documentos-vista-switch {
+    display: flex;
+    gap: 0.4rem;
+    background: rgba(24, 31, 46, 0.7);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 0.8rem;
+    padding: 0.35rem;
+}
+
+.vista-btn {
+    width: 3.2rem;
+    height: 3.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 0.6rem;
+    background: transparent;
+    color: var(--white-800-50);
+    cursor: pointer;
+    font-size: 1.4rem;
+    transition: all 0.15s;
+}
+
+.vista-btn:hover {
+    color: var(--white-color-800);
+    background: rgba(250, 248, 255, 0.06);
+}
+
+.vista-btn.active {
+    background: var(--blue-accent-color);
+    color: var(--third-color);
+}
+
+/* Filtros de categoria en el listado */
+.documentos-filtros {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.documentos-filtros a {
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(250, 248, 255, 0.15);
+    text-decoration: none;
+    color: var(--white-800-80);
+    font-size: 1.2rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+}
+
+.documentos-filtros a.active {
+    background: var(--blue-accent-color);
+    border-color: var(--blue-accent-color);
+    color: var(--third-color);
+}
+
+/* Formulario de subida */
+.subir-form-wrapper {
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: rgba(24, 31, 46, 0.7);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 16px;
+    padding: 2rem;
+}
+
+.subir-form-wrapper label {
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--white-800-80);
+    font-size: 1.2rem;
+}
+
+.subir-form-wrapper input[type="file"],
+.subir-form-wrapper textarea {
+    padding: 0.8rem;
+    border-radius: 0.6rem;
+    border: 1px solid var(--blue-3);
+    background-color: var(--blue-2);
+    color: var(--white-color-800);
+    font-family: raleway;
+    resize: vertical;
+}
+
+/* Tabla (misma estetica que .modern-table de panel_planes.css) */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.modern-table thead th {
+    background: rgba(32, 43, 68, 0.6);
+    color: var(--third-color);
+    font-family: 'Raleway-SemiBold', sans-serif;
+    font-size: 1.2rem;
+    padding: 1.2rem;
+    border-bottom: 2px solid rgba(250, 248, 255, 0.08);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.modern-table tbody tr {
+    background: rgba(24, 31, 46, 0.3);
+    transition: background 0.2s;
+}
+
+.modern-table tbody tr:hover {
+    background: rgba(32, 43, 68, 0.45);
+}
+
+.modern-table tbody td {
+    padding: 1.2rem;
+    font-size: 1.25rem;
+    color: var(--white-800-80);
+    border-bottom: 1px solid rgba(250, 248, 255, 0.04);
+}
+
+.documentos-acciones {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.documentos-acciones a,
+.documentos-acciones button {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+}
+
+.doc-download-btn {
+    background-color: rgba(6, 137, 250, 0.12);
+    border: 1px solid rgba(6, 137, 250, 0.25) !important;
+    color: var(--blue-accent-color);
+}
+
+.doc-delete-btn {
+    background-color: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.25) !important;
+    color: var(--danger-color);
+}
+
+.buttonsActions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   SELECTOR DE VISTA: lista / mosaico grande / mediano / chico
+   ========================================================================== */
+
+.documentos-tabla-wrapper { display: none; }
+.documentos-grid { display: none; }
+
+.documentos-vista[data-vista="lista"] .documentos-tabla-wrapper { display: block; }
+.documentos-vista[data-vista="grande"] .documentos-grid,
+.documentos-vista[data-vista="mediano"] .documentos-grid,
+.documentos-vista[data-vista="chico"] .documentos-grid {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.documentos-vista[data-vista="grande"] .documentos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+.documentos-vista[data-vista="mediano"] .documentos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+}
+.documentos-vista[data-vista="chico"] .documentos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    gap: 0.75rem;
+}
+
+.doc-card {
+    display: flex;
+    flex-direction: column;
+    background: rgba(24, 31, 46, 0.7);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.doc-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    border-color: var(--blue-accent-color);
+}
+
+.doc-card-thumb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(32, 43, 68, 0.5);
+    overflow: hidden;
+}
+
+.documentos-vista[data-vista="grande"] .doc-card-thumb { height: 150px; }
+.documentos-vista[data-vista="mediano"] .doc-card-thumb { height: 105px; }
+.documentos-vista[data-vista="chico"] .doc-card-thumb { height: 70px; }
+
+.doc-card-thumb img,
+.doc-card-thumb canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+}
+
+.doc-card-thumb i {
+    font-size: 2.6rem;
+}
+
+.documentos-vista[data-vista="chico"] .doc-card-thumb i { font-size: 1.6rem; }
+
+.doc-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.75rem;
+}
+
+.doc-card-nombre {
+    font-size: 1.15rem;
+    color: var(--white-color-800);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.doc-card-categoria {
+    font-size: 1rem;
+    color: var(--white-800-50);
+}
+
+.documentos-vista[data-vista="chico"] .doc-card-categoria { display: none; }
+
+.doc-card .documentos-acciones {
+    padding: 0 0.75rem 0.75rem;
+}
+
+.documentos-vista[data-vista="chico"] .doc-card-info,
+.documentos-vista[data-vista="chico"] .doc-card .documentos-acciones {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.documentos-vacio {
+    grid-column: 1 / -1;
+    color: var(--white-800-50);
+    padding: 2rem;
+    text-align: center;
+}
+
+/* Miniatura en la fila de la tabla (vista lista) */
+.doc-fila-thumb {
+    width: 4.5rem;
+}
+
+.doc-fila-thumb img,
+.doc-fila-thumb canvas {
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 0.5rem;
+}
+
+.doc-fila-thumb i {
+    font-size: 1.8rem;
+}
+
+.documento-fila {
+    cursor: pointer;
+}
+
+/* Colores por tipo de icono */
+.doc-icon-pdf { color: #e74c3c; }
+.doc-icon-word { color: #2d74b4; }
+.doc-icon-excel { color: #27ae60; }
+.doc-icon-ppt { color: #e67e22; }
+.doc-icon-imagen { color: var(--blue-accent-color); }
+.doc-icon-otro { color: var(--white-800-50); }
+
+/* ==========================================================================
+   MODAL DE PREVISUALIZACION
+   ========================================================================== */
+
+.documento-preview-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.documento-preview-modal.open {
+    display: flex;
+}
+
+.documento-preview-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.documento-preview-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    background: var(--blue-1);
+    border-radius: 12px;
+    border: 1px solid rgba(250, 248, 255, 0.1);
+    padding: 1rem;
+    display: flex;
+}
+
+.documento-preview-close {
+    position: absolute;
+    top: -1.2rem;
+    right: -1.2rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 1px solid rgba(250, 248, 255, 0.15);
+    background: var(--blue-2);
+    color: var(--white-color-800);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    z-index: 1;
+}
+
+#documentoPreviewBody {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 88vw;
+    max-height: 88vh;
+}
+
+#documentoPreviewBody img {
+    max-width: 88vw;
+    max-height: 88vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+#documentoPreviewBody iframe {
+    width: 80vw;
+    height: 85vh;
+    border: none;
+    border-radius: 8px;
+    background: #fff;
+}

@@ -1,7 +1,7 @@
 from .base import *
 
 # —— Producción —— 
-DEBUG = True
+DEBUG = env.bool('DEBUG', False)
 
 CSRF_TRUSTED_ORIGINS = [
     "https://elanelsys.com",
@@ -12,8 +12,8 @@ CSRF_TRUSTED_ORIGINS = [
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True  # opcional pero suele ayudar detrás de proxy
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
 
 CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SAMESITE = "Lax"

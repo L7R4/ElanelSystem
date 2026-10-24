@@ -44,8 +44,8 @@ def redireccionar_por_permisos(usuario):
         # "Exportar datos": {"permisos": ["sales.my_ver_reportes"], "url": reverse("detallesNegocio")}, #Mover a a la vista de "Configuracion"
         "Auditorías": {"permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList")},
         "Colaboradores": {"permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users")},
-        "Liquidaciones": {"permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
-        "Configuración": {"permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin")},
+        "Liquidaciones": {"permisos": ["liquidacion.my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel")},
+        "Configuración": {"permisos": ["users.my_ver_administracion"], "url": reverse("users:panelAdmin")},
     }
 
     # allPermissions = [perm for perm in Permission.objects.all() if perm.codename.startswith('my_')]
@@ -339,4 +339,8 @@ def filterDataBy_postVenta(dataStructure, grade):
     return list(filter(lambda item:item["auditoria"][-1] == grade,dataStructure))
 
 #endregion --------------------------------------------------------------------------------
+
+
+def handler403(request, exception=None):
+    return render(request, '403.html', status=403)
 
