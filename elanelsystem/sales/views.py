@@ -17,7 +17,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction,connection
 
 from sales.services.dolar import get_dolar_blue_y_oficial_async
-from sales.services.arqueo import BILLETES, compute_saldo_diario_caja, get_allowed_agencias, today_fragment_ddmmyyyy, validate_agencia_allowed
+from sales.services.arqueo import BILLETES, compute_saldo_diario_caja, get_allowed_agencias, get_diario_caja, today_fragment_ddmmyyyy, validate_agencia_allowed
 from sales.services.caja_query import _format_money, _get_allowed_agencia_ids, _normalize_fecha_fragment, _parse_int, _parse_int_list, _row_from_externo, _row_from_pago
 from sales.exports.arqueo import export_arqueo_pdf
 
@@ -1304,6 +1304,7 @@ def importVentas(request):
                                     responsable_pago = None,
                                     fecha = pago_data['fecha'],
                                     campana_de_pago = pago_data['campaniaPago'],
+                                    sucursal_cobro = venta.agencia,
                                 )
                             )
                 
@@ -3557,6 +3558,21 @@ class ArqueoSaldoAPI(TestLogin, generic.View):
         )
 
 
+# Endpoint AJAX: diario de caja (todos los movimientos del día) de la agencia seleccionada
+class DiarioCajaAPI(TestLogin, generic.View):
+    def get(self, request, *args, **kwargs):
+        try:
+            agencia_id_int = int(request.GET.get("agencia_id") or "")
+        except Exception:
+            return JsonResponse({"success": False, "error": "Agencia inválida."}, status=400)
+
+        sucursal = validate_agencia_allowed(request, agencia_id_int)
+        if not sucursal:
+            return JsonResponse({"success": False, "error": "Sin permisos."}, status=403)
+
+        diario = get_diario_caja(sucursal.id, request.GET.get("fecha") or today_fragment_ddmmyyyy())
+        return JsonResponse({"success": True, **diario})
+
 
 @require_GET
 @login_required
@@ -3591,7 +3607,7 @@ def movs_pagos_list_api(request):
             "cobrador",
             "responsable_pago",
         )
-        .filter(venta__agencia__id__in=agencia_ids)
+        .filter(sucursal_cobro__id__in=agencia_ids)
     )
 
     externos_qs = (
@@ -3785,8 +3801,8 @@ def movs_pagos_detail_api(request, kind: str, pk: int):
             ),
             pk=pk,
         )
-        agencia_id = getattr(getattr(getattr(obj, "venta", None), "agencia", None), "id", None)
-        if agencia_id not in allowed_agencias and not getattr(request.user, "is_superuser", False):
+        agencias_pago = {obj.sucursal_cobro_id, getattr(getattr(obj, "venta", None), "agencia_id", None)}
+        if not (agencias_pago & allowed_agencias) and not getattr(request.user, "is_superuser", False):
             return JsonResponse({"detail": "No autorizado"}, status=403)
 
         venta = obj.venta

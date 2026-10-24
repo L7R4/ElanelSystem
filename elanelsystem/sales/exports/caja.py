@@ -36,7 +36,7 @@ def iter_caja_rows_base(pagos_qs, externos_qs) -> Iterable[Dict[str, object]]:
         pagos_qs.values(
             "id", "fecha_key", "fecha", "nro_cuota", "nro_recibo", "monto",
             "venta__nro_cliente__nombre",
-            "venta__agencia__pseudonimo",
+            "sucursal_cobro__pseudonimo",
             "metodo_pago__alias",
             "cobrador__alias",
         )
@@ -91,7 +91,7 @@ def iter_caja_rows_base(pagos_qs, externos_qs) -> Iterable[Dict[str, object]]:
                 "ingreso": _format_money(p.get("monto") or 0),
                 "egreso": "-",
                 "metodo": p.get("metodo_pago__alias") or "-",
-                "tipo_caja": p.get("venta__agencia__pseudonimo") or "-",
+                "tipo_caja": p.get("sucursal_cobro__pseudonimo") or "-",
                 "ente": p.get("cobrador__alias") or "-",
                 "comprobante": nro_recibo or "-",
             }

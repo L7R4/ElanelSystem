@@ -251,7 +251,7 @@ def _movs_pagos_filtered_qs(request):
             "cobrador",
             "responsable_pago",
         )
-        .filter(venta__agencia__id__in=agencia_ids)
+        .filter(sucursal_cobro__id__in=agencia_ids)
     )
 
     base_externos = (

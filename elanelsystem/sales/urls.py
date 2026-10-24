@@ -62,6 +62,7 @@ urlpatterns = [
     path("arqueo/", CierreCaja.as_view(), name="arqueo"),
     path("arqueo/old/", OldArqueosView.as_view(), name="oldArqueos"),
     path("arqueo/saldo/", ArqueoSaldoAPI.as_view(), name="arqueoSaldo"),
+    path("arqueo/diario/", DiarioCajaAPI.as_view(), name="diarioCaja"),
 
     path("ventas/movs_pagos/", movs_pagos_list_api, name="movs_pagos_list"),
     path("ventas/movs_pagos/<str:kind>/<int:pk>/", movs_pagos_detail_api, name="movs_pagos_detail"),

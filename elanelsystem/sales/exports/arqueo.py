@@ -11,6 +11,7 @@ from elanelsystem.services.exports_pdfs import ColumnSpec, ExportSpec, export_re
 from sales.models import ArqueoCaja, PagoCannon, MovimientoExterno
 from sales.views import _format_money
 from sales.services.caja_query import _build_resumen_metodos
+from sales.services.arqueo import movs_del_dia_qs
 
 
 # ---------------------------
@@ -169,25 +170,8 @@ def _iter_caja_rows(pagos_qs, externos_qs) -> Iterable[Dict[str, object]]:
 # ---------------------------
 
 def _qs_movs_del_dia(agencia_id: int, fecha_fragment_ddmmyyyy: str):
-    pagos_qs = (
-        PagoCannon.objects.select_related(
-            "venta", "venta__nro_cliente", "venta__agencia", "metodo_pago", "cobrador"
-        )
-        .filter(
-            venta__agencia_id=agencia_id,
-            fecha__icontains=fecha_fragment_ddmmyyyy,
-        )
-    )
-
-    externos_qs = (
-        MovimientoExterno.objects.select_related("metodoPago", "agencia", "ente")
-        .filter(
-            agencia_id=agencia_id,
-            fecha__icontains=fecha_fragment_ddmmyyyy,
-        )
-    )
-
-    return pagos_qs, externos_qs
+    # Mismos movimientos que el diario de caja (pagos por sucursal de cobro)
+    return movs_del_dia_qs(agencia_id, fecha_fragment_ddmmyyyy)
 
 
 # ---------------------------

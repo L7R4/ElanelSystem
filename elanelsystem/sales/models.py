@@ -578,10 +578,11 @@ class Ventas(models.Model):
         self.testVencimientoCuotas()
         self.suspenderOperacion()
     
-    def pagarCuota(self,nro_cuota,monto,metodoPago,cobrador,responsable_pago,moneda="ARS",tipo_cambio=1.0):
+    def pagarCuota(self,nro_cuota,monto,metodoPago,cobrador,responsable_pago,moneda="ARS",tipo_cambio=1.0,sucursal_cobro=None):
         # `monto` siempre va en ARS (es lo que cuenta contra el total de la cuota). Si el cliente pagó
         # en USD, `moneda`="USD" y `tipo_cambio` quedan registrados en el pago para poder mostrar
         # cuántos dólares fueron (monto / tipo_cambio) en el detalle y en el recibo.
+        # `sucursal_cobro` es la sucursal en cuyo diario de caja entra el pago; si no se indica, la de la venta.
         # 1) Obtener el dict de esa cuota en self.cuotas
         cuota_label = f"Cuota {nro_cuota}"
         cuota = next((c for c in self.cuotas if c["cuota"] == cuota_label), None)
@@ -604,6 +605,7 @@ class Ventas(models.Model):
                 metodo_pago      = MetodoPago.objects.filter(id=int(metodoPago)).first() if metodoPago else None,
                 cobrador         = CuentaCobranza.objects.filter(id=int(cobrador)).first() if cobrador else None,
                 responsable_pago = responsable_pago,
+                sucursal_cobro   = sucursal_cobro or self.agencia,
             )
             
             pago.save() 
@@ -1026,6 +1028,15 @@ class PagoCannon(models.Model):
         help_text="Usuario interno responsable de la carga."
     )
 
+    sucursal_cobro = models.ForeignKey(
+        Sucursal,
+        on_delete=models.SET_NULL,
+        related_name='pagos_cobrados',
+        null=True,
+        blank=True,
+        help_text="Sucursal donde se cobró el pago (entra en su diario de caja). Por defecto, la de la venta."
+    )
+
     history = HistoricalRecords()
 
     class Meta:
@@ -1081,6 +1092,9 @@ class PagoCannon(models.Model):
         # si no vino explícito, lo genero aquí
         if not self.campana_de_pago:
             self.campana_de_pago = obtenerCampaña_atraves_fecha((self.fecha or "")[:10])
+
+        if self.sucursal_cobro_id is None:
+            self.sucursal_cobro_id = self.venta.agencia_id
 
 
         # PostgreSQL tiene un objeto nativo para esto: las sequences. Básicamente, un contador 
