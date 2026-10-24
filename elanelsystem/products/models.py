@@ -16,6 +16,15 @@ class Plan(models.Model):
     c48_porcentage = models.FloatField("Porcentaje de 48 c",default=0)
     c60_porcentage = models.FloatField("Porcentaje de 60 c",default=0)
     
+    @property
+    def tipodePlan(self):
+        if self.valor_nominal < 450000:
+            return "Base"
+        elif self.valor_nominal < 750000:
+            return "Estandar"
+        else:
+            return "Premium"
+
     def __str__(self):
         return f"Plan {self.valor_nominal}"
     

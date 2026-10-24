@@ -5,27 +5,32 @@ function actualizarPanel(producto) {
     const panel = document.getElementById(`panel-${typeHandle}`);
     const table = panel.querySelector("table > tbody ");
     let row;
+    let lowerPlan = (producto.plan || '').toLowerCase();
 
     if (typeHandle === 'solucion') {
         row = `
-            <tr>
+            <tr class="product-row">
                 <td class="valorProduct">$${producto.precio}</td>
-                <td class="paqueteProduct">${producto.plan}</td>
+                <td>
+                    <span class="badge-package ${lowerPlan}">${producto.plan}</span>
+                </td>
                 <td class="button_cell">
-                    <button class="buttonDeleteItem" type="button">   
-                        <img src="${iconDelete}" alt="">
+                    <button class="buttonDeleteItem" type="button" title="Eliminar producto">   
+                        <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </td>
             </tr>`;
     } else {
         row = `
-        <tr>
+        <tr class="product-row">
             <td class="nombreProduct">${producto.nombre}</td>
             <td class="valorProduct">$${producto.precio}</td>
-            <td class="paqueteProduct">${producto.plan}</td>
+            <td>
+                <span class="badge-package ${lowerPlan}">${producto.plan}</span>
+            </td>
             <td class="button_cell">
-                <button class="buttonDeleteItem" type="button">   
-                    <img src="${iconDelete}" alt="">
+                <button class="buttonDeleteItem" type="button" title="Eliminar producto">   
+                    <i class="fa-solid fa-trash-can"></i>
                 </button>
             </td>
         </tr>`;
@@ -221,26 +226,32 @@ filas.forEach(fila => {
 function mostrarModalConfirmacionParaEliminar(fila) {
     const modal = new tingle.modal({
         footer: true,
-        closeMethods: ['button', 'overlay'],
+        closeMethods: ['button', 'overlay', 'escape'],
         cssClass: ['modalConfirmacion'],
-
         onClose: function () {
             modal.destroy();
         },
     });
 
+    const nombreProducto = fila.querySelector("td.nombreProduct") ? fila.querySelector("td.nombreProduct").textContent : `${fila.querySelector("td.valorProduct").textContent}`;
+
     // Contenido del modal
-    modal.setContent("<h2>¿Estás seguro de que deseas eliminar este producto?</h2>");
+    modal.setContent(`
+        <div class="messageConfirmModal" style="text-align: center; padding: 1rem 0;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 4rem; color: #ef4444; margin-bottom: 1.5rem; display: block;"></i>
+            <h2>¿Eliminar Producto?</h2>
+            <p style="margin-top: 1rem; line-height: 1.5;">¿Estás seguro de que deseas eliminar el producto <strong>"${nombreProducto}"</strong>?<br>Esta acción no se puede deshacer.</p>
+        </div>
+    `);
 
     // Botón de confirmación
-    modal.addFooterBtn("Eliminar", "tingle-btn tingle-btn--danger", async function () {
-        // Aquí llamamos a la función de eliminación, pasando la fila correspondiente
+    modal.addFooterBtn("<i class='fa-solid fa-trash-can'></i> Eliminar", "tingle-btn tingle-btn--danger", async function () {
         eliminarProducto(fila);
         modal.close();
     });
 
     // Botón de cancelación
-    modal.addFooterBtn("Cancelar", "tingle-btn tingle-btn--default", function () {
+    modal.addFooterBtn("<i class='fa-solid fa-circle-xmark'></i> Cancelar", "tingle-btn tingle-btn--default", function () {
         modal.close();
     });
 

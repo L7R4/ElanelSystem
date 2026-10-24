@@ -4,130 +4,163 @@
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/panel_products.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock css %}
 
 {% block content %}
-{% comment %} <div id="wrapperLoader">
-    <span id="loader"></span>
-</div> {% endcomment %}
-<div class="headersPanelsWrapper">
-
-    <div class="headerPanel active" id="hmoto"><h2>Motos</h2></div>
-    <div class="headerPanel" id="hcombo"><h2>Combos</h2></div>
-    <div class="headerPanel" id="hsolucion"><h2>Soluciones</h2></div>
-
-</div>
-<div class="panel-container">
-    <form method="POST" id="formNewProuducto">
-        {% csrf_token %}
-    <!-- Panel de Motos -->
-    <div id="panel-moto" class="panel active">
-        <div class="tableContainer">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Precio</th>
-                        <th>Paquete</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for moto in motos %}
-                    <tr>
-                        <td class="nombreProduct">{{ moto.nombre }}</td>
-                        <td class="valorProduct">${{ moto.plan.valor_nominal }}</td>
-                        <td class="paqueteProduct">{{ moto.plan.tipodePlan }}</td>
-                        <td class="button_cell">
-                            <button class="buttonDeleteItem" type="button">   
-                                <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>            
-            </table>
+<div class="productos-dashboard-container">
+    <!-- Header -->
+    <header class="modern-header">
+        <div class="header-icon-container">
+            <i class="fa-solid fa-boxes-stacked header-main-icon"></i>
         </div>
-        <div class="buttonsActions">
-            <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">Agregar producto</button>
+        <div class="header-text">
+            <span class="header-subtitle">Administración</span>
+            <h1 class="header-title">Catálogo de Productos</h1>
+            <p class="header-desc">Gestiona los modelos, combos y soluciones de financiamiento disponibles.</p>
+        </div>
+    </header>
+
+    <!-- Tab Selectors -->
+    <div class="headersPanelsWrapper">
+        <div class="headerPanel active" id="hmoto">
+            <h2><i class="fa-solid fa-motorcycle"></i> Motos</h2>
+        </div>
+        <div class="headerPanel" id="hcombo">
+            <h2><i class="fa-solid fa-cubes"></i> Combos</h2>
+        </div>
+        <div class="headerPanel" id="hsolucion">
+            <h2><i class="fa-solid fa-hand-holding-dollar"></i> Soluciones</h2>
         </div>
     </div>
 
-    <!-- Panel de Soluciones Dinerarias -->
-    <div id="panel-solucion" class="panel">
-        <table>
-            <thead>
-                <tr>
-                    <th>Precio</th>
-                    <th>Paquete</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for prestamo in prestamos %}
-                <tr>
-                    <td class="valorProduct">${{ prestamo.plan.valor_nominal }}</td>
-                    <td class="paqueteProduct">{{ prestamo.plan.tipodePlan }}</td>
-                    <td class="button_cell">
-                        <button class="buttonDeleteItem" type="button">   
-                            <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>    
-        </table>
-        <div class="buttonsActions">
-            <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">Agregar producto</button>
-        </div>
-    </div>
-
-    <!-- Panel de Combos -->
-    <div id="panel-combo" class="panel">
-        <table>
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Precio</th>
-                    <th>Paquete</th>
-                </tr>
-            </thead>
-
-            <tbody>
-            {% for combo in combos %}
-                <tr>
-                    <td class="nombreProduct">{{ combo.nombre }}</td>
-                    <td class="valorProduct">${{ combo.plan.valor_nominal }}</td>
-                    <td class="paqueteProduct">{{ combo.plan.tipodePlan }}</td>
-                    <td class="button_cell">
-                        <button class="buttonDeleteItem" type="button">   
-                            <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
-                        </button>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>    
-
+    <!-- Panel Content Container -->
+    <div class="panel-container glass-panel">
+        <form method="POST" id="formNewProuducto" style="width: 100%;">
+            {% csrf_token %}
             
-        </table>
-        <div class="buttonsActions">
-            <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">Agregar producto</button>
-        </div>
-    </div>
-    </form>
+            <!-- Panel de Motos -->
+            <div id="panel-moto" class="panel active">
+                <div class="tableContainer">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Producto</th>
+                                <th>Precio (Valor Nominal)</th>
+                                <th>Tipo de Plan</th>
+                                <th class="actions-th">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for moto in motos %}
+                            <tr class="product-row">
+                                <td class="nombreProduct">{{ moto.nombre }}</td>
+                                <td class="valorProduct">${{ moto.plan.valor_nominal }}</td>
+                                <td>
+                                    <span class="badge-package {{ moto.tipodePlan|lower }}">{{ moto.tipodePlan }}</span>
+                                </td>
+                                <td class="button_cell">
+                                    <button class="buttonDeleteItem" type="button" title="Eliminar producto">   
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>            
+                    </table>
+                </div>
+                <div class="buttonsActions">
+                    <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">
+                        <i class="fa-solid fa-plus"></i> Agregar producto
+                    </button>
+                </div>
+            </div>
 
+            <!-- Panel de Soluciones Dinerarias -->
+            <div id="panel-solucion" class="panel">
+                <div class="tableContainer">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Precio (Valor Nominal)</th>
+                                <th>Tipo de Plan</th>
+                                <th class="actions-th">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prestamo in prestamos %}
+                            <tr class="product-row">
+                                <td class="valorProduct">${{ prestamo.plan.valor_nominal }}</td>
+                                <td>
+                                    <span class="badge-package {{ prestamo.tipodePlan|lower }}">{{ prestamo.tipodePlan }}</span>
+                                </td>
+                                <td class="button_cell">
+                                    <button class="buttonDeleteItem" type="button" title="Eliminar producto">   
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>    
+                    </table>
+                </div>
+                <div class="buttonsActions">
+                    <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">
+                        <i class="fa-solid fa-plus"></i> Agregar producto
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel de Combos -->
+            <div id="panel-combo" class="panel">
+                <div class="tableContainer">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Combo</th>
+                                <th>Precio (Valor Nominal)</th>
+                                <th>Tipo de Plan</th>
+                                <th class="actions-th">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for combo in combos %}
+                            <tr class="product-row">
+                                <td class="nombreProduct">{{ combo.nombre }}</td>
+                                <td class="valorProduct">${{ combo.plan.valor_nominal }}</td>
+                                <td>
+                                    <span class="badge-package {{ combo.tipodePlan|lower }}">{{ combo.tipodePlan }}</span>
+                                </td>
+                                <td class="button_cell">
+                                    <button class="buttonDeleteItem" type="button" title="Eliminar producto">   
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>    
+                    </table>
+                </div>
+                <div class="buttonsActions">
+                    <button class="add-button-default agregarNuevoProductoButton" type="button" onclick="agregarFormularioNuevoProducto()">
+                        <i class="fa-solid fa-plus"></i> Agregar producto
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
-    
 {% endblock content %}
+
 {% block js %}
 <script>
     var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}";
     var iconDelete = "{% static 'images/icons/eliminar.svg' %}";
     var urlDeleteP = "{% url 'products:delete_product' %}"
     var planes = {{ planes|safe }};
-    
-
 </script>
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
-<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
+<script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
+<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js' %}"></script>
 <script src="{% static 'js/products/fetch_upload_products.js' %}"></script>
-
-{% endblock js %} 
+{% endblock js %}

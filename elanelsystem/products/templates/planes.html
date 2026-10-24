@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{% static 'css/panel_planes.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock css %}
 
 {% block content %}
@@ -13,53 +13,70 @@
     <span id="loader"></span>
 </div>
 
-<div class="panel-container">
-    <form method="POST" id="formNewPlan">
-        {% csrf_token %}
-        <div id="panel" class="panel">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Valor nominal</th>
-                        <th>Tipo de paquete</th>
-                        <th>Suscripcion</th>
-                        <th>Primer cuota</th>
-                        <th>% 24 Cuotas</th>
-                        <th>% 30 Cuotas</th>
-                        <th>% 48 Cuotas</th>
-                        <th>% 60 Cuotas</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for plan in planes %}
-                    <tr>
-                        <td class="valorPlan">${{ plan.valor_nominal }}</td>
-                        <td>{{ plan.tipodePlan }}</td>
-                        <td>{{ plan.suscripcion }}</td>
-                        <td>{{ plan.primer_cuota }}</td>
-                        <td>{{ plan.c24_porcentage }}</td>
-                        <td>{{ plan.c30_porcentage }}</td>
-                        <td>{{ plan.c48_porcentage }}</td>
-                        <td>{{ plan.c60_porcentage }}</td>
-                        <td class="button_cell">
-                            <button class="buttonDeleteItem" type="button">   
-                                <img src="{% static 'images/icons/eliminar.svg' %}" alt="">
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>            
-            </table>
-            
+<div class="planes-dashboard-container">
+    
+    <!-- Modern Header -->
+    <div class="modern-header">
+        <div class="header-icon-wrapper">
+            <i class="fa-solid fa-layer-group"></i>
         </div>
-    </form>
-    <div class="buttonsActions">
-        <button class="add-button-default" id="agregarNuevoPlanButton" type="button" onclick="modalNewPlan()">Agregar plan</button>
+        <div class="header-text">
+            <span class="header-subtitle">CATÁLOGO DE PRODUCTOS</span>
+            <h1 class="header-title">Planes de Suscripción</h1>
+            <span class="header-desc">Administrar los valores nominales y porcentajes de amortización</span>
+        </div>
     </div>
 
+    <div class="panel-container">
+        <form method="POST" id="formNewPlan" class="form-panel-wrapper">
+            {% csrf_token %}
+            <div id="panel" class="panel glass-panel">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Valor nominal</th>
+                            <th>Tipo de paquete</th>
+                            <th>Suscripción</th>
+                            <th>Primer cuota</th>
+                            <th>% 24 Cuotas</th>
+                            <th>% 30 Cuotas</th>
+                            <th>% 48 Cuotas</th>
+                            <th>% 60 Cuotas</th>
+                            <th class="actions-th">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plan in planes %}
+                        <tr class="plan-row">
+                            <td class="valorPlan">${{ plan.valor_nominal }}</td>
+                            <td><span class="badge-package {{ plan.tipodePlan|lower }}">{{ plan.tipodePlan }}</span></td>
+                            <td>${{ plan.suscripcion }}</td>
+                            <td>${{ plan.primer_cuota }}</td>
+                            <td>{{ plan.c24_porcentage }}%</td>
+                            <td>{{ plan.c30_porcentage }}%</td>
+                            <td>{{ plan.c48_porcentage }}%</td>
+                            <td>{{ plan.c60_porcentage }}%</td>
+                            <td class="button_cell">
+                                <button class="buttonDeleteItem" type="button" title="Eliminar plan">   
+                                    <img src="{% static 'images/icons/eliminar.svg' %}" alt="Eliminar">
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>            
+                </table>
+            </div>
+        </form>
+        
+        <div class="buttonsActions">
+            <button class="btn-add-plan" id="agregarNuevoPlanButton" type="button" onclick="modalNewPlan()">
+                <i class="fa-solid fa-plus"></i> Agregar Nuevo Plan
+            </button>
+        </div>
+    </div>
 </div>
-    
 {% endblock content %}
+
 {% block js %}
 <script>
     var CSRF_TOKEN = '{% csrf_token %}'
@@ -70,5 +87,4 @@
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
 <script src="{% static 'js/sales/fetch_upload_planes.js' %}"></script>
-
 {% endblock js %} 

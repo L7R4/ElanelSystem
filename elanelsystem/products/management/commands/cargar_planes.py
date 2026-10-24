@@ -74,7 +74,6 @@ class Command(BaseCommand):
             plan, created = Plan.objects.update_or_create(
                 valor_nominal=val_nom,
                 defaults={
-                    "tipodePlan": tipo_de_plan,
                     "suscripcion": p1["sus_y_cta_1"],
                     "primer_cuota": p1["sus_y_cta_1"],
                     "c24_porcentage": c24,

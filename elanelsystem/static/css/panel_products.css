@@ -1,166 +1,477 @@
-.wrapper_content {
-    padding: 4rem;
-    overflow: hidden;
+/* ==========================================================================
+   MODERN PRODUCTS CATALOG ADMINISTRATION STYLES
+   ========================================================================== */
+
+/* Main Dashboard Layout */
+.productos-dashboard-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+    color: var(--third-color);
 }
 
+/* Modern Header */
+.modern-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.08);
+}
+
+.header-icon-container {
+    width: 75px;
+    height: 75px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(6, 137, 250, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    border: 1px solid rgba(6, 137, 250, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(6, 137, 250, 0.15);
+}
+
+.header-main-icon {
+    font-size: 2.2rem;
+    color: var(--blue-accent-color);
+    text-shadow: 0 0 10px rgba(6, 137, 250, 0.3);
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-subtitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--blue-accent-color);
+    text-transform: uppercase;
+}
+
+.header-title {
+    font-size: clamp(2rem, 2vw, 3rem);
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0.2rem 0;
+}
+
+.header-desc {
+    font-size: 1.25rem;
+    color: var(--white-800-80);
+    margin-top: 0.2rem;
+}
+
+/* Premium Segmented Navigation Tabs */
 .headersPanelsWrapper {
     display: flex;
-    gap: 2rem;
-    justify-content: center;
-    /* margin-bottom: 2rem; */
-    height: 10%;
-}
-.panel-container{
-    height: 90%;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    background: rgba(15, 21, 36, 0.4);
+    border: 1px solid rgba(250, 248, 255, 0.05);
+    border-radius: 14px;
+    padding: 0.6rem;
+    width: fit-content;
 }
 
-.headersPanelsWrapper>div {
-    border: 1px solid var(--third-color);
-    padding: 1rem 2rem;
-    opacity: .7;
+.headersPanelsWrapper > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem 2.4rem;
+    border-radius: 10px;
     cursor: pointer;
-    height: fit-content;
-    border-radius: .6rem;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background-color: transparent;
+    border: none !important;
 }
 
-.headersPanelsWrapper>div.active {
-    border: 1px solid var(--primary-color);
-    background-color: var(--primary-color);
-    opacity: 1;
+.headersPanelsWrapper > div:hover {
+    background-color: rgba(250, 248, 255, 0.04);
 }
 
-.headersPanelsWrapper>div>h2 {
-    font-size: clamp(1.5rem, 1.3vw, 1.8rem);
-    font-family: raleway-semibold;
+.headersPanelsWrapper > div.active {
+    background: linear-gradient(135deg, var(--blue-accent-color) 0%, #1d4ed8 100%) !important;
+    box-shadow: 0 4px 15px rgba(6, 137, 250, 0.25) !important;
+}
+
+.headersPanelsWrapper > div h2 {
+    font-size: 1.4rem;
+    font-family: 'Raleway-Bold', sans-serif;
     color: var(--third-color);
-}
-
-#formNewProuducto {
+    margin: 0;
     display: flex;
-    justify-content: center;
-    height: 100%;
+    align-items: center;
+    gap: 0.8rem;
 }
 
-#formNewProuducto>.panel {
-    width: 90%;
+.headersPanelsWrapper > div.active h2 {
+    color: var(--third-color) !important;
+}
+
+/* Main Panel Containers (Glassmorphic) */
+.panel-container {
+    background: rgba(24, 31, 46, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(250, 248, 255, 0.05);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    min-height: 450px;
+    display: flex;
+}
+
+.panel {
     display: none;
-}
-
-#formNewProuducto>.panel>.buttonsActions {
-    display: flex;
-    gap: 1rem;
-    padding: 0 3rem;
-    height: 10%;
-    align-items: end;
-}
-
-#formNewProuducto>.panel.active {
-    display: unset;
-}
-
-
-#formNewProuducto>.panel>.tableContainer{
-    height: 90%;
-    overflow-y: auto;
-}
-
-#formNewProuducto>.panel table {
     width: 100%;
-    margin-bottom: 2rem;
-    padding: 1rem 3rem;
 }
 
-#formNewProuducto>.panel table>thead {
+.panel.active {
+    display: block;
+}
+
+/* Table Wrapper scrollable area */
+.tableContainer {
+    max-height: 500px;
+    overflow-y: auto;
+    margin-bottom: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(250, 248, 255, 0.04);
+    background: rgba(15, 21, 36, 0.2);
+}
+
+/* Scrollbar Styles */
+.tableContainer::-webkit-scrollbar {
+    width: 6px;
+}
+.tableContainer::-webkit-scrollbar-track {
+    background: transparent;
+}
+.tableContainer::-webkit-scrollbar-thumb {
+    background: rgba(250, 248, 255, 0.1);
+    border-radius: 10px;
+}
+.tableContainer::-webkit-scrollbar-thumb:hover {
+    background: rgba(250, 248, 255, 0.2);
+}
+
+/* Modern Dashboard Table */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.4rem;
+}
+
+.modern-table th {
     position: sticky;
     top: 0;
-    z-index: 1;
-    min-width: 18rem;
-    background-color: var(--fourth-color);
-    border-radius: .6rem;
+    background: #181f2e;
+    color: rgba(250, 248, 255, 0.6);
+    font-family: 'Raleway-Bold', sans-serif;
+    font-weight: 700;
+    text-align: left;
+    padding: 1.4rem 2rem;
+    border-bottom: 1.5px solid rgba(250, 248, 255, 0.06);
+    z-index: 10;
 }
 
-#formNewProuducto>.panel table>thead tr>* {
-    padding: 1rem 2rem;
-    text-align: start;
-    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+.modern-table td {
+    padding: 1.4rem 2rem;
     color: var(--third-color);
-    font-family: raleway-semibold;
+    font-family: 'Raleway-Medium', sans-serif;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.03);
+    vertical-align: middle;
 }
 
-#formNewProuducto>.panel table>tbody>tr {
-    position: relative;
+.modern-table tbody tr {
+    transition: background-color 0.2s ease;
 }
 
-#formNewProuducto>.panel table>tbody>tr>td {
-    padding: 1rem 2rem;
-    color: var(--third-color);
-    font-family: raleway-semibold;
-    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-    /* text-align: center; */
+.modern-table tbody tr:hover {
+    background-color: rgba(250, 248, 255, 0.02);
 }
 
-
-#formNewProuducto>.panel table tr>*:last-child {
-    border-top-right-radius: .8rem;
-    border-bottom-right-radius: .8rem;
-}
-
-#formNewProuducto>.panel table tr>*:first-child {
-    border-top-left-radius: .8rem;
-    border-bottom-left-radius: .8rem;
-}
-
-#formNewProuducto>.panel table>tbody>tr>td input {
-    padding: .6rem;
-    color: var(--third-color);
-    font-family: raleway-semibold;
-    background-color: var(--background-color);
-}
-
-#formNewProuducto>.panel table>tbody>tr>td input#paquete_input {
-    padding: .8rem;
-    background-color: rgba(255, 255, 255, 0.171);
-
-}
-
-#rowNewFormProduct .containerInputAndOptions>.iconDesplegar {
-    filter: invert(1);
-    z-index: 4;
-}
-
-#rowNewFormProduct .containerInputAndOptions>input {
-    z-index: 3;
-}
-
-#rowNewFormProduct .containerInputAndOptions>ul.options {
-    z-index: 2;
+/* Actions Header and column styling */
+.actions-th {
+    width: 100px;
+    text-align: right !important;
+    padding-right: 3rem !important;
 }
 
 .button_cell {
-    width: 0;
+    text-align: right !important;
+    padding-right: 3rem !important;
     position: relative;
-    left: -98%;
 }
 
-.buttonDeleteItem {
-    width: 1.4vw;
-    min-width: 2.5rem;
-    min-height: 2.5rem;
-    height: 1.4vw;
-    border-radius: 50%;
-    outline: none;
-    padding: .3rem;
-    border: 1px solid var(--third-color);
-    background-color: transparent;
-    overflow: hidden;
-    display: none;
-    cursor: pointer;
-    transform: translateY(-50%);
-    position: absolute;
-    z-index: 3;
-    left: 0;
+/* Styled Badges for Plan Type Packages */
+.badge-package {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 1.2rem;
+    border-radius: 20px;
+    font-size: 1.15rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.buttonDeleteItem>img {
+.badge-package.base {
+    background-color: rgba(59, 130, 246, 0.12);
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.badge-package.estandar {
+    background-color: rgba(20, 184, 166, 0.12);
+    color: #99f6e4;
+    border: 1px solid rgba(20, 184, 166, 0.2);
+}
+
+.badge-package.premium {
+    background-color: rgba(139, 92, 246, 0.12);
+    color: #c084fc;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Dynamic Add Row Fields (#rowNewFormProduct) */
+#rowNewFormProduct {
+    background-color: rgba(6, 137, 250, 0.03) !important;
+}
+
+#rowNewFormProduct td {
+    padding: 1.2rem 1.6rem !important;
+}
+
+#rowNewFormProduct input:not(.input-select-custom) {
+    width: 100% !important;
+    height: 4rem !important;
+    background-color: rgba(15, 21, 36, 0.6) !important;
+    border: 1px solid rgba(6, 137, 250, 0.2) !important;
+    border-radius: 8px !important;
+    padding: 0 1.2rem !important;
+    font-size: 1.35rem !important;
+    color: var(--third-color) !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    font-family: 'Raleway-Medium', sans-serif !important;
+}
+
+#rowNewFormProduct input:focus {
+    border-color: var(--blue-accent-color) !important;
+    box-shadow: 0 0 8px rgba(6, 137, 250, 0.15) !important;
+}
+
+#rowNewFormProduct input.input-read-only-default {
+    background-color: rgba(15, 21, 36, 0.3) !important;
+    border-color: rgba(250, 248, 255, 0.02) !important;
+    color: rgba(250, 248, 255, 0.5) !important;
+    pointer-events: none !important;
+}
+
+/* Select wrapper and select elements inside dynamic row */
+#rowNewFormProduct .containerInputAndOptions {
+    position: relative;
     width: 100%;
+}
+
+#rowNewFormProduct .input-select-custom {
+    cursor: pointer;
+    background-color: rgba(15, 21, 36, 0.6) !important;
+    border: 1px solid rgba(6, 137, 250, 0.2) !important;
+    border-radius: 8px !important;
+    height: 4rem !important;
+    width: 100% !important;
+    padding: 0 3rem 0 1.2rem !important;
+    box-sizing: border-box !important;
+    color: var(--third-color) !important;
+    font-size: 1.35rem !important;
+    font-family: 'Raleway-Medium', sans-serif !important;
+    outline: none !important;
+}
+
+#rowNewFormProduct .containerInputAndOptions .iconDesplegar {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+#rowNewFormProduct .list-select-custom.options {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 100%;
+    background-color: #141b29;
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 999;
+    padding: 0.5rem 0;
+    margin: 0;
+    list-style: none;
+}
+
+#rowNewFormProduct .list-select-custom.options li {
+    padding: 1rem 1.5rem;
+    font-size: 1.35rem;
+    font-family: 'Raleway-Medium', sans-serif;
+    color: rgba(250, 248, 255, 0.85);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+#rowNewFormProduct .list-select-custom.options li:hover {
+    background-color: rgba(6, 137, 250, 0.15);
+    color: var(--third-color);
+}
+
+/* Actions Footer buttons panel area */
+.buttonsActions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1.2rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+/* Base button styling */
+.add-button-default, .button-default-style {
+    height: 4rem;
+    padding: 0 2rem;
+    border-radius: 8px;
+    font-size: 1.35rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: none;
+    outline: none;
+}
+
+/* Primary buttons (Agregar / Guardar) */
+.add-button-default {
+    background: linear-gradient(135deg, var(--blue-accent-color) 0%, #1d4ed8 100%) !important;
+    color: var(--third-color) !important;
+    box-shadow: 0 4px 15px rgba(6, 137, 250, 0.2) !important;
+}
+
+.add-button-default:hover {
+    background: linear-gradient(135deg, #3b82f6 0%, var(--blue-accent-color) 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 18px rgba(6, 137, 250, 0.3) !important;
+}
+
+/* Secondary Cancel Button */
+.button-default-style {
+    background-color: rgba(250, 248, 255, 0.05) !important;
+    color: var(--third-color) !important;
+    border: 1px solid rgba(250, 248, 255, 0.08) !important;
+}
+
+.button-default-style:hover {
+    background-color: rgba(250, 248, 255, 0.1) !important;
+}
+
+/* Sleek Hover Delete Button */
+.buttonDeleteItem {
+    background-color: rgba(239, 68, 68, 0.08) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease !important;
+    font-size: 1.3rem !important;
+    outline: none;
+    position: relative;
+    transform: none;
+    left: auto;
+}
+
+.product-row:hover .buttonDeleteItem {
+    opacity: 1;
+}
+
+.buttonDeleteItem:hover {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #ef4444 !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    transform: scale(1.05);
+}
+
+/* ==========================================================================
+   TINGLE MODAL OVERRIDES FOR CATALOG
+   ========================================================================== */
+.tingle-modal {
+    backdrop-filter: blur(8px) !important;
+    background: rgba(11, 15, 25, 0.7) !important;
+}
+
+.tingle-modal-box {
+    background: rgba(20, 27, 41, 0.95) !important;
+    border: 1px solid rgba(250, 248, 255, 0.08) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4) !important;
+}
+
+.tingle-modal-box__content {
+    padding: 3rem !important;
+    color: var(--third-color) !important;
+    font-family: 'Raleway-Medium', sans-serif !important;
+}
+
+.tingle-modal-box__content h2 {
+    font-family: 'Raleway-Bold', sans-serif !important;
+    font-size: 2.2rem !important;
+    color: var(--third-color) !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.tingle-modal-box__content p {
+    font-size: 1.4rem !important;
+    color: var(--white-800-80) !important;
+}
+
+.tingle-modal-box__footer {
+    background: rgba(15, 21, 36, 0.5) !important;
+    border-top: 1px solid rgba(250, 248, 255, 0.05) !important;
+    padding: 1.5rem 3rem !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 1rem !important;
+}
+
+.tingle-btn {
+    font-family: 'Raleway-Bold', sans-serif !important;
+    font-size: 1.3rem !important;
+    padding: 1.2rem 2.4rem !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+.tingle-btn--danger {
+    background-color: #ef4444 !important;
+}
+
+.tingle-btn--default {
+    background-color: rgba(250, 248, 255, 0.08) !important;
+    color: var(--third-color) !important;
 }

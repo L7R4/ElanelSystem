@@ -1,4 +1,6 @@
 import json
+import re
+import unicodedata
 from django.forms import ValidationError
 from django.shortcuts import render, redirect, HttpResponseRedirect
 from django.views import generic
@@ -33,7 +35,6 @@ class Planes(generic.View):
 
             plan = Plan.objects.create(
                 valor_nominal=precio,
-                tipodePlan=paquete,
                 suscripcion=suscripcion,
                 primer_cuota=primer_cuota,
                 c24_porcentage=p_24,
@@ -123,6 +124,7 @@ class ViewProducts(generic.View):
             producto.tipo_de_producto= tipo.capitalize()
             producto.nombre=nombre if tipo != "solucion" else "$" + str(plan.valor_nominal)
             producto.plan=plan
+            producto.tipodePlan=plan.tipodePlan
 
             producto.nombre = producto.nombre.title() # Formatear el nombre del producto
             
@@ -160,7 +162,15 @@ class ViewProducts(generic.View):
 def requestProducts(request):
     if request.method == 'POST':
         tipo = json.loads(request.body).get('tipoProducto', None)
-        productos = Products.objects.filter(tipo_de_producto=tipo,activo=True).order_by('-plan__valor_nominal') if tipo else []
+        productos = Products.objects.filter(tipo_de_producto=tipo,activo=True).select_related('plan') if tipo else []
+
+        # Orden alfabético natural: sin distinguir tildes/mayúsculas y con los números por su valor
+        # ("Solución Dineraria 8000000" antes que "Solución Dineraria 10000000").
+        def clave_orden(producto):
+            texto = unicodedata.normalize("NFD", producto.nombre or "").encode("ascii", "ignore").decode().lower()
+            return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", texto)]
+
+        productos = sorted(productos, key=lambda p: (clave_orden(p), p.plan.valor_nominal))
 
         productos_list = []
         for producto in productos:

@@ -1,217 +1,437 @@
-.wrapper_content {
-    padding: 5rem;
-}
+/* ==========================================================================
+   MODERN PLANES (SUBSCRIPTION PLANS) DASHBOARD STYLES
+   ========================================================================== */
 
-.panel-container {
-    height: 100%;
+/* Main Container Layout */
+.planes-dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem;
     display: flex;
     flex-direction: column;
+    gap: 2.5rem;
+    font-family: 'Raleway', sans-serif;
+    color: var(--white-color-800);
 }
 
-#formNewPlan {
+/* Glassmorphism Panel Base */
+.glass-panel {
+    background: rgba(24, 31, 46, 0.7);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(250, 248, 255, 0.06);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+/* Modern Header Styling */
+.modern-header {
     display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(24, 31, 46, 0.85), rgba(32, 43, 68, 0.85));
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.header-icon-wrapper {
+    font-size: 2.4rem;
+    color: var(--blue-accent-color);
+    background: rgba(6, 137, 250, 0.12);
+    width: 5.5rem;
+    height: 5.5rem;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    height: 90%;
+    border-radius: 12px;
+    border: 1px solid rgba(6, 137, 250, 0.25);
+    box-shadow: 0 0 15px rgba(6, 137, 250, 0.15);
 }
 
-#formNewPlan>.panel {
-    width: 100%;
-    padding-top: 0;
-    overflow: auto;
-}
-
-.buttonsActions {
-    margin-top: auto;
-}
-
-#formNewPlan>.panel>.buttonsActions {
+.header-text {
     display: flex;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.2rem;
 }
 
-#formNewPlan>.panel>table {
+.header-subtitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--blue-accent-color);
+    text-transform: uppercase;
+}
+
+.header-title {
+    font-size: clamp(2rem, 2vw, 3rem);
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+.header-desc {
+    font-size: 1.25rem;
+    color: var(--white-800-80);
+    margin-top: 0.2rem;
+}
+
+/* Panel Layout styling */
+.panel-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.form-panel-wrapper {
     width: 100%;
-    margin-bottom: 2rem;
-
 }
 
-#formNewPlan>.panel>table>thead {
+.panel.glass-panel {
+    max-height: 580px;
+    overflow-y: auto;
+}
+
+/* Modernized Table Styling */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.modern-table thead th {
+    background: rgba(32, 43, 68, 0.6) !important;
+    color: var(--third-color) !important;
+    font-family: 'Raleway-SemiBold', sans-serif !important;
+    font-size: 1.25rem !important;
+    padding: 1.4rem !important;
+    border-bottom: 2px solid rgba(250, 248, 255, 0.08) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     position: sticky;
     top: 0;
-    z-index: 1;
-    min-width: 18rem;
-    background-color: var(--fourth-color);
-    border-radius: .6rem;
+    z-index: 5;
 }
 
-#formNewPlan>.panel>table>thead tr>* {
-    padding: 1rem;
-    text-align: center;
-    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-    color: var(--third-color);
-    font-family: raleway-semibold;
+.modern-table tbody tr {
+    transition: all 0.2s !important;
+    background: rgba(24, 31, 46, 0.3) !important;
+    position: relative;
 }
 
-#formNewPlan>.panel>table tr>*:last-child {
-    border-top-right-radius: .8rem;
-    border-bottom-right-radius: .8rem;
+.modern-table tbody tr:hover {
+    background: rgba(32, 43, 68, 0.45) !important;
+    transform: translateX(3px);
 }
 
-#formNewPlan>.panel>table tr>*:first-child {
-    border-top-left-radius: .8rem;
-    border-bottom-left-radius: .8rem;
+.modern-table tbody td {
+    padding: 1.4rem !important;
+    font-size: 1.35rem !important;
+    color: var(--white-800-80) !important;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.04) !important;
 }
 
-#formNewPlan>.panel>table>tbody>tr>td {
-    padding: 1rem;
-    color: var(--third-color);
-    font-family: raleway-semibold;
-    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-    text-align: center;
+.valorPlan {
+    font-family: 'Raleway-Bold', sans-serif !important;
+    color: var(--blue-accent-color) !important;
 }
 
-#formNewPlan>.panel>table>tbody>tr>td input {
-    padding: .6rem;
-    color: var(--third-color);
-    font-family: raleway-semibold;
-    background-color: var(--background-color);
+/* Package Badges */
+.badge-package {
+    display: inline-block;
+    padding: 0.3rem 0.9rem;
+    border-radius: 4px;
+    font-family: 'Raleway-Bold', sans-serif;
+    font-size: 1.15rem;
+    text-transform: uppercase;
 }
 
-
-#rowNewFormPlan .containerInputAndOptions>.iconDesplegar {
-    filter: invert(1);
-    z-index: 4;
+.badge-package.basico {
+    background: rgba(6, 137, 250, 0.1);
+    color: var(--blue-accent-color);
+    border: 1px solid rgba(6, 137, 250, 0.2);
 }
 
-#rowNewFormPlan .containerInputAndOptions>input {
-    z-index: 3;
+.badge-package.estandar {
+    background: rgba(241, 196, 15, 0.1);
+    color: #f1c40f;
+    border: 1px solid rgba(241, 196, 15, 0.2);
 }
 
-#rowNewFormPlan.containerInputAndOptions>ul.options {
-    z-index: 2;
+.badge-package.premium {
+    background: rgba(155, 89, 182, 0.1);
+    color: #9b59b6;
+    border: 1px solid rgba(155, 89, 182, 0.2);
 }
 
-#rowNewFormPlan input[type="number"]::-webkit-inner-spin-button,
-#rowNewFormPlan input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+/* Actions Column & Delete Button */
+.actions-th {
+    width: 90px;
 }
 
 .button_cell {
-    width: 0;
     position: relative;
-    left: -98%;
+    width: 90px;
 }
 
 .buttonDeleteItem {
-    width: 1.4vw;
-    height: 1.4vw;
-    border-radius: 50%;
-    outline: none;
-    padding: .3rem;
-    border: 1px solid var(--third-color);
-    background-color: transparent;
-    overflow: hidden;
-    display: none;
-    cursor: pointer;
-    transform: translateY(-50%);
-    position: absolute;
-    z-index: 3;
-    left: 0;
+    width: 3.2rem !important;
+    height: 3.2rem !important;
+    border-radius: 50% !important;
+    border: 1px solid rgba(231, 76, 60, 0.25) !important;
+    background-color: rgba(231, 76, 60, 0.1) !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    display: none; /* controlled dynamically by JS mouseover/out */
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.7rem !important;
+    position: absolute !important;
+    right: 2rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 10 !important;
+    box-sizing: border-box !important;
 }
 
-.buttonDeleteItem>img {
-    width: 100%;
+.buttonDeleteItem img {
+    width: 100% !important;
+    height: 100% !important;
+    filter: invert(35%) sepia(95%) saturate(1814%) hue-rotate(338deg) brightness(97%) contrast(92%); /* red color */
+    transition: all 0.2s !important;
 }
 
-#addPlanForm>.containerInputs {
+.buttonDeleteItem:hover {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+}
+
+.buttonDeleteItem:hover img {
+    filter: brightness(0) invert(1) !important;
+}
+
+/* Add Plan Action Button */
+.buttonsActions {
+    margin-top: 1rem;
     display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.btn-add-plan {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    height: 4.5rem;
+    padding: 0 2.5rem;
+    font-size: 1.45rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    border-radius: 8px;
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--blue-accent-color), #006ecf);
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 15px rgba(6, 137, 250, 0.25);
+}
+
+.btn-add-plan:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 137, 250, 0.4);
+    filter: brightness(1.05);
+}
+
+/* ==========================================================================
+   MODAL DIALOG OVERRIDES (TINGLE MODAL)
+   ========================================================================== */
+
+/* Backdrop blur */
+.modalConfirmacion.tingle-modal,
+.modalResponse.tingle-modal {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Modal Frame Card */
+.modalConfirmacion .tingle-modal-box,
+.modalResponse .tingle-modal-box {
+    background: linear-gradient(135deg, #182030, #0f1524) !important;
+    border: 1px solid rgba(250, 248, 255, 0.08) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5) !important;
+    overflow: hidden !important;
+    width: 60% !important;
+    max-width: 800px !important;
+}
+
+.modalConfirmacion .tingle-modal-box__content,
+.modalResponse .tingle-modal-box__content {
+    background: transparent !important;
+    padding: 3.5rem 4rem !important;
+}
+
+.modalConfirmacion .tingle-modal-box__footer,
+.modalResponse .tingle-modal-box__footer {
+    background: rgba(15, 21, 36, 0.5) !important;
+    border-top: 1px solid rgba(250, 248, 255, 0.06) !important;
+    padding: 2rem 4rem !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 1.2rem !important;
+    align-items: center !important;
+}
+
+/* Modal Headers */
+.tittleWrapper h2,
+.modalConfirmacion .tingle-modal-box__content h2,
+.modalResponse .messageReponseModal h2 {
+    font-size: 2.2rem !important;
+    font-family: 'Raleway-Bold', sans-serif !important;
+    color: var(--third-color) !important;
+    margin: 0 0 2rem 0 !important;
+}
+
+.modalConfirmacion .tingle-modal-box__content h2 {
+    margin-bottom: 0 !important;
+}
+
+/* Modal Form inputs */
+#addPlanForm .containerInputs {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+    gap: 1.8rem !important;
 }
 
 #addPlanForm .wrapperInput {
-    width: 25%;
     display: flex;
     flex-direction: column;
-    min-width: 18rem;
-
+    gap: 0.6rem;
+    width: 100% !important;
 }
 
-#addPlanForm .wrapperInput>label {
-    color: var(--background-color);
-    font-family: raleway-semibold;
-    font-size: clamp(1.3rem, 1.2vw, 1.6rem);
+#addPlanForm .wrapperInput label {
+    font-size: 1.25rem !important;
+    font-family: 'Raleway-SemiBold', sans-serif !important;
+    color: var(--white-800-80) !important;
+    margin-bottom: 0.4rem !important;
+    padding-left: 0.2rem !important;
 }
 
-#addPlanForm .wrapperInput>input {
-    border-radius: .6rem;
+#addPlanForm input.input-read-write-default {
+    width: 100% !important;
+    height: 4rem !important;
+    background-color: rgba(15, 21, 36, 0.6) !important;
+    border: 1px solid rgba(250, 248, 255, 0.08) !important;
+    border-radius: 8px !important;
+    color: var(--third-color) !important;
+    font-size: 1.35rem !important;
+    padding: 0 1.2rem !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+    font-family: 'Raleway', sans-serif !important;
+    transition: all 0.25s !important;
 }
 
-#addPlanForm .wrapperInput>input[type=number]::-webkit-outer-spin-button,
-#addPlanForm .wrapperInput>input[type=number]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    appearance: none;
-    margin: 0;
+#addPlanForm input.input-read-write-default:hover,
+#addPlanForm .pseudo-input-select-wrapper:hover {
+    border-color: rgba(6, 137, 250, 0.3) !important;
 }
 
-#addPlanForm #selectWrapperSelectPaquete img.iconDesplegar {
-    z-index: 21;
+#addPlanForm input.input-read-write-default:focus {
+    border-color: var(--blue-accent-color) !important;
+    background-color: rgba(15, 21, 36, 0.8) !important;
+    box-shadow: 0 0 0 2px rgba(6, 137, 250, 0.15) !important;
 }
 
-#addPlanForm #selectWrapperSelectPaquete .pseudo-input-select-wrapper {
-    position: relative;
-    z-index: 20;
-    background-color: var(--third-color);
-
+/* Select pickers inside Add Plan Form */
+#addPlanForm .pseudo-input-select-wrapper {
+    width: 100% !important;
+    height: 4rem !important;
+    background-color: rgba(15, 21, 36, 0.6) !important;
+    border: 1px solid rgba(250, 248, 255, 0.08) !important;
+    border-radius: 8px !important;
+    padding: 0 1.2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
 }
 
-#addPlanForm #selectWrapperSelectPaquete ul.options {
-    z-index: 19;
+#addPlanForm .pseudo-input-select-wrapper h3 {
+    font-size: 1.35rem !important;
+    color: var(--third-color) !important;
+    font-weight: 500 !important;
+    font-family: 'Raleway', sans-serif !important;
 }
 
-.tittleWrapper {
-    margin-bottom: 1rem;
+#addPlanForm .iconDesplegar {
+    filter: invert(1) !important;
+    opacity: 0.6 !important;
 }
 
-.tittleWrapper>h2 {
-    color: var(--secundary-color);
-    font-family: raleway-semibold;
-    font-size: clamp(1.7rem, 1.5vw, 2.5rem);
+#addPlanForm .list-select-custom.options {
+    background: var(--blue-2) !important;
+    border: 1px solid rgba(250, 248, 255, 0.1) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+    top: 100% !important;
 }
 
-.modalConfirmacion .tingle-modal-box__content>h2 {
-    font-family: raleway-semibold;
-    font-size: clamp(1.4rem, 1.3vw, 1.8rem);
+/* Modal Footer Buttons */
+.tingle-modal-box__footer .tingle-btn {
+    height: 4.2rem !important;
+    padding: 0 2.5rem !important;
+    font-size: 1.35rem !important;
+    font-family: 'Raleway-SemiBold', sans-serif !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.25s !important;
+    border: none !important;
 }
 
-.tingle-modal-box__footer>button {
-    font-family: raleway-semibold;
-    font-size: clamp(1.2rem, 1.1vw, 1.4rem);
+.tingle-modal-box__footer .tingle-btn--primary {
+    background: linear-gradient(135deg, var(--blue-accent-color), #006ecf) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(6, 137, 250, 0.25) !important;
 }
 
-.tingle-modal-box__footer {
-    display: flex;
-    align-items: center;
+.tingle-modal-box__footer .tingle-btn--primary:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 18px rgba(6, 137, 250, 0.35) !important;
 }
 
-.tingle-modal-box__footer>button.button-default-style {
-    color: var(--background-color);
+.tingle-modal-box__footer .tingle-btn--default {
+    background: rgba(250, 248, 255, 0.05) !important;
+    color: var(--white-800-80) !important;
+    border: 1px solid rgba(250, 248, 255, 0.1) !important;
 }
 
+.tingle-modal-box__footer .tingle-btn--default:hover {
+    background: rgba(250, 248, 255, 0.15) !important;
+    color: #ffffff !important;
+}
+
+.tingle-modal-box__footer .tingle-btn--danger {
+    background: var(--danger-color) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.25) !important;
+}
+
+.tingle-modal-box__footer .tingle-btn--danger:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 18px rgba(231, 76, 60, 0.35) !important;
+}
+
+/* Modal Response Message styling */
 .modalResponse .messageReponseModal {
     display: flex;
-    justify-content: center;
     flex-direction: column;
-    gap: 1rem;
     align-items: center;
-    font-family: raleway-semibold;
-    font-size: clamp(1.4rem, 1.3vw, 1.8rem);
+    gap: 1.5rem;
+    text-align: center;
+    padding: 1rem;
 }
 
-.modalResponse .messageReponseModal>img {
-    width: 3vw;
-    min-width: 4rem;
-    max-width: 6rem;
-
+.modalResponse .messageReponseModal img {
+    width: 6rem;
+    height: 6rem;
 }
