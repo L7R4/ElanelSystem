@@ -142,3 +142,26 @@ GitHub.sublime-settings
 node_modules/
 docs_agent/
 .claude/
+# Datos de clientes / agencias (no versionar)
+*.xlsx
+*.xlsm
+*.xls
+*.csv
+*.pkl
+clenear/generar_sorteo/salida_analisis.txt
+
+# PDFs generados (recibos, liquidaciones)
+elanelsystem/pdfs/recibo_gerente_*.pdf
+elanelsystem/_recibos_*/
+
+# Scripts sueltos de diagnóstico / one-off en la raíz del proyecto Django
+elanelsystem/_debug_*.py
+elanelsystem/_fix_*.py
+elanelsystem/check_*.py
+elanelsystem/find_*.py
+elanelsystem/inspect_*.py
+elanelsystem/run_*.py
+elanelsystem/import_chaco_to_django*.py
+elanelsystem/import_calculate_and_generate_pdf.py
+elanelsystem/generate_report_*.py
+clenear/generar_sorteo/inspect_*.py
