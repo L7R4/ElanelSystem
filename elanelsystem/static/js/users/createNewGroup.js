@@ -13,7 +13,8 @@ async function createNewGroup() {
     let response = await fetchCRUD(body,urlCreateNewGroup)
 
     var newItem = document.createElement("li");
-    newItem.innerHTML = response["group"];
+    newItem.className = "group-item-li";
+    newItem.innerHTML = `<i class="fa-solid fa-user-group list-item-icon"></i> <span>${response["group"]}</span>`;
     containerItemsGroup.appendChild(newItem)
     
     selectGroupListener(newItem)

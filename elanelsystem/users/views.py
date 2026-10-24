@@ -10,7 +10,7 @@ from django.db.models import IntegerField
 from django.db.utils import IntegrityError
 from django.shortcuts import redirect, render
 from django.views import generic
-from users.utils import preprocesar_excel_clientes, printPDFNewUSer
+from users.utils import codigo_cliente_import, normalizar_nombre, prefijo_clientes_import, preprocesar_excel_clientes, printPDFNewUSer
 from sales.utils import getAllCampaniaOfYear, getCampanasDisponibles, getCampaniaActual
 from django.db import transaction
 from .models import Usuario,Cliente,Sucursal,Key
@@ -304,7 +304,7 @@ def dias_trabajados_en_campania(user, campania_str):
 class ListaUsers(PermissionRequiredMixin, generic.ListView):
     model = Usuario
     template_name = "list_users.html"
-    permission_required = "sales.my_ver_resumen"
+    permission_required = "users.my_ver_colaboradores"
 
     def wants_json(self, request):
         return (
@@ -360,7 +360,7 @@ class ListaUsers(PermissionRequiredMixin, generic.ListView):
         metodosPago = [{"id": metodo.id, "alias": metodo.alias } for metodo in MetodoPago.objects.all()]
         sucursales = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in Sucursal.objects.all() ]
         sucursalesDisponibles = [{"id": sucursal.id, "pseudonimo": sucursal.pseudonimo } for sucursal in request.user.sucursales.all()]
-        ente_recaudadores = [{"id":cuenta.id,"alias":cuenta.alias} for cuenta in CuentaCobranza.objects.all()]
+        ente_recaudadores = [{"id":cuenta.id,"alias":cuenta.alias} for cuenta in CuentaCobranza.objects.filter(activo=True)]
 
         users_data = []
         for user in page_obj.object_list:
@@ -921,6 +921,7 @@ class ListaClientes(TestLogin, generic.View):
                 Q(tel__icontains=search) 
             ).distinct()
         customer_queryset = customer_queryset.annotate(nro_cli_num=Cast(Substr('nro_cliente', 5), IntegerField())).order_by('-nro_cli_num', '-nro_cliente')
+        customer_queryset = customer_queryset.prefetch_related('ventas_nro_cliente')
         paginator = Paginator(customer_queryset, page_size)
         page_obj = paginator.get_page(page_number)
 
@@ -935,6 +936,7 @@ class ListaClientes(TestLogin, generic.View):
                     "loc": customer.loc,
                     "prov": customer.prov,
                     "tel": customer.tel,
+                    "dias_mora": max((v.dias_mora() for v in customer.ventas_nro_cliente.all()), default=0),
                 })
             return JsonResponse({
                 "results": customers_data,
@@ -957,8 +959,9 @@ class ListaClientes(TestLogin, generic.View):
                 "loc": customer.loc,
                 "prov": customer.prov,
                 "tel": customer.tel,
+                "dias_mora": max((v.dias_mora() for v in customer.ventas_nro_cliente.all()), default=0),
             })
-            
+
         context = {
             "customers": customers_data,
             "campaniasDisponibles": json.dumps(campaniasDisponibles),
@@ -991,6 +994,11 @@ def importar_clientes(request):
     except Sucursal.DoesNotExist:
         return JsonResponse({"status": False, "message": "La agencia no existe.", "iconMessage": "/static/images/icons/error_icon.svg"}, status=404)
 
+    try:
+        prefijo = prefijo_clientes_import(sucursal, archivo_excel.name)
+    except ValueError as e:
+        return JsonResponse({"status": False, "message": str(e), "iconMessage": "/static/images/icons/error_icon.svg"}, status=400)
+
     fs = FileSystemStorage()
     filename = fs.save(archivo_excel.name, archivo_excel)
     file_path = fs.path(filename)
@@ -998,15 +1006,32 @@ def importar_clientes(request):
     try:
         df = preprocesar_excel_clientes(file_path)
         nuevos = 0
+        conflictos = []
         with transaction.atomic():
             for _, row in df.iterrows():
                 nro_cliente = handle_nan(row.get('nro'))
                 dni = handle_nan(row.get('dni'))
 
-                if not (nro_cliente or dni):
+                if not nro_cliente:
                     continue
+                nro_cliente = codigo_cliente_import(nro_cliente, prefijo)
 
-                if Cliente.objects.filter(nro_cliente=nro_cliente, dni=dni).exists():
+                # El nro de cliente identifica al cliente dentro de la agencia
+                # (las ventas se vinculan por él). Si ya existe sin DNI y ahora
+                # el Excel lo trae, se completa.
+                existentes = list(Cliente.objects.filter(
+                    agencia_registrada=sucursal, nro_cliente=nro_cliente
+                ))
+                if existentes:
+                    nombre_excel = normalizar_nombre(row.get('cliente'))
+                    existente = next((c for c in existentes if normalizar_nombre(c.nombre) == nombre_excel), None)
+                    if existente is None:
+                        # Mismo codigo pero otra persona: no se pisa, se informa
+                        conflictos.append(f"{nro_cliente} {row.get('cliente')} (en sistema: {existentes[0].nombre})")
+                        continue
+                    if dni and not existente.dni:
+                        existente.dni = dni
+                        existente.save(update_fields=["dni"])
                     continue
 
                 Cliente.objects.create(
@@ -1018,9 +1043,16 @@ def importar_clientes(request):
                 nuevos += 1
 
         fs.delete(filename)
+        message = f"Se importaron {nuevos} clientes nuevos."
+        if conflictos:
+            print("Clientes con codigo ya usado por otra persona:\n" + "\n".join(conflictos))
+            message += (
+                f" {len(conflictos)} no se importaron porque su código ya pertenece a otro cliente: "
+                + "; ".join(conflictos[:10]) + ("…" if len(conflictos) > 10 else "")
+            )
         return JsonResponse({
             "status": True,
-            "message": f"Se importaron {nuevos} clientes nuevos.",
+            "message": message,
             "iconMessage": "/static/images/icons/checkMark.svg"
         })
     except Exception as e:
@@ -1137,11 +1169,16 @@ class CuentaUser(TestLogin, generic.DetailView):
                     "nro_operacion": v.nro_operacion,
                     "cuotas_pagadas": len(v.cuotas_pagadas()),
                     "nro_ordenes": [c["nro_orden"] for c in v.cantidadContratos],
+                    "cantidadContratos": v.cantidadContratos,
                     "producto": v.producto.nombre,
                     "tipo_producto": v.producto.tipo_de_producto,
                     "img_tipo_producto": "",
                     "fecha_inscripcion": v.fecha,
                     "estado": getEstadoVenta(v),
+                    "adjudicado": v.adjudicado,
+                    # link al PDF de la baja (la tarjeta lo muestra solo para bajas por cliente)
+                    "deBaja": ({**v.deBaja, "pdf_url": reverse("sales:bajaPDF", args=[v.pk])} if (v.deBaja or {}).get("status") else v.deBaja),
+                    "suspendida": v.suspendida,
                     "importe": v.importe,
                     "detail_url": reverse("sales:detail_sale", args=[v.pk]),
                 })
@@ -1180,7 +1217,7 @@ class PanelAdmin(TestLogin,PermissionRequiredMixin,generic.View):
 #region Permisos - - - - - - - - - - - - - - - - - - - - - - 
 class PanelPermisos(TestLogin, generic.View):
     template_name = "panelPermisos.html"
-    
+
     def get(self,request,*args,**kwargs):
         context= {}
         allPermissions = [perm for perm in Permission.objects.all() if perm.codename.startswith('my_')]
@@ -1189,6 +1226,39 @@ class PanelPermisos(TestLogin, generic.View):
         context["grupos"] = allGroups
 
         return render(request, self.template_name, context)
+
+
+class PermisosUsuario(TestLogin, generic.DetailView):
+    model = Usuario
+    template_name = "permisos_usuario.html"
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        allPermissions = [perm for perm in Permission.objects.all() if perm.codename.startswith('my_')]
+        permisos_directos = [perm.name for perm in self.object.user_permissions.all()]
+        permisos_grupo = [perm.name for perm in Permission.objects.filter(group__user=self.object) if perm.codename.startswith('my_')]
+
+        context = {
+            "object": self.object,
+            "permisos": allPermissions,
+            "permisos_directos": permisos_directos,
+            "permisos_grupo": permisos_grupo,
+            "is_superuser": self.object.is_superuser,
+        }
+        return render(request, self.template_name, context)
+
+
+def updatePermisosAUsuario(request, pk):
+    if request.method == "POST":
+        permissionRequest = json.loads(request.body)["permisos"]
+        usuario = Usuario.objects.get(pk=pk)
+
+        usuario.user_permissions.clear()
+        for perm_name in permissionRequest:
+            perm = Permission.objects.get(name=perm_name)
+            usuario.user_permissions.add(perm)
+
+        return JsonResponse({"mensaje": "Permisos actualizados correctamente."}, safe=False)
 
 
 def requestPermisosDeGrupo(request):
@@ -1649,6 +1719,196 @@ def clean_excel_preview(request):
             return JsonResponse({"status": False, "message": f"Error interno: {str(e)}"})
     return JsonResponse({"status": False, "message": "Método no permitido."})
 
+CLEAN_EXCEL_JOBS_DIR_NAME = "elanel_clean_excel_jobs"
+CLEAN_EXCEL_JOB_MAX_AGE_SECONDS = 60 * 60 * 3  # 3 horas
+
+# Colores ANSI para los logs de consola del proceso en background
+_C_RESET = "\033[0m"
+_C_BOLD = "\033[1m"
+_C_DIM = "\033[2m"
+_C_GREEN = "\033[32m"
+_C_BGREEN = "\033[1;32m"
+_C_CYAN = "\033[36m"
+_C_BCYAN = "\033[1;36m"
+_C_YELLOW = "\033[33m"
+_C_RED = "\033[1;31m"
+
+_LOG_WIDTH = 64
+
+
+def _safe_print(text):
+    # En Windows la consola puede quedar en cp1252/cp437 y no soporta
+    # caracteres fuera de ese charset; evitamos que un log tire el thread.
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        print(text.encode("ascii", "replace").decode("ascii"))
+
+
+def _log_line(char="-"):
+    _safe_print(f"{_C_GREEN}{char * _LOG_WIDTH}{_C_RESET}")
+
+
+def _log_header(text):
+    _log_line("=")
+    _safe_print(f"{_C_BGREEN} {text}{_C_RESET}")
+    _log_line("=")
+
+
+def _log_info(label, value):
+    _safe_print(f"{_C_GREEN} {label:<12}{_C_RESET}{value}")
+
+
+def _log_step(text):
+    _safe_print(f"{_C_BCYAN} > {text}{_C_RESET}")
+
+
+def _log_progress(text):
+    _safe_print(f"{_C_DIM}{_C_GREEN}     - {text}{_C_RESET}")
+
+
+def _log_ok(text):
+    _safe_print(f"{_C_GREEN}   [OK] {text}{_C_RESET}")
+
+
+def _log_warn(text):
+    _safe_print(f"{_C_YELLOW}   [!] {text}{_C_RESET}")
+
+
+def _log_error(text):
+    _safe_print(f"{_C_RED} [ERROR] {text}{_C_RESET}")
+
+
+def _clean_excel_jobs_dir():
+    import tempfile
+    d = os.path.join(tempfile.gettempdir(), CLEAN_EXCEL_JOBS_DIR_NAME)
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def _clean_excel_job_paths(job_id):
+    base = _clean_excel_jobs_dir()
+    # job_id sale de uuid4().hex, pero igual lo saneamos por las dudas
+    safe_id = re.sub(r'[^a-zA-Z0-9_-]', '', job_id)
+    return {
+        "status": os.path.join(base, f"{safe_id}.status.json"),
+        "input": os.path.join(base, f"{safe_id}.input.xlsx"),
+        "output": os.path.join(base, f"{safe_id}.output.xlsx"),
+    }
+
+
+def _clean_excel_write_status(paths, data):
+    tmp_path = paths["status"] + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    os.replace(tmp_path, paths["status"])
+
+
+def _clean_excel_purge_old_jobs():
+    import time
+    base = _clean_excel_jobs_dir()
+    try:
+        now = time.time()
+        for name in os.listdir(base):
+            full = os.path.join(base, name)
+            try:
+                if now - os.path.getmtime(full) > CLEAN_EXCEL_JOB_MAX_AGE_SECONDS:
+                    os.remove(full)
+            except OSError:
+                pass
+    except OSError:
+        pass
+
+
+def _clean_excel_run_job(job_id, input_path, download_filename, user_id):
+    import time
+    import openpyxl
+
+    LOG_EVERY = 20000
+    t_start = time.time()
+    paths = _clean_excel_job_paths(job_id)
+    short_id = job_id[:8]
+
+    _log_header(f"LIMPIEZA DE EXCEL  -  job {short_id}")
+    _log_info("Archivo:", download_filename.removeprefix("clean_"))
+    _log_info("Usuario:", str(user_id))
+
+    try:
+        src_wb = openpyxl.load_workbook(input_path, read_only=True, data_only=True)
+        sheet_names = src_wb.sheetnames
+        normalized_sheets = {s.strip().upper(): s for s in sheet_names}
+        _log_info("Hojas:", ", ".join(sheet_names))
+        _log_line()
+
+        output_sheets_map = {
+            "ESTADO": ["ESTADO", "ESTADOS"],
+            "RESUMEN": ["RESUMEN"],
+            "CLIENTES": ["CLIENTES", "CLIENTE"],
+            "DATOS": ["DATOS"]
+        }
+
+        out_wb = openpyxl.Workbook(write_only=True)
+        total = len(output_sheets_map)
+
+        for idx, (out_name, variants) in enumerate(output_sheets_map.items(), start=1):
+            real_name = None
+            for v in variants:
+                if v.upper() in normalized_sheets:
+                    real_name = normalized_sheets[v.upper()]
+                    break
+
+            ws_out = out_wb.create_sheet(out_name)
+            if not real_name:
+                _log_warn(f"[{idx}/{total}] '{out_name}' no encontrada, se deja vacía")
+                continue
+
+            _log_step(f"[{idx}/{total}] {out_name}  (origen: '{real_name}')")
+            t_sheet = time.time()
+            ws_src = src_wb[real_name]
+            row_count = 0
+            for row in ws_src.iter_rows(values_only=True):
+                ws_out.append(["" if c is None else c for c in row])
+                row_count += 1
+                if row_count % LOG_EVERY == 0:
+                    elapsed = time.time() - t_sheet
+                    _log_progress(f"{row_count:>8,} filas  -  {elapsed:>5.1f}s  -  {row_count/elapsed:,.0f} filas/s")
+
+            _log_ok(f"{row_count:,} filas en {time.time() - t_sheet:.1f}s")
+
+        src_wb.close()
+        _log_line()
+
+        _log_step("Guardando archivo de salida...")
+        t_save = time.time()
+        out_wb.save(paths["output"])
+        _log_ok(f"Guardado en {time.time() - t_save:.1f}s")
+
+        _clean_excel_write_status(paths, {
+            "status": "done",
+            "filename": download_filename,
+            "user_id": user_id,
+            "updated_at": time.time(),
+        })
+        _log_line("=")
+        _safe_print(f"{_C_BGREEN} LISTO  -  tiempo total {time.time() - t_start:.1f}s{_C_RESET}")
+        _log_line("=")
+    except Exception as e:
+        _log_line("=")
+        _log_error(f"FALLO tras {time.time() - t_start:.1f}s: {e}")
+        _log_line("=")
+        _clean_excel_write_status(paths, {
+            "status": "error",
+            "message": f"Error al procesar: {str(e)}",
+            "user_id": user_id,
+            "updated_at": time.time(),
+        })
+    finally:
+        try:
+            os.remove(input_path)
+        except OSError:
+            pass
+
+
 @login_required
 def clean_excel_execute(request):
     if request.method == "POST":
@@ -1657,69 +1917,90 @@ def clean_excel_execute(request):
             if not uploaded_file:
                 return JsonResponse({"status": False, "message": "No se subió ningún archivo."})
 
-            # Intentar determinar el motor
-            engine = 'openpyxl' if uploaded_file.name.endswith('.xlsx') or uploaded_file.name.endswith('.xlsm') else None
+            import uuid
+            import threading
+            import time
 
-            try:
-                xl = pd.ExcelFile(uploaded_file, engine=engine)
-            except Exception as e:
-                xl = pd.ExcelFile(uploaded_file)
+            _clean_excel_purge_old_jobs()
 
-            sheet_names = xl.sheet_names
-            normalized_sheets = {s.strip().upper(): s for s in sheet_names}
-            
-            output_sheets_map = {
-                "ESTADO": ["ESTADO", "ESTADOS"],
-                "RESUMEN": ["RESUMEN"],
-                "CLIENTES": ["CLIENTES", "CLIENTE"],
-                "DATOS": ["DATOS"]
-            }
-            
-            import io
-            output = io.BytesIO()
-            
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                for out_name, variants in output_sheets_map.items():
-                    real_name = None
-                    for v in variants:
-                        if v.upper() in normalized_sheets:
-                            real_name = normalized_sheets[v.upper()]
-                            break
-                    
-                    if real_name:
-                        # Para leer los datos, usamos el mismo objeto de archivo
-                        # Aseguramos que el puntero esté al inicio si es necesario
-                        uploaded_file.seek(0)
-                        
-                        # Usar engine_kwargs solo si el motor es openpyxl
-                        engine_kwargs = {"data_only": True} if engine == 'openpyxl' else {}
-                        
-                        df = pd.read_excel(
-                            uploaded_file, 
-                            sheet_name=real_name, 
-                            dtype=str, 
-                            engine=engine,
-                            engine_kwargs=engine_kwargs
-                        )
-                        df = df.fillna("")
-                    else:
-                        df = pd.DataFrame()
-                    
-                    df.to_excel(writer, sheet_name=out_name, index=False)
-            
-            output.seek(0)
-            
-            response = HttpResponse(
-                output.read(),
-                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            job_id = uuid.uuid4().hex
+            paths = _clean_excel_job_paths(job_id)
+
+            with open(paths["input"], "wb") as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
+
+            base_name, _ext = os.path.splitext(uploaded_file.name)
+            download_filename = f"clean_{base_name}.xlsx"
+
+            _clean_excel_write_status(paths, {
+                "status": "processing",
+                "user_id": request.user.id,
+                "updated_at": time.time(),
+            })
+
+            print(f"{_C_CYAN}[clean_excel] Job {job_id[:8]} encolado por usuario {request.user.id} · '{uploaded_file.name}' ({uploaded_file.size / 1024 / 1024:.1f} MB){_C_RESET}")
+
+            thread = threading.Thread(
+                target=_clean_excel_run_job,
+                args=(job_id, paths["input"], download_filename, request.user.id),
+                daemon=True,
             )
-            base_name, _ = os.path.splitext(uploaded_file.name)
-            response['Content-Disposition'] = f'attachment; filename="clean_{base_name}.xlsx"'
-            return response
-            
+            thread.start()
+
+            return JsonResponse({"status": True, "job_id": job_id})
+
         except Exception as e:
             return JsonResponse({"status": False, "message": f"Error al procesar: {str(e)}"})
     return JsonResponse({"status": False, "message": "Método no permitido."})
+
+
+@login_required
+def clean_excel_status(request, job_id):
+    paths = _clean_excel_job_paths(job_id)
+    if not os.path.exists(paths["status"]):
+        return JsonResponse({"status": False, "message": "El trabajo no existe o expiró."}, status=404)
+
+    try:
+        with open(paths["status"], "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return JsonResponse({"status": False, "message": "No se pudo leer el estado del trabajo."}, status=500)
+
+    if data.get("user_id") != request.user.id:
+        return JsonResponse({"status": False, "message": "No autorizado."}, status=403)
+
+    return JsonResponse({
+        "status": True,
+        "job_status": data.get("status"),
+        "message": data.get("message"),
+    })
+
+
+@login_required
+def clean_excel_download(request, job_id):
+    paths = _clean_excel_job_paths(job_id)
+    if not os.path.exists(paths["status"]):
+        return JsonResponse({"status": False, "message": "El trabajo no existe o expiró."}, status=404)
+
+    with open(paths["status"], "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if data.get("user_id") != request.user.id:
+        return JsonResponse({"status": False, "message": "No autorizado."}, status=403)
+
+    if data.get("status") != "done" or not os.path.exists(paths["output"]):
+        return JsonResponse({"status": False, "message": "El archivo todavía no está listo."}, status=409)
+
+    with open(paths["output"], "rb") as f:
+        content = f.read()
+
+    response = HttpResponse(
+        content,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{data.get("filename", "clean.xlsx")}"'
+    return response
 
 @login_required
 @transaction.atomic

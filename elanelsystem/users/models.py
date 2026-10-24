@@ -369,6 +369,7 @@ class Cliente(models.Model):
     fec_nacimiento = models.CharField(max_length=10, default="", blank=True, null=True)
     estado_civil = models.CharField(max_length=50, blank=True, null=True)
     ocupacion = models.CharField(max_length=50, blank=True, null=True)
+    history = HistoricalRecords()
 
     # Si usás un QuerySet custom:
     # objects = ClienteQuerySet.as_manager()
@@ -409,8 +410,9 @@ class Cliente(models.Model):
             self.nro_cliente = self.next_for_agencia(self.agencia_registrada)
 
         # Validar formato básico (por si alguien lo tocó manualmente)
-        if not re.match(r"^cli_\d+$", self.nro_cliente):
-            raise ValidationError({"nro_cliente": "Formato inválido. Debe ser cli_###."})
+        # cln_### = clientes del sistema NUEVO de Posadas (ver users.utils.prefijo_clientes_import)
+        if not re.match(r"^cl[in]_\d+$", self.nro_cliente):
+            raise ValidationError({"nro_cliente": "Formato inválido. Debe ser cli_### o cln_###."})
 
     # ---------- Save con normalizaciones + asignación de número ----------
     def save(self, *args, **kwargs):

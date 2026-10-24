@@ -6,33 +6,53 @@
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link href="{% static 'js/vanilla-calendar-pro/styles/index.css' %}" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <script src="{% static 'js/vanilla-calendar-pro/index.js' %}" defer></script>
 {% endblock css %}
 
 {% block content %}
-    <div id="wrapperLoader">
-        <span id="loader"></span>
+<div id="wrapperLoader">
+    <span id="loader"></span>
+</div>
+
+<div class="sucursales-dashboard-container">
+    
+    <!-- Modern Header -->
+    <div class="modern-header">
+        <div class="header-icon-wrapper">
+            <i class="fa-solid fa-store"></i>
+        </div>
+        <div class="header-text">
+            <span class="header-subtitle">ADMINISTRACIÓN GLOBAL</span>
+            <h1 class="header-title">Sucursales y Agencias</h1>
+            <span class="header-desc">Configurar direcciones, horarios y gerentes de las sucursales</span>
+        </div>
     </div>
-  
+
+    <!-- Sucursales Grid/List -->
     <div class="wrapperListSucursales" id="wrapperListSucursales">
-        <h1>{{latest_sucursal}}</h1>
         {% for sucursal in sucursales %}
-            <div class="sucursalItem">
-                <h2>{{sucursal}}</h2>
+            <div class="sucursalItem glass-panel">
+                <div class="sucursal-card-header">
+                    <i class="fa-solid fa-shop branch-title-icon"></i>
+                    <h2>{{ sucursal }}</h2>
+                </div>
+                
                 <form method="POST" class="formSucursal">
                     {% csrf_token %}
                     <input type="hidden" class="input-id" name="inputID" value="{{sucursal.pk}}">
+                    
                     <div class="containerInputs">
                         <div class="wrapperInput">
-                            <label for="">Dirección</label>
+                            <label for=""><i class="fa-solid fa-location-dot"></i> Dirección</label>
                             <input type="text" class="input-direccion" name="inputDireccion" value="{{sucursal.direccion}}">
                         </div>
                         <div class="wrapperInput hora">
-                            <label for="">Hora de entrada</label>
+                            <label for=""><i class="fa-solid fa-clock"></i> Hora de entrada</label>
                             <input type="text" class="input-hora" name="inputHora" value="{{sucursal.hora_apertura}}">
                         </div>
                         <div id="selectWrapperSelectGerente" class="wrapperSelectFilter wrapperInput">
-                            <label class="labelInput">Gerente</label>
+                            <label class="labelInput"><i class="fa-solid fa-user-tie"></i> Gerente</label>
                             <div class="containerInputAndOptions">
                                 <img id="sucursalIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""/>
                                 
@@ -52,33 +72,39 @@
                     </div>
                     
                     <div class="buttonsActions">
-                        <button type="button" onclick="editarSucursal(this)" class="enableForm add-button-default">Editar</button>
-                        <button type="button" onclick="deleteAgencia(this)" class="deleteSucursal delete-button-default" >Eliminar</button>
+                        <button type="button" onclick="editarSucursal(this)" class="enableForm add-button-default">
+                            <i class="fa-solid fa-pen-to-square"></i> Editar
+                        </button>
+                        <button type="button" onclick="deleteAgencia(this)" class="deleteSucursal delete-button-default">
+                            <i class="fa-solid fa-trash-can"></i> Eliminar
+                        </button>
                     </div>
                 </form>
-            
             </div>
         {% endfor %}
-    
     </div>
-    <button type="button" onclick='newSucursalForm_HTML()' class="add-button-default" id="buttonAddSucursal">Agregar sucursal</button>
-    
+
+    <!-- Add branch floating actions -->
+    <div class="bottom-actions">
+        <button type="button" onclick='newSucursalForm_HTML()' class="btn-add-branch" id="buttonAddSucursal">
+            <i class="fa-solid fa-circle-plus"></i> Agregar Sucursal
+        </button>
+    </div>
+</div>
 {% endblock content %}
+
 {% block js %}
 <script>
     var CSRF_TOKEN = '{% csrf_token %}'
     var gerentesDisponibles = {{ gerentesDisponibles|safe }}
     var imgArrowDown = "{% static 'images/icons/arrowDown.png' %}"
-    // URLs - - - - - - - -
     var urlUpdateS = "{% url 'users:updateSucursal' %}"
     var urlAddS = "{% url 'users:addSucursal' %}"
     var urlRemoveS = "{% url 'users:removeSucursal' %}"
-    // - - - - - - - -
-
 </script>
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/vanilla-calendar-pro/selectHoraManage.js' %}" defer></script>
-<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js.js' %}"></script>
-<script src="{% static 'js/sales¿'/fetch_upload_sucursal.js' %}"></script>
-
+<script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
+<script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js' %}"></script>
+<script src="{% static 'js/sales/fetch_upload_sucursal.js' %}"></script>
 {% endblock js %}

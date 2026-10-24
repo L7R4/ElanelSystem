@@ -1,162 +1,330 @@
-.wrapper_content
-{
-    padding: 4rem;
-    box-sizing: border-box;
+/* ==========================================================================
+   MODERN CUENTAS DE COBROS (PAYMENT ACCOUNTS) ADMINISTRATION STYLES
+   ========================================================================== */
+
+/* Main Container Layout */
+.cuentas-cobros-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+    color: var(--third-color);
 }
-.wrapperListCuentaCobros{
+
+/* Modern Header */
+.modern-header {
     display: flex;
+    align-items: center;
     gap: 2rem;
-    flex-wrap: wrap;
-}
-.tittlePanel{
-    font-size: clamp(3rem, 2vw, 5rem);
-    font-family: raleway-semibold;
-    color:var(--third-color); 
-    padding-bottom: 3rem;
-}
-.cuentaItem{
-    width: 40%;
-    background-color: #fff;
-    margin-bottom: 1.4rem;
-    border-radius: .7rem;
-    box-sizing: border-box;
-    padding: 1rem 2rem;
-    min-width: 30rem;
-}
-.cuentaItem > h2{
-    font-size: clamp(1.8rem, 1.5vw, 2.2rem);
-    font-family: raleway-semibold;
-    color:var(--primary-color); 
-}
-.containerInputs{
-    display: flex;
-    gap: 1rem;
-    margin: .7rem 0rem;
-    width: 100%;
-    flex-wrap: wrap;
-}
-.wrapperInput{
-    width: 30%;
+    margin-bottom: 3.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.08);
 }
 
-.wrapperInput:first-child{
-    width: 80%;
-}
-
-.wrapperInput > label{
-    display: block;
-    font-size: clamp(1.3rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    margin-bottom: .3rem;
-    /* color:var(--primary-color);  */
-}
-
-.wrapperInput > input{
-    width: 100%;
-    box-sizing: border-box;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    background-color: #3043615e;
-    color: #000000c2;
-    border: 2px solid var(--third-color);
-    border-radius: 0.6rem;
+.header-icon-container {
+    width: 75px;
+    height: 75px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(6, 137, 250, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    border: 1px solid rgba(6, 137, 250, 0.25);
     display: flex;
     align-items: center;
-    padding: .6rem;
-    text-indent: 1rem;
-    outline: none;
-    pointer-events: none;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(6, 137, 250, 0.15);
 }
 
-.wrapperInput> input.open{
-    color: var(--background-color);
-    pointer-events: unset;
-    background-color: transparent;
-    border: 2px solid var(--primary-color);
+.header-main-icon {
+    font-size: 2.2rem;
+    color: var(--blue-accent-color);
+    text-shadow: 0 0 10px rgba(6, 137, 250, 0.3);
+}
 
+.header-text {
+    display: flex;
+    flex-direction: column;
 }
-.wrapperInputNew{
-    width: 47%;
+
+.header-subtitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--blue-accent-color);
+    text-transform: uppercase;
 }
-.wrapperInputNew > label{
-    display: block;
-    font-size: clamp(1.3rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    margin-bottom: .3rem;
-    /* color:var(--primary-color);  */
+
+.header-title {
+    font-size: clamp(2rem, 2vw, 3rem);
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0.2rem 0;
 }
-.wrapperInputNew > input{
+
+.header-desc {
+    font-size: 1.25rem;
+    color: var(--white-800-80);
+    margin-top: 0.2rem;
+}
+
+/* Accounts List Grid */
+.wrapperListCuentaCobros {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 2rem;
     width: 100%;
+    margin-bottom: 4rem;
+}
+
+/* Cuenta Item Card (Glassmorphism) */
+.cuentaItem {
+    width: 100% !important;
+    background: rgba(24, 31, 46, 0.7);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(250, 248, 255, 0.06);
+    border-radius: 16px;
+    padding: 2.2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     box-sizing: border-box;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    border: 2px solid var(--third-color);
-    background-color: #3043615e;
-    color: #000000c2;
-    border-radius: 0.6rem;
+    position: relative !important;
+}
+
+.cuentaItem:hover {
+    border-color: rgba(6, 137, 250, 0.25);
+    box-shadow: 0 15px 45px rgba(0,0,0,0.35);
+    transform: translateY(-2px);
+}
+
+.cuenta-card-header {
     display: flex;
     align-items: center;
-    padding: .6rem;
-    text-indent: 1.2rem;
-    outline: none;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.05);
+    padding-bottom: 1rem;
 }
 
-.wrapperInputNew> input.open{
-    color: var(--background-color);
-    pointer-events: unset;
-    background-color: transparent;
-    border: 2px solid var(--primary-color);
-
+.branch-title-icon {
+    font-size: 1.6rem;
+    color: var(--blue-accent-color);
 }
 
-.buttonsActions{
-    width: 100%;
+.cuentaItem h2 {
+    font-size: 1.6rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+/* Inputs Layout inside Card */
+.containerInputs {
+    margin: 1.5rem 0 !important;
+}
+
+.wrapperInput, .wrapperInputNew {
+    width: 100% !important;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.labelInput {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: rgba(250, 248, 255, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.labelInput i {
+    color: var(--blue-accent-color);
+}
+
+/* Styled Inputs */
+.input-alias-style, .cuentaItem.new input {
+    width: 100% !important;
+    height: 4.2rem !important;
+    background-color: rgba(15, 21, 36, 0.4) !important;
+    border: 1px solid rgba(250, 248, 255, 0.05) !important;
+    border-radius: 10px !important;
+    padding: 0 1.5rem !important;
+    font-size: 1.4rem !important;
+    font-family: 'Raleway-Medium', sans-serif !important;
+    color: var(--third-color) !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    transition: all 0.25s ease !important;
+}
+
+.cuentaItem.new input {
+    border: 1px solid rgba(6, 137, 250, 0.25) !important;
+    background-color: rgba(15, 21, 36, 0.7) !important;
+}
+
+.cuentaItem.new input:focus {
+    border-color: var(--blue-accent-color) !important;
+    box-shadow: 0 0 10px rgba(6, 137, 250, 0.15) !important;
+}
+
+/* Read-only styles (Existing items) */
+.input-alias-style[readonly] {
+    background-color: rgba(15, 21, 36, 0.2) !important;
+    border-color: rgba(250, 248, 255, 0.02) !important;
+    color: rgba(250, 248, 255, 0.75) !important;
+    pointer-events: none !important;
+}
+
+/* Actions Area */
+.buttonsActions {
+    margin-top: 2rem;
     display: flex;
     gap: 1rem;
-}
-.deleteCuenta{
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-}
-#buttonStopAddCuenta{
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--background-color);
-}
-.enableForm,.uploadForm, #buttonConfirmAddCuenta{
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
 }
 
-.desableForm{
-    color: var(--background-color);
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-}
-
-#buttonAddCuenta{
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-    width: 20%;
-    padding: 1.2rem .9rem;
+/* Buttons base styling */
+.deleteCuenta, .button-default-style, .add-button-default {
+    height: 3.8rem;
+    padding: 0 1.8rem;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
     cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    outline: none;
 }
-#buttonAddCuenta.blocked{
-    display: none;
+
+/* Confirm Action (Save New Account) */
+.add-button-default {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+    color: var(--third-color) !important;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2) !important;
 }
-.div{
-    width: 2rem;
-    height: 2rem;
-    background-color: red;
+
+.add-button-default:hover {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+    transform: translateY(-1px) !important;
 }
-.desableForm,.uploadForm{
-    display: none;
+
+/* Cancel Action (Stop adding) */
+.button-default-style {
+    background-color: rgba(250, 248, 255, 0.05) !important;
+    color: var(--third-color) !important;
+    border: 1px solid rgba(250, 248, 255, 0.1) !important;
 }
-.desableForm.active,.uploadForm.active{
+
+.button-default-style:hover {
+    background-color: rgba(250, 248, 255, 0.1) !important;
+}
+
+/* Delete Action */
+.deleteCuenta {
+    background-color: rgba(239, 68, 68, 0.08) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    width: 100%; /* Make delete button full width for existing cards */
+}
+
+.deleteCuenta:hover {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #ef4444 !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Dynamic Add Button (Bottom Right Floating/Styled) */
+.add-btn-container {
     display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
 }
-.div.active{
-    background-color: green;
-    
+
+.btn-add-account {
+    background: linear-gradient(135deg, var(--blue-accent-color) 0%, #7c3aed 100%) !important;
+    color: var(--third-color) !important;
+    font-family: 'Raleway-Bold', sans-serif;
+    font-size: 1.4rem;
+    padding: 1.2rem 2.4rem;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(6, 137, 250, 0.25);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    transition: all 0.25s ease;
 }
-.formSucursal{
-    position: relative;
+
+.btn-add-account:hover {
+    box-shadow: 0 6px 20px rgba(6, 137, 250, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-add-account.blocked {
+    display: none;
+}
+
+/* ==========================================================================
+   TINGLE MODAL OVERRIDES FOR PAYMENT ACCOUNTS
+   ========================================================================== */
+.tingle-modal {
+    backdrop-filter: blur(8px) !important;
+    background: rgba(11, 15, 25, 0.7) !important;
+}
+
+.tingle-modal-box {
+    background: rgba(20, 27, 41, 0.95) !important;
+    border: 1px solid rgba(250, 248, 255, 0.08) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4) !important;
+}
+
+.tingle-modal-box__content {
+    padding: 3rem !important;
+    color: var(--third-color) !important;
+    font-family: 'Raleway-Medium', sans-serif !important;
+}
+
+.tingle-modal-box__content h2 {
+    font-family: 'Raleway-Bold', sans-serif !important;
+    font-size: 2.2rem !important;
+    color: var(--third-color) !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.tingle-modal-box__content p {
+    font-size: 1.4rem !important;
+    color: var(--white-800-80) !important;
+}
+
+.tingle-modal-box__footer {
+    background: rgba(15, 21, 36, 0.5) !important;
+    border-top: 1px solid rgba(250, 248, 255, 0.05) !important;
+    padding: 1.5rem 3rem !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 1rem !important;
+}
+
+.tingle-btn {
+    font-family: 'Raleway-Bold', sans-serif !important;
+    font-size: 1.3rem !important;
+    padding: 1.2rem 2.4rem !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+.tingle-btn--danger {
+    background-color: #ef4444 !important;
+}
+
+.tingle-btn--default {
+    background-color: rgba(250, 248, 255, 0.08) !important;
+    color: var(--third-color) !important;
 }

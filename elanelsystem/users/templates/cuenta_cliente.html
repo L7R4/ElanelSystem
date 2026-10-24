@@ -1,242 +1,175 @@
-{% extends 'molde.html' %} {% load static %} {% load humanize %} {% load i18n %}
-{% load util %} {% block css %}
+{% extends 'molde.html' %} 
+{% load static %} 
+{% load humanize %} 
+{% load i18n %}
+{% load util %} 
+
+{% block css %}
 <link rel="stylesheet" href="{% static 'css/cuentaCustomer.css' %}" />
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}" />
-{% endblock css %} {% block content %}
-<div class="titleAccountWrapper">
-  <img src="{% static 'images/icons/contacts_product_icon.svg' %}" alt="">
-  <h2>{{customer.nombre|upper}}</h2>
-</div>
-<div class="accountWrapper">
-    <div class="operations">
-      <h2>Ventas asociadas</h2>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock css %} 
 
-      <div class="filters">
-        <form id="formFilterVentas" method="POST">
+{% block content %}
+<div class="account-dashboard-container">
+  <!-- Modern Profile Header -->
+  <div class="modern-profile-header">
+    <div class="profile-avatar-circle">
+      <i class="fa-solid fa-user-tie"></i>
+    </div>
+    <div class="profile-header-text">
+      <span class="profile-subtitle">CUENTA DE CLIENTE</span>
+      <h1 class="profile-title">{{customer.nombre|upper}}</h1>
+    </div>
+    
+    <div class="profile-quick-stats">
+      <div class="stat-badge">
+        <span class="stat-label">NRO CLIENTE</span>
+        <span class="stat-value">{{customer.nro_cliente}}</span>
+      </div>
+      <div class="stat-badge danger-badge">
+        <span class="stat-label">DNI</span>
+        <span class="stat-value">{{customer.dni}}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="account-layout-grid">
+    <!-- Left Column: Operations/Sales -->
+    <div class="operations-panel glass-panel">
+      <div class="panel-header">
+        <div class="panel-header-title">
+          <i class="fa-solid fa-receipt icon-accent"></i>
+          <h2>Ventas Asociadas</h2>
+        </div>
+        
+        <a class="btn-new-sale" href="{% url 'sales:create_sale' customer.id %}" id="create_customer">
+          <i class="fa-solid fa-circle-plus"></i> Nueva Venta
+        </a>
+      </div>
+
+      <!-- Filters Row -->
+      <div class="filters-container">
+        <form id="formFilterVentas" method="POST" autocomplete="off" class="modern-filter-form">
           {% csrf_token %}
-          <div>
-            <div class="searchFilter">
+          <div class="filter-fields-row">
+            <div class="searchFilter field-group">
+              <i class="fa-solid fa-magnifying-glass search-icon-embed"></i>
               <input
                 type="text"
-                class="customer input-read-write-default"
-                placeholder="N° Venta"
+                class="modern-filter-input"
+                placeholder="Buscar por N° Venta..."
                 id="operation"
                 name="nro_operacion"
               />
-      
-              <img src="{% static 'images/icons/search.svg' %}" alt="" />
             </div>
-            <div
-              id="productoWrapper"
-              class="wrapperTypeFilter wrapperSelectCustom inputWrapper"
-            >
-              <h3 class="labelInput">Producto</h3>
+            
+            <div id="productoWrapper" class="wrapperSelectCustom inputWrapper field-group">
               <div class="containerInputAndOptions">
-                <img
-                  class="iconDesplegar"
-                  src="{% static 'images/icons/arrowDown.png' %}"
-                  alt=""
-                />
+                <i class="fa-solid fa-box field-icon-embed"></i>
                 <input
                   type="hidden"
                   class="filterInput"
                   name="producto"
                   id="productoInput"
-                  placeholder="Seleccionar"
+                  placeholder="Todos los productos"
                   autocomplete="off"
                   readonly
                 />
-                <div class="onlySelect pseudo-input-select-wrapper">
-                  <h3></h3>
+                <div class="onlySelect pseudo-input-select-wrapper modern-filter-select">
+                  <h3 class="placeholder">Todos los productos</h3>
+                  <i class="fa-solid fa-chevron-down iconDesplegar"></i>
                 </div>
                 <ul id="contenedorProducto" class="list-select-custom options">
+                  <li data-value="" class="clear-selection">Todos los productos</li>
                   {% for producto in productoDelCliente %}
                   <li data-value="{{producto}}">{{producto}}</li>
                   {% endfor %}
                 </ul>
               </div>
             </div>
-            <button
-              type="button"
-              id="submitSearchVenta"
-              disabled
-              class="add-button-default"
-            >
+            
+            <button type="button" id="submitSearchVenta" disabled class="btn-search-hidden">
               Buscar
             </button>
           </div>
         </form>
-        <a
-          class="add-button-default"
-          href="{% url 'sales:create_sale' customer.id %}"
-          id="create_customer"
-          >
-          <img src="{% static 'images/icons/more_icon.svg' %}" alt="">
-          Nueva venta
-        </a>
       </div>
-    <div class="operationsWrapper">
-      <ul class="operationsList">
-        {% comment %} {% for operacion in ventas %}
-        <li class="operationItem">
-          <div class="nameStatus">
-            <img
-              class="iconProducto"
-              src="{% static 'images/icons/motomoto.svg' %}"
-              alt=""
-            />
 
-            <h1>{{operacion.producto.nombre}}</h1>
-            {% if operacion.adjudicado.status%}
-            <div class="iconStatus adjudicada"></div>
-            <h3>Adjudicado por {{operacion.adjudicado.tipo}}</h3>
-            {% else %} {% if operacion.deBaja.status %}
-            <div class="badgeStatus baja">
-              <div class="iconStatus baja"></div>
-              <h3>De baja por {{operacion.deBaja.motivo}}</h3>
-            </div>
-            {% if operacion.deBaja.motivo == "cliente" %}
-            <a
-              href="{% url 'sales:bajaPDF' operacion.pk %}"
-              target="_blank"
-              id="downloadPDF"
-              >Descargar PDF</a
-            >
-            {% endif %} {% if operacion.deBaja.motivo == "plan recupero" %}
-            <a
-              href="{% url 'sales:detail_sale' operacion.deBaja.nuevaVentaPK %}"
-              target="_blank"
-              id="downloadPDF"
-              >Ver nuevo plan</a
-            >
-            {% endif %} {% else %} {% if operacion.suspendida %}
-            <div class="badgeStatus suspendida">
-              <div class="iconStatus suspendida"></div>
-              <h3>Suspendido</h3>
-            </div>
-            {% else %}
-            <div class="badgeStatus activo">
-              <div class="iconStatus activo"></div>
-              <h3>Activo</h3>
-            </div>
-            {% endif %} {% endif %} {% endif %}
-          </div>
-          <div class="attributes">
-            <div class="information">
-              <h2>Importe</h2>
-              <h3>${{operacion.importe|floatformat:0}}</h3>
-            </div>
-
-            <div class="information">
-              <h2>Fecha Inscripcion</h2>
-              <h3>{{operacion.fecha|slice:":10"}}</h3>
-            </div>
-
-            <div class="information">
-              <h2>N° Operacion</h2>
-              <h3>{{operacion.nro_operacion}}</h3>
-            </div>
-
-            <div class="information">
-              <h2>Cuotas pagadas</h2>
-              <h3>{{operacion|cuotas_pagadas_len}}</h3>
-            </div>
-            <div class="information">
-              <h2>N° Orden/es</h2>
-              <div class="ordenesWrapper">
-                {% for contrato in operacion.cantidadContratos %} 
-                {% if operacion.adjudicado.status and contrato.nro_contrato == operacion.adjudicado.contratoAdjudicado%}
-                <h3 class="adjudicadoTag">{{contrato.nro_orden}}</h3>
-                {% else %}
-                <h3>{{contrato.nro_orden}}</h3>
-                {% endif %} {% endfor %}
-              </div>
-            </div>
-          </div>
-          <div class="iconsAttributes">
-            <a
-              href="{% url 'sales:detail_sale' operacion.id %}"
-              class="buttonMore"
-            >
-              <div>
-                <h3>Ver mas</h3>
-                <img
-                  src="{% static 'images/icons/nextSinBackground.png' %}"
-                  alt=""
-                />
-              </div>
-            </a>
-          </div>
-        </li>
-        {% endfor %} {% endcomment %}
-      </ul>
+      <!-- Operations List -->
+      <div class="operationsWrapper">
+        <ul class="operationsList">
+          <!-- Dynamic rendering inside operation.js -->
+        </ul>
+      </div>
     </div>
-  </div>
 
-  <div class="informationUser">
-    <div class="informationUserWrapper">
-      <h2>Datos personales</h2>
-      <ul class="data">
-        <li id="nombre">
-          <h2>Nombre completo</h2>
-          <h3>{{customer.nombre}}</h3>
-        </li>
+    <!-- Right Column: Personal Data Sidebar -->
+    <div class="sidebar-panel glass-panel">
+      <div class="panel-header border-bottom">
+        <i class="fa-solid fa-address-card icon-accent"></i>
+        <h2>Datos Personales</h2>
+      </div>
+      
+      <div class="sidebar-body">
+        <ul class="personal-data-list">
+          <li>
+            <span class="data-label"><i class="fa-regular fa-user"></i> Nombre Completo</span>
+            <span class="data-value">{{customer.nombre}}</span>
+          </li>
 
-        <li id="nroCliente">
-          <h2>N° Cliente</h2>
-          <h3 id="numberCliente">{{customer.nro_cliente}}</h3>
-        </li>
+          <li>
+            <span class="data-label"><i class="fa-solid fa-hashtag"></i> N° Cliente</span>
+            <span class="data-value highlight-value">{{customer.nro_cliente}}</span>
+          </li>
 
-        <li id="dni">
-          <h2>DNI</h2>
-          <h3>{{customer.dni}}</h3>
-        </li>
+          <li>
+            <span class="data-label"><i class="fa-solid fa-id-card"></i> DNI</span>
+            <span class="data-value">{{customer.dni}}</span>
+          </li>
 
-        <li id="fechaNacimiento">
-          <h2>Fecha de nacimiento</h2>
-          <h3>{{customer.fec_nacimiento}}</h3>
-        </li>
+          <li>
+            <span class="data-label"><i class="fa-regular fa-calendar"></i> Fecha de Nacimiento</span>
+            <span class="data-value">{{customer.fec_nacimiento}}</span>
+          </li>
 
-        <li id="loc">
-          <h2>Localidad</h2>
-          <h3>{{customer.loc}}</h3>
-        </li>
+          <li>
+            <span class="data-label"><i class="fa-solid fa-phone"></i> Teléfono</span>
+            <span class="data-value">{{customer.tel}}</span>
+          </li>
 
-        <li id="prov">
-          <h2>Provincia</h2>
-          <h3>{{customer.prov}}</h3>
-        </li>
+          <li>
+            <span class="data-label"><i class="fa-solid fa-house"></i> Domicilio</span>
+            <span class="data-value">{{customer.domic}}</span>
+          </li>
 
-        <li id="postal">
-          <h2>Cod. Postal</h2>
-          <h3>{{customer.cod_postal}}</h3>
-        </li>
+          <li>
+            <span class="data-label"><i class="fa-solid fa-city"></i> Localidad / Provincia</span>
+            <span class="data-value">{{customer.loc}} - {{customer.prov}}</span>
+          </li>
 
-        <li id="domic">
-          <h2>Domicilio</h2>
-          <h3>{{customer.domic}}</h3>
-        </li>
+          <li>
+            <span class="data-label"><i class="fa-solid fa-mail-bulk"></i> Código Postal</span>
+            <span class="data-value">{{customer.cod_postal}}</span>
+          </li>
 
-        <li id="tel">
-          <h2>Telefono</h2>
-          <h3>{{customer.tel}}</h3>
-        </li>
+          <li>
+            <span class="data-label"><i class="fa-solid fa-ring"></i> Estado Civil</span>
+            <span class="data-value">{{customer.estado_civil}}</span>
+          </li>
 
-        <li id="estadoCivil">
-          <h2>Estado civil</h2>
-          <h3>{{customer.estado_civil}}</h3>
-        </li>
-
-        <li id="ocupacion">
-          <h2>Ocupacion</h2>
-          <h3>{{customer.ocupacion}}</h3>
-        </li>
-      </ul>
+          <li>
+            <span class="data-label"><i class="fa-solid fa-briefcase"></i> Ocupación</span>
+            <span class="data-value">{{customer.ocupacion}}</span>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
+{% endblock content %} 
 
-{% endblock content %} {% block js %}
+{% block js %}
 <script src="{% static 'js/vanilla_components/inputSelectOnly_v2.js' %}"></script>
 <script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
 <script type="module" src="{% static 'js/vanilla_components/async_ui.js' %}"></script>

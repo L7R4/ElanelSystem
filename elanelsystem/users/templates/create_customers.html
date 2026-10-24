@@ -6,84 +6,147 @@
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link rel="stylesheet" href="{% static 'js/vanilla-calendar-pro/styles/index.css' %}">
 <link rel="stylesheet" href="{% static 'js/vanilla-calendar-pro/styles/customStyles.css' %}">
+<!-- Add Font Awesome for modern icon representation if needed, but we can also use custom SVG icons or emojis/clean CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock css %}
     
 {% block content %}
-    {% comment %} <div class="wrapper_tittle">
-        <h1>NUEVO CLIENTE</h1>
-    </div> {% endcomment %}
-    <div class="titleHeaderWrapper">
-        <img src="{% static 'images/icons/new_user.svg' %}" alt="">
-        <h1 class="titleHeader">NUEVO CLIENTE</h1>
-    </div>
+    <div class="customer-creation-container">
+        <!-- Modern Header -->
+        <div class="modern-header">
+            <div class="header-icon-wrapper">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div class="header-text">
+                <span class="header-subtitle">GESTIÓN DE CLIENTES</span>
+                <h1 class="header-title">Crear Nuevo Cliente</h1>
+            </div>
+            
+            <!-- Quick info badge for client number -->
+            <div class="client-badge">
+                <span class="badge-label">NRO CLIENTE ASIGNADO</span>
+                <span class="badge-value">{{customer_number}}</span>
+            </div>
+        </div>
 
-    <form method="post" id="form_create_customer" autocomplete="off">
+        <form method="post" id="form_create_customer" autocomplete="off" class="modern-form">
             {% csrf_token %}
 
-            <div class="inputWrapper" id="wrapperNroCliente">
-                <label for="">Nro Cliente</label>
-                <input type="text" readonly value="{{customer_number}}" class="input-read-write-default" maxlength="15" id="id_nro_cliente">
-            </div>
-         
-            <div class="inputWrapper" id="wrapperNombre">
-                <label for="">Nombre</label>
-                <input type="text" name="nombre" class="input-read-write-default" maxlength="100" required id="id_nombre">
-            </div>
-         
-            <div class="inputWrapper" id="wrapperDNI">
-                <label for="">DNI</label>
-                <input type="number" name="dni" class="input-read-write-default" oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);" maxlength="9" required id="id_dni">
-            </div>
-         
-            <div class="inputWrapper" id="wrapperDomicilio">
-                <label for="">Domicilio</label>
-                <input type="text" name="domic" class="input-read-write-default" maxlength="100" required= id="id_domic">
-            </div>
-         
-            <div class="inputWrapper" id="wrapperLocalidad">
-                <label for="">Localidad</label>
-                <input type="text" name="loc" class="input-read-write-default" maxlength="40" required id="id_loc">
-            </div>
-         
-            <div class="inputWrapper" id="wrapperProvincia">
-                <label for="">Provincia</label>
-                <input type="text" name="prov" class="input-read-write-default" maxlength="40" required id="id_prov">
-            </div>
-         
-            <div class="inputWrapper" id="wrapperCP">
-                <label for="">Código Postal</label>
-                <input type="number" name="cod_postal" class="input-read-write-default" oninput="if(this.value.length > 7) this.value = this.value.slice(0, 7);" maxlength="7" required id="id_cod_postal">
-            </div>
-         
-            <div class="inputWrapper" id="wrapperTelefono">
-                <label for="">Teléfono</label>
-                <input type="number" name="tel" class="input-read-write-default" required id="id_tel">
-            </div>
-         
-            <div class="inputWrapper" id="wrapperFecNacimiento">
-                <label for="">Fecha de Nacimiento</label>
-                <input type="text" name="fec_nacimiento" class="input-read-write-default" maxlength="10" required readonly id="id_fec_nacimiento">
-            </div>
-         
-            <div class="inputWrapper" id="wrapperEstadoCivil">
-                <label for="">Estado Civil</label>
-                <input type="text" name="estado_civil" class="input-read-write-default" maxlength="20" required id="id_estado_civil">
-            </div>
-         
-            <div class="inputWrapper" id="wrapperOcupacion">
-                <label for="">Ocupación</label>
-                <input type="text" name="ocupacion" class="input-read-write-default" maxlength="50" required id="id_ocupacion">
-            </div>
-        
-    </form>
+            <!-- Hidden or styled utility field for nro_cliente -->
+            <input type="hidden" value="{{customer_number}}" id="id_nro_cliente">
 
+            <div class="form-sections-grid">
+                <!-- SECTION 1: Personal Information -->
+                <div class="form-card glass-panel">
+                    <div class="card-header">
+                        <i class="fa-solid fa-address-card card-icon"></i>
+                        <h2>Información Personal</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="inputWrapper full-width" id="wrapperNombre">
+                            <label for="id_nombre">Nombre Completo</label>
+                            <div class="input-field-container">
+                                <i class="fa-regular fa-user field-icon"></i>
+                                <input type="text" name="nombre" class="modern-input" placeholder="Ej. Juan Pérez" maxlength="100" required id="id_nombre">
+                            </div>
+                        </div>
+                     
+                        <div class="inputWrapper" id="wrapperDNI">
+                            <label for="id_dni">DNI / Documento</label>
+                            <div class="input-field-container">
+                                <i class="fa-solid fa-id-card field-icon"></i>
+                                <input type="number" name="dni" class="modern-input" oninput="if(this.value.length > 9) this.value = this.value.slice(0, 9);" placeholder="Sin puntos" maxlength="9" required id="id_dni">
+                            </div>
+                        </div>
 
-    <div class="wrapperButtons">
-        <button type="button" id="saveButton" class="add-button-default" form="form_create_customer">Guardar</button>
-        <a class="delete-button-default" href="{% url 'users:list_customers' %}"> Cancelar </a>
+                        <div class="inputWrapper" id="wrapperFecNacimiento">
+                            <label for="id_fec_nacimiento">Fecha de Nacimiento</label>
+                            <div class="input-field-container">
+                                <i class="fa-regular fa-calendar field-icon"></i>
+                                <input type="text" name="fec_nacimiento" class="modern-input cursor-pointer" placeholder="Seleccionar fecha" maxlength="10" required readonly id="id_fec_nacimiento">
+                            </div>
+                        </div>
+                     
+                        <div class="inputWrapper" id="wrapperEstadoCivil">
+                            <label for="id_estado_civil">Estado Civil</label>
+                            <div class="input-field-container">
+                                <i class="fa-solid fa-ring field-icon"></i>
+                                <input type="text" name="estado_civil" class="modern-input" placeholder="Ej. Soltero/a, Casado/a" maxlength="20" required id="id_estado_civil">
+                            </div>
+                        </div>
+                     
+                        <div class="inputWrapper" id="wrapperOcupacion">
+                            <label for="id_ocupacion">Ocupación / Profesión</label>
+                            <div class="input-field-container">
+                                <i class="fa-solid fa-briefcase field-icon"></i>
+                                <input type="text" name="ocupacion" class="modern-input" placeholder="Ej. Empleado, Autónomo" maxlength="50" required id="id_ocupacion">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: Location & Contact -->
+                <div class="form-card glass-panel">
+                    <div class="card-header">
+                        <i class="fa-solid fa-map-location-dot card-icon"></i>
+                        <h2>Contacto y Ubicación</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="inputWrapper" id="wrapperTelefono">
+                            <label for="id_tel">Teléfono de Contacto</label>
+                            <div class="input-field-container">
+                                <i class="fa-solid fa-phone field-icon"></i>
+                                <input type="number" name="tel" class="modern-input" placeholder="Ej. 3764123456" required id="id_tel">
+                            </div>
+                        </div>
+
+                        <div class="inputWrapper" id="wrapperCP">
+                            <label for="id_cod_postal">Código Postal</label>
+                            <div class="input-field-container">
+                                <i class="fa-solid fa-mail-bulk field-icon"></i>
+                                <input type="number" name="cod_postal" class="modern-input" oninput="if(this.value.length > 7) this.value = this.value.slice(0, 7);" placeholder="Ej. 3300" maxlength="7" required id="id_cod_postal">
+                            </div>
+                        </div>
+                     
+                        <div class="inputWrapper full-width" id="wrapperDomicilio">
+                            <label for="id_domic">Domicilio</label>
+                            <div class="input-field-container">
+                                <i class="fa-solid fa-house field-icon"></i>
+                                <input type="text" name="domic" class="modern-input" placeholder="Calle, número, piso, dpto" maxlength="100" required id="id_domic">
+                            </div>
+                        </div>
+                     
+                        <div class="inputWrapper" id="wrapperLocalidad">
+                            <label for="id_loc">Localidad</label>
+                            <div class="input-field-container">
+                                <i class="fa-solid fa-city field-icon"></i>
+                                <input type="text" name="loc" class="modern-input" placeholder="Ej. Posadas" maxlength="40" required id="id_loc">
+                            </div>
+                        </div>
+                     
+                        <div class="inputWrapper" id="wrapperProvincia">
+                            <label for="id_prov">Provincia</label>
+                            <div class="input-field-container">
+                                <i class="fa-solid fa-map field-icon"></i>
+                                <input type="text" name="prov" class="modern-input" placeholder="Ej. Misiones" maxlength="40" required id="id_prov">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Actions -->
+        <div class="action-footer glass-panel">
+            <button type="button" id="saveButton" class="btn-save" form="form_create_customer">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar Cliente
+            </button>
+            <a class="btn-cancel" href="{% url 'users:list_customers' %}">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+            </a>
+        </div>
     </div>
 {% endblock content %}
-
 
 {% block js %}
     <script src="{% static 'js/vanilla-calendar-pro/index.js' %}"></script>
@@ -102,9 +165,7 @@
             disableFuture: true,    // 👈 bloquea futuras
             });
         });
-        
     </script>
     <script src="{% static 'js/vanilla_components/errorsFormManagement.js' %}"></script>
     <script src="{% static 'js/users/redirectNewCustomer.js' %}"></script>
-
 {% endblock js %}

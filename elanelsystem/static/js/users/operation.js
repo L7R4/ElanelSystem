@@ -133,17 +133,22 @@
     const disabled = !venta.detail_url;
 
     let statusBlock = "";
-    if (adjudicado?.status) {
-      statusBlock = `
-        <div class="iconStatus adjudicada"></div>
-        <h3>Adjudicado por ${adjudicado.tipo ?? ""}</h3>
-      `;
-    } else if (deBaja?.status) {
+    // La baja tiene prioridad: una venta adjudicada que luego se dio de baja tiene que verse como
+    // "De baja" (antes solo mostraba "Adjudicado por ..." y no se notaba hasta entrar a la venta).
+    if (deBaja?.status) {
       statusBlock = `
         <div class="badgeStatus baja">
           <div class="iconStatus baja"></div>
           <h3>De baja por ${deBaja.motivo ?? ""}</h3>
         </div>
+        ${
+          adjudicado?.status
+            ? `<div class="badgeStatus adjudicada-previa">
+                <div class="iconStatus adjudicada"></div>
+                <h3>Había sido adjudicada por ${adjudicado.tipo ?? ""}</h3>
+              </div>`
+            : ""
+        }
         ${
           deBaja.motivo === "cliente" && deBaja.pdf_url
             ? `<a href="${deBaja.pdf_url}" target="_blank" id="downloadPDF">Descargar PDF</a>`
@@ -157,6 +162,11 @@
               }" target="_blank" id="downloadPDF">Ver nuevo plan</a>`
             : ""
         }
+      `;
+    } else if (adjudicado?.status) {
+      statusBlock = `
+        <div class="iconStatus adjudicada"></div>
+        <h3>Adjudicado por ${adjudicado.tipo ?? ""}</h3>
       `;
     } else if (suspendida) {
       statusBlock = `

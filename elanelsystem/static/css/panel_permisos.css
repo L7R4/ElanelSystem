@@ -1,331 +1,679 @@
-*{
-    box-sizing: border-box;
-}
-.wrapper_content{
-    padding: 4rem;
+/* ==========================================================================
+   MODERN GROUPS & PERMISSIONS ADMINISTRATION STYLES
+   ========================================================================== */
+
+/* Main Container Layout */
+.panel-permisos-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem;
     display: flex;
     flex-direction: column;
+    gap: 2.5rem;
+    font-family: 'Raleway', sans-serif;
+    color: var(--white-color-800);
 }
 
-.tittle > h2{
-    color: var(--third-color);
-    font-size: clamp(1.6rem, 2.2vw, 3rem);
-    font-family: raleway-semibold;
-}
-.containers{
-    display: flex;
-    width: 100%;
-    height: 70%;
-    gap: 3rem;
-    padding: 4rem 0;
-}
-.wrapperItem{
-    width: 40%;
-    min-width: 30rem;
-}
-
-
-.textContainer{
-    margin: 0 auto;
-    display: flex;
-    justify-content: center;
-}
-
-.textContainer > h3{
-    color: var(--third-color);
-    padding-bottom: 1rem;
-    font-size: clamp(1.6rem, 1.6vw, 2rem);
-    font-family: raleway-semibold;
-}
-
-.wrapperItem > .containerList{
-    background-color: var(--third-color);
-    border-radius: 1.2rem;
-    height: 91%;
-    position: relative;
+/* Glassmorphism Panel Base */
+.glass-panel {
+    background: rgba(24, 31, 46, 0.7);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(250, 248, 255, 0.06);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
     overflow: hidden;
-    padding: .6rem;
 }
-#wrapperFormNewGroup{
+
+/* Modern Header Styling */
+.modern-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(24, 31, 46, 0.85), rgba(32, 43, 68, 0.85));
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.header-icon-wrapper {
+    font-size: 2.4rem;
+    color: var(--blue-accent-color);
+    background: rgba(6, 137, 250, 0.12);
+    width: 5.5rem;
+    height: 5.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid rgba(6, 137, 250, 0.25);
+    box-shadow: 0 0 15px rgba(6, 137, 250, 0.15);
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.header-subtitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--blue-accent-color);
+    text-transform: uppercase;
+}
+
+.header-title {
+    font-size: clamp(2rem, 2vw, 3rem);
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+.header-desc {
+    font-size: 1.25rem;
+    color: var(--white-800-80);
+    margin-top: 0.2rem;
+}
+
+/* Split Grid Layout */
+.permisos-layout-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 2.5rem;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .permisos-layout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Panel Headers */
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 2rem 2.5rem;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.06);
+}
+
+.panel-header h2 {
+    font-size: 1.7rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+.icon-accent {
+    font-size: 1.6rem;
+    color: var(--blue-accent-color);
+}
+
+.flex-grow-1 {
+    flex-grow: 1 !important;
+}
+
+/* LEFT PANEL: Grupos List */
+#wrapperGrupos .containerList {
+    position: relative;
+    padding: 0.8rem;
+    min-height: 400px;
+}
+
+/* Add new group trigger button */
+.btn-new-group-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    background: rgba(6, 137, 250, 0.12);
+    border: 1px solid rgba(6, 137, 250, 0.25);
+    color: var(--blue-accent-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.3rem;
+    transition: all 0.2s;
+}
+
+.btn-new-group-trigger:hover {
+    background: var(--blue-accent-color);
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+/* Slide-down New Group Form styling */
+.new-group-dropdown {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    background-color: var(--secundary-color);
+    background: #182030;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.08);
     padding: 2rem;
     display: none;
-    left: 0;
-    top: 0;
-}
-#wrapperFormNewGroup.active{
-    display: unset;
+    z-index: 20;
+    box-sizing: border-box;
 }
 
-#wrapperFormNewGroup > #formNewGroup > .formTittle {
-    display: flex;
-    justify-content: space-between;
-}
-#wrapperFormNewGroup > #formNewGroup > .formTittle > h2{
-    font-size: clamp(1.6rem, 1.6vw, 2rem);
-    font-family: raleway-bold;
-    color: var(--third-color);    
-}
-
-#wrapperFormNewGroup > #formNewGroup > .formTittle > img{
-    cursor: pointer;
-    width: 3rem;
-    filter: invert(1);
-}
-#wrapperFormNewGroup > #formNewGroup >.containerInputs{
-    display: flex;
-    margin-top: .7rem;
-    gap: 1rem;
-}
-#wrapperFormNewGroup > #formNewGroup >.containerInputs> input{
-    background-color: white;
-    font-family: raleway-semibold;
-    font-size: clamp(1.2rem, 1vw, 1.4rem);
-    border-radius: 0.6rem;
-    position: relative;
-    height: 3rem;
-    width: 60%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    outline: none;
-    text-indent: 1rem;
-    border: none;
-}
-#wrapperFormNewGroup > #formNewGroup >.containerInputs > button{
-    font-size: clamp(1.2rem, 1vw, 1.4rem);
-    /* padding: 0.8rem 1rem; */
-    min-width: 10rem;
-    text-align: center;
-    font-family: raleway-semibold;
-    background-color: white;
-    border-radius: 0.6rem;
-    border-color: transparent;
-    cursor: pointer;
-    outline: none;
-}
-
-
-.wrapperButtons{
-    display: flex;
-    width: 100%;
-    justify-content: flex-end;
-    padding: .4rem;
-    height: 12%;
-}
-.wrapperButtons > .buttonAgregarWrapper{
-    width: fit-content;
-    height: fit-content;
-    background-color: var(--secundary-color);
-    padding: .6rem .4rem;
-    border-radius: .6rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-}
-.wrapperButtons > .buttonAgregarWrapper > img{
-    width: 80%;
-    height: 80%;
-}
-
-.wrapperItem > .containerList > .items{
-    height: 88%;
-    overflow-y: auto;
-}
-
-.items > ul{
-    list-style: none;
-}
-
-.items > ul > li{
-    padding: 1rem;
-    padding-left: 1.8rem;
-    font-size: clamp(1.4rem, 1.2vw, 1.6rem);
-    font-family: raleway-semibold;
-    border-bottom: 1px #00000036 solid;
-    border-top: 1px #00000036 solid;
-    cursor: pointer;
-}
-
-#itemsGrupos > ul > li.itemPicked{
-    background: var(--secundary-color);
-    color: var(--third-color);
-    border-radius: .6rem;
-
-}
-
-
-#uploadPermisos > div.containerList > .items{
-    height: 90%;
-}
-#itemsPermisos > ul > label{
-    padding: 1rem;
+.new-group-dropdown.active {
     display: block;
-    padding-left: 1.8rem;
-    font-size: clamp(1.4rem, 1.2vw, 1.6rem);
-    font-family: raleway-semibold;
-    border-bottom: 1px #00000036 solid;
-    border-top: 1px #00000036 solid;
-    cursor: pointer;
 }
 
-#updatePermisos{
-    height: 91%;
-    position: relative;
-    pointer-events:none;
-}
-#updatePermisos > .backgroundPermission{
-    background-color: #102a5293;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    border-radius: 1.2rem;
-    z-index: 2;
-}
-#updatePermisos > .backgroundPermission.active{
-    display: none;
-}
-#updatePermisos > .containerList{
-    background-color: rgb(253, 253, 253);
-    border-radius: 1.2rem;
-    height: 100%;
-    overflow-y: auto;
-    position: relative;
-}
-
-#updatePermisos > .containerList > .items{
-    overflow-y: auto;
-}
-
-#itemsPermisos > ul > input{
-    display: none;
-}
-
-#itemsPermisos > ul > li.perActive{
-    background: #30436127;
-}
-#itemsPermisos > ul > label.perActive{
-    background: var(--secundary-color);
-    color: var(--third-color);
-}
-.wrapperSendUpdateGroup{
-    margin-top: auto;
+.new-group-dropdown .formTittle {
     display: flex;
-    gap: 3rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
 }
-.wrapperSendUpdateGroup >.wrapperMessageSuccess{
-    background-color: rgb(253, 253, 253);
-    padding: 1.4rem;
-    border-radius: 0.6rem;
+
+.new-group-dropdown .formTittle h2 {
+    font-size: 1.45rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+.btn-close-form {
+    background: none;
+    border: none;
+    color: var(--white-800-50);
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-close-form:hover {
+    color: #ffffff;
+}
+
+.new-group-dropdown .containerInputs {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.modern-input {
+    flex: 1;
+    height: 3.8rem;
+    background-color: rgba(32, 43, 68, 0.4);
+    border: 1px solid rgba(250, 248, 255, 0.12);
+    border-radius: 6px;
+    padding: 0 1.2rem;
+    color: var(--third-color);
+    font-size: 1.3rem;
+    font-family: 'Raleway', sans-serif;
+    outline: none;
+}
+
+.modern-input:focus {
+    border-color: var(--blue-accent-color);
+}
+
+.btn-save-group {
+    background: var(--blue-accent-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 0 1.6rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-save-group:hover {
+    background: #006ecf;
+}
+
+/* Groups List Items styles */
+#wrapperGrupos .items {
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+#wrapperGrupos ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.group-item-li {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.2rem 1.6rem;
+    border-radius: 8px;
+    font-size: 1.45rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--third-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.group-item-li:hover {
+    background: rgba(6, 137, 250, 0.08);
+    color: var(--blue-accent-color);
+}
+
+.list-item-icon {
+    font-size: 1.3rem;
+    color: var(--white-800-50);
+}
+
+.group-item-li:hover .list-item-icon {
+    color: var(--blue-accent-color);
+}
+
+/* Picked/Active Group Item */
+.group-item-li.itemPicked {
+    background: rgba(6, 137, 250, 0.15) !important;
+    color: var(--blue-accent-color) !important;
+    border-color: rgba(6, 137, 250, 0.25) !important;
+    font-family: 'Raleway-Bold', sans-serif;
+}
+
+.group-item-li.itemPicked .list-item-icon {
+    color: var(--blue-accent-color) !important;
+}
+
+/* RIGHT PANEL: Permisos */
+.permisos-form-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 400px;
+}
+
+/* Custom Checkbox Grid layout for Permissions */
+#wrapperPermisos .containerList {
+    padding: 2rem;
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+.permisos-grid-ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.permisos-grid-ul input[type="checkbox"] {
+    display: none;
+}
+
+.permiso-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.2rem 1.6rem;
+    border-radius: 10px;
+    background: rgba(32, 43, 68, 0.35);
+    border: 1px solid rgba(250, 248, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-sizing: border-box;
+}
+
+.permiso-checkbox-label:hover {
+    background: rgba(32, 43, 68, 0.5);
+    border-color: rgba(6, 137, 250, 0.2);
+}
+
+.checkbox-indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--white-800-50);
+    border-radius: 4px;
+    display: inline-block;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.permiso-text {
+    font-size: 1.35rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--third-color);
+    line-height: 1.2;
+}
+
+/* Active Permission (Label and indicator) */
+.permiso-checkbox-label.perActive {
+    background: rgba(6, 137, 250, 0.12) !important;
+    border-color: var(--blue-accent-color) !important;
+    color: var(--blue-accent-color) !important;
+    box-shadow: 0 0 10px rgba(6, 137, 250, 0.1);
+}
+
+.permiso-checkbox-label.perActive .checkbox-indicator {
+    border-color: var(--blue-accent-color);
+    background-color: var(--blue-accent-color);
+}
+
+.permiso-checkbox-label.perActive .checkbox-indicator::after {
+    content: "\f00c";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 1rem;
+    color: #ffffff;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Glowing Lock overlay when no group is selected */
+.backgroundPermission {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 21, 32, 0.85);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    opacity: 1;
+    pointer-events: auto;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+}
+
+/* When group is picked, hide overlay */
+.backgroundPermission.active {
     opacity: 0;
     pointer-events: none;
-    transition: .5s opacity ease;
-    margin-bottom: 2rem;
-}
-.wrapperSendUpdateGroup >.wrapperMessageSuccess.active{
-    pointer-events: unset;
-    opacity: 1;
-}
-.wrapperSendUpdateGroup >.wrapperMessageSuccess > h3{
-    font-size: clamp(1.4rem, 1.2vw, 1.6rem);
-    font-family: raleway-semibold;
-}
-.wrapperSendUpdateGroup >.wrapperMessageSuccess > h3 > span {
-    color: var(--primary-color);
+    visibility: hidden;
 }
 
-
-#updatePermisosGrupo{
-    
-    font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-    color: var(--third-color);
-    opacity: .4;
-    pointer-events: none;
-    background-color: transparent;
-    border: var(--primary-color) 2px solid;
-}
-
-#updatePermisosGrupo.enabled{
-    background-color: var(--primary-color);
-    opacity: 1;
-    pointer-events: unset;
-}
-
-
-#contextMenu{
-    position: absolute;
-    z-index: 5;
-}
-
-#contextMenu > .option{
+.lock-message-box {
     display: flex;
-    gap: .6rem;
-    padding: .5rem;
-    box-sizing: border-box;
-    border: 1px solid var(--primary-color);
-    background-color: white;
-    border-radius: .6rem;
-    font-size: clamp(1rem, 1vw, 1.3rem);
-    font-family: raleway-semibold;
+    flex-direction: column;
     align-items: center;
-    cursor: pointer;
+    text-align: center;
+    gap: 1.2rem;
+    max-width: 320px;
+    padding: 2rem;
 }
 
-#contextMenu > .option:hover{
-    background-color: #ffffffe6;
+.lock-icon-glowing {
+    font-size: 3.8rem;
+    color: var(--blue-accent-color);
+    filter: drop-shadow(0 0 15px rgba(6, 137, 250, 0.6));
+    animation: pulseLock 2s infinite alternate;
 }
 
-#contextMenu > .option > img{
-    width: 2rem;
+.lock-message-box h3 {
+    font-size: 1.6rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
 }
 
-#contextMenu >.option.blocked{
-    pointer-events: none;
-    background-color: rgba(255, 255, 255, 0.861);
-    border-color: transparent;
-    /* color: rgba(255, 255, 255, 0.897); */
-    opacity: .9;
+.lock-message-box p {
+    font-size: 1.25rem;
+    color: var(--white-800-50);
+    line-height: 1.4;
+    margin: 0;
 }
-#confirmarDelete{
-    margin-top: .6rem;
-    box-sizing: border-box;
-    border: 1px solid var(--primary-color);
-    background-color: white;
-    border-radius: .6rem;
-    padding: .7rem;
+
+@keyframes pulseLock {
+    from { transform: scale(1); filter: drop-shadow(0 0 10px rgba(6, 137, 250, 0.4)); }
+    to { transform: scale(1.08); filter: drop-shadow(0 0 25px rgba(6, 137, 250, 0.8)); }
 }
-#confirmarDelete > div{
+
+/* Floating Actions Footer */
+.wrapperSendUpdateGroup {
     display: flex;
-    margin-top: .4rem;
-    gap: .2rem;
-}
-#confirmarDelete > h5{
-    font-size: clamp(1rem, 1vw, 1.3rem);
-    font-family: raleway-semibold;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem 2.5rem;
+    margin-top: 1.5rem;
+    border-radius: 12px;
 }
 
-#confirmarDelete > div > button{
-    padding: .3rem 1rem;
-    font-size: clamp(1rem, 1vw, 1.2rem);
-    font-family: raleway-semibold;
-    border-radius: .5rem;
-    box-sizing: border-box;
-    border-color: transparent;
+.btn-save-permissions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    height: 4.2rem;
+    padding: 0 2.8rem;
+    font-size: 1.45rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    border-radius: 8px;
     cursor: pointer;
+    border: none;
     outline: none;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background: rgba(250, 248, 255, 0.05);
+    color: rgba(250, 248, 255, 0.2);
+    pointer-events: none;
 }
-#confirmarDelete > div > button#notConfirmDelete{
-    background-color: var(--primary-color);
-    border: 1px solid transparent;
 
+.btn-save-permissions.enabled {
+    background: linear-gradient(135deg, var(--blue-accent-color), #006ecf);
+    color: #ffffff;
+    pointer-events: auto;
+    box-shadow: 0 4px 15px rgba(6, 137, 250, 0.3);
 }
 
-#confirmarDelete > div > button#confirmDelete{
-    background-color: white;
-    border: 1px solid var(--primary-color);
-    
+.btn-save-permissions.enabled:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 137, 250, 0.45);
+    filter: brightness(1.1);
+}
+
+/* Success notification message */
+.wrapperMessageSuccess {
+    padding: 0.8rem 1.8rem;
+    border-radius: 8px;
+    background: rgba(46, 204, 113, 0.1);
+    border: 1px solid rgba(46, 204, 113, 0.2);
+    color: var(--success-color);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.wrapperMessageSuccess.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.wrapperMessageSuccess h3 {
+    font-size: 1.35rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.wrapperMessageSuccess h3 span {
+    font-family: 'Raleway-Bold', sans-serif;
+}
+
+/* Right-click Context Menu */
+#contextMenu {
+    position: absolute;
+    z-index: 1000;
+    background: #182030;
+    border: 1px solid rgba(250, 248, 255, 0.1);
+    border-radius: 10px;
+    padding: 0.6rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+}
+
+#contextMenu .option {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1.4rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: #ffffff;
+}
+
+#contextMenu .option:hover {
+    background: rgba(231, 76, 60, 0.15);
+    color: var(--danger-color);
+}
+
+#contextMenu .option img {
+    width: 1.4rem;
+    height: 1.4rem;
+    filter: invert(35%) sepia(95%) saturate(1814%) hue-rotate(338deg) brightness(97%) contrast(92%); /* Danger color filter */
+}
+
+#contextMenu .option h5 {
+    font-size: 1.25rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    margin: 0;
+}
+
+#contextMenu .option.blocked {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+/* Confirm deletion box nested in Context Menu */
+#confirmarDelete {
+    margin-top: 0.6rem;
+    border-top: 1px solid rgba(250, 248, 255, 0.08);
+    padding: 1rem 0.6rem 0.4rem 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+#confirmarDelete h5 {
+    font-size: 1.2rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--white-800-80);
+    margin: 0;
+}
+
+#confirmarDelete div {
+    display: flex;
+    gap: 0.8rem;
+}
+
+#confirmarDelete button {
+    flex: 1;
+    padding: 0.6rem;
+    font-size: 1.15rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: all 0.2s;
+}
+
+#confirmDelete {
+    background: var(--danger-color);
+    color: #ffffff;
+}
+
+#confirmDelete:hover {
+    background: #c0392b;
+}
+
+#notConfirmDelete {
+    background: rgba(250, 248, 255, 0.05);
+    color: var(--white-800-80);
+    border: 1px solid rgba(250, 248, 255, 0.1);
+}
+
+#notConfirmDelete:hover {
+    background: rgba(250, 248, 255, 0.15);
+    color: #ffffff;
+}
+
+/* Back Button Style */
+.btn-back-permissions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    height: 4.2rem;
+    padding: 0 2rem;
+    font-size: 1.35rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid rgba(250, 248, 255, 0.1);
+    background: rgba(250, 248, 255, 0.05);
+    color: var(--third-color);
+    text-decoration: none;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
+}
+
+.btn-back-permissions:hover {
+    background: rgba(250, 248, 255, 0.15);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+/* Inherited & Direct Badges */
+.badge-inherited {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    background: rgba(250, 248, 255, 0.05);
+    color: var(--white-800-50);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.permiso-checkbox-label.perActive .badge-inherited {
+    background: rgba(6, 137, 250, 0.15);
+    color: var(--blue-accent-color);
+    border-color: rgba(6, 137, 250, 0.25);
+}
+
+.permiso-checkbox-label.perActive .badge-inherited.direct {
+    background: rgba(46, 204, 113, 0.15);
+    color: var(--success-color);
+    border-color: rgba(46, 204, 113, 0.25);
+}
+
+/* Disabled States for Inherited/Root permissions */
+.permiso-checkbox-label.permiso-disabled {
+    cursor: not-allowed !important;
+    background: rgba(32, 43, 68, 0.2) !important;
+    border-color: rgba(250, 248, 255, 0.03) !important;
+    opacity: 0.8;
+}
+
+.permiso-checkbox-label.permiso-disabled .checkbox-indicator {
+    opacity: 0.6;
+}
+
+.permiso-checkbox-label.permiso-disabled.perActive {
+    background: rgba(6, 137, 250, 0.06) !important;
+    border-color: rgba(6, 137, 250, 0.15) !important;
+    color: rgba(6, 137, 250, 0.7) !important;
+}
+
+.permiso-checkbox-label.permiso-disabled.perActive .checkbox-indicator {
+    background-color: rgba(6, 137, 250, 0.4) !important;
+    border-color: rgba(6, 137, 250, 0.4) !important;
 }

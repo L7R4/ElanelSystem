@@ -1,289 +1,480 @@
-.wrapper_content {
+/* ==========================================================================
+   MODERN SUCURSALES (BRANCHES) ADMINISTRATION STYLES
+   ========================================================================== */
+
+/* Main Container Layout */
+.sucursales-dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    font-family: 'Raleway', sans-serif;
+    color: var(--white-color-800);
+}
+
+/* Glassmorphism Panel Base */
+.glass-panel {
+    background: rgba(24, 31, 46, 0.7);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(250, 248, 255, 0.06);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+/* Modern Header Styling */
+.modern-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
     padding: 2rem;
-    box-sizing: border-box;
+    background: linear-gradient(135deg, rgba(24, 31, 46, 0.85), rgba(32, 43, 68, 0.85));
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
+.header-icon-wrapper {
+    font-size: 2.4rem;
+    color: var(--blue-accent-color);
+    background: rgba(6, 137, 250, 0.12);
+    width: 5.5rem;
+    height: 5.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid rgba(6, 137, 250, 0.25);
+    box-shadow: 0 0 15px rgba(6, 137, 250, 0.15);
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.header-subtitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--blue-accent-color);
+    text-transform: uppercase;
+}
+
+.header-title {
+    font-size: clamp(2rem, 2vw, 3rem);
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+.header-desc {
+    font-size: 1.25rem;
+    color: var(--white-800-80);
+    margin-top: 0.2rem;
+}
+
+/* Branches List Wrapper */
+.wrapperListSucursales {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+}
+
+.wrapperListSucursales h1 {
+    display: none; /* Hide default raw text header if any */
+}
+
+/* Sucursal Item Card */
 .sucursalItem {
-    width: 80%;
-    background-color: #fff;
-    margin-bottom: 1.4rem;
-    border-radius: .7rem;
+    width: 100% !important;
+    background: rgba(24, 31, 46, 0.7);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(250, 248, 255, 0.06);
+    border-radius: 16px;
+    padding: 2.2rem 2.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     box-sizing: border-box;
-    padding: 1rem 2rem;
+    position: relative !important;
+    z-index: 1 !important;
 }
 
-.sucursalItem>h2 {
-    font-size: clamp(1.8rem, 1.5vw, 2.2rem);
-    font-family: raleway-semibold;
-    color: var(--primary-color);
+.sucursalItem:hover {
+    border-color: rgba(6, 137, 250, 0.25);
+    box-shadow: 0 15px 45px rgba(0,0,0,0.35);
 }
 
-.containerInputs {
+.sucursal-card-header {
     display: flex;
+    align-items: center;
     gap: 1rem;
-    margin: .7rem 0rem;
-    width: 100%;
-    flex-wrap: wrap;
+    margin-bottom: 1.6rem;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.05);
+    padding-bottom: 1rem;
 }
 
-.wrapperInput {
-    width: 30%;
+.branch-title-icon {
+    font-size: 1.8rem;
+    color: var(--blue-accent-color);
+}
+
+.sucursalItem h2 {
+    font-size: 1.8rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+/* Inputs grid inside Card */
+.containerInputs {
+    display: grid !important;
+    grid-template-columns: 2fr 1fr 1fr !important;
+    gap: 1.8rem !important;
+    margin: 1.5rem 0 !important;
+}
+
+@media (max-width: 768px) {
+    .containerInputs {
+        grid-template-columns: 1fr !important;
+        gap: 1.2rem !important;
+    }
+}
+
+.wrapperInput, .wrapperInputNew {
+    width: 100% !important;
     display: flex;
     flex-direction: column;
+    gap: 0.6rem;
 }
 
-.wrapperInput.hora {
-    width: 15%;
-}
-
-
-.wrapperInput:first-child {
-    width: 40%;
-}
-
-.wrapperInput>label {
-    display: block;
-    font-size: clamp(1.3rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    margin-bottom: .3rem;
-    /* color:var(--primary-color);  */
-}
-
-.wrapperInput>input {
-    width: 100%;
-    box-sizing: border-box;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    background-color: #3043615e;
-    color: #000000c2;
-    border: 2px solid var(--third-color);
-    border-radius: 0.6rem;
+.wrapperInput label, .wrapperInputNew label {
+    font-size: 1.25rem !important;
+    font-family: 'Raleway-SemiBold', sans-serif !important;
+    color: var(--white-800-80) !important;
+    margin-bottom: 0.2rem !important;
     display: flex;
     align-items: center;
-    padding: .6rem;
-    text-indent: 1rem;
-    outline: none;
-    pointer-events: none;
+    gap: 0.6rem;
 }
 
-.wrapperInput>input.open {
-    color: var(--background-color);
-    pointer-events: unset;
-    background-color: transparent;
-    border: 2px solid var(--primary-color);
-
+.wrapperInput label i, .wrapperInputNew label i {
+    color: var(--blue-accent-color);
+    opacity: 0.8;
 }
 
+/* Form inputs & read-only state */
+.wrapperInput input:not([type="hidden"]), .wrapperInputNew input:not([type="hidden"]) {
+    width: 100% !important;
+    height: 4rem !important;
+    background-color: rgba(15, 21, 36, 0.4) !important;
+    border: 1px solid rgba(250, 248, 255, 0.05) !important;
+    border-radius: 8px !important;
+    color: var(--white-800-50) !important;
+    font-size: 1.35rem !important;
+    padding: 0 1.2rem !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+    font-family: 'Raleway', sans-serif !important;
+    pointer-events: none !important;
+    transition: all 0.25s !important;
+}
+
+/* Editable open inputs */
+.wrapperInput input.open:not([type="hidden"]), .wrapperInputNew input.open:not([type="hidden"]) {
+    color: var(--third-color) !important;
+    pointer-events: unset !important;
+    background-color: rgba(15, 21, 36, 0.75) !important;
+    border: 1px solid var(--blue-accent-color) !important;
+    box-shadow: 0 0 10px rgba(6, 137, 250, 0.15) !important;
+}
+
+/* Select indicators and wrappers */
 .wrapperInput .pseudo-input-select-wrapper {
-    background-color: #3043615e;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: #000000c2;
-    pointer-events: none;
-    border: none;
+    width: 100% !important;
+    height: 4rem !important;
+    background-color: rgba(15, 21, 36, 0.4) !important;
+    border: 1px solid rgba(250, 248, 255, 0.05) !important;
+    border-radius: 8px !important;
+    padding: 0 1.2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+    pointer-events: none !important;
+    transition: all 0.25s !important;
 }
 
+.wrapperInput .pseudo-input-select-wrapper h3 {
+    font-size: 1.35rem !important;
+    color: var(--white-800-50) !important;
+    font-family: 'Raleway', sans-serif !important;
+    margin: 0 !important;
+    font-weight: 500 !important;
+}
+
+/* Active select in editing mode */
 .wrapperInput .pseudo-input-select-wrapper.open {
-    background-color: var(--third-color);
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--background-color);
-    pointer-events: unset;
-    border: 2px solid var(--primary-color);
+    background-color: rgba(15, 21, 36, 0.75) !important;
+    color: var(--third-color) !important;
+    pointer-events: unset !important;
+    border: 1px solid var(--blue-accent-color) !important;
+    box-shadow: 0 0 10px rgba(6, 137, 250, 0.15) !important;
 }
 
-
-.wrapperInputNew {
-    width: 30%;
-    display: flex;
-    flex-direction: column;
+.wrapperInput .pseudo-input-select-wrapper.open h3 {
+    color: var(--third-color) !important;
 }
 
-.wrapperInputNew.hora {
-    width: 15%;
+.iconDesplegar {
+    filter: invert(1) !important;
+    opacity: 0.6 !important;
+    z-index: 5;
 }
 
-.wrapperInputNew>label {
-    display: block;
-    font-size: clamp(1.3rem, 1vw, 1.5rem);
-    font-family: raleway-semibold;
-    margin-bottom: .3rem;
-    /* color:var(--primary-color);  */
+/* Options dropdown list inside Card */
+.options {
+    background: var(--blue-2) !important;
+    border: 1px solid rgba(250, 248, 255, 0.1) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+    top: 100% !important;
 }
 
-.wrapperInputNew>input {
-    width: 100%;
-    box-sizing: border-box;
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    font-family: raleway-semibold;
-    border: 2px solid var(--third-color);
-    background-color: #3043615e;
-    color: #000000c2;
-    border-radius: 0.6rem;
-    display: flex;
-    align-items: center;
-    padding: .6rem;
-    text-indent: 1.2rem;
-    outline: none;
-}
-
-.wrapperInputNew>input.open {
-    color: var(--background-color);
-    pointer-events: unset;
-    background-color: transparent;
-    border: 2px solid var(--primary-color);
-
-}
-
+/* Actions buttons inside card */
 .buttonsActions {
     width: 100%;
     display: flex;
+    justify-content: flex-end;
     gap: 1rem;
+    margin-top: 1.5rem;
 }
 
-.deleteSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-}
-
-#buttonStopAddSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--background-color);
-}
-
-.enableForm,
-.uploadForm,
-#buttonConfirmAddSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-}
-
-.desableForm {
-    color: var(--background-color);
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-}
-
-#buttonAddSucursal {
-    font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-    color: var(--third-color);
-    width: 20%;
-    padding: 1.2rem .9rem;
+.buttonsActions button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    height: 3.8rem;
+    padding: 0 1.8rem;
+    font-size: 1.3rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    border-radius: 8px;
     cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-sizing: border-box;
+    border: none;
 }
 
-#buttonAddSucursal.blocked {
-    display: none;
+/* Edit / Confirm Button */
+.enableForm, .uploadForm {
+    background: linear-gradient(135deg, var(--blue-accent-color), #006ecf) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(6, 137, 250, 0.2) !important;
 }
 
-.div {
-    width: 2rem;
-    height: 2rem;
-    background-color: red;
+.enableForm:hover, .uploadForm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(6, 137, 250, 0.3) !important;
 }
 
-.desableForm,
-.uploadForm {
-    display: none;
+/* Delete Button */
+.deleteSucursal {
+    background: rgba(231, 76, 60, 0.12) !important;
+    border: 1px solid rgba(231, 76, 60, 0.25) !important;
+    color: var(--danger-color) !important;
 }
 
-.desableForm.active,
-.uploadForm.active {
+.deleteSucursal:hover {
+    background: var(--danger-color) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3) !important;
+}
+
+/* Cancel Button */
+.desableForm {
+    background: rgba(250, 248, 255, 0.05) !important;
+    border: 1px solid rgba(250, 248, 255, 0.1) !important;
+    color: var(--white-800-80) !important;
+}
+
+.desableForm:hover {
+    background: rgba(250, 248, 255, 0.15) !important;
+    color: #ffffff !important;
+}
+
+/* Add branch action footer */
+.bottom-actions {
     display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
 }
 
-.div.active {
-    background-color: green;
-
+.btn-add-branch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    height: 4.5rem;
+    padding: 0 2.5rem;
+    font-size: 1.45rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    border-radius: 8px;
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--blue-accent-color), #006ecf);
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 15px rgba(6, 137, 250, 0.25);
 }
 
-.formSucursal {
-    position: relative;
+.btn-add-branch:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 137, 250, 0.4);
+    filter: brightness(1.05);
 }
 
-
-#addSucursalForm #selectWrapperSelectGerente img.iconDesplegar {
-    z-index: 21;
+/* Hides default button */
+#buttonAddSucursal {
+    /* Standard styling overrides default */
 }
 
-#addSucursalForm #selectWrapperSelectGerente .pseudo-input-select-wrapper {
-    position: relative;
-    z-index: 20;
-    background-color: var(--third-color);
-
+/* ==========================================================================
+   MODAL CONFIGURATION OVERRIDES (TINGLE MODAL)
+   ========================================================================= */
+.modalConfirmacion.tingle-modal,
+.modalResponse.tingle-modal {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-#addSucursalForm #selectWrapperSelectGerente ul.options {
-    z-index: 19;
+.modalConfirmacion .tingle-modal-box,
+.modalResponse .tingle-modal-box {
+    background: linear-gradient(135deg, #182030, #0f1524) !important;
+    border: 1px solid rgba(250, 248, 255, 0.08) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5) !important;
+    overflow: hidden !important;
+    width: 60% !important;
+    max-width: 800px !important;
 }
 
-.sucursalItem:not(.enable)>.formSucursal #selectWrapperSelectGerente ul.options {
-    display: none;
+.modalConfirmacion .tingle-modal-box__content,
+.modalResponse .tingle-modal-box__content {
+    background: transparent !important;
+    padding: 3.5rem 4rem !important;
 }
 
-.sucursalItem:not(.enable)>.formSucursal #selectWrapperSelectGerente img.iconDesplegar {
-    display: none;
+.modalConfirmacion .tingle-modal-box__footer,
+.modalResponse .tingle-modal-box__footer {
+    background: rgba(15, 21, 36, 0.5) !important;
+    border-top: 1px solid rgba(250, 248, 255, 0.06) !important;
+    padding: 2rem 4rem !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 1.2rem !important;
+    align-items: center !important;
 }
 
-.sucursalItem.enable .wrapperSelectFilter img.iconDesplegar {
-    z-index: 21;
+.modalConfirmacion h2,
+.modalResponse .messageReponseModal h2 {
+    font-size: 2.2rem !important;
+    font-family: 'Raleway-Bold', sans-serif !important;
+    color: var(--third-color) !important;
+    margin: 0 !important;
 }
 
-.sucursalItem.enable .wrapperSelectFilter .pseudo-input-select-wrapper {
-    position: relative;
-    z-index: 20;
-    background-color: var(--third-color);
-
+/* Footer buttons inside modals */
+.tingle-modal-box__footer .tingle-btn {
+    height: 4.2rem !important;
+    padding: 0 2.5rem !important;
+    font-size: 1.35rem !important;
+    font-family: 'Raleway-SemiBold', sans-serif !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.25s !important;
+    border: none !important;
 }
 
-.sucursalItem.enable .wrapperSelectFilter ul.options {
-    z-index: 19;
+.tingle-modal-box__footer .tingle-btn--primary {
+    background: linear-gradient(135deg, var(--blue-accent-color), #006ecf) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(6, 137, 250, 0.25) !important;
 }
 
-.sucursalItem .buttonsActions>.button-default-style {
-    color: var(--background-color);
+.tingle-modal-box__footer .tingle-btn--primary:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 18px rgba(6, 137, 250, 0.35) !important;
 }
 
-.modalConfirmacion h2 {
-    font-size: clamp(1.3rem, 1.2vw, 2rem);
-    font-family: raleway-semibold;
-    color: var(--background-color);
+.tingle-modal-box__footer .tingle-btn--default {
+    background: rgba(250, 248, 255, 0.05) !important;
+    color: var(--white-800-80) !important;
+    border: 1px solid rgba(250, 248, 255, 0.1) !important;
 }
 
-/* .modalConfirmacion button {
-    font-size: clamp(1.2rem, 1.1vw, 1.6rem);
-    font-family: raleway-semibold;
-} */
-
-.modalConfirmacion .tingle-modal-box__footer {
-    display: flex;
-    gap: 1rem;
+.tingle-modal-box__footer .tingle-btn--default:hover {
+    background: rgba(250, 248, 255, 0.15) !important;
+    color: #ffffff !important;
 }
 
-.tingle-modal-box__footer>button {
-    font-family: raleway-semibold;
-    font-size: clamp(1.2rem, 1.1vw, 1.6rem);
-
+.tingle-modal-box__footer .tingle-btn--danger {
+    background: var(--danger-color) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.25) !important;
 }
 
-.modalConfirmacion .tingle-modal-box__footer .button-default-style {
-    color: var(--background-color);
+.tingle-modal-box__footer .tingle-btn--danger:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 18px rgba(231, 76, 60, 0.35) !important;
 }
 
-.tingle-modal-box__footer>button.button-default-style {
-    color: var(--background-color);
-}
-
+/* Response message styling inside modal */
 .modalResponse .messageReponseModal {
     display: flex;
-    justify-content: center;
     flex-direction: column;
-    gap: 1rem;
     align-items: center;
-    font-family: raleway-semibold;
-    font-size: clamp(1.4rem, 1.3vw, 1.8rem);
+    gap: 1.5rem;
+    text-align: center;
+    padding: 1rem;
 }
 
-.modalResponse .messageReponseModal>img {
-    width: 3vw;
-    min-width: 4rem;
-    max-width: 6rem;
+.modalResponse .messageReponseModal img {
+    width: 6rem;
+    height: 6rem;
+}
 
+/* Fix select dropdown border leakage when closed */
+.list-select-custom.options:not(.open) {
+    border: none !important;
+    box-shadow: none !important;
+    height: 0 !important;
+    padding: 0 !important;
+}
+
+/* Hide select toggle arrow icon and block clicks when branch card is in read-only mode */
+.sucursalItem:not(.enable) .iconDesplegar {
+    display: none !important;
+}
+
+.sucursalItem:not(.enable) .pseudo-input-select-wrapper {
+    pointer-events: none !important;
+}
+
+/* Ensure dynamic dropdown list works properly inside edit state */
+.sucursalItem.enable .options {
+    z-index: 100 !important;
+}
+
+/* Allow select dropdowns to overflow beyond the card container boundaries without clipping */
+.sucursalItem.glass-panel {
+    overflow: visible !important;
+}
+
+/* Elevate the z-index of the active card being edited so its dropdown is not covered by the cards below */
+.sucursalItem.enable {
+    position: relative !important;
+    z-index: 50 !important;
 }

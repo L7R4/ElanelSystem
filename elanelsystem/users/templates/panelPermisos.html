@@ -3,61 +3,92 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/panel_permisos.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock css %}
 
-
 {% block content %}
-    <div class="tittle">
-        <h2>Configuración de grupos y permisos</h2>
+<div class="panel-permisos-container">
+    
+    <!-- Modern Header -->
+    <div class="modern-header">
+        <div class="header-icon-wrapper">
+            <i class="fa-solid fa-user-shield"></i>
+        </div>
+        <div class="header-text">
+            <span class="header-subtitle">ADMINISTRACIÓN GLOBAL</span>
+            <h1 class="header-title">Grupos y Permisos</h1>
+            <span class="header-desc">Configurar accesos de usuarios y perfiles de seguridad</span>
+        </div>
     </div>
-    <div class="containers">
-        <div class="wrapperItem"id="wrapperGrupos">
-            <div class="textContainer">
-                <h3>Grupos</h3>
+
+    <!-- Layout Split Grid -->
+    <div class="permisos-layout-grid">
+        
+        <!-- LEFT: Grupos Panel -->
+        <div class="wrapperItem glass-panel" id="wrapperGrupos">
+            <div class="panel-header border-bottom">
+                <i class="fa-solid fa-users icon-accent"></i>
+                <h2 class="flex-grow-1">Grupos de Usuarios</h2>
+                <button type="button" class="btn-new-group-trigger" id="buttonCreateNewGroup" title="Nuevo grupo">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
             </div>
+
             <div class="containerList">
-                <div id="wrapperFormNewGroup">
+                <!-- Dropdown Form New Group (Slide Down) -->
+                <div id="wrapperFormNewGroup" class="new-group-dropdown">
                     <form method="POST" id="formNewGroup">
                         {% csrf_token %}
                         <div class="formTittle">
-                            <h2>Nuevo grupo</h2>
-                            <img id="closeModalForm" src="{% static 'images/icons/close.svg' %}" alt="">
+                            <h2>Crear Nuevo Grupo</h2>
+                            <button type="button" id="closeModalForm" class="btn-close-form"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                         <div class="containerInputs">
-                            
-                            <input type="text" name="groupName" id="groupName" placeholder="Escriba el nombre del grupo">
-                            <button type="button" id="saveNewGroup" form="formNewGroup">Crear grupo</button>
+                            <input type="text" name="groupName" id="groupName" class="modern-input" placeholder="Nombre del grupo (ej: Cobradores)">
+                            <button type="button" id="saveNewGroup" class="btn-save-group" form="formNewGroup">Crear</button>
                         </div>
                     </form>
                 </div>
-                <div class="wrapperButtons">
-                    <div class="buttonAgregarWrapper">
-                        <img id="buttonCreateNewGroup" src="{% static 'images/icons/moreWhite.png' %}" alt="">
-                    </div>
-                </div>
+
+                <!-- Groups List Items -->
                 <div class="items" id="itemsGrupos">
                     <ul>
                         {% for g in grupos %}
-                            <li>{{ g.name }}</li>
+                            <li class="group-item-li"><i class="fa-solid fa-user-group list-item-icon"></i> <span>{{ g.name }}</span></li>
                         {% endfor %}
                     </ul>
-                    
                 </div>
             </div>
         </div>
-        <div class="wrapperItem" id="wrapperPermisos">
-            <div class="textContainer">
-                <h3>Permisos</h3>
+
+        <!-- RIGHT: Permisos Panel -->
+        <div class="wrapperItem glass-panel" id="wrapperPermisos">
+            <div class="panel-header border-bottom">
+                <i class="fa-solid fa-key icon-accent"></i>
+                <h2>Permisos del Perfil</h2>
             </div>
-            <form method="POST" id="updatePermisos">
-                <div class="backgroundPermission"></div>
+            
+            <form method="POST" id="updatePermisos" class="permisos-form-wrapper">
+                <!-- Glowing lock overlay shown when no group is selected -->
+                <div class="backgroundPermission">
+                    <div class="lock-message-box">
+                        <i class="fa-solid fa-lock lock-icon-glowing"></i>
+                        <h3>Acceso de Edición Bloqueado</h3>
+                        <p>Seleccione un grupo de usuarios a la izquierda para empezar a configurar sus permisos de sistema.</p>
+                    </div>
+                </div>
+
                 {% csrf_token %}
                 <div class="containerList">
                     <div class="items" id="itemsPermisos">
-                        <ul>
+                        <ul class="permisos-grid-ul">
                             {% for perm in permisos %}
                                 <input type="checkbox" name="{{perm.codename}}" id="{{perm.codename}}" value="{{perm.name}}">
-                                <label for="{{perm.codename}}">{{ perm.name }}</label>
+                                <label for="{{perm.codename}}" class="permiso-checkbox-label">
+                                    <span class="checkbox-indicator"></span>
+                                    <span class="permiso-text">{{ perm.name }}</span>
+                                </label>
                             {% endfor %}
                         </ul>
                     </div>
@@ -65,25 +96,26 @@
             </form>
         </div>
     </div>
-    <div class="wrapperSendUpdateGroup">
-        
-        <button type="button" class="add-button-default" id="updatePermisosGrupo" form="updatePermisos">Guardar cambios</button>
+
+    <!-- Floating Footer Actions -->
+    <div class="wrapperSendUpdateGroup glass-panel">
+        <button type="button" class="btn-save-permissions" id="updatePermisosGrupo" form="updatePermisos">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+        </button>
         <div class="wrapperMessageSuccess">
-            <h3>¡Grupo: <span></span> actualizado exitosamente!</h3>
+            <h3><i class="fa-solid fa-circle-check"></i> ¡Grupo <strong><span></span></strong> actualizado con éxito!</h3>
         </div>
     </div>
-    
-    
+</div>
 {% endblock content %}
+
 {% block js %}
 <script>
     var updatePermisosURL = "{% url 'users:updatePermisos'%}"
     var deleteGrupoURL = "{% url 'users:deleteGroup'%}"
     var urlCreateNewGroup= "{% url 'users:newGroup'%}"
     var urlImageDelete = "{% static 'images/icons/eliminar.svg' %}"
-
 </script>
 <script src="{% static 'js/users/fetchGruposPermisos.js' %}"></script>
 <script src="{% static 'js/users/createNewGroup.js' %}"></script>
-    
 {% endblock js %}

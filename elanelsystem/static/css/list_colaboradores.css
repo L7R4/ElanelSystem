@@ -556,6 +556,9 @@ td.gridjs-td {
     min-width: 200px;
     max-width: 400px;
 }
+#users_table .vt-table tbody tr { cursor: pointer; }
+#users_table .vt-table tbody tr:has(.vt-row-select:hover) { cursor: default; }
+
 #users_table .vt-toolbar{
     align-items: flex-end;
 }

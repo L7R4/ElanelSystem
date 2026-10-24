@@ -20,6 +20,10 @@ const table = new VanillaTable(document.getElementById("users_table"), {
   seleccionMultiple: false,
   rowId: "id",
 
+  onRowClick(row) {
+    window.location.href = `/usuario/${row.id}/permisos/`;
+  },
+
   // Inyectamos tu select custom en el header (lado derecho)
   renderExtraFilters(el, api) {
     el.innerHTML = `

@@ -177,43 +177,101 @@ function showPreviewModalClean(sheets, originalFile) {
             return;
         }
 
+        const loaderText = document.querySelector("#wrapperLoader .textLoader, #wrapperLoader p, #wrapperLoader span");
         document.getElementById("wrapperLoader").style.display = "flex";
+        if (loaderText) loaderText.textContent = "Subiendo archivo...";
 
         const formData = new FormData();
         formData.append("file", originalFile);
 
         try {
-            const resp = await fetch(urlExecuteCleanExcel, {
+            const startResp = await fetch(urlExecuteCleanExcel, {
                 method: "POST",
                 body: formData,
                 headers: { "X-CSRFToken": getRawCsrfToken() },
             });
 
-            if (!resp.ok) {
-                const data = await resp.json();
+            if (!startResp.ok) {
+                const data = await startResp.json();
                 alert(data.message || "Error al procesar el archivo");
                 document.getElementById("wrapperLoader").style.display = "none";
                 return;
             }
 
-            const blob = await resp.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const lastDotIndex = originalFile.name.lastIndexOf('.');
-            const baseName = lastDotIndex !== -1 ? originalFile.name.substring(0, lastDotIndex) : originalFile.name;
-            a.download = `clean_${baseName}.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            const startData = await startResp.json();
+            if (!startData.status || !startData.job_id) {
+                alert(startData.message || "Error al iniciar el procesamiento del archivo");
+                document.getElementById("wrapperLoader").style.display = "none";
+                return;
+            }
 
-            document.getElementById("wrapperLoader").style.display = "none";
-            modal.close();
-            modal.destroy();
+            const jobId = startData.job_id;
+            const statusUrl = urlStatusCleanExcelBase.replace("JOBID", jobId);
+
+            if (loaderText) loaderText.textContent = "Procesando archivo... esto puede tardar varios minutos en archivos grandes, no cierres esta ventana.";
+
+            // Polling: el archivo puede tener cientos de miles de filas, asi que
+            // el procesamiento corre en background en el servidor y consultamos
+            // el estado cada 3s en vez de mantener una sola request HTTP abierta
+            // por minutos (eso es lo que causaba el "Error de red").
+            const pollIntervalMs = 3000;
+            const maxWaitMs = 15 * 60 * 1000; // 15 minutos
+            const startTime = Date.now();
+
+            const poll = async () => {
+                if (Date.now() - startTime > maxWaitMs) {
+                    alert("El procesamiento está tardando demasiado. Intentá nuevamente más tarde.");
+                    document.getElementById("wrapperLoader").style.display = "none";
+                    return;
+                }
+
+                let statusResp;
+                try {
+                    statusResp = await fetch(statusUrl);
+                } catch (e) {
+                    // Error de red puntual durante el polling: reintentamos, no abortamos.
+                    setTimeout(poll, pollIntervalMs);
+                    return;
+                }
+
+                if (!statusResp.ok) {
+                    const data = await statusResp.json().catch(() => ({}));
+                    alert(data.message || "Error al consultar el estado del procesamiento.");
+                    document.getElementById("wrapperLoader").style.display = "none";
+                    return;
+                }
+
+                const data = await statusResp.json();
+
+                if (data.job_status === "processing") {
+                    setTimeout(poll, pollIntervalMs);
+                    return;
+                }
+
+                if (data.job_status === "error") {
+                    alert(data.message || "Error al procesar el archivo");
+                    document.getElementById("wrapperLoader").style.display = "none";
+                    return;
+                }
+
+                if (data.job_status === "done") {
+                    const downloadUrl = urlDownloadCleanExcelBase.replace("JOBID", jobId);
+                    window.location.href = downloadUrl;
+                    document.getElementById("wrapperLoader").style.display = "none";
+                    modal.close();
+                    modal.destroy();
+                    return;
+                }
+
+                // Estado inesperado: reintentamos por las dudas.
+                setTimeout(poll, pollIntervalMs);
+            };
+
+            poll();
+
         } catch (e) {
             document.getElementById("wrapperLoader").style.display = "none";
-            alert("Error de red al procesar el archivo.");
+            alert("Error de red al comunicar con el servidor.");
         }
     });
 

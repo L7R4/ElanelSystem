@@ -167,6 +167,8 @@
     var urlConfirmImportColaboradores = "{% url 'users:confirm_import_colaboradores' %}"
     var urlPreviewCleanExcel = "{% url 'users:clean_excel_preview' %}"
     var urlExecuteCleanExcel = "{% url 'users:clean_excel_execute' %}"
+    var urlStatusCleanExcelBase = "{% url 'users:clean_excel_status' job_id='JOBID' %}"
+    var urlDownloadCleanExcelBase = "{% url 'users:clean_excel_download' job_id='JOBID' %}"
     var urlExecuteSyncExcel = "{% url 'users:sync_payment_dates_execute' %}"
     var sucursalesDisponibles = {{ sucursalesDisponibles| safe }}
     var logoDisplayMore = "{% static 'images/icons/arrowDown.png' %}"      

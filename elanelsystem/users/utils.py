@@ -1,4 +1,4 @@
-﻿from django.template.loader import get_template
+from django.template.loader import get_template
 from weasyprint import HTML,CSS
 import elanelsystem.settings as settings
 import os
@@ -8,6 +8,57 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+
+#region Codigos de cliente en importaciones
+# Posadas se importa desde dos Excel distintos (sistema VIEJO y sistema NUEVO) y
+# ambos numeran sus clientes desde cli_001. Para que no se pisen, los clientes del
+# NUEVO se guardan con el prefijo "cln_" (mismo largo que "cli_", asi el orden y
+# Cliente.next_for_agencia siguen funcionando).
+POSADAS_PSEUDONIMO = "Posadas, Misiones"
+PREFIJO_CLIENTE = "cli_"
+PREFIJO_CLIENTE_POSADAS_NUEVO = "cln_"
+
+def prefijo_clientes_import(sucursal, nombre_archivo):
+    """
+    Devuelve el prefijo de nro_cliente a usar al importar un Excel de la sucursal.
+    Para Posadas lo deduce del nombre del archivo (VIEJO / NVO-NUEVO).
+    """
+    if sucursal.pseudonimo != POSADAS_PSEUDONIMO:
+        return PREFIJO_CLIENTE
+
+    nombre = (nombre_archivo or "").lower()
+    if "viejo" in nombre:
+        return PREFIJO_CLIENTE
+    if "nvo" in nombre or "nuevo" in nombre:
+        return PREFIJO_CLIENTE_POSADAS_NUEVO
+    raise ValueError(
+        "Para Posadas el nombre del archivo debe indicar si es del sistema VIEJO o NUEVO (NVO)."
+    )
+
+def codigo_cliente_import(cod_cli, prefijo):
+    """Convierte el codigo del Excel (cli_718) al nro_cliente guardado (cli_718 / cln_718)."""
+    cod_cli = str(cod_cli).strip()
+    if prefijo == PREFIJO_CLIENTE:
+        return cod_cli
+    return prefijo + cod_cli.removeprefix(PREFIJO_CLIENTE)
+
+def normalizar_nombre(nombre):
+    """Para comparar nombres: sin tildes, minusculas y espacios simples."""
+    import re
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(nombre or "")).encode("ascii", "ignore").decode()
+    return re.sub(r"\s+", " ", s).strip().lower()
+
+def mismo_titular(nombre_a, nombre_b):
+    """
+    True si dos nombres parecen la misma persona aunque cambie el orden o falte un
+    nombre (ej. "Ivo Bruno Daniel" / "Bruno Daniel Ivo", "Dos Santos Miqueas" /
+    "Dos Santos Miqueas Naim"). Pide al menos 2 palabras en comun.
+    """
+    a = set(normalizar_nombre(nombre_a).split())
+    b = set(normalizar_nombre(nombre_b).split())
+    return len(a & b) >= 2 and (a <= b or b <= a)
+#endregion
 
 def printPDFNewUSer(data,url,productoName):
     template = get_template("pdfCreateUser.html")
@@ -36,7 +87,7 @@ def get_vendedores_a_cargo(supervisor, campania, sucursal):
         raise PermissionDenied("El usuario no tiene rol de supervisor.")
 
    # 1) Partimos de Ventas filtrando por campaña, sucursal y supervisor
-    vendedor_ids = (
+    vendedor_ids = list(
         Ventas.objects
         .filter(
             campania=campania,
@@ -81,7 +132,8 @@ def preprocesar_excel_clientes(file_path):
     ]
 
     # 3) Campos que no pueden estar vacíos
-    required = ['nro', 'cliente', 'dni']
+    # (el DNI es opcional: hay agencias con clientes cargados sin DNI)
+    required = ['nro', 'cliente']
     errores = reportar_nans(df, required, id_field='nro')
     if errores:
         raise ValueError(f"Errores en CLIENTES antes de conversión:\n{errores}")
@@ -89,7 +141,13 @@ def preprocesar_excel_clientes(file_path):
     # 4) Convierte tipos básicos
     df['nro'] = df['nro'].astype(str)
     df['cliente'] = df['cliente'].astype(str).str.strip()
-    df['dni'] = df['dni'].astype(str).str.strip()
+    # Con celdas vacías pandas lee la columna como float (12345678.0) → limpiar
+    if 'dni' not in df.columns:
+        df['dni'] = ""
+    df['dni'] = df['dni'].map(
+        lambda x: "" if pd.isna(x) or str(x).strip().lower() in ("", "nan")
+        else str(x).strip().removesuffix(".0")
+    )
 
     # 5) Normaliza opcionales numéricos a string limpio
     def clean_num(col):
@@ -181,6 +239,14 @@ def snapshot_usuario_by_campana(user, campania_str):
         live_egreso = parse_fecha_to_date(user.fec_egreso)
         if live_egreso and live_egreso <= fin_camp:
             h.fec_egreso = user.fec_egreso  # patch en memoria, no se persiste
+    # Caso inverso: el egreso histórico quedó obsoleto porque el colaborador
+    # reingresó (se le borró la fecha de baja) y el ingreso vigente, ya
+    # corregido arriba, es posterior a ese egreso. Sin este parche, un egreso
+    # de un período anterior seguiría excluyendo campañas de la nueva etapa.
+    elif h.fec_egreso and not user.fec_egreso:
+        old_egreso = parse_fecha_to_date(h.fec_egreso)
+        if old_egreso and fecha_ing and fecha_ing > old_egreso:
+            h.fec_egreso = None  # patch en memoria, no se persiste
 
     days_worked = count_days_worked_by_user(h, campania_str)
     return h, days_worked

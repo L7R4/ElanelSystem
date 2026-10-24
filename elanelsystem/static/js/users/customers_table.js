@@ -8,6 +8,17 @@ const table = new VanillaTable(document.getElementById("customers_table"), {
     { id: "prov", label: "Provincia", accessor: "prov" },
     { id: "loc", label: "Localidad", accessor: "loc" },
     { id: "tel", label: "Teléfono", accessor: "tel" },
+    {
+      id: "dias_mora",
+      label: "Días de mora",
+      html: true,
+      accessor: (row) => {
+        const dias = Number(row.dias_mora) || 0;
+        if (dias <= 0) return `<span class="mora-badge mora-al-dia">Al día</span>`;
+        const nivel = dias >= 30 ? "mora-alta" : dias >= 10 ? "mora-media" : "mora-baja";
+        return `<span class="mora-badge ${nivel}">${dias} días</span>`;
+      },
+    },
   ],
   pageSize: 20,
   remoteSearch: true,

@@ -575,3 +575,34 @@ td.gridjs-td {
 
 .vt-table tbody tr { cursor: pointer; }
 .vt-table tbody tr:has(.vt-row-select:hover) { cursor: default; }
+
+/* Días de mora */
+.mora-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.8rem;
+    border-radius: 999px;
+    font-size: 1.15rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    white-space: nowrap;
+}
+
+.mora-al-dia {
+    color: var(--success-color);
+    background: var(--success-color-20);
+}
+
+.mora-baja {
+    color: var(--warning-color);
+    background: var(--warning-color-20);
+}
+
+.mora-media {
+    color: #d97706;
+    background: rgba(217, 119, 6, 0.15);
+}
+
+.mora-alta {
+    color: var(--danger-color);
+    background: var(--danger-color-20);
+}

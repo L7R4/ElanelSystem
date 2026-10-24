@@ -1,0 +1,85 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/panel_permisos.css' %}">
+<link rel="stylesheet" href="{% static 'css/root_base.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock css %}
+
+{% block content %}
+<div class="panel-permisos-container">
+    
+    <!-- Modern Header -->
+    <div class="modern-header">
+        <div class="header-icon-wrapper">
+            <i class="fa-solid fa-user-lock"></i>
+        </div>
+        <div class="header-text">
+            <span class="header-subtitle">PERMISOS INDIVIDUALES</span>
+            <h1 class="header-title">Permisos de {{ object.nombre }}</h1>
+            <span class="header-desc">Personalizar accesos y roles del sistema para este usuario</span>
+        </div>
+    </div>
+
+    <!-- Layout Container (Single Card) -->
+    <div class="permisos-layout-grid" style="grid-template-columns: 1fr;">
+        
+        <!-- Permisos Card -->
+        <div class="wrapperItem glass-panel" id="wrapperPermisos" style="width: 100%;">
+            <div class="panel-header border-bottom">
+                <i class="fa-solid fa-key icon-accent"></i>
+                <h2>Permisos del Usuario</h2>
+            </div>
+            
+            <div class="containerList">
+                <div class="items" id="itemsPermisos">
+                    <ul class="permisos-grid-ul">
+                        {% for perm in permisos %}
+                            <input type="checkbox" name="{{perm.codename}}" id="{{perm.codename}}" value="{{perm.name}}" 
+                                {% if perm.name in permisos_directos or perm.name in permisos_grupo or is_superuser %}checked{% endif %}
+                                {% if perm.name in permisos_grupo or is_superuser %}disabled{% endif %}>
+                            
+                            <label for="{{perm.codename}}" class="permiso-checkbox-label 
+                                {% if perm.name in permisos_directos or perm.name in permisos_grupo or is_superuser %}perActive{% endif %}
+                                {% if perm.name in permisos_grupo or is_superuser %}permiso-disabled{% endif %}">
+                                
+                                <span class="checkbox-indicator"></span>
+                                <span class="permiso-text">{{ perm.name }}</span>
+                                
+                                {% if is_superuser %}
+                                    <span class="badge-inherited"><i class="fa-solid fa-crown"></i> Root</span>
+                                {% elif perm.name in permisos_grupo %}
+                                    <span class="badge-inherited"><i class="fa-solid fa-users"></i> Grupo</span>
+                                {% elif perm.name in permisos_directos %}
+                                    <span class="badge-inherited direct"><i class="fa-solid fa-user"></i> Directo</span>
+                                {% endif %}
+                            </label>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Footer Actions -->
+    <div class="wrapperSendUpdateGroup glass-panel">
+        <a href="{% url 'users:list_users' %}" class="btn-back-permissions">
+            <i class="fa-solid fa-arrow-left-long"></i> Volver a la lista
+        </a>
+        <button type="button" class="btn-save-permissions enabled" id="guardarPermisosUsuario">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+        </button>
+        <div class="wrapperMessageSuccess">
+            <h3><i class="fa-solid fa-circle-check"></i> ¡Permisos actualizados con éxito!</h3>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block js %}
+<script>
+    var updatePermisosUsuarioURL = "{% url 'users:updatePermisosUsuario' object.pk %}"
+</script>
+<script src="{% static 'js/users/permisosUsuario.js' %}"></script>
+{% endblock js %}

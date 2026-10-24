@@ -60,18 +60,6 @@
   var ente_recaudadores = {{ ente_recaudadores | safe}};
 </script>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // Selecciona todos los <tr> con la clase 'user_item'
-    document.querySelectorAll(".user_item").forEach((row) => {
-      row.addEventListener("click", function () {
-        // Redirecciona a la URL almacenada en el atributo 'data-url' del <tr>
-        window.location.href = row.getAttribute("data-url");
-      });
-    });
-  });
-</script>
-
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'id_cover/index.js' %}"></script>
 

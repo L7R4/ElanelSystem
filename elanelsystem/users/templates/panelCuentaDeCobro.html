@@ -3,46 +3,69 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/panelCuentaDeCobro.css' %}">
+<link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock css %}
 
 {% block content %}
-    <h1 class ="tittlePanel">Cuentas de cobros</h1>
+<div class="cuentas-cobros-container">
+    <!-- Header -->
+    <header class="modern-header">
+        <div class="header-icon-container">
+            <i class="fa-solid fa-credit-card header-main-icon"></i>
+        </div>
+        <div class="header-text">
+            <span class="header-subtitle">Administración</span>
+            <h1 class="header-title">Cuentas de Cobros</h1>
+            <p class="header-desc">Gestiona las cuentas y alias disponibles para el registro de cobros y transacciones.</p>
+        </div>
+    </header>
+
+    <!-- Accounts List Wrapper -->
     <div class="wrapperListCuentaCobros" id="wrapperListCuentaCobros">
         {% for cuenta in cuentas %}
-            <div class="cuentaItem">
+            <div class="cuentaItem glass-panel">
                 <form method="POST" class="formCuenta">
                     {% csrf_token %}
-                    {% comment %} <input type="hidden" id="inputID" name="inputID" value="{{cuenta.pk}}"> {% endcomment %}
+                    
+                    <div class="cuenta-card-header">
+                        <i class="fa-solid fa-wallet branch-title-icon"></i>
+                        <h2>Alias de Cuenta</h2>
+                    </div>
+
                     <div class="containerInputs">
                         <div class="wrapperInput">
-                            <label for="">Alias</label>
-                            <input type="text" class="" id="inputAlias" name="inputAlias" value="{{cuenta.alias}}">
+                            <label class="labelInput"><i class="fa-solid fa-tag"></i> Nombre / Alias</label>
+                            <input type="text" class="input-alias-style" id="inputAlias" name="inputAlias" value="{{cuenta.alias}}" readonly>
                         </div>
                     </div>
                     
                     <div class="buttonsActions">
-                        <button type="button" class="uploadForm add-button-default">Confirmar</button>
-                        <button type="button" class="desableForm button-default-style">Cancelar</button>
-                        <button type="button" class="deleteCuenta delete-button-default" >Eliminar</button>
+                        <button type="button" class="deleteCuenta delete-button-default">
+                            <i class="fa-solid fa-trash-can"></i> Eliminar
+                        </button>
                     </div>
                 </form>
-            
             </div>
         {% endfor %}
-    
     </div>
-    <button type="button" class="add-button-default" id="buttonAddCuenta">Agregar cuenta</button>
-    
+
+    <!-- Floating Action Button -->
+    <div class="add-btn-container">
+        <button type="button" class="btn-add-account" id="buttonAddCuenta">
+            <i class="fa-solid fa-plus"></i> Agregar cuenta
+        </button>
+    </div>
+</div>
 {% endblock content %}
+
 {% block js %}
 <script>
     var CSRF_TOKEN = '{% csrf_token %}'
-    // URLs - - - - - - - -
+    var imgArrowDown = "{% static 'images/icons/arrowDown.png' %}"
     var urlAddC = "{% url 'users:addCuenta' %}"
     var urlRemoveC = "{% url 'users:removeCuenta' %}"
-    // - - - - - - - -
-
 </script>
+<script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/sales/fetch_cuentasCobros.js' %}"></script>
-
 {% endblock js %}

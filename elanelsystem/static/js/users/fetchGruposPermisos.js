@@ -69,11 +69,11 @@ function selectGroupListener(grupo) {
         else{
             clearActiveOfGroups()
             grupo.classList.add("itemPicked")
-            let group = grupo.textContent
+            let group = grupo.textContent.trim()
             groupToChange = group
             let permisosActives = await permisosGet(group);
             Array.from(itemsPermisos).map(e => {
-                if(permisosActives["perms"].includes(e.nextElementSibling.textContent)){
+                if(permisosActives["perms"].includes(e.nextElementSibling.textContent.trim())){
                     e.checked = true;
                     e.nextElementSibling.classList.add("perActive")
                 }
@@ -173,7 +173,7 @@ function menuConceptual_click_derecho(item,urlImageDelete) {
 
             let positionX = e.clientX + "px"
             let positionY = e.clientY + "px"
-            let stringForHTML = `<div id="contextMenu" style="left: ${positionX}; top: ${positionY};"><div class="option"><img src="${urlImageDelete}" alt=""><h5>Eliminar grupo: ${item.textContent}</h5></div></div>`
+            let stringForHTML = `<div id="contextMenu" style="left: ${positionX}; top: ${positionY};"><div class="option"><img src="${urlImageDelete}" alt=""><h5>Eliminar grupo: ${item.textContent.trim()}</h5></div></div>`
         
             document.body.insertAdjacentHTML('beforeend', stringForHTML);
             let contextMenu = document.getElementById("contextMenu");
@@ -198,7 +198,7 @@ function menuConceptual_click_derecho(item,urlImageDelete) {
                     confirmDelete.addEventListener("click",()=>{
                         // Elimnar el grupo
                         contextMenu.remove();
-                        let grupo = item.textContent
+                        let grupo = item.textContent.trim()
                         let body = {
                             "grupo": grupo
                         }

@@ -15,6 +15,8 @@ urlpatterns = [
     path("cliente/importUsuarios/",importar_usuarios,name="importUsuarios"),
     path("usuario/aplicar_descuento/",realizarDescuento,name="realizarDescuento"),
     path("usuario/detalleusuario/<int:pk>/",DetailUser.as_view(),name="detailUser"),
+    path("usuario/<int:pk>/permisos/",PermisosUsuario.as_view(),name="permisosUsuario"),
+    path("usuario/<int:pk>/permisos/actualizar/",updatePermisosAUsuario,name="updatePermisosUsuario"),
     path("cliente/lista_clientes/",ListaClientes.as_view(),name="list_customers"),
     path("cliente/importClientes/",importar_clientes,name="importClientes"),
     path("usuario/administracion/requestusuarios/",requestUsuarios,name="requestUsuarios"),
@@ -27,6 +29,8 @@ urlpatterns = [
     path("usuario/administracion/importar_confirm/", confirm_import_colaboradores, name="confirm_import_colaboradores"),
     path("usuario/administracion/clean_excel_preview/", clean_excel_preview, name="clean_excel_preview"),
     path("usuario/administracion/clean_excel_execute/", clean_excel_execute, name="clean_excel_execute"),
+    path("usuario/administracion/clean_excel_status/<str:job_id>/", clean_excel_status, name="clean_excel_status"),
+    path("usuario/administracion/clean_excel_download/<str:job_id>/", clean_excel_download, name="clean_excel_download"),
     path("usuario/administracion/sync_payment_dates_execute/", sync_payment_dates_execute, name="sync_payment_dates_execute"),
 
     #region Sucursal CRUD - - - - - - - -
