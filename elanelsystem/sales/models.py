@@ -19,6 +19,7 @@ from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
 from django.core.validators import MinValueValidator, RegexValidator
 from django.utils import timezone
+from simple_history.models import HistoricalRecords
 
 #region C-LISTA-PRECIOS
 class CoeficientesListadePrecios(models.Model):
@@ -63,7 +64,7 @@ class Ventas(models.Model):
             "bloqueada": True,                           # la 0 se desbloquea afuera en crearCuotas()
             "total": int(self._calcular_total_oficial(index)),
             "fechaDeVencimiento": fecha_str,
-            "descuento": {"autorizado": "", "monto": 0},
+            "descuento": {"autorizado": "", "monto": 0, "tipo": ""},
             "diasRetraso": 0,
             "interesPorMora": 0,
             "autorizada_para_anular":False,
@@ -118,6 +119,7 @@ class Ventas(models.Model):
             cuotas.append(self._armar_cuota(i, fecha_iter))
 
         self.cuotas = cuotas
+        self._change_reason = "alta"
         self.save()
 
 
@@ -162,6 +164,7 @@ class Ventas(models.Model):
     deBaja = models.JSONField(default=dict,blank=True,null=True)
     cuotas = models.JSONField(default=list,blank=True,null=True)
     is_commissionable = models.BooleanField(verbose_name="Venta apta para comisionar",default=False,help_text="Indica si esta venta debe generar comisión para el vendedor a cargo")
+    history = HistoricalRecords()
 
     # class Meta:
     #     ordering = ['-fecha']
@@ -382,7 +385,8 @@ class Ventas(models.Model):
                        "pkNewCustomer": pkNewCustomer
 
                     })
-        
+
+        self._change_reason = "cambio de titularidad"
         # self.save()
 
 
@@ -412,7 +416,8 @@ class Ventas(models.Model):
         self.deBaja["detalleMotivo"] = detalleMotivo
         self.deBaja["responsable"] = responsable
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-        # self.save() 
+        self._change_reason = f"baja ({motivo})"
+        # self.save()
 
     def planRecupero(self,motivo,responsable,observacion,nuevaVentaPK):
         self.deBaja["status"] = True
@@ -421,7 +426,8 @@ class Ventas(models.Model):
         self.deBaja["responsable"] = responsable
         self.deBaja["fecha"] = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         self.deBaja["nuevaVentaPK"] = nuevaVentaPK
-    
+        self._change_reason = "plan recupero"
+
     def porcentajeADevolver(self):
         porcentageValido = 0
         if len(self.cuotas_pagadas()) >= 6:
@@ -430,10 +436,15 @@ class Ventas(models.Model):
             porcentageValido = 0
         return porcentageValido
 
-    def calcularDineroADevolver(self):
+    def calcularDineroADevolver(self, porcentaje=None):
+        """Dinero a devolver en una baja = porcentaje sobre lo abonado en las cuotas pagas (sin la cuota 0).
+        Si no se pasa `porcentaje`, se usa el guardado en la baja (deBaja["porcentaje"]); pasarlo sirve
+        para previsualizar el monto antes de confirmar."""
         dineroADevolver = 0
         cuotasPagadasCant = len(self.cuotas_pagadas())
-        porcentage = int(self.deBaja["porcentaje"])
+        if porcentaje is None:
+            porcentaje = (self.deBaja or {}).get("porcentaje", 0)
+        porcentage = float(porcentaje or 0)  # acepta "30", 30 o 30.5
         cuotasPagas = self.cuotas_pagadas()
         valores = [item["total"] for item in cuotasPagas]
 
@@ -441,7 +452,11 @@ class Ventas(models.Model):
             dineroADevolver=(sum(valores)*(porcentage/100)) - cuotasPagas[len(cuotasPagas)-1]["total"]
         elif(porcentage != 0 and cuotasPagadasCant < 6):
             dineroADevolver = sum(valores)*(porcentage/100)
-        return dineroADevolver
+        return max(dineroADevolver, 0)  # con % bajos y 6+ cuotas la fórmula podía dar negativo
+
+    def baseDevolucion(self):
+        """Suma abonada en las cuotas pagas (sin la cuota 0): la base sobre la que se aplica el porcentaje."""
+        return sum(item["total"] for item in self.cuotas_pagadas())
 
     def suspenderOperacion(self):
 
@@ -457,9 +472,11 @@ class Ventas(models.Model):
             self.save()
         if contAtrasados >= 3:
             self.suspendida = True
+            self._change_reason = "suspension por atraso"
             self.save()
         elif(self.suspendida == True and contAtrasados==0):
             self.suspendida = False
+            self._change_reason = "fin de suspension"
             self.save()
     
     def acreditarCuotasPorAnticipo(self, dineroAFavor,responsable):
@@ -493,6 +510,7 @@ class Ventas(models.Model):
         self.adjudicado["status"] = True
         self.adjudicado["tipo"] = tipo
 
+        self._change_reason = f"adjudicacion ({tipo})"
         # self.save()
 
 
@@ -560,7 +578,10 @@ class Ventas(models.Model):
         self.testVencimientoCuotas()
         self.suspenderOperacion()
     
-    def pagarCuota(self,nro_cuota,monto,metodoPago,cobrador,responsable_pago):
+    def pagarCuota(self,nro_cuota,monto,metodoPago,cobrador,responsable_pago,moneda="ARS",tipo_cambio=1.0):
+        # `monto` siempre va en ARS (es lo que cuenta contra el total de la cuota). Si el cliente pagó
+        # en USD, `moneda`="USD" y `tipo_cambio` quedan registrados en el pago para poder mostrar
+        # cuántos dólares fueron (monto / tipo_cambio) en el detalle y en el recibo.
         # 1) Obtener el dict de esa cuota en self.cuotas
         cuota_label = f"Cuota {nro_cuota}"
         cuota = next((c for c in self.cuotas if c["cuota"] == cuota_label), None)
@@ -578,6 +599,8 @@ class Ventas(models.Model):
                 venta            = self,
                 nro_cuota        = nro_cuota,
                 monto            = monto,
+                moneda           = moneda,
+                tipo_cambio      = tipo_cambio,
                 metodo_pago      = MetodoPago.objects.filter(id=int(metodoPago)).first() if metodoPago else None,
                 cobrador         = CuentaCobranza.objects.filter(id=int(cobrador)).first() if cobrador else None,
                 responsable_pago = responsable_pago,
@@ -603,6 +626,7 @@ class Ventas(models.Model):
         elif total_pagado > 0:
             cuota['status'] = 'Parcial'
 
+        self._change_reason = f"pago cuota ({cuota_label})"
         self.save()
 
     def anularCuota(self, nro_cuota):
@@ -630,15 +654,22 @@ class Ventas(models.Model):
                 self.cuotas[i]["pagos"] = []
                 self.cuotas[i]["autorizada_para_anular"] = False
 
+        self._change_reason = f"anulacion cuota ({cuota_label})"
         self.save()
 
-    def aplicarDescuento(self,cuota,dinero,autorizado):
-        cuotaSeleccionada = list(filter(lambda x:x["cuota"] == cuota,self.cuotas))[0]
-        if(cuotaSeleccionada["status"].lower() != "pagado" and (cuotaSeleccionada["cuota"] == "Cuota 0" or cuotaSeleccionada["cuota"] == "Cuota 1")):
-            cuotaSeleccionada["descuento"]['monto'] += dinero
-            cuotaSeleccionada["descuento"]['autorizado'] = autorizado
-        else:
-            raise ValueError("Solo se puede aplicar descuento a la cuota 0 y 1. En otro caso, esta cuota está pagada")
+    def aplicarDescuento(self,cuota,dinero,autorizado,tipo_descuento=""):
+        cuotaSeleccionada = next((x for x in self.cuotas if x["cuota"] == cuota), None)
+        if cuotaSeleccionada is None:
+            raise ValueError(f"No existe la {cuota} en esta venta.")
+        if cuotaSeleccionada["cuota"] not in ("Cuota 0", "Cuota 1"):
+            raise ValueError(f"No se puede aplicar descuento a la {cuota}: solo se admite en la Cuota 0 y la Cuota 1.")
+        if cuotaSeleccionada["status"].lower() == "pagado":
+            raise ValueError(f"No se puede aplicar descuento a la {cuota}: ya está pagada.")
+        cuotaSeleccionada["descuento"]['monto'] += dinero
+        cuotaSeleccionada["descuento"]['autorizado'] = autorizado
+        if tipo_descuento:
+            cuotaSeleccionada["descuento"]['tipo'] = tipo_descuento
+        self._change_reason = f"descuento cuota ({cuota})"
         self.save()
 
     def testVencimientoCuotas(self):
@@ -653,7 +684,22 @@ class Ventas(models.Model):
                     diasDeRetraso = self.contarDias(fechaVencimiento)
                     self.cuotas[i]["diasRetraso"] = diasDeRetraso
         self.save()
-    
+
+    def dias_mora(self):
+        """Días de atraso de la cuota impaga más antigua (la que arrastra más
+        mora). No recalcula nada: lee el `diasRetraso` que ya dejó guardado
+        `testVencimientoCuotas()` la última vez que se vio la venta, para no
+        pagar el costo de un save() por venta al listar muchos clientes."""
+        if self.deBaja.get("status"):
+            return 0
+        cuotas_vencidas = [
+            c for c in self.cuotas
+            if c["cuota"] != "Cuota 0" and c.get("status", "").lower() == "vencido"
+        ]
+        if not cuotas_vencidas:
+            return 0
+        return max(c.get("diasRetraso", 0) for c in cuotas_vencidas)
+
     #endregion
 
     def addPorcentajeAdjudicacion(self):
@@ -693,6 +739,9 @@ class Ventas(models.Model):
 
 class CuentaCobranza(models.Model):
     alias = models.CharField("Alias:",max_length=50)
+    # Los inactivos no se ofrecen al cobrar ni al cargar movimientos, pero se conservan:
+    # pagos y movimientos viejos siguen apuntando a ellos.
+    activo = models.BooleanField("Activo", default=True)
 
     def __str__(self):
         return self.alias
@@ -720,13 +769,17 @@ class CuentaCobranza(models.Model):
     
 
     def validation_alias(self):
-        if CuentaCobranza.objects.filter(alias=self.alias).exists():
+        # excluye el propio registro: si no, editar uno existente (ej. desactivarlo) fallaba
+        if CuentaCobranza.objects.filter(alias=self.alias).exclude(pk=self.pk).exists():
             raise ValidationError({'alias': "Ya existe una cuenta con ese alias."})
     #endregion       
 
 
 class MetodoPago(models.Model):
     alias = models.CharField("Alias:",max_length=50)
+    # Los inactivos no se ofrecen al cobrar ni al cargar movimientos de caja, pero se
+    # conservan porque pagos y movimientos viejos siguen apuntando a ellos.
+    activo = models.BooleanField("Activo", default=True)
 
     def __str__(self):
         return self.alias
@@ -754,9 +807,54 @@ class MetodoPago(models.Model):
     
 
     def validation_alias(self):
-        if MetodoPago.objects.filter(alias=self.alias).exists():
+        # excluye el propio registro: si no, editar uno existente (ej. desactivarlo) fallaba
+        if MetodoPago.objects.filter(alias=self.alias).exclude(pk=self.pk).exists():
             raise ValidationError({'alias': "Ya existe un metodo de pago con ese alias."})
-    #endregion       
+    #endregion
+
+
+class TasaInteres(models.Model):
+    """Catálogo de Tasas Nominales Anuales (TNA) elegibles al cargar una venta.
+    Administracion CENTRAL puede agregar/quitar valores acá (vía admin) sin tocar código."""
+    valor = models.FloatField("TNA (%):")
+    activo = models.BooleanField(default=True)
+    es_default = models.BooleanField(
+        "Es la tasa base",
+        default=False,
+        help_text="La que se aplica automáticamente si el usuario no puede elegir otra.",
+    )
+
+    class Meta:
+        ordering = ["valor"]
+
+    def __str__(self):
+        return f"{self.valor}%"
+
+    def clean(self):
+        if self.valor <= 0:
+            raise ValidationError({'valor': "Debe contener un valor válido."})
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.es_default:
+            TasaInteres.objects.exclude(pk=self.pk).update(es_default=False)
+
+
+class TipoDescuento(models.Model):
+    """Catálogo de tipos de descuento elegibles al aplicar un descuento a una cuota."""
+    alias = models.CharField("Alias:", max_length=50)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.alias
+
+    def save(self, *args, **kwargs):
+        self.alias = self.alias.capitalize()
+        super(TipoDescuento, self).save(*args, **kwargs)
+
+    def clean(self):
+        if TipoDescuento.objects.filter(alias=self.alias).exists():
+            raise ValidationError({'alias': "Ya existe un tipo de descuento con ese alias."})
 
 #endregion
 
@@ -928,6 +1026,8 @@ class PagoCannon(models.Model):
         help_text="Usuario interno responsable de la carga."
     )
 
+    history = HistoricalRecords()
+
     class Meta:
         ordering = ['-fecha']
         unique_together = [
@@ -939,6 +1039,19 @@ class PagoCannon(models.Model):
         verbose_name = "Pago Cannon"
         verbose_name_plural = "Pagos Cannon"
 
+    @property
+    def es_usd(self):
+        return (self.moneda or "").upper() == "USD" and (self.tipo_cambio or 0) > 0
+
+    @property
+    def monto_usd(self):
+        """Dólares que se pagaron (None si el pago no fue en USD). `monto` está en ARS = USD * tipo_cambio
+        redondeado al peso; el error de redondeo (< 1 peso) no llega al centavo de dólar, así que se
+        recupera exacto a 2 decimales."""
+        if not self.es_usd:
+            return None
+        return round(self.monto / self.tipo_cambio, 2)
+
     def json(self):
         return {
             "id": self.id,
@@ -949,6 +1062,7 @@ class PagoCannon(models.Model):
             "campana_de_pago": self.campana_de_pago,
             "moneda": self.moneda,
             "tipo_cambio": self.tipo_cambio,
+            "monto_usd": self.monto_usd,
             "monto": self.monto,
             "metodo_pago": self.metodo_pago.alias if self.metodo_pago else None,
             "cobrador": self.cobrador.alias if self.cobrador else None,

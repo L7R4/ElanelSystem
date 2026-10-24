@@ -2,375 +2,344 @@
 {% load static %}
 {% load humanize %}
 {% load i18n %}
+{% load l10n %}
 {% load util %}
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/detail_sale.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock css %}
 
 {% block content %}
 <div id="wrapperLoader">
     <span id="loader"></span>
 </div>
-{% if not object.deBaja.status %}
 
-<div class="wrapperButtonManageVenta">
-    <div class="deleteSale">
-        <button id="showDeleteWrapper" class="delete-button-default" onclick="openModalDeleteVenta()">Eliminar venta</button>
-    </div>
-    {% if not object.adjudicado.status %}
-    <div class="selectAdjudicacion">
-        <div class="selectedOption">
-            <h2>Adjudicar</h2>
-            <img src="{% static 'images/icons/arrowDown.png' %}" alt="">
+<div class="sale-details-container">
+    <!-- Modern Header -->
+    <div class="modern-sale-header">
+        <div class="header-icon-wrapper">
+            <i class="fa-solid fa-receipt"></i>
         </div>
-        <ul class="options">
-            <a href="{% url 'sales:adjSorteo' object.id%}">Por sorteo</a>
-            <a href="{% url 'sales:adjNegociacion' object.id%}">Por negociacion</a>
-        </ul>
-    </div>
-
-    {% comment %} <div class="buttonDeBaja">
-        <button type="button" id="bajaBtn"> Dar baja </button>
-        <div class="formConfirmBajaWrapper">
-            <div class="formsContainer">
-                <form id="formBaja"  method="POST">
-                    {% csrf_token %}
-                    <div class="porcentajeWrapper">
-                        <div>
-                            <p>Porcentaje</p>
-                            <div class="porcentajeContainer">
-                                <div class="inputPorcentajeContainer">
-                                    <input name='porcentage' id='porcentage' type='text' value ='{{porcetageDefault}}' onkeypress='return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 8 || event.charCode == 13 || (event.charCode >= 37 && event.charCode <= 40)'>
-                                    <p>%</p>
-                                </div>
-                                
-                                <button class="porcentajeBtn" type="button" id="porcentajeBtn">Editar
-                                    <img src="{% static "images/icons/editar.svg" %}" alt="iconEditar">
-                                </button>
-                                
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="selectMotivoWrapper" class="wrapperInput">
-                        <h3 class="labelInput">Motivo de la baja</h3>
-                        <div class="containerInputAndOptions">
-                            <img id="motivoIconDisplay" class="iconDesplegar open" src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                            <input name="motivo" id="motivo" class="input-select-custom onlySelect" placeholder="Elegir" autocomplete="off" readonly="">
-                            <ul class="list-select-custom options">
-                                <li data-value ="Motivos personales">Motivos personales</li>
-                                <li data-value ="Defuncion">Defuncion </li>
-                                <li data-value ="Otro">Otro</li>
-                            </ul>
-                        </div>
-                    </div>
-    
-                    <div class="motivoBaja">
-                        <h3>Observaciones:</h3>
-                        <textarea rows="4" name="observacion" id="bajaObservacion"></textarea>
-                    </div>
-    
-                    <div class="confirmWrapper">
-                        <h3>¿Estás seguro que quieres dar de baja esta operación?</h3>
-                        <div>
-                            <button id="yesConfirm" class="delete-button-default" type="button">Si</button>
-                            <button id="noConfirm" class="add-button-default" type="button">No</button>
-                        </div>
-                    </div>
-
-                </form>
-                <form method="POST" id="formPassword">
-                        {% csrf_token %}
-                        <div class="inputClaveWrapper">
-                            <p>Ingrese la clave</p>
-                            <input name="clave" type="password" id="clave">
-                        </div>
-                        <div class="confirmClaveWrapper">
-                            <button id="confirmPass" class="add-button-default" type="button" name="confirmClave">Confirmar</button>
-                            <button id="notConfirmPass" class="delete-button-default" type="button">Cancelar</button>
-                        </div>
-                </form>
-            </div>
-            
+        <div class="header-text">
+            <span class="header-subtitle">DETALLE DE OPERACIÓN</span>
+            <h1 class="header-title">Operación N° {{object.nro_operacion}}</h1>
         </div>
-        
-    </div> {% endcomment %}
-    
-    {% endif %}
-    
-    {% comment %} <div class="buttonChangePack button-default-style">
-        <a href="{% url 'sales:cambioPack' object.id %}">Cambiar pack</a>
-    </div>
-    
-    <div class="buttonChangeTitularidad button-default-style">
-        <a href="{% url 'sales:changeTitu' object.pk %}">Cambiar titularidad</a>
-    </div> {% endcomment %}
-</div> 
-{% else %}
-{% comment %} <div class="wrapperButtonManageVenta">
-    <div class="deleteSale">
-        <button id="showDeleteWrapper" class="delete-button-default" onclick="modalDeleteVenta()">Eliminar venta</button>
-    </div>
-</div> {% endcomment %}
 
-{% endif %}
-
-
-<div class="wrapperBase">
-    <div class="wrapper_information">
-        <h1>Operacion n° {{object.nro_operacion}}</h1>
-
-        <div class="information">
-            <div class="inputs" id="producto">
-                <h2>Producto</h2>
-                <div>
-                    <h3>{{object.producto.nombre}}</h3>
-                </div>
-            </div>
+        <!-- Quick Status Badge -->
+        <div class="sale-status-group">
             {% if object.adjudicado.status %}
-                <div class="inputs"  id="paquete">
-                    <h2>Tipo de adjudicacion</h2>
-                    <div>
-                        <h3>{{object.adjudicado.tipo|title }}</h3>
-                    </div>
-                </div>
+                <span class="badgeStatus status-adjudicado">
+                    <i class="fa-solid fa-trophy"></i> Adjudicado
+                </span>
+            {% elif estadoVenta.code == "BAJA" or estadoVenta.code == "RECUPERO_BAJA" %}
+                <span class="badgeStatus status-baja">
+                    <i class="fa-solid fa-ban"></i> {{ estadoVenta.label }}
+                </span>
+            {% elif estadoVenta.code == "PLAN_VENCIDO" %}
+                <span class="badgeStatus status-baja">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Plan Vencido
+                </span>
+            {% elif estadoVenta.code == "SUSPENDIDO" %}
+                <span class="badgeStatus status-suspendida">
+                    <i class="fa-solid fa-circle-exclamation"></i> Suspendido
+                </span>
+            {% elif estadoVenta.code == "CAMBIO_DE_TIT" or estadoVenta.code == "CAMBIO_DE_PAQ" or estadoVenta.code == "RECUPERO_ACT" %}
+                <span class="badgeStatus status-activo">
+                    <i class="fa-solid fa-circle-check"></i> Activo · {{ estadoVenta.label }}
+                </span>
+            {% elif estadoVenta.code == "PAGADO" %}
+                <span class="badgeStatus status-activo">
+                    <i class="fa-solid fa-circle-check"></i> Pagado
+                </span>
             {% else %}
-            <div class="inputs"  id="paquete">
-                <h2>Paquete</h2>
-                <div>
-                    <h3>{{object.paquete}}</h3>
-                </div>
-            </div>
+                <span class="badgeStatus status-activo">
+                    <i class="fa-solid fa-circle-check"></i> Activo
+                </span>
             {% endif %}
-            
+        </div>
 
-            <div id="wrapperContratos" class="wrapperContratos">
-                {% for contrato in object.cantidadContratos  %}
-                {% if object.adjudicado.status %}
-                    {% if contrato.nro_contrato == object.adjudicado.contratoAdjudicado%}
-                    <div class="contratosItem contratoAdjudicado">
-                        <h2 class="adjText">Adjudicado</h2>
-                        <h2>Chance {{ forloop.counter }}</h2>
-                        <div class="inputs" id="n_solicitud">
-                            <h2>N° Contrato</h2>
-                            <div>
-                                <h3>{{contrato.nro_contrato}}</h3>
-                            </div>
-                        </div>
-                        <div class="inputs" id="n_orden">
-                            <h2>N° Orden</h2>
-                            <div>
-                                <h3>{{contrato.nro_orden}}</h3>
-                            </div>
-                        </div>
+        <!-- Action buttons inside Header -->
+        <div class="header-actions">
+            {% if not object.deBaja.status %}
+                {# Baja: la venta queda en el sistema con estado BAJA (baja_venta.js abre el modal) #}
+                <button id="bajaBtn" type="button" class="btn-action-baja">
+                    <i class="fa-solid fa-ban"></i> Dar de baja
+                </button>
+                <button id="showDeleteWrapper" class="btn-action-delete" onclick="openModalDeleteVenta()">
+                    <i class="fa-solid fa-trash-can"></i> Eliminar Venta
+                </button>
+                
+                {% if not object.adjudicado.status %}
+                <div class="selectAdjudicacion">
+                    <div class="selectedOption btn-action-adjudicate">
+                        <i class="fa-solid fa-trophy"></i>
+                        <h2>Adjudicar</h2>
+                        <i class="fa-solid fa-chevron-down caret-icon"></i>
+                    </div>
+                    <ul class="options">
+                        <a href="{% url 'sales:adjSorteo' object.id%}"><i class="fa-solid fa-dice"></i> Por Sorteo</a>
+                        <a href="{% url 'sales:adjNegociacion' object.id%}"><i class="fa-solid fa-handshake"></i> Por Negociación</a>
+                    </ul>
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Layout Grid -->
+    <div class="sale-layout-grid">
+        
+        <!-- Left Panel: General Information -->
+        <div class="info-panel glass-panel">
+            <div class="panel-header border-bottom">
+                <i class="fa-solid fa-circle-info icon-accent"></i>
+                <h2>Información de Venta</h2>
+            </div>
+            
+            <div class="panel-body">
+                <!-- Info cards grid -->
+                <div class="info-cards-grid">
+                    <div class="info-item-card double-width">
+                        <span class="info-label"><i class="fa-solid fa-box"></i> Producto</span>
+                        <h3 class="info-value">{{object.producto.nombre}}</h3>
+                    </div>
+
+                    {% if object.adjudicado.status %}
+                    <div class="info-item-card double-width">
+                        <span class="info-label"><i class="fa-solid fa-award"></i> Tipo de Adjudicación</span>
+                        <h3 class="info-value">{{object.adjudicado.tipo|title}}</h3>
                     </div>
                     {% else %}
-                        <div class="contratosItem contratoDisable">
-                            <h2>Chance {{ forloop.counter }}</h2>
-                            <div class="inputs" id="n_solicitud">
-                                <h2>N° Contrato</h2>
-                                <div>
-                                    <h3>{{contrato.nro_contrato}}</h3>
-                                </div>
-                            </div>
-                            <div class="inputs" id="n_orden">
-                                <h2>N° Orden</h2>
-                                <div>
-                                    <h3>{{contrato.nro_orden}}</h3>
-                                </div>
-                            </div>
-                        </div>
-                    {%endif%}
-                {% else %}
-                    <div class="contratosItem">
-                        <h2>Chance {{ forloop.counter }}</h2>
-                        <div class="inputs" id="n_solicitud">
-                            <h2>N° Contrato</h2>
-                            <div>
-                                <h3>{{contrato.nro_contrato}}</h3>
-                            </div>
-                        </div>
-                        <div class="inputs" id="n_orden">
-                            <h2>N° Orden</h2>
-                            <div>
-                                <h3>{{contrato.nro_orden}}</h3>
-                            </div>
-                        </div>
+                    <div class="info-item-card double-width">
+                        <span class="info-label"><i class="fa-solid fa-cubes"></i> Paquete</span>
+                        <h3 class="info-value">{{object.paquete}}</h3>
                     </div>
-                {% endif %}
-                
-                {% endfor %}
-            </div>
+                    {% endif %}
 
-            <div class="inputs" id="fec_inscripcion">
-                <h2>Fecha de inscripcion</h2>
-                <div>
-                    <h3>{{object.fecha|format_dd_mm_yyyy}}</h3>
-                </div>
-            </div> 
+                    <div class="info-item-card">
+                        <span class="info-label"><i class="fa-regular fa-calendar"></i> Fecha Inscripción</span>
+                        <h3 class="info-value">{{object.fecha|format_dd_mm_yyyy}}</h3>
+                    </div>
 
-            <div class="inputs" id="montoXCuota">
-                <h2>Monto x Cuota</h2>
-                <div>
-                    {% language 'de' %}
-                        <h3>$ {{object.importe_x_cuota|formato_moneda}}</h3>
-                    {% endlanguage %}
+                    <div class="info-item-card highlight-card">
+                        <span class="info-label"><i class="fa-solid fa-sack-dollar"></i> Importe por Cuota</span>
+                        {% language 'de' %}
+                            <h3 class="info-value">$ {{object.importe_x_cuota|formato_moneda}}</h3>
+                        {% endlanguage %}
+                    </div>
 
-                </div>
-            </div>
-            
-            <div class="inputs" id="total_pagar">
-                <h2>Total a pagar</h2>
-                <div>
-                    {% language 'de' %}
-                        <h3>$ {{object.total_a_pagar|formato_moneda}}</h3>
-                    {% endlanguage %}
-                </div>
-            </div>
-            {% if not object.adjudicado.status %}
-            <div class="inputs" id="anticipo">
-                <h2>Cuota de inscripcion</h2>
-                <div>
-                    {% language 'de' %}
-                        <h3>$ {{object.anticipo|formato_moneda}}</h3>
-                    {% endlanguage %}
-                </div>
-            </div>
+                    <div class="info-item-card total-card">
+                        <span class="info-label"><i class="fa-solid fa-wallet"></i> Total a Pagar</span>
+                        {% language 'de' %}
+                            <h3 class="info-value">$ {{object.total_a_pagar|formato_moneda}}</h3>
+                        {% endlanguage %}
+                    </div>
 
-            <div class="inputs" id="primer_cuota">
-                <h2>Primer cuota</h2>
-                <div>
-                    {% language 'de' %}
-                        <h3>$ {{object.primer_cuota|formato_moneda}}</h3>
-                    {% endlanguage %}
-                </div>
-            </div>
-            {% endif %}
+                    {% if not object.adjudicado.status %}
+                    <div class="info-item-card">
+                        <span class="info-label"><i class="fa-solid fa-receipt"></i> Cuota de Inscripción</span>
+                        {% language 'de' %}
+                            <h3 class="info-value">$ {{object.anticipo|formato_moneda}}</h3>
+                        {% endlanguage %}
+                    </div>
 
-            <div class="inputs" id="modalidad">
-                <h2>Modalidad</h2>
-                <div>
-                    <h3>{{object.modalidad}}</h3>
-                </div>
-            </div>
-            <div class="inputs" id="vendedor">
-                <h2>Agencia</h2>
-                <div>
-                    <h3>{{object.agencia}}</h3>
-                </div>
-            </div>
-            <div class="inputs" id="vendedor">
-                <h2>Vendedor</h2>
-                <div>
-                    <h3>{{object.vendedor}}</h3>
-                </div>
-            </div>
-            <div class="inputs" id="supervisor">
-                <h2>Supervisor</h2>
-                <div>
-                    <h3>{{object.supervisor}}</h3>
-                </div>
-            </div>
-            <div class="inputs" id="observaciones">
-                <h2>Observaciones</h2>
-                <div>
-                    <h3>{{object.observaciones}}</h3>
-                </div>
-            </div>
-        </div>
+                    <div class="info-item-card">
+                        <span class="info-label"><i class="fa-solid fa-money-bill-wave"></i> Primer Cuota</span>
+                        {% language 'de' %}
+                            <h3 class="info-value">$ {{object.primer_cuota|formato_moneda}}</h3>
+                        {% endlanguage %}
+                    </div>
+                    {% endif %}
 
-        {% if object.cambioTitularidadField %}
-                <div class="changeTitularidadWrapper">
-                    <h2>Cambios de titularidad</h2>
-                    {% for change in changeTitularidad %}
-                        <div class="changeItem">
-                            <div class="names">
-                                <a href="{% url 'users:cuentaUser' change.pkNewCustomer %}">{{change.newCustomer}}</a>
-                                <img src="{% static 'images/icons/arrowDown.png' %}" alt="">
-                                <a href="{% url 'users:cuentaUser' change.pkOldCustomer %}">{{change.oldCustomer}}</a>
+                    <div class="info-item-card">
+                        <span class="info-label"><i class="fa-solid fa-arrows-spin"></i> Modalidad</span>
+                        <h3 class="info-value">{{object.modalidad}}</h3>
+                    </div>
+
+                    <div class="info-item-card">
+                        <span class="info-label"><i class="fa-solid fa-shop"></i> Agencia</span>
+                        <h3 class="info-value">{{object.agencia}}</h3>
+                    </div>
+
+                    <div class="info-item-card">
+                        <span class="info-label"><i class="fa-solid fa-user-tag"></i> Vendedor</span>
+                        <h3 class="info-value">{{object.vendedor}}</h3>
+                    </div>
+
+                    <div class="info-item-card">
+                        <span class="info-label"><i class="fa-solid fa-user-tie"></i> Supervisor</span>
+                        <h3 class="info-value">{{object.supervisor}}</h3>
+                    </div>
+
+                    <div class="info-item-card full-width">
+                        <span class="info-label"><i class="fa-regular fa-comment-dots"></i> Observaciones</span>
+                        <h3 class="info-value">{{object.observaciones|default:"Sin observaciones"}}</h3>
+                    </div>
+                </div>
+
+                <!-- Chances Sub-Grid -->
+                <div class="chances-section">
+                    <h3 class="section-title"><i class="fa-solid fa-ticket"></i> Chances Asociadas</h3>
+                    <div id="wrapperContratos" class="contracts-grid">
+                        {% for contrato in object.cantidadContratos %}
+                            {% if object.adjudicado.status %}
+                                {% if contrato.nro_contrato == object.adjudicado.contratoAdjudicado %}
+                                <div class="contract-card card-adjudicado">
+                                    <div class="contract-card-header">
+                                        <span class="chance-tag">Chance {{ forloop.counter }}</span>
+                                        <span class="winner-tag"><i class="fa-solid fa-trophy"></i> Adjudicado</span>
+                                    </div>
+                                    <div class="contract-body">
+                                        <div>
+                                            <span class="field-lbl">N° Contrato</span>
+                                            <span class="field-val">{{contrato.nro_contrato}}</span>
+                                        </div>
+                                        <div>
+                                            <span class="field-lbl">N° Orden</span>
+                                            <span class="field-val">{{contrato.nro_orden}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="contract-card card-disabled">
+                                    <div class="contract-card-header">
+                                        <span class="chance-tag">Chance {{ forloop.counter }}</span>
+                                    </div>
+                                    <div class="contract-body">
+                                        <div>
+                                            <span class="field-lbl">N° Contrato</span>
+                                            <span class="field-val">{{contrato.nro_contrato}}</span>
+                                        </div>
+                                        <div>
+                                            <span class="field-lbl">N° Orden</span>
+                                            <span class="field-val">{{contrato.nro_orden}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="contract-card">
+                                    <div class="contract-card-header">
+                                        <span class="chance-tag">Chance {{ forloop.counter }}</span>
+                                    </div>
+                                    <div class="contract-body">
+                                        <div>
+                                            <span class="field-lbl">N° Contrato</span>
+                                            <span class="field-val">{{contrato.nro_contrato}}</span>
+                                        </div>
+                                        <div>
+                                            <span class="field-lbl">N° Orden</span>
+                                            <span class="field-val">{{contrato.nro_orden}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Cambio de Titularidad Wrapper -->
+                {% if object.cambioTitularidadField %}
+                <div class="titularidad-section">
+                    <h3 class="section-title"><i class="fa-solid fa-arrows-left-right"></i> Historial de Titularidad</h3>
+                    <div class="titularidad-list">
+                        {% for change in changeTitularidad %}
+                        <div class="titularidad-card">
+                            <div class="titularidad-names">
+                                <a class="client-link" href="{% url 'users:cuentaUser' change.pkNewCustomer %}">
+                                    <i class="fa-solid fa-user-plus"></i> {{change.newCustomer}}
+                                </a>
+                                <i class="fa-solid fa-circle-arrow-down transfer-arrow"></i>
+                                <a class="client-link old-client" href="{% url 'users:cuentaUser' change.pkOldCustomer %}">
+                                    <i class="fa-solid fa-user-minus"></i> {{change.oldCustomer}}
+                                </a>
                             </div>
-                            <div class="changeItemInformation">
-                                <a id="verPDFTitularidad" href="{% url 'sales:tituPDF' object.pk change.id %}" target="_blank">Ver PDF</a>
-                                <h3>Desde: <strong>{{change.lastCuota.cuota}}</strong></h3>
-                                <h3>Fecha: <strong>{{change.fecha}}</strong></h3>
+                            <div class="titularidad-details">
+                                <a id="verPDFTitularidad" class="btn-pdf-link" href="{% url 'sales:tituPDF' object.pk change.id %}" target="_blank">
+                                    <i class="fa-regular fa-file-pdf"></i> Ver PDF
+                                </a>
+                                <span>Desde: <strong>{{change.lastCuota.cuota}}</strong></span>
+                                <span>Fecha: <strong>{{change.fecha}}</strong></span>
                             </div>
                         </div>
-                    {%endfor%}
+                        {% endfor %}
+                    </div>
                 </div>
-        {%endif%}
-        
-    </div>
-
-    {% if  object.deBaja.status %}
-
-        <div class="wrapper_cuotas enBaja">
-        
-            <div class="cuotas">
-                <h1>Cuotas no disponibles</h1>
-                <h2>La operacion ya fue dada de baja</h2>
+                {% endif %}
             </div>
-            
         </div>
 
-    {% else %}
-
-        <div {% if object.adjudicado.status %} class="wrapper_cuotas adjudicado" {% else %}class="wrapper_cuotas" {% endif %}>
-
+        <!-- Right Panel: Cuotas / Payments List -->
+        <div class="payments-panel glass-panel">
+            <div class="panel-header border-bottom">
+                <i class="fa-solid fa-list-check icon-accent"></i>
+                <h2>Control de Cuotas</h2>
+            </div>
+            
+            <div class="panel-body flex-column">
                 <div class="wrapperTittleCuotas">
                     <h3>N° Cuotas: {{object.nro_cuotas}}</h3>
                 </div>
 
+                {% if not object.deBaja.status %}
+                <ul class="cuotasLegend">
+                    <li><span class="marca Pendiente"></span> Pendiente</li>
+                    <li><span class="marca Pagado"></span> Pagada</li>
+                    <li><span class="marca Parcial"></span> Pago parcial</li>
+                    <li><span class="marca Vencido"></span> Vencida</li>
+                    <li><span class="marca bloqueado" style="background-image: url('{% static 'images/icons/iconBloqueado.png' %}')"></span> Bloqueada</li>
+                </ul>
+                {% endif %}
+
+                {% if object.deBaja.status %}
+                <div class="cuotas-disabled-message">
+                    <i class="fa-solid fa-ban danger-color"></i>
+                    <h3>Cuotas no disponibles</h3>
+                    <p>La operación ya fue dada de baja.</p>
+                </div>
+                {% else %}
                 <div class="wrapperDetalleEstadoVenta">
+                    <!-- Cuotas Timeline list -->
                     <div class="wrapperCuotasList">
                         <ul class="cuotas_list">
                             {% for cuota in cuotas %}
                                 {% if cuota.bloqueada %}
-                                <div id="{{cuota.cuota}}" class ="cuota bloqueado">
-
-                                    <div class="marca bloqueado" style="background-image: url('{% static 'images/icons/iconBloqueado.png' %}')">
-                                    </div>
+                                <div id="{{cuota.cuota}}" class="cuota bloqueado">
+                                    <div class="marca bloqueado" style="background-image: url('{% static 'images/icons/iconBloqueado.png' %}')"></div>
                                 {% else %}
-                                <div id="{{cuota.cuota}}" class ="cuota {{cuota.status | capfirst }}">
-
+                                <div id="{{cuota.cuota}}" class="cuota {{cuota.status|capfirst}}">
                                     {% if cuota.status|lower == "vencido" %}
-                                        <div class="marca {{cuota.status | capfirst}}"></div>
+                                        <div class="marca {{cuota.status|capfirst}}"></div>
+                                    {% elif cuota.status|lower == "parcial" %}
+                                        <div class="marca {{cuota.status|capfirst}}"></div>
+                                    {% elif cuota.status|lower == "pagado" %}
+                                        <div class="marca {{cuota.status|capfirst}}"></div>
+                                    {% elif cuota.status|lower == "pendiente" %}
+                                        <div class="marca {{cuota.status|capfirst}}"></div>
                                     {% endif %}
-
-                                    {% if cuota.status|lower == "parcial" %}
-                                        <div class="marca {{cuota.status | capfirst}}"></div>
-                                    {% endif %}
-
-                                    {% if cuota.status|lower == "pagado" %}
-                                        <div class="marca {{cuota.status | capfirst}}"></div>
-                                    {% endif %}
-
-                                    {% if cuota.status|lower == "pendiente" %}
-                                        <div class="marca {{cuota.status | capfirst}}"></div>
-                                    {% endif %}
-
                                 {% endif %}
-                                <h4>{{cuota.cuota}}</h4>
-                                {% if cuota.status == "vencido" %}
-                                <h5>{{cuota.diasRetraso}} dias atrasada</h5>
-                                {% endif %}
+                                    <h4>{{cuota.cuota}}</h4>
+                                    {% if cuota.status == "vencido" %}
+                                    <h5 class="atraso-tag">{{cuota.diasRetraso}} días</h5>
+                                    {% endif %}
                                 </div>
                             {% endfor %}
                         </ul>
                     </div>
 
-                    <form id="payCuotaForm" method ="POST" class="containerDetalleCuota">
+                    <!-- Slide-in Payment Form -->
+                    <form id="payCuotaForm" method="POST" class="containerDetalleCuota">
                         {% csrf_token %}
-                        <input type="hidden" class="notForm" name="ventaID" id="ventaID"value="{{object.id}}">
+                        <input type="hidden" class="notForm" name="ventaID" id="ventaID" value="{{object.id}}">
                         <input type="hidden" class="notForm" name="cuota" id="cuotaID">
 
                         <div class="buttonsActions">
-                            <button type="button" id="closeFormCuota"><img src="{% static 'images/icons/close.svg' %}" alt=""></button>
+                            <button type="button" id="closeFormCuota"><i class="fa-solid fa-xmark"></i></button>
                         </div>
 
-                        <h4 class ="cuotaPicked"></h4>
+                        <h4 class="cuotaPicked"></h4>
 
                         <div class="typesPayments">
                             <h3>Elija el tipo de pago</h3>
@@ -379,30 +348,22 @@
                                     <input type="radio" name="typePayment" id="total" value="total" checked>
                                     <h3 for="total">Abonar total</h3>
                                 </div>
-                                <div class="choice"  id="choiceParcial">
+                                <div class="choice" id="choiceParcial">
                                     <input type="radio" name="typePayment" id="parcial" value="parcial">
-                                    <h3 for="total">Abonar parcial</h3>
+                                    <h3 for="parcial">Abonar parcial</h3>
                                 </div>
                             </div>
-                            
                         </div>
 
-
-                        <div id="selectWrapperSelectCobrador" class="select-search wrapperTypeFilter wrapperSelectFilter wrapperInput">
+                        <div id="selectWrapperSelectCobrador" class="wrapperTypeFilter wrapperSelectFilter wrapperInput">
                             <h3 class="labelInput">Cobrador</h3>
                             <div class="containerInputAndOptions">
-                                <img
-                                    class="iconDesplegar"
-                                    id="cobradorIconDisplay"
-                                    src="{% static 'images/icons/arrowDown.png' %}"
-                                    alt=""
-                                />
-
-                                <input type="hidden" name="cobrador" readonly required="" autocomplete="off" maxlength="100" class="input-cobrador inputValidation">
-
+                                <i class="fa-solid fa-user-check select-embed-icon"></i>
+                                <input type="hidden" name="cobrador" readonly required class="input-cobrador inputValidation">
                                 <div class="onlySelect pseudo-input-select-wrapper">
                                     <h3></h3>
                                 </div>
+                                <i class="fa-solid fa-chevron-down iconDesplegar"></i>
                                 <ul class="list-select-custom options">
                                     {% for cobrador in cobradores %}
                                     <li data-value="{{cobrador.id}}">{{cobrador.alias}}</li>
@@ -411,18 +372,15 @@
                             </div>
                         </div>
 
-                        
-                        <div id="selectWrapperSelectTypePayments" class="select-search wrapperTypeFilter wrapperSelectFilter wrapperInput">
-                            <label class="labelInput">Metodo de pago</label>
+                        <div id="selectWrapperSelectTypePayments" class="wrapperTypeFilter wrapperSelectFilter wrapperInput">
+                            <label class="labelInput">Método de pago</label>
                             <div class="containerInputAndOptions">
-                                <img id="metodoPagoIconDisplay" class="iconDesplegar" src="{% static 'images/icons/arrowDown.png' %}" alt=""/>
-                                
-                                <input type="hidden" name="metodoPago" required="" autocomplete="off" maxlength="100" class="input-metodoPago inputValidation">
-                                
+                                <i class="fa-solid fa-credit-card select-embed-icon"></i>
+                                <input type="hidden" name="metodoPago" required class="input-metodoPago inputValidation">
                                 <div class="onlySelect pseudo-input-select-wrapper">
                                     <h3></h3>
                                 </div>
-
+                                <i class="fa-solid fa-chevron-down iconDesplegar"></i>
                                 <ul class="list-select-custom options">
                                     {% for metodo in metodosDePagos %}
                                         <li data-value="{{metodo.id}}">{{metodo.alias}}</li>
@@ -430,83 +388,75 @@
                                 </ul>
                             </div>
                         </div>
+
                         <div class="montoMonedaWrapper">
-                            <div id="selectWrapperSelectMoneda" class="select-search wrapperTypeFilter wrapperSelectFilter wrapperInput">
+                            <div id="selectWrapperSelectMoneda" class="wrapperTypeFilter wrapperSelectFilter wrapperInput">
                                 <h3 class="labelInput">Moneda</h3>
                                 <div class="containerInputAndOptions">
-                                    <img
-                                        class="iconDesplegar"
-                                        id="cobradorIconDisplay"
-                                        src="{% static 'images/icons/arrowDown.png' %}"
-                                        alt=""
-                                    />
-
-                                    <input type="hidden" name="inputMoneda" readonly required autocomplete="off" maxlength="100" class="input-moneda inputValidation" id="inputMoneda" value="ars">
-
+                                    <i class="fa-solid fa-coins select-embed-icon"></i>
+                                    <input type="hidden" name="inputMoneda" readonly required class="input-moneda inputValidation" id="inputMoneda" value="ars">
                                     <div class="onlySelect pseudo-input-select-wrapper">
                                         <h3></h3>
                                     </div>
+                                    <i class="fa-solid fa-chevron-down iconDesplegar"></i>
                                     <ul class="list-select-custom options">
                                         <li data-value="ars">ARS</li>
                                         <li data-value="usd">USD ($ {{dolar_oficial}})</li>
                                     </ul>
                                 </div>
                             </div>
+                            
                             <div class="pickedAmount">
                                 <h4>Valor</h4>
-                                <input type="text" class="input-select-custom inputValidation" name="amountParcial" id="amountParcial" placeholder="Ingrese el dinero">
+                                <input type="text" class="input-select-custom inputValidation" name="amountParcial" id="amountParcial" placeholder="Monto a ingresar">
                                 <p id="dineroRestante"></p>
                             </div>
                         </div>
 
                         <div class="wrapperButtonPayCuota">
-                            {% comment %} <button type="button" class="" id="btnDescuentoCuota">Aplicar descuento</button> {% endcomment %}
-                            <button type="button" name="sendPayment" form="payCuotaForm"id="sendPayment" class="add-button-default blocked">Abonar</button>      
+                            <div id="missingFieldsMsgCuota" class="missing-fields-msg"></div>
+                            <button type="button" name="sendPayment" form="payCuotaForm" id="sendPayment" class="add-button-default blocked">
+                                <i class="fa-solid fa-credit-card"></i> Abonar
+                            </button>
                         </div>
                     </form>
 
+                    <!-- Payment Status Panel -->
                     <div class="payCuotaStatus">
-                        <img id="okPostPagoImg" src="{% static 'images/icons/checkMark.png' %}"  alt="">
-                        <img id="failedPostPagoImg" src="{% static 'images/icons/error_icon.png' %}"  alt="">
+                        <img id="okPostPagoImg" src="{% static 'images/icons/checkMark.png' %}" alt="">
+                        <img id="failedPostPagoImg" src="{% static 'images/icons/error_icon.png' %}" alt="">
                         <h2 class="infoCuotaStatus"></h2>
                     </div>
 
+                    <!-- Slide-in View Details Panel -->
                     <div class="containerDetalleCuota" id="wrapperVerDetallesPago">
                         <div class="buttonsActions">
-                            <button type="button" id="closeViewCuota"><img src="{% static 'images/icons/close.svg' %}" alt=""></button>
+                            <button type="button" id="closeViewCuota"><i class="fa-solid fa-xmark"></i></button>
                         </div>
-                        <h4 class ="cuotaPicked"></h4>
+                        <h4 class="cuotaPicked"></h4>
                     </div>
-                </div> 
-
-                {% comment %} {% if object.suspendida %}
-                <div class="wrapperUrlRecupero button-default-style">
-                    <a href="{% url "sales:planRecupero" object.pk %}">Crear plan recupero</a>
                 </div>
-                
-                {% endif %} {% endcomment %}
-
+                {% endif %}
+            </div>
         </div>
-
-    {% endif %}
-
+    </div>
 </div>
-
-
-
+{# Porcentaje a devolver que propone el sistema; lo lee baja_venta.js para precargar el modal #}
+<input type="hidden" id="porcentage" value="{{ porcentajeADevolver }}">
 {% endblock content %}
 
 {% block js %}
-
 <script>
-    
     var venta_id = {{object.id}}
     var deleteSaleUrl = "{{deleteSaleUrl}}"
     var solicitudAnulacionCuotaUrl = "{{solicitudAnulacionCuotaUrl}}"
     var confirmacionAnulacionCuotaUrl = "{{confirmacionAnulacionCuotaUrl}}"
     var cantidadCuotas = {{object.nro_cuotas}}
-    var dolar_oficial = {{dolar_oficial}}
+    var dolar_oficial = {{dolar_oficial|unlocalize}}
     var crsf_token = '{%csrf_token%}'
+    window.tiposDescuento = [
+      {% for tipo in tiposDescuento %}{"id": {{ tipo.id }}, "alias": "{{ tipo.alias|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}
+    ];
 </script>
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
@@ -522,11 +472,8 @@
 <script>
   window.addEventListener('pageshow', function (e) {
     if (e.persisted) {
-      // recarga dura solo si volvió desde bfcache
       location.reload();
     }
   });
-
 </script>
-
 {% endblock js %}

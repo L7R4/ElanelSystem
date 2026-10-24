@@ -7,66 +7,81 @@
 <link rel="stylesheet" href="{% static 'css/caja.css' %}">
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}">
 <link rel="stylesheet" href="{% static 'modalStatic/doc/tingle/tingle.min.css' %}">
-
 <link href="{% static 'js/vanilla-calendar-pro/styles/index.css' %}" rel="stylesheet">
 <script src="{% static 'js/vanilla-calendar-pro/index.js' %}" defer></script>
-
 <link rel="stylesheet" href="{% static 'css/vanilla_table.css' %}" />
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock css %}
 
 {% block content %}
-    <div class="header_section">
-        <div class="titleHeaderWrapper">
-            <img src="{% static 'images/icons_sider/caja.svg' %}" alt="">
-            <h1 class="titleHeader">CAJA</h1>
+<div class="caja-container">
+    
+    <!-- Modern Header -->
+    <div class="modern-header">
+        <div class="header-icon-wrapper">
+            <i class="fa-solid fa-cash-register"></i>
         </div>
-          <a id="btn_generar_pdf"
-            class="button-default-style"
-            href="{% url 'sales:ventas_pdf_informe' %}"
-            target="_blank">
-            Generar PDF
-        </a>
-
-        <a id="btn_generar_excel"
-            class="button-default-style"
-            href="{% url 'sales:ventas_excel_informe' %}"
-            target="_blank">
-            Generar Excel
-        </a>
-        <a class="button-default-style" href="{% url 'sales:oldArqueos' %}" id="oldArqueos"> Ver arqueos anteriores</a>
-
-        <a class="add-button-default" href="{% url 'sales:arqueo' %}">Cerrar caja</a>
-
+        <div class="header-text flex-grow-1">
+            <span class="header-subtitle">FINANZAS & FACTURACIÓN</span>
+            <h1 class="header-title">Control de Caja</h1>
+        </div>
+        
+        <!-- Header Actions Group -->
+        <div class="header-actions">
+            <a id="btn_generar_pdf" class="btn-action-pdf" href="{% url 'sales:ventas_pdf_informe' %}" target="_blank">
+                <i class="fa-regular fa-file-pdf"></i> PDF
+            </a>
+            <a id="btn_generar_excel" class="btn-action-excel" href="{% url 'sales:ventas_excel_informe' %}" target="_blank">
+                <i class="fa-regular fa-file-excel"></i> Excel
+            </a>
+            <a class="btn-action-history" href="{% url 'sales:oldArqueos' %}" id="oldArqueos">
+                <i class="fa-solid fa-history"></i> Arqueos
+            </a>
+            <a class="btn-action-close" href="{% url 'sales:arqueo' %}">
+                <i class="fa-solid fa-vault"></i> Cerrar Caja
+            </a>
+        </div>
     </div>
 
-    <!-- INFORMACION DE CAJA -->
-    <div class ="caja">
-        <div class="movimientos">
-            <div id="caja_table" class="vt-sticky"></div>
-        </div>
-
-        <div class="resumWrapper">
-            <div class="resumTableWrapper">
-                <table class="resum_table">
-                    <thead>
-                        <tr>
-                            <th>Tipo de caja</th>
-                            {% comment %} <th>Ingreso</th>
-                            <th>Egreso</th> {% endcomment %}
-                            <th>Saldo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
+    <!-- Main Grid Content -->
+    <div class="caja-layout-grid">
+        
+        <!-- Left: Movimientos Table Panel -->
+        <div class="movimientos-panel glass-panel">
+            <div class="panel-header border-bottom">
+                <i class="fa-solid fa-money-bill-transfer icon-accent"></i>
+                <h2>Movimientos Recientes</h2>
             </div>
-            {% comment %} <div class="wrapperButtonInforme">
-            </div> {% endcomment %}
+            <div class="panel-body">
+                <div id="caja_table" class="vt-sticky"></div>
+            </div>
+        </div>
 
+        <!-- Right: Resumen Panel -->
+        <div class="resumen-panel glass-panel">
+            <div class="panel-header border-bottom">
+                <i class="fa-solid fa-chart-line icon-accent"></i>
+                <h2>Resumen de Cuentas</h2>
+            </div>
+            
+            <div class="panel-body">
+                <div class="resumTableWrapper">
+                    <table class="resum_table">
+                        <thead>
+                            <tr>
+                                <th>Tipo de caja</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Generado dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
-
+</div>
 {% endblock content %}
 
 {% block js %}
@@ -80,17 +95,11 @@
     var metodos_de_pago = {{metodos_de_pago | safe}};
 </script>
 
-
-<!-- Scripts bases: manejo de multipleSelects, OnlySelect, Controlar el modal de filter, el calendario de fechas, y el manejador de los inputs radios-->
 <script src="{% static 'modalStatic/doc/tingle/tingle.min.js' %}"></script>
 <script src="{% static 'js/vanilla-calendar-pro/multipleCalendarManage.js' %}" defer></script>
 <script src="{% static 'js/vanilla-calendar-pro/singleCalendarWithTime.js' %}" defer></script>
-
 <script src="{% static 'js/vanilla_components/inputSelectOnly.js' %}"></script>
-{% comment %} <script src="{% static 'js/vanilla_components/inputsMultipleSelect_v2.js' %}"></script> {% endcomment %}
 <script src="{% static 'js/vanilla_components/z_index_orders_selects.js' %}"></script>
-
 <script src="{% static 'js/sales/createNewMov.js' %}"></script>
 <script type="module" src="{% static 'js/users/caja_table.js' %}"></script>
-
 {% endblock js %}

@@ -286,6 +286,25 @@ body {
   margin: 0 4mm;
 }
 
+/* Pagos hechos en dólares: informativo, ya están incluidos en los importes en pesos */
+.pagos-usd {
+  margin-top: 3mm;
+  padding: 1.5mm 2mm;
+  border: 1px solid #000;
+  font-size: 9px;
+}
+
+.pagos-usd-titulo {
+  font-weight: bold;
+  margin-bottom: 1mm;
+}
+
+.fila-pago-usd {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5mm 0;
+}
+
 .total {
   display: flex;
   justify-content: flex-end;

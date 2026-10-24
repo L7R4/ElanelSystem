@@ -19,21 +19,49 @@ const cuotaID = document.getElementById("cuotaID");
 // ================= Descuento en cuotas (con openActionModal) =================
 let resto = 0;
 
+function escapeHTML(s) {
+  return String(s ?? "").replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+  );
+}
+
 function buildDescuentoContent({ cuota }) {
-  const num = String(cuota).match(/\d+/)?.[0] ?? "";
+  const num = String(cuota ?? "").match(/\d+/)?.[0] ?? "";
+  const tipos = Array.isArray(window.tiposDescuento) ? window.tiposDescuento : [];
+  // Mismo select personalizado que el resto del sistema (se inicializa en onOpen).
+  // Es opcional: volver a tocar la opción elegida la deselecciona.
+  const tipoSelectHTML = tipos.length
+    ? `
+        <div class="wrapperInput wrapperSelectCustom">
+          <label class="labelInput" for="tipoDescuento">Tipo de descuento <span class="labelOptional">(opcional)</span></label>
+          <div class="containerInputAndOptions">
+            <input type="hidden" id="tipoDescuento" name="tipoDescuento"
+                   placeholder="Sin especificar" autocomplete="off" readonly>
+            <div class="onlySelect pseudo-input-select-wrapper">
+              <h3></h3>
+            </div>
+            <i class="fa-solid fa-chevron-down iconDesplegar"></i>
+            <ul class="list-select-custom options">
+              ${tipos.map((t) => `<li data-value="${t.id}">${escapeHTML(t.alias)}</li>`).join("")}
+            </ul>
+          </div>
+        </div>`
+    : "";
   return `
     <div class="modalDescuento__content">
       <h2 class="titleModalDescuento">Descuento de cuota ${num}</h2>
-      <form id="descuentoCuotaForm" class="wrapperDescuentoCuota">
-        <div>
-          <h3>Monto:</h3>
+      <form id="descuentoCuotaForm" class="wrapperDescuentoCuota" autocomplete="off">
+        <div class="wrapperInput">
+          <label class="labelInput" for="dineroDescuento">Monto</label>
           <input type="number" id="dineroDescuento" name="dineroDescuento"
-                 class="input-read-write-default" placeholder="Monto" min="0">
+                 class="input-read-write-default" placeholder="Monto a descontar" min="0">
         </div>
-        <div>
-          <h3>Autorizado por:</h3>
+        ${tipoSelectHTML}
+        <div class="wrapperInput">
+          <label class="labelInput" for="autorizacionDescuento">Autorizado por</label>
           <input type="text" id="autorizacionDescuento" name="autorizacionDescuento"
-                 class="input-read-write-default" placeholder="Ingrese el nombre">
+                 class="input-read-write-default" placeholder="Nombre de quien autoriza">
         </div>
         <div data-status style="margin-top:.75rem;"></div>
       </form>
@@ -51,6 +79,7 @@ async function runDescuento({ root, signal }) {
   const cuotaId = cuotaID?.value;
   const monto = root.querySelector("#dineroDescuento").value.trim();
   const aut = root.querySelector("#autorizacionDescuento").value.trim();
+  const tipoDescuento = root.querySelector("#tipoDescuento")?.value || "";
 
   const resp = await apiFetch("/ventas/detalle_venta/descuento_cuota/", {
     method: "POST",
@@ -59,6 +88,7 @@ async function runDescuento({ root, signal }) {
       cuota: cuotaId,
       descuento: monto,
       autorizado: aut,
+      tipoDescuento: tipoDescuento,
     },
     signal,
   });
@@ -101,12 +131,15 @@ export function openModalDescuento(cuota) {
   return openActionModal({
     modalOpts: {
       cssClass: ["modalDescuento"],
-      closeMethods: ["button", "overlay"],
+      closeMethods: ["button", "overlay", "escape"],
+      // activa el select personalizado recién insertado en el modal
+      onOpen: () => window.initCustomSingleSelects?.(),
     },
     buildContent: (ctx) => buildDescuentoContent(ctx),
     validate: validateDescuento,
     run: runDescuento,
-    ctx: { cuota },
+    // el botón "Aplicar descuento" llama openModalDescuento() sin argumentos: la cuota abierta está en #cuotaID
+    ctx: { cuota: cuota ?? cuotaID?.value },
     texts: {
       working: "Aplicando descuento...",
       success: "Descuento aplicado",
@@ -117,6 +150,13 @@ export function openModalDescuento(cuota) {
   });
 }
 window.openModalDescuento = openModalDescuento;
+
+// El botón lo devuelve el server solo para las cuotas 0 y 1 sin pagar. Se lo quita
+// al cambiar de cuota o al terminar un pago: si quedaba, aparecía en cuotas donde
+// el descuento no aplica (y el server lo rechazaba con "Descuento fallido").
+function clearDescuentoButton() {
+  payCuotaForm?.querySelector("#btnDescuentoCuota")?.remove();
+}
 
 function habilitacionDeBotonDescuento(buttonHTML) {
   const wrapperButtonPayCuota = payCuotaForm.querySelector(
@@ -138,6 +178,8 @@ cuotasWrapper.forEach((cuota) => {
   cuota.addEventListener("click", async () => {
     // LIMPIEZA GLOBAL de la selección anterior:
     clearCancelButtons();
+    clearDescuentoButton();
+    clearAnularButtons();
     clearDetalleCuotaView();
     wrapperVerDetallesPago.classList.remove("active");
     payCuotaForm.classList.remove("active");
@@ -273,45 +315,37 @@ function habilitacionDeAnulacionPago(buttonHTML, isView) {
 
   if (!container) return;
 
-  const lastButton = container.lastElementChild;
+  // Una sola copia: se quitan las anteriores (en ambos paneles) antes de insertar la nueva.
+  clearCancelButtons();
+  clearAnularButtons();
 
   // Parsear el HTML del botón que viene del backend
   const parser = new DOMParser();
   const doc = parser.parseFromString(buttonHTML, "text/html");
   const buttonEl = doc.body.firstElementChild;
+  if (!buttonEl) return;
 
-  // Limpio botones previos para evitar duplicados
-  payCuotaForm
-    ?.querySelector(".buttonsActions > .buttonCancelarPago")
-    ?.remove();
-  wrapperVerDetallesPago
-    ?.querySelector(".buttonsActions > .buttonCancelarPago")
-    ?.remove();
-
-  payCuotaForm?.querySelector(".buttonsActions > #btnAnularCuota")?.remove();
-  wrapperVerDetallesPago
-    ?.querySelector(".buttonsActions > #btnAnularCuota")
-    ?.remove();
-
-  // Evito que traiga onclick viejos del backend
+  // El backend manda onclick inline e ids distintos ("anularButton" / "btnAnularCuota"). Se
+  // normaliza acá: una clase común (para poder limpiarlo siempre) y el clic enganchado directo
+  // al botón. Antes se le borraba el onclick y el handler se buscaba por un id que no coincidía,
+  // así que el botón se duplicaba en cada cuota abierta y no hacía nada al hacer clic.
+  const texto = buttonEl.textContent.trim() || "Anular cuota";
   buttonEl.removeAttribute("onclick");
+  buttonEl.removeAttribute("class");
+  buttonEl.classList.add("btn-anular-cuota");
+  buttonEl.type = "button";
+  buttonEl.innerHTML = `<i class="fa-solid fa-rotate-left"></i> ${texto}`;
+  buttonEl.addEventListener("click", () => anulacionCuota());
 
-  // Inserto el botón y le engancho el handler que corresponda (ajustá si tu acción es otra)
-  lastButton.insertAdjacentElement("beforebegin", buttonEl);
-
-  // Ejemplo: que abra el confirm de anulación que ya tenés
-  const nuevoBtn = container.querySelector("#btnAnularCuota");
-  if (nuevoBtn) {
-    nuevoBtn.addEventListener("click", () => {
-      anulacionCuota();
-    });
-  }
+  container.lastElementChild.insertAdjacentElement("beforebegin", buttonEl);
 }
 function clearAnularButtons() {
-  payCuotaForm?.querySelector(".buttonsActions > #btnAnularCuota")?.remove();
-  wrapperVerDetallesPago
-    ?.querySelector(".buttonsActions > #btnAnularCuota")
-    ?.remove();
+  // .btn-anular-cuota es el botón actual; los ids son los que traía el backend (por si quedara alguno)
+  document
+    .querySelectorAll(
+      ".containerDetalleCuota .buttonsActions > :is(.btn-anular-cuota, #anularButton, #btnAnularCuota)",
+    )
+    .forEach((b) => b.remove());
 }
 
 function clearCancelButtons() {
@@ -419,20 +453,30 @@ function viewMoreFunction(elemento) {
 window.viewMoreFunction = viewMoreFunction; // lo usás en el HTML generado
 
 function htmlDetalleCuota(cuota) {
-  const hasPagos = Array.isArray(cuota["pagos"]) && cuota["pagos"].length > 0;
+  const cantPagos = Array.isArray(cuota["pagos"]) ? cuota["pagos"].length : 0;
+  const hasPagos = cantPagos > 0;
+  // stopPropagation: el botón está dentro de la fila desplegable y no debe abrirla/cerrarla
   const botonRecibo = hasPagos
-    ? `<button type="button" onclick="abrirVistaPreviaRecibo(${cuota["pagos"][0].id})" id="btnReciboCuota">Ver recibo</button>`
+    ? `<button type="button" onclick="event.stopPropagation(); abrirVistaPreviaRecibo(${cuota["pagos"][0].id})" id="btnReciboCuota">Ver recibo</button>`
     : "";
-  let stringHTML = `
-    <div class="wrapperInfo_cuota">
-      <div onclick="viewMoreFunction(this)" class="info_cuota view_more">
-        <h3>Pagos</h3>
+  // Solo se despliega si hay pagos registrados; sin pagos no hay nada que abrir.
+  const filaPagos = hasPagos
+    ? `<div onclick="viewMoreFunction(this)" class="info_cuota view_more" title="Ver el detalle de cada pago de esta cuota (fecha, método, cobrador y monto)">
+        <h3>Pagos registrados</h3>
+        <span class="pagos-meta">${cantPagos} ${cantPagos === 1 ? "pago" : "pagos"} · ver detalle</span>
         ${botonRecibo}
         <img class="iconDisplayViewMore" src="/static/images/icons/arrowDown.png" alt="">
         <div class="wrapperDetail_view_more">
           ${htmlPagos(cuota["pagos"])}
         </div>
-      </div>
+      </div>`
+    : `<div class="info_cuota view_more sin-pagos">
+        <h3>Pagos registrados</h3>
+        <span class="pagos-meta">Sin pagos todavía</span>
+      </div>`;
+  let stringHTML = `
+    <div class="wrapperInfo_cuota">
+      ${filaPagos}
       <div class="info_cuota descuento_cuota_total">
         <h3>Descuento</h3>
         <h3>${cuota["descuento"]["monto"]}</h3>
@@ -456,6 +500,14 @@ function htmlDetalleCuota(cuota) {
   return stringHTML;
 }
 
+// 1234.5 -> "1.234,50" (formato es-AR)
+function formatUSD(n) {
+  return Number(n).toLocaleString("es-AR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 function htmlPagos(pagos) {
   // console.log(pagos);
   return pagos
@@ -468,14 +520,21 @@ function htmlPagos(pagos) {
       p["fecha"]
     }</h3></div>
     <div class="info_cuota detail_view_more"><h3>Metodo de pago</h3><h3>${
-      p["metodoPago"]
+      p["metodo_pago"] ?? p["metodoPago"] ?? "—"
     }</h3></div>
     <div class="info_cuota detail_view_more"><h3>Cobrador</h3><h3>${
-      p["cobrador"]
+      p["cobrador"] ?? "—"
     }</h3></div>
     <div class="info_cuota detail_view_more"><h3>Monto</h3><h3>$${
       p["monto"]
     }</h3></div>
+    ${
+      p["moneda"] === "USD" && p["monto_usd"] != null
+        ? `<div class="info_cuota detail_view_more pago-usd"><h3>Pagado en dólares</h3><h3>USD ${formatUSD(
+            p["monto_usd"],
+          )} · cambio $${formatUSD(p["tipo_cambio"])}</h3></div>`
+        : ""
+    }
   `,
     )
     .join("");
@@ -489,6 +548,7 @@ btnPayCuota.addEventListener("click", async () => {
   );
   const cobrador = payCuotaForm.querySelector(".input-cobrador");
   const metodoPago = payCuotaForm.querySelector(".input-metodoPago");
+  const monedaInput = payCuotaForm.querySelector("input.input-moneda");
 
   const body = {
     cobrador: cobrador.value,
@@ -496,7 +556,10 @@ btnPayCuota.addEventListener("click", async () => {
     metodoPago: metodoPago.value,
     ventaID: ventaID.value,
     cuota: cuotaID.value,
-    valorParcial: amountParcial.value, // asumes que existe
+    // valorParcial va en la moneda elegida; el server lo pasa a pesos con el tipo de cambio
+    valorParcial: amountParcial.value,
+    moneda: String(monedaInput?.value || "ars").toLowerCase(),
+    tipoCambio: Number(window.dolar_oficial ?? 0) || 0,
   };
 
   // pequeña protección de UI
@@ -537,6 +600,7 @@ function hideFormCuotas() {
   payCuotaForm.classList.remove("active");
   payCuotaForm.reset();
   clearCancelButtons(); // <-- importante
+  clearDescuentoButton();
   clearInputs([], payCuotaForm); // inputs vacíos, pero con scope = form
 }
 
@@ -547,7 +611,18 @@ function verificarEstadoDeLaCuenta(cuota) {
 
 function validarMontoParcial(restoValor) {
   const monto = payCuotaForm.querySelector("#amountParcial").value;
-  if (Number(monto) > Number(restoValor)) {
+  // restoValor está en ARS: si se paga en USD, el monto tipeado se compara ya convertido
+  const enUSD =
+    String(payCuotaForm.querySelector("input.input-moneda")?.value || "ars").toLowerCase() === "usd";
+  const dolar = Number(window.dolar_oficial ?? 0) || 0;
+  const esTotal =
+    payCuotaForm.querySelector('input[name="typePayment"]:checked')?.value === "total";
+  const montoARS = enUSD ? Number(monto) * dolar : Number(monto);
+  // En USD el monto se redondea al centavo (ej. 175000/1485 = 117,845 -> 117,85), lo que puede pasarse
+  // de unos pesos: se tolera hasta 1 centavo de dólar. "Abonar total" nunca se bloquea: el server
+  // cobra el total exacto en pesos.
+  const tolerancia = enUSD ? dolar * 0.01 : 0;
+  if (!esTotal && montoARS > Number(restoValor) + tolerancia) {
     btnPayCuota.disabled = true;
     btnPayCuota.classList.add("blocked");
     amountParcial.style.border = "2px solid var(--danger-color)";
@@ -560,18 +635,17 @@ function validarMontoParcial(restoValor) {
   }
 }
 
-function calcularDineroRestante(cuota, moneda) {
+function calcularDineroRestante(cuota) {
   const dineroRestanteHTML = payCuotaForm.querySelector("#dineroRestante");
-  // const convert_pagos_to_usd = cuota["pagos"].some()
 
+  // El total de la cuota siempre está expresado en ARS; la conversión a USD
+  // para mostrar en pantalla la hace setupMonedaWatcher() a partir de este
+  // valor (dividiendo por dolar_oficial), no esta función.
   const sumaPagos = cuota["pagos"]
     .map(({ monto }) => monto)
     .reduce((acc, n) => acc + n, 0);
 
-  const total_cuota_segun_moneda =
-    moneda === "ars" ? cuota["total"] : cuota["total"] / dolar_oficial;
-
-  resto = total_cuota_segun_moneda - (sumaPagos + cuota["descuento"]["monto"]);
+  resto = cuota["total"] - (sumaPagos + cuota["descuento"]["monto"]);
   dineroRestanteHTML.textContent = "Dinero restante: $" + resto;
   return resto;
 }
@@ -671,23 +745,51 @@ function checkFormValid(okInputs, okMontoParcial) {
   }
 }
 
+// Busca la etiqueta visible de un campo para armar el mensaje de "faltan completar"
+function getFieldLabel(input) {
+  const wrapper = input?.closest(".wrapperInput, .pickedAmount");
+  const label = wrapper?.querySelector(".labelInput, label, h4");
+  return label ? label.textContent.trim() : input?.name || input?.id || "";
+}
+
+function showMissingFieldsMessage(labels) {
+  const msgEl = document.getElementById("missingFieldsMsgCuota");
+  if (!msgEl) return;
+  if (labels.length === 0) {
+    msgEl.textContent = "";
+    msgEl.classList.remove("active");
+  } else {
+    msgEl.textContent = "Faltan completar: " + labels.join(", ");
+    msgEl.classList.add("active");
+  }
+}
+
 function validarInputsRellenados() {
-  const requiredFields = payCuotaForm.querySelectorAll(".inputValidation");
   const formaPago = payCuotaForm.querySelector(
     ".typesPayments > .wrapperChoices > .choice.active",
   );
 
   // 🔒 Guard: si aún no hay opción activa, no validamos
-  if (!formaPago) return false;
+  if (!formaPago) {
+    showMissingFieldsMessage([]);
+    return false;
+  }
 
-  let cont = 0;
-  requiredFields.forEach((f) => {
-    if (f.value !== "") cont++;
-  });
+  // Cobrador y método de pago son obligatorios siempre: sin esto, el pago
+  // queda guardado sin responsable ni método asociado (imposible de arquear).
+  const cobradorInput = payCuotaForm.querySelector(".input-cobrador");
+  const metodoPagoInput = payCuotaForm.querySelector(".input-metodoPago");
+  const amountInput = payCuotaForm.querySelector("#amountParcial");
 
-  if (formaPago.id === "choiceParcial" && cont === 3) return true;
-  if (formaPago.id === "choiceTotal" && cont === 2) return true;
-  return false;
+  const missing = [];
+  if (!cobradorInput?.value) missing.push(getFieldLabel(cobradorInput));
+  if (!metodoPagoInput?.value) missing.push(getFieldLabel(metodoPagoInput));
+  if (formaPago.id === "choiceParcial" && !amountInput?.value) {
+    missing.push(getFieldLabel(amountInput));
+  }
+  showMissingFieldsMessage(missing);
+
+  return missing.length === 0;
 }
 
 // ================= Actualizar estado de cuotas en la grilla =================
@@ -863,7 +965,7 @@ function cerrarContenedores_formPago_viewDetails() {
 
 // --- START: Moneda watcher / sync amounts ---
 function setupMonedaWatcher(root, getRestFn) {
-  const hiddenMoneda = root.querySelector('input[name="moneda"].input-moneda');
+  const hiddenMoneda = root.querySelector('input.input-moneda');
   const amountInput = root.querySelector("#amountParcial");
   const dineroRestanteEl = root.querySelector("#dineroRestante");
 

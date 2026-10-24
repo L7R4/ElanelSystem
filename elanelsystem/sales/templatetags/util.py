@@ -77,9 +77,11 @@ def seccionesPorPermisos(context):
         "auditorias": {"tag_name":"Auditorías","permisos": ["sales.my_ver_postventa"], "url": reverse("sales:postVentaList"),"image": static("images/icons_sider/auditoria.svg")},
         "usuarios": {"tag_name":"Usuarios","permisos": ["users.my_ver_colaboradores"], "url": reverse("users:list_users"),"image": static("images/icons_sider/colaboradores.svg")},
         "graficos": {"tag_name":"Gráficos","permisos": ["sales.my_ver_graficos"], "url": reverse("sales:graficos"),"image": static("images/icons_sider/graficos.svg")},
-        "liquidaciones": {"tag_name":"Liquidaciones","permisos": ["my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel"),"image": static("images/icons_sider/liquidacion.svg")},
-        "sorteo": {"tag_name":"Sorteo","permisos": ["users.my_ver_clientes", "sales.my_ver_caja", "sales.my_ver_postventa", "users.my_ver_colaboradores", "sales.my_ver_graficos", "my_ver_liquidaciones", "my_ver_administracion"], "url": reverse("sales:sorteo"),"image": static("images/icons_sider/sorteo.svg")},
-        "configuracion": {"tag_name":"Configuración","permisos": ["my_ver_administracion"], "url": reverse("users:panelAdmin"),"image": static("images/icons_sider/configuracion.svg")},
+        "liquidaciones": {"tag_name":"Liquidaciones","permisos": ["liquidacion.my_ver_liquidaciones"], "url": reverse("liquidacion:liquidacionesPanel"),"image": static("images/icons_sider/liquidacion.svg")},
+        "documentos": {"tag_name":"Documentos","permisos": ["documentos.my_ver_documentos"], "url": reverse("documentos:menu"),"image": static("images/icons_sider/reportes.svg")},
+        "sorteo": {"tag_name":"Sorteo","permisos": ["sales.my_ver_sorteo"], "url": reverse("sales:sorteo"),"image": static("images/icons_sider/sorteo.svg")},
+        "trazabilidad": {"tag_name":"Trazabilidad","permisos": ["sales.my_ver_trazabilidad"], "url": reverse("sales:trazabilidad"),"image": static("images/icons_sider/trazabilidad.svg")},
+        "configuracion": {"tag_name":"Configuración","permisos": ["users.my_ver_administracion"], "url": reverse("users:panelAdmin"),"image": static("images/icons_sider/configuracion.svg")},
     }
 
     secciones_permitidas = {}

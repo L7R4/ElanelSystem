@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Auditoria, PagoCannon, Ventas, MetodoPago,CoeficientesListadePrecios, ArqueoCaja, MovimientoExterno, CuentaCobranza
+from .models import Auditoria, PagoCannon, Ventas, MetodoPago,CoeficientesListadePrecios, ArqueoCaja, MovimientoExterno, CuentaCobranza, TasaInteres, TipoDescuento
 from datetime import datetime
 from django.db import connection
 from django.db.models import Q, TextField
@@ -7,9 +7,39 @@ from django.db.models.functions import Cast
 # admin.site.register(Ventas)
 admin.site.register(ArqueoCaja)
 admin.site.register(MovimientoExterno)
-admin.site.register(CuentaCobranza)
-admin.site.register(MetodoPago)
+
+
+@admin.register(CuentaCobranza)
+class CuentaCobranzaAdmin(admin.ModelAdmin):
+    # "Activo" se tilda/destilda desde el listado; los inactivos dejan de ofrecerse como cobrador,
+    # pero no se borran (los pagos y movimientos viejos siguen apuntando a ellos).
+    list_display = ('alias', 'activo')
+    list_editable = ('activo',)
+    list_filter = ('activo',)
+    search_fields = ('alias',)
 # admin.site.register(PagoCannon)
+
+
+@admin.register(MetodoPago)
+class MetodoPagoAdmin(admin.ModelAdmin):
+    # "Activo" se tilda/destilda desde el listado; los inactivos dejan de ofrecerse al cobrar,
+    # pero no se borran (los pagos viejos siguen apuntando a ellos).
+    list_display = ('alias', 'activo')
+    list_editable = ('activo',)
+    list_filter = ('activo',)
+    search_fields = ('alias',)
+
+
+@admin.register(TasaInteres)
+class TasaInteresAdmin(admin.ModelAdmin):
+    list_display = ('valor', 'activo')
+    list_editable = ('activo',)
+
+
+@admin.register(TipoDescuento)
+class TipoDescuentoAdmin(admin.ModelAdmin):
+    list_display = ('alias', 'activo')
+    list_editable = ('activo',)
 
 @admin.register(Auditoria)
 class AuditoriaAdmin(admin.ModelAdmin):

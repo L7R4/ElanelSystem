@@ -22,8 +22,9 @@ from sales.services.caja_query import _format_money, _get_allowed_agencia_ids, _
 from sales.exports.arqueo import export_arqueo_pdf
 
 from .mixins import TestLogin
-from .models import ArqueoCaja, Auditoria, MetodoPago, Ventas,CoeficientesListadePrecios,MovimientoExterno,CuentaCobranza
+from .models import ArqueoCaja, Auditoria, MetodoPago, Ventas,CoeficientesListadePrecios,MovimientoExterno,CuentaCobranza,TasaInteres,TipoDescuento
 from users.models import Cliente, Sucursal,Usuario
+from users.utils import codigo_cliente_import, mismo_titular, normalizar_nombre, prefijo_clientes_import
 from .models import Ventas,PagoCannon
 from products.models import Products,Plan
 from types import SimpleNamespace
@@ -899,13 +900,28 @@ class CrearVenta(TestLogin,generic.DetailView):
 
         campaniasDisponibles = getCampanasDisponibles()
 
+        tasasInteres = TasaInteres.objects.filter(activo=True)
+        tnaDefaultObj = tasasInteres.filter(es_default=True).first() or tasasInteres.order_by('valor').first()
+        tnaDefaultValor = tnaDefaultObj.valor if tnaDefaultObj else 0
+
+        # Se arma como JSON real (no interpolando el float directo en el
+        # template) porque Django renderiza los decimales con coma según el
+        # locale ("70,0"), lo que rompe la sintaxis del <script> que lo usa.
+        tasasInteresMapJson = json.dumps({str(t.id): t.valor for t in tasasInteres})
+        tnaDefaultValorJson = json.dumps(tnaDefaultValor)
+
         #endregion
         context ={
             "object": self.object,
-            'products': products, 
-            'agencias': request.user.sucursales.all(), 
-            'agenciaActual': request.user.sucursales.all()[0], 
-            'campaniasDisponibles': campaniasDisponibles, 
+            'products': products,
+            'agencias': request.user.sucursales.all(),
+            'agenciaActual': request.user.sucursales.all()[0],
+            'campaniasDisponibles': campaniasDisponibles,
+            'puedeEditarTasaInteres': request.user.has_perm('sales.my_editar_tasa_interes'),
+            'tasasInteres': tasasInteres,
+            'tnaDefaultValor': tnaDefaultValor,
+            'tasasInteresMapJson': tasasInteresMapJson,
+            'tnaDefaultValorJson': tnaDefaultValorJson,
         }
 
         return render(request,self.template_name,context)
@@ -969,8 +985,10 @@ class CrearVenta(TestLogin,generic.DetailView):
             if v in (None, ""): return default
             try: return int(v)
             except (TypeError, ValueError):
-                errors[key] = "Número inválido."
-                return default
+                try: return round(float(v))  # ej. "354166.67" -> 354167
+                except (TypeError, ValueError):
+                    errors[key] = "Número inválido."
+                    return default
 
         def to_float(key, default=0.0):
             v = form.get(key)
@@ -984,11 +1002,28 @@ class CrearVenta(TestLogin,generic.DetailView):
         sale.importe = to_int("importe")
         sale.primer_cuota = to_int("primer_cuota")
         sale.anticipo = to_int("anticipo")
-        sale.tasa_interes = to_float("tasa_interes")
+        sale.nro_cuotas = to_int("nro_cuotas")
+
+        # === Tasa de interés: SIEMPRE se recalcula en el server a partir de una
+        # TNA del catálogo (nunca se confía en el "tasa_interes" que manda el form).
+        # La TNA base (es_default=True) se aplica siempre salvo que el usuario
+        # tenga permiso para elegir otra (sales.my_editar_tasa_interes).
+        tna = TasaInteres.objects.filter(activo=True, es_default=True).first() \
+            or TasaInteres.objects.filter(activo=True).order_by('valor').first()
+
+        if request.user.has_perm('sales.my_editar_tasa_interes'):
+            tasa_interes_id = form.get('tasa_interes_id')
+            if tasa_interes_id:
+                try:
+                    tna = TasaInteres.objects.get(id=int(tasa_interes_id), activo=True)
+                except (TypeError, ValueError, TasaInteres.DoesNotExist):
+                    errors['tasa_interes_id'] = "Tasa de interés inválida."
+
+        tna_valor = tna.valor if tna else 0
+        sale.tasa_interes = round(tna_valor * (sale.nro_cuotas / 12), 2) if sale.nro_cuotas else 0.0
         sale.intereses_generados = to_int("intereses_generados")
         sale.importe_x_cuota = to_int("importe_x_cuota")
         sale.total_a_pagar = to_int("total_a_pagar")
-        sale.nro_cuotas = to_int("nro_cuotas")
 
         # === Fecha: venís formateando ddMMYYYY desde el datepicker
         sale.fecha = form.get("fecha") + " 00:00"
@@ -1011,13 +1046,15 @@ class CrearVenta(TestLogin,generic.DetailView):
         if errors:
             return JsonResponse({"success": False, "errors": errors})
 
+        # adjudicado/deBaja se setean antes de guardar: llamándolo después del último save()
+        # quedaban como {} en la base.
+        sale.setDefaultFields()
+
         # Guardá primero para tener PK antes de crear cuotas relacionadas
         sale.save()
 
         # Si crearCuotas() necesita el sale.id, hacelo después del save
         sale.crearCuotas()
-        sale.setDefaultFields()  # si setea flags por defecto en el propio sale, podrías llamar antes o después según tu implementación
-        # sale.save(update_fields=None)  # por si setDefaultFields modificó algo
 
         return JsonResponse({
             "success": True,
@@ -1083,19 +1120,34 @@ def importVentas(request):
             df_res, df_est = preprocesar_excel_ventas(file_path)
 
             sucursal_obj = Sucursal.objects.get(id=agencia)
-            print("🔎 ???????????")
+            try:
+                prefijo_cli = prefijo_clientes_import(sucursal_obj, archivo_excel.name)
+            except ValueError as e:
+                fs.delete(filename)
+                return JsonResponse({"message": str(e), "iconMessage": "/static/images/icons/error_icon.svg", "status": False})
 
-             # 1) Preparo el set de contratos ya importados
-            todosLosContratosDict = obtener_todos_los_contratos(sucursal_obj)
-            set_contratos = {
-                str(ct['nro_contrato']) for ct in todosLosContratosDict
-            }
+             # 1) Preparo los contratos ya importados (contrato -> ventas que lo usan).
+            # En Posadas el sistema NUEVO reutiliza nros de contrato del VIEJO para
+            # otros clientes, asi que un contrato repetido solo bloquea si la venta
+            # existente es del mismo sistema (prefijo del cliente), es la misma
+            # operacion, o es del mismo titular (ventas migradas del VIEJO al NUEVO
+            # con otro ID de venta).
+            ventas_x_contrato = defaultdict(list)  # contrato -> [(nro_op, mismo_sistema, nombre_cliente)]
+            for nro_op, cts, nro_cli, nombre_cli in Ventas.objects.filter(agencia=sucursal_obj).values_list(
+                "nro_operacion", "cantidadContratos", "nro_cliente__nro_cliente", "nro_cliente__nombre"
+            ):
+                for ct in cts or []:
+                    ventas_x_contrato[str(ct['nro_contrato'])].append(
+                        (nro_op, nro_cli.startswith(prefijo_cli), nombre_cli)
+                    )
 
-            clientes = {
-                c.nro_cliente: c
-                for c in Cliente.objects.filter(agencia_registrada=sucursal_obj)
-            }
+            # Puede haber mas de un cliente con el mismo nro: se elige por nombre
+            clientes = defaultdict(list)
+            for c in Cliente.objects.filter(agencia_registrada=sucursal_obj):
+                clientes[c.nro_cliente].append(c)
 
+            sin_cliente = []
+            contratos_repetidos = []
             ventas_to_create = []
             grupos = df_res.groupby(
                 ['cod_cli','fecha_incripcion','producto_key','paq','vendedor_key','superv_key']
@@ -1106,11 +1158,6 @@ def importVentas(request):
             for keys, group in grupos:
                 cod_cli, fecha_incripcion, producto, paq, vendedor, superv = keys
                 
-                # Si el cliente no existe → saltamos
-                if cod_cli not in clientes:
-                    print(f"|\nNo existe el cliente{ group['cod_cli'].iloc[0]}\n|")
-                    continue
-
                 cantidad_chances   = len(group)
                 importe_sum= int(group['importe'].sum())
                 tasa_int_sum  = float(group['tasa_de_inte'].sum())
@@ -1127,10 +1174,40 @@ def importVentas(request):
 
                 # — 4) Skip si YA existe cualquiera de esos contratos
                 contratos_nros = { c['nro_contrato'] for c in contratos }
-                duplicados = contratos_nros & set_contratos
+                nombre_excel = group['nombre_y_apell'].iloc[0] if 'nombre_y_apell' in group.columns else ""
+                bloqueantes = {
+                    c: [
+                        (op, mismo_sis, nom) for op, mismo_sis, nom in ventas_x_contrato[c]
+                        if mismo_sis or op == id_venta_unica or mismo_titular(nom, nombre_excel)
+                    ]
+                    for c in contratos_nros
+                }
+                duplicados = {c for c, ventas_c in bloqueantes.items() if ventas_c}
                 if duplicados:
                     print(f"❌  Grupo con id_venta={int(group['id_venta'].iloc[0])} SE SALTA porque ya existe(n) contrato(s):"
                           f" {duplicados}.  Grupo completo: {contratos_nros}")
+                    # Se informa solo si el contrato es de otra persona del mismo sistema
+                    # (re-importar la misma venta, o la copia migrada del VIEJO, no es un problema)
+                    otras_ops = {
+                        op for c in duplicados for op, mismo_sis, nom in bloqueantes[c]
+                        if op != id_venta_unica and not mismo_titular(nom, nombre_excel)
+                    }
+                    if otras_ops:
+                        contratos_repetidos.append(
+                            f"ID {id_venta_unica} contrato {', '.join(sorted(duplicados))} (ya está en la operación {', '.join(map(str, sorted(otras_ops)))})"
+                        )
+                    continue
+
+                # Cliente: mismo codigo Y mismo nombre que en el Excel. Si no hay
+                # coincidencia exacta → saltamos e informamos (no se vincula a ciegas)
+                candidatos = clientes.get(codigo_cliente_import(cod_cli, prefijo_cli), [])
+                cliente_obj = next(
+                    (c for c in candidatos if normalizar_nombre(c.nombre) == normalizar_nombre(nombre_excel)),
+                    None,
+                )
+                if cliente_obj is None:
+                    detalle = f"en sistema: {candidatos[0].nombre}" if candidatos else "no existe"
+                    sin_cliente.append(f"ID {group['id_venta'].iloc[0]} {cod_cli} {str(nombre_excel).strip()} ({detalle})")
                     continue
 
 
@@ -1180,7 +1257,7 @@ def importVentas(request):
                 )
 
                 ventas_to_create.append(Ventas(
-                    nro_cliente        = clientes[cod_cli],
+                    nro_cliente        = cliente_obj,
                     agencia            = sucursal_obj,
                     modalidad          = 'Mensual',
                     nro_cuotas         = len(cuotas_agg)-1,
@@ -1297,6 +1374,13 @@ def importVentas(request):
             fs.delete(filename)
             iconMessage = "/static/images/icons/checkMark.svg"
             message = f"Datos importados correctamente. Se agregaron {cantidad_nuevas_ventas} nuevas ventas"
+            for titulo, lista in (
+                ("no se importaron por no encontrar el cliente con ese código y nombre", sin_cliente),
+                ("no se importaron porque su contrato ya existe en otra venta", contratos_repetidos),
+            ):
+                if lista:
+                    print(f"{titulo}:\n" + "\n".join(lista))
+                    message += f". {len(lista)} {titulo}: " + "; ".join(lista[:10]) + ("…" if len(lista) > 10 else "")
             return JsonResponse({"message": message, "iconMessage": iconMessage, "status": True})
 
         except Exception as e:
@@ -1478,10 +1562,13 @@ class DetailSale(TestLogin, generic.DetailView):
 
         context = {
             "object": sale,
+            "estadoVenta": estado_venta(sale),
+            "porcentajeADevolver": sale.porcentajeADevolver(),
             "changeTitularidad": list(reversed(sale.cambioTitularidadField)),
             "cuotas": sale.cuotas,
-            "cobradores": CuentaCobranza.objects.all(),
-            "metodosDePagos": MetodoPago.objects.all(),
+            "cobradores": CuentaCobranza.objects.filter(activo=True),
+            "metodosDePagos": MetodoPago.objects.filter(activo=True),
+            "tiposDescuento": TipoDescuento.objects.filter(activo=True),
             "nro_cuotas": sale.nro_cuotas,
             "dolar_oficial": dolar_oficial,
             "urlRedirectPDF": reverse("sales:bajaPDF", args=[sale.pk]),
@@ -1550,13 +1637,24 @@ def aplicarDescuentoCuota(request):
             cuota = data.get('cuota')
             descuento = data.get('descuento')
             autorizado = data.get('autorizado')
+            tipo_descuento = data.get('tipoDescuento') or ""
 
-            venta.aplicarDescuento(cuota,int(descuento),autorizado)
+            try:
+                monto = round(float(descuento))  # acepta "1000.50" -> 1001
+            except (TypeError, ValueError):
+                raise ValueError("El monto del descuento no es válido.")
+            if monto <= 0:
+                raise ValueError("El monto del descuento debe ser mayor a 0.")
+
+            venta.aplicarDescuento(cuota,monto,autorizado,tipo_descuento)
             cuotaUpdate = getUnaCuotaDeUnaVenta(request) # Actualizamos la cuota en la session
             print()
             return JsonResponse({"status": True,"message":"Descuento aplicado correctamente","cuotaUpdate": json.loads(cuotaUpdate.content)}, safe=False)
 
-        except Exception as error:   
+        except ValueError as error:
+            # Las reglas del descuento (cuota pagada, cuota que no admite descuento) se muestran tal cual al usuario
+            return JsonResponse({"status": False,"message":str(error),"detalleError":str(error)}, safe=False)
+        except Exception as error:
             return JsonResponse({"status": False,"message":"Descuento fallido","detalleError":str(error)}, safe=False)
 
 
@@ -1741,6 +1839,11 @@ def recibo_pago_json(request, pk: int):
             "metodo_categoria": cat,  # transferencias | bancos | efectivo
             "monto": monto_p,
             "monto_display": _fmt_money(monto_p),
+            # Pagos en dólares: el monto (ARS) es el que cuenta para el total; se informa además
+            # cuántos USD fueron y a qué tipo de cambio.
+            "es_usd": p.es_usd,
+            "monto_usd_display": _fmt_money(p.monto_usd) if p.es_usd else "",
+            "tipo_cambio_display": _fmt_money(p.tipo_cambio) if p.es_usd else "",
         })
 
     total = sum(sumas.values())
@@ -1757,7 +1860,7 @@ def recibo_pago_json(request, pk: int):
         f"""
         <div class="fila-pago">
           <span class="pago-cat">{item['metodo_categoria'].title()}</span>
-          <span class="pago-detalle">{item['metodo_raw']}</span>
+          <span class="pago-detalle">{item['metodo_raw']}{f" (USD {item['monto_usd_display']})" if item['es_usd'] else ""}</span>
           <div class="linea-pago"></div>
           <span>${item['monto_display']}</span>
         </div>
@@ -1801,6 +1904,7 @@ def recibo_pago_json(request, pk: int):
             "cuit": getattr(cliente, "cuit", "") or "",
         },
         "pagos": pagos,  # por si querés usar bucles en template
+        "pagos_usd": [item for item in pagos if item["es_usd"]],
         "sumas": {
             "transferencias": _fmt_money(sumas["transferencias"]),
             "bancos": _fmt_money(sumas["bancos"]),
@@ -1833,18 +1937,62 @@ def pagarCuota(request):
             formaPago = data.get("typePayment") # Si es parcial o total
             cobrador = data.get('cobrador')
 
+            if not metodoPago or not cobrador:
+                return JsonResponse({"status": False,"message":"Debe seleccionar cobrador y método de pago"}, safe=False)
+
+            # Moneda en la que pagó el cliente. El pago se registra siempre en ARS (contra el total de
+            # la cuota); si fue en USD se guarda además la moneda y el tipo de cambio aplicado.
+            moneda = str(data.get("moneda") or "ars").upper()
+            if moneda not in ("ARS", "USD"):
+                return JsonResponse({"status": False,"message":"Moneda inválida"}, safe=False)
+            tipo_cambio = 1.0
+            if moneda == "USD":
+                try:
+                    tipo_cambio = float(data.get("tipoCambio") or 0)
+                except (TypeError, ValueError):
+                    tipo_cambio = 0
+                if tipo_cambio <= 0:
+                    return JsonResponse({"status": False,"message":"No hay tipo de cambio disponible para registrar el pago en USD"}, safe=False)
+
+            # Lo que falta cobrar de la cuota, descontando los pagos que ya tiene (parciales)
+            cuota_obj = next((c for c in venta.cuotas if c["cuota"] == cuotaRequest), None)
+            if cuota_obj is None:
+                return JsonResponse({"status": False,"message":f"No existe la {cuotaRequest.lower()} en esta venta"}, safe=False)
+            ya_pagado = PagoCannon.objects.filter(venta=venta, nro_cuota=int(cuotaRequest.split()[-1])).aggregate(t=Sum('monto'))['t'] or 0
+            falta = cuota_obj["total"] - cuota_obj["descuento"]["monto"] - ya_pagado
+
             monto = 0
             if(formaPago =="total"):
-                cuota = list(filter(lambda x:x["cuota"] == cuotaRequest,venta.cuotas))[0]
-                print(cuota)
-                monto = cuota["total"] - cuota["descuento"]["monto"]
+                # "Abonar total" cobra solo lo que falta: si la cuota ya tenía un parcial (por ejemplo una
+                # cuota vencida, que figura como "vencido" y no como "Parcial") se cobraba entera otra vez.
+                # Una cuota de $0 (la cuota 1 que la administrativa dejó en 0) se registra con un pago de $0.
+                monto = max(falta, 0)
             elif(formaPago =="parcial"):
-                monto = data.get('valorParcial')
+                # valorParcial viene en la moneda elegida: en USD se convierte a pesos con el tipo de cambio
+                try:
+                    valor = float(data.get('valorParcial'))
+                except (TypeError, ValueError):
+                    return JsonResponse({"status": False,"message":"El monto ingresado no es válido"}, safe=False)
+                monto = round(valor * tipo_cambio) if moneda == "USD" else round(valor)
+                if monto <= 0:
+                    return JsonResponse({"status": False,"message":"El monto debe ser mayor a 0"}, safe=False)
+                if moneda == "USD":
+                    # El monto en USD se ingresa con centavos (ej. 117,85 para 117,845): si se pasa de lo que
+                    # falta por menos de 1 centavo de dólar, se ajusta a lo que falta para no dejar un sobrepago.
+                    if 0 < falta < monto <= falta + tipo_cambio * 0.01 + 1:
+                        monto = falta
+                if monto > falta:
+                    # Antes solo lo frenaba el JS: el server aceptaba cobrar más que el total de la cuota
+                    falta_txt = f"${max(falta, 0):,}".replace(",", ".")
+                    return JsonResponse({"status": False,"message":f"El monto supera lo que falta pagar de la {cuotaRequest.lower()} ({falta_txt})"}, safe=False)
 
             cuota_digit = cuotaRequest.split()[-1]
-            venta.pagarCuota(cuota_digit,int(monto),metodoPago,cobrador,request.user) #Funcion que paga parcialmente
+            venta.pagarCuota(cuota_digit,int(monto),metodoPago,cobrador,request.user,moneda,tipo_cambio) #Funcion que paga parcialmente
                 
-            return JsonResponse({"status": True,"message":f"Pago de {cuotaRequest.lower()} exitosa"}, safe=False)
+            mensaje = f"Pago de {cuotaRequest.lower()} exitosa"
+            if moneda == "USD":
+                mensaje += f" (USD {monto / tipo_cambio:,.2f} = ${int(monto):,} al cambio de ${tipo_cambio:,.2f})".replace(",", "X").replace(".", ",").replace("X", ".")
+            return JsonResponse({"status": True,"message":mensaje}, safe=False)
         except Exception as error:
             print(error)
             # print("sssssssssssssssss")
@@ -1905,7 +2053,7 @@ def darBajaCuota(request):
     try: 
         data = json.loads(request.body)
         venta = Ventas.objects.get(pk=int(data.get("ventaID")))
-        cuota = data.get("cuota").strip()[-1]  # Extrae el número de la cuota
+        cuota = data.get("cuota").strip().split()[-1]  # Extrae el número de la cuota ("Cuota 12" -> "12"; antes tomaba solo el último dígito)
 
         venta.anularCuota(cuota)  # Anula la cuota
 
@@ -1945,6 +2093,17 @@ def darBaja(request, pk):
             puedeModificar     = request.session.get("statusKeyPorcentajeBaja", False)
             porcentajeFinal    = porcentage if puedeModificar else porcentajeEsperado
 
+            # El porcentaje debe estar entre 0 y 100. Antes se aceptaba cualquier número (se llegó a guardar
+            # 800000 por tipear un monto en pesos) y el monto a devolver daba 0 sin avisar.
+            try:
+                porcentajeFinal = float(porcentajeFinal or 0)
+            except (TypeError, ValueError):
+                return JsonResponse({'status': False, 'message': "El porcentaje a devolver no es válido."}, status=400)
+            if not 0 <= porcentajeFinal <= 100:
+                return JsonResponse({'status': False, 'message': "El porcentaje a devolver debe estar entre 0 y 100."}, status=400)
+            if porcentajeFinal.is_integer():
+                porcentajeFinal = int(porcentajeFinal)
+
             venta.darBaja("cliente", porcentajeFinal, motivoDetalle, motivoDescripcion, responsable)
             venta.save()
 
@@ -1959,7 +2118,27 @@ def darBaja(request, pk):
 
         except Exception as error:
             return JsonResponse({'status': False, 'message': str(error)}, status=400)
-#endregion 
+
+
+# Previsualiza cuánto se devolvería con un porcentaje dado (lo usa el modal de baja, antes de confirmar)
+def calcularDevolucion(request, pk):
+    venta = get_object_or_404(Ventas, id=pk)
+    try:
+        porcentaje = float(request.GET.get("pct") or 0)
+    except ValueError:
+        return JsonResponse({"status": False, "message": "El porcentaje no es válido."}, status=400)
+    if not 0 <= porcentaje <= 100:
+        return JsonResponse({"status": False, "message": "El porcentaje debe estar entre 0 y 100."}, status=400)
+    monto = venta.calcularDineroADevolver(porcentaje)
+    return JsonResponse({
+        "status": True,
+        "monto": monto,
+        "monto_display": "$ " + _fmt_money(monto),
+        "base": venta.baseDevolucion(),
+        "base_display": "$ " + _fmt_money(venta.baseDevolucion()),
+        "cuotas_pagas": len(venta.cuotas_pagadas()),
+    })
+#endregion
 
 
 class PlanRecupero(generic.DetailView):
@@ -2102,7 +2281,12 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         tipoDeAdjudicacion = "NEGOCIACIÓN" if "negociacion" in url else "SORTEO"
         
         intereses = CoeficientesListadePrecios.objects.all()
-        
+
+        # Tipo de producto y producto ya se conocen (son los de la venta que se
+        # está adjudicando): se pre-completan para no obligar a re-elegirlos.
+        contratos = self.object.cantidadContratos or []
+        contrato_unico = contratos[0]["nro_contrato"] if len(contratos) == 1 else None
+
         context = {
             'venta': self.object,
             'intereses' : intereses,
@@ -2112,8 +2296,11 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
             'cantidad_cuotas_pagadas': len(self.object.cuotas_pagadas()),
             'tipoDeAdjudicacion' : tipoDeAdjudicacion,
             'idCliente': self.object.nro_cliente.nro_cliente,
+            'prefillTipoProducto': self.object.producto.tipo_de_producto,
+            'prefillProductoId': self.object.producto.id,
+            'prefillContrato': contrato_unico,
         }
-        
+
         return render(request,self.template_name,context)
     
 
@@ -2123,11 +2310,6 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         self.object = self.get_object()
         numeroOperacion = self.object.nro_operacion
         errors ={}
-        cuotas_consideradas = PagoCannon.objects.filter(venta=self.object).exclude(nro_cuota=0)
-
-
-        # Suma las cuotas pagadas para calcular el total a adjudicar
-        sumaDePagos = sum([cuota.monto for cuota in cuotas_consideradas])
 
         sale = Ventas()
 
@@ -2161,59 +2343,88 @@ class CreateAdjudicacion(TestLogin,generic.DetailView):
         contratoAdjudicado = form["nro_contrato"]
         sale.adjudicado["status"] = True
     
-        sale.nro_cliente = Cliente.objects.get(pk=request.session["venta"]["nro_cliente"])
-        sale.nro_operacion = request.session["venta"]["nro_operacion"]
-        sale.vendedor = Usuario.objects.get(pk = request.session["venta"]["vendedor"])
-        sale.supervisor = Usuario.objects.get(pk = request.session["venta"]["supervisor"])
-        sale.cantidadContratos = request.session["venta"]["cantidadContratos"]
-        sale.paquete = str(request.session["venta"]["paquete"])
+        # Los datos de la venta original salen de la venta de la URL, no de request.session["venta"]:
+        # esa sesión solo se llena al abrir el detalle (sin ella daba KeyError -> 500) y, si había otra
+        # venta abierta en otra pestaña, la adjudicación se armaba con los datos de esa otra venta.
+        sale.nro_cliente = self.object.nro_cliente
+        sale.nro_operacion = self.object.nro_operacion
+        sale.vendedor = self.object.vendedor
+        sale.supervisor = self.object.supervisor
+        sale.cantidadContratos = self.object.cantidadContratos
+        sale.paquete = str(self.object.paquete)
         sale.campania = getCampaniaActual()
-        sale.importe = int(form['importe'])
+        # Los importes pueden llegar con decimales (ej. "3630207.5" por un % a reconocer sobre un total
+        # impar): se redondean al peso en vez de fallar con 500. Un valor no numérico devuelve el error al form.
+        def to_int(key):
+            try:
+                return int(round(float(form[key])))
+            except (KeyError, TypeError, ValueError):
+                errors[key] = "Número inválido."
+                return 0
+
+        sale.importe = to_int('importe')
         sale.modalidad = form['modalidad']
-        sale.nro_cuotas = int(form['nro_cuotas'])
-        sale.tasa_interes = int(form['tasa_interes'])
-        sale.intereses_generados = int(form['intereses_generados'])
-        sale.importe_x_cuota = int(form['importe_x_cuota'])
-        sale.total_a_pagar = int(form['total_a_pagar'])
+        sale.nro_cuotas = to_int('nro_cuotas')
+        try:
+            sale.tasa_interes = float(form['tasa_interes'])  # la tasa admite decimales (ej. 70,5%); antes se truncaba a entero
+        except (KeyError, TypeError, ValueError):
+            errors['tasa_interes'] = "Número inválido."
+        sale.intereses_generados = to_int('intereses_generados')
+        sale.importe_x_cuota = to_int('importe_x_cuota')
+        # La cuota 1 la define la administrativa (viene precargada con el importe por cuota y puede
+        # ponerla en 0 si no se cobra). Antes no se tomaba del form y quedaba siempre en $0.
+        if str(form.get('primer_cuota', '')).strip() == '':
+            errors['primer_cuota'] = "Indicá el valor de la cuota 1 (0 si no se cobra)."
+        else:
+            sale.primer_cuota = to_int('primer_cuota')
+            if sale.primer_cuota < 0:
+                errors['primer_cuota'] = "No puede ser negativo."
+        sale.total_a_pagar = to_int('total_a_pagar')
         sale.tipo_producto = form['tipo_producto']
         sale.fecha = form['fecha']
 
         sale.observaciones = form['observaciones']
         sale.fecha = form['fecha'] + " 00:00"
 
-        sale.setDefaultFields()
-        sale.crearCuotas() # Crea las cuotas
-        if(tipo_adjudicacion == "sorteo"):
-            sale.acreditarCuotasPorAnticipo(sumaDePagos,request.user)
-        sale.crearAdjudicacion(contratoAdjudicado,numeroOperacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
-        
+        # Sin producto/agencia válidos crearCuotas() no puede guardar la venta (daba IntegrityError -> 500)
+        if errors:
+            return JsonResponse({'success': False, 'errors': errors}, safe=False)
+
+        with transaction.atomic():
+            sale.setDefaultFields()
+            sale.crearCuotas() # Crea las cuotas
+            # En el sorteo lo ya pagado se descuenta una sola vez: del importe a financiar (lo hace el
+            # form). Antes además se acreditaba en las últimas cuotas y se descontaba dos veces.
+            sale.crearAdjudicacion(contratoAdjudicado,numeroOperacion,tipo_adjudicacion) # Crea la adjudicacion eliminando la cuota 0
 
 
-        try:
-            sale.full_clean()
-        except ValidationError as e:
-            errors.update(e.message_dict)
-       
-        if len(errors) != 0:
-            print(errors)
-            return JsonResponse({'success': False, 'errors': errors}, safe=False)  
-        else:
-            sale.save()
-            
-            self.object.darBaja("adjudicacion",0,"","",request.user.nombre) # Da de baja la venta que fue adjudicada
-            self.object.save()
 
-            
-            # #region Para enviar el correo
-            # subject = 'Se envio una adjudicacion'
-            # template = 'adjudicacion_correo.html'
-            # context = {'nombre': 'Usuario'}  # Contexto para renderizar el template
-            # from_email = 'lautaror@elanelsys.com'
-            # to_email = 'lautaro.rodriguez553@gmail.com'
+            try:
+                sale.full_clean()
+            except ValidationError as e:
+                errors.update(e.message_dict)
 
-            # send_html_email(subject, template, context, from_email, to_email)
-            #endregion
-            return JsonResponse({'success': True,'urlRedirect':reverse_lazy('users:cuentaUser',args=[request.session["venta"]["nro_cliente"]])}, safe=False)          
+            if len(errors) != 0:
+                print(errors)
+                transaction.set_rollback(True)
+                return JsonResponse({'success': False, 'errors': errors}, safe=False)
+            else:
+                sale.save()
+
+                self.object.darBaja("adjudicacion",0,"","",request.user.nombre) # Da de baja la venta que fue adjudicada
+                self.object.save()
+
+
+                # #region Para enviar el correo
+                # subject = 'Se envio una adjudicacion'
+                # template = 'adjudicacion_correo.html'
+                # context = {'nombre': 'Usuario'}  # Contexto para renderizar el template
+                # from_email = 'lautaror@elanelsys.com'
+                # to_email = 'lautaro.rodriguez553@gmail.com'
+
+                # send_html_email(subject, template, context, from_email, to_email)
+                #endregion
+                return JsonResponse({'success': True,'urlRedirect':reverse_lazy('users:cuentaUser',args=[sale.nro_cliente.pk])}, safe=False)
         
 
 class ChangePack(TestLogin,generic.DetailView):
@@ -2270,10 +2481,10 @@ class ChangePack(TestLogin,generic.DetailView):
         errors ={}
         cuotasPagadas_parciales = self.object.cuotas_pagadas() + self.object.cuotas_parciales()
 
-        sumaDePagos = 0
-        for cuota in cuotasPagadas_parciales:
-            pagos = cuota["pagos"]
-            sumaDePagos += sum([pago["monto"] for pago in pagos])
+        # En la venta, cada cuota guarda solo los IDs de sus pagos (no los dicts): se suman desde PagoCannon
+        # (antes hacía pago["monto"] sobre un entero y daba TypeError -> 500 en cuanto había alguna cuota paga).
+        ids_pagos = [pago_id for cuota in cuotasPagadas_parciales for pago_id in cuota["pagos"]]
+        sumaDePagos = PagoCannon.objects.filter(id__in=ids_pagos).aggregate(total=Sum('monto'))['total'] or 0
 
         sale = Ventas()
 
@@ -2313,22 +2524,25 @@ class ChangePack(TestLogin,generic.DetailView):
         # Guardar las chances en el campo JSONField
         sale.cantidadContratos = chances
 
-        sale.nro_cliente = Cliente.objects.get(pk=request.session["venta"]["nro_cliente"])
-        sale.nro_operacion = request.session["venta"]["nro_operacion"]
+        # Igual que en la adjudicación: se toma de la venta de la URL, no de request.session["venta"]
+        sale.nro_cliente = self.object.nro_cliente
+        sale.nro_operacion = self.object.nro_operacion
         sale.agencia = self.object.agencia
-        sale.vendedor = Usuario.objects.get(pk = request.session["venta"]["vendedor"])
-        sale.supervisor = Usuario.objects.get(pk = request.session["venta"]["supervisor"])
-        sale.paquete = str(request.session["venta"]["paquete"])
+        sale.vendedor = self.object.vendedor
+        sale.supervisor = self.object.supervisor
+        sale.paquete = str(self.object.paquete)
         sale.campania = getCampaniaActual()
-        sale.importe = int(form['importe'])
+        # Igual que en la adjudicación: los importes pueden llegar con decimales y se redondean al peso
+        to_int = lambda key: int(round(float(form[key])))
+        sale.importe = to_int('importe')
         sale.modalidad = form['modalidad']
-        sale.nro_cuotas = int(form['nro_cuotas'])
+        sale.nro_cuotas = to_int('nro_cuotas')
         sale.tasa_interes = float(form['tasa_interes'])
-        sale.intereses_generados = int(form['intereses_generados'])
-        sale.importe_x_cuota = int(form['importe_x_cuota'])
-        sale.total_a_pagar = int(form['total_a_pagar'])
-        sale.primer_cuota = int(form['primer_cuota'])
-        sale.anticipo = int(form['anticipo'])
+        sale.intereses_generados = to_int('intereses_generados')
+        sale.importe_x_cuota = to_int('importe_x_cuota')
+        sale.total_a_pagar = to_int('total_a_pagar')
+        sale.primer_cuota = to_int('primer_cuota')
+        sale.anticipo = to_int('anticipo')
         sale.fecha = form['fecha']
         sale.tipo_producto = form['tipo_producto']
         sale.observaciones = form['observaciones']
@@ -2343,10 +2557,11 @@ class ChangePack(TestLogin,generic.DetailView):
         else:
             sale.fecha = form['fecha'] + " 00:00"
             sale.crearCuotas()
-            sale.acreditarCuotasPorAnticipo(sumaDePagos,request.user.nombre)
+            sale.acreditarCuotasPorAnticipo(sumaDePagos,request.user)  # PagoCannon.responsable_pago es un Usuario, no un nombre
             sale.save()
 
             self.object.darBaja("cambio de pack",0,"","",request.user.nombre) # Da de baja la venta que fue cambiada de pack
+            self.object.deBaja["nuevaVentaPK"] = sale.pk # para poder derivar el estado "Cambio de Paquete" en la venta nueva
             self.object.save()
             return JsonResponse({'success': True,'urlRedirect':reverse_lazy('sales:detail_sale',args=[sale.pk])}, safe=False)
 
@@ -2828,19 +3043,44 @@ def toggle_comisionable(request):
 #region PDFs - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def viewsPDFBaja(request,pk):
     operacionBaja = Ventas.objects.get(id=pk)
+    # Los contratos viven en cantidadContratos (una venta puede tener varias chances);
+    # si no hubiera ninguno cargado se usa el N° de operación.
+    nroContrato = ", ".join(str(c.get("nro_contrato", "")) for c in (operacionBaja.cantidadContratos or []) if c.get("nro_contrato")) \
+        or str(operacionBaja.nro_operacion)
+
+    # El PDF tiene que entrar SIEMPRE en una sola hoja (las firmas no pueden pasar a la segunda). Los textos
+    # libres se acotan y, según cuánto texto haya, el detalle se compacta (clases "compacta" / "minima" del CSS).
+    def _recortar(texto, maximo):
+        texto = " ".join(str(texto or "").split())  # colapsa saltos de línea y espacios repetidos
+        return texto if len(texto) <= maximo else texto[:maximo - 1].rstrip() + "…"
+
+    motivo = _recortar(operacionBaja.deBaja.get("detalleMotivo"), 220)
+    observacion = _recortar(operacionBaja.deBaja.get("observacion"), 220)
+    # Se muestran juntos en un solo renglón ("Motivo de la baja: ..."); antes tenían cada uno su propio
+    # renglón, y ahora hay más campos nuevos en la hoja como para mantener esa separación.
+    motivoCompleto = f"{motivo} — {observacion}" if (motivo and observacion) else (motivo or observacion)
+    largo_textos = len(motivoCompleto)
+    densidad = "normal" if largo_textos <= 90 else ("compacta" if largo_textos <= 200 else "minima")
+
+    cantCuotasPagadas = len(operacionBaja.cuotas_pagadas())
+
     context ={
-                "nroContrato":operacionBaja.nro_contrato,
+                "nroContrato": nroContrato,
+                "densidad": densidad,
                 "cliente": operacionBaja.nro_cliente.nombre,
-                "domicilio": operacionBaja.nro_cliente.domic,
+                "domicilio": _recortar(operacionBaja.nro_cliente.domic, 120),
                 "localidad": operacionBaja.nro_cliente.loc,
-                "pack": operacionBaja.producto.plan.tipodePlan,
+                "pack": operacionBaja.paquete,
                 "producto": operacionBaja.producto.nombre,
-                "cantCuotasPagadas" : len(operacionBaja.cuotas_pagadas()),
+                "cantCuotasPagadas" : cantCuotasPagadas,
                 "cuotas" : operacionBaja.nro_cuotas,
+                # cuotas 1..N sin contar la cuota 0 (igual que "cuotas" y "cantCuotasPagadas"); nunca negativo
+                "cuotasImpagas" : max(operacionBaja.nro_cuotas - cantCuotasPagadas, 0),
                 "agencia" : f'{operacionBaja.agencia.localidad}, {operacionBaja.agencia.provincia}',
-                "motivo" : operacionBaja.deBaja["detalleMotivo"],
-                "observacion" : operacionBaja.deBaja["observacion"],
-                "dineroDevolver" : operacionBaja.calcularDineroADevolver(),
+                "motivo" : motivoCompleto,
+                # con formato de moneda y el porcentaje usado (antes salía "0,0" sin más contexto)
+                "dineroDevolver" : "$ " + _fmt_money(operacionBaja.calcularDineroADevolver()),
+                "porcentajeDevolver" : f"{(operacionBaja.deBaja or {}).get('porcentaje', 0)}%",
                 "fecha" : operacionBaja.deBaja["fecha"],
             }
             
@@ -3156,8 +3396,8 @@ class Caja(TestLogin,generic.View):
     def get(self,request,*args, **kwargs):
         context ={}
         context["agencias_permitidas"] = [{"id":agencia.id,"pseudonimo":agencia.pseudonimo} for agencia in request.user.sucursales.all()]
-        context["cuentas_de_cobro"] = [{"id":cuenta.id,"nombre":cuenta.alias} for cuenta in CuentaCobranza.objects.all()]
-        context["metodos_de_pago"] = [{"id":metodo.id,"nombre":metodo.alias} for metodo in MetodoPago.objects.all()]
+        context["cuentas_de_cobro"] = [{"id":cuenta.id,"nombre":cuenta.alias} for cuenta in CuentaCobranza.objects.filter(activo=True)]
+        context["metodos_de_pago"] = [{"id":metodo.id,"nombre":metodo.alias} for metodo in MetodoPago.objects.filter(activo=True)]
         context["campanias"] = getTodasCampaniasDesdeInicio()
         context["campaniasDisponibles"] = getCampanasDisponibles()
 
@@ -3315,6 +3555,7 @@ class ArqueoSaldoAPI(TestLogin, generic.View):
             },
             safe=False,
         )
+
 
 
 @require_GET
@@ -3653,7 +3894,9 @@ def requestMovimientos(request):
         resumenEstadoCuenta=[]
         total_money = 0
 
-        metodosPagos = MetodoPago.objects.all()
+        # Un método inactivo solo aparece en el resumen si tiene movimientos (para no alterar los totales)
+        ids_con_movimientos = {str(mov["metodoPago"]["data"]) for mov in movs}
+        metodosPagos = [m for m in MetodoPago.objects.all() if m.activo or str(m.id) in ids_con_movimientos]
         for metodo in metodosPagos:
             estado_cuenta_by_metodo = {}
             estado_cuenta_by_metodo["verbose_name"] = metodo.alias
@@ -3871,4 +4114,92 @@ class GenerarSorteoAPI(TestLogin, generic.View):
             "status": True,
             "numeros": selected
         })
+#endregion -----------------------------------------------------------------------------
+
+
+#region Trazabilidad de operaciones (punto 9 de la minuta) ------------------------------
+TIPO_HISTORY_FALLBACK = {"+": "alta", "~": "modificación", "-": "eliminación"}
+
+
+def _registro_desde_historico(h, entidad, referencia, cliente_nombre):
+    return {
+        "fecha": h.history_date,
+        "usuario": h.history_user.nombre if h.history_user_id and h.history_user else "—",
+        "tipo_operacion": h.history_change_reason or TIPO_HISTORY_FALLBACK.get(h.history_type, h.history_type),
+        "entidad": entidad,
+        "referencia": referencia,
+        "cliente": cliente_nombre,
+        "history_id": h.history_id,
+    }
+
+
+class TrazabilidadView(TestLogin, PermissionRequiredMixin, generic.View):
+    """
+    Vista de trazabilidad/auditoría: quién hizo cada operación, cuándo, sobre
+    qué venta/cliente/pago, y con qué motivo. Se arma combinando el historial
+    que ya registra django-simple-history sobre Ventas, Cliente y PagoCannon
+    (ver Ventas.history / Cliente.history / PagoCannon.history).
+    """
+    template_name = "trazabilidad.html"
+    permission_required = "sales.my_ver_trazabilidad"
+    LIMITE_POR_MODELO = 300
+
+    def get(self, request, *args, **kwargs):
+        from users.models import Cliente
+
+        registros = []
+
+        ventas_hist = (
+            Ventas.history.select_related("history_user", "nro_cliente")
+            .order_by("-history_date")[: self.LIMITE_POR_MODELO]
+        )
+        for h in ventas_hist:
+            referencia = f"Operación N° {h.nro_operacion}" if h.nro_operacion else f"Venta #{h.id}"
+            cliente_nombre = h.nro_cliente.nombre if h.nro_cliente_id else ""
+            registros.append(_registro_desde_historico(h, "Venta", referencia, cliente_nombre))
+
+        clientes_hist = (
+            Cliente.history.select_related("history_user")
+            .order_by("-history_date")[: self.LIMITE_POR_MODELO]
+        )
+        for h in clientes_hist:
+            registros.append(
+                _registro_desde_historico(h, "Cliente", f"{h.nro_cliente} - {h.nombre}", h.nombre)
+            )
+
+        pagos_hist = (
+            PagoCannon.history.select_related("history_user")
+            .order_by("-history_date")[: self.LIMITE_POR_MODELO]
+        )
+        for h in pagos_hist:
+            registros.append(
+                _registro_desde_historico(
+                    h, "Pago", f"Cuota {h.nro_cuota} · ${h.monto} · {h.nro_recibo}", ""
+                )
+            )
+
+        registros.sort(key=lambda r: r["fecha"], reverse=True)
+
+        # Filtros simples por querystring
+        usuario_q = request.GET.get("usuario", "").strip()
+        entidad_q = request.GET.get("entidad", "").strip()
+        if usuario_q:
+            registros = [r for r in registros if usuario_q.lower() in r["usuario"].lower()]
+        if entidad_q:
+            registros = [r for r in registros if r["entidad"] == entidad_q]
+
+        page_number = int(request.GET.get("page", 1))
+        page_size = 40
+        paginator = Paginator(registros, page_size)
+        page_obj = paginator.get_page(page_number)
+
+        context = {
+            "page_obj": page_obj,
+            "usuario_q": usuario_q,
+            "entidad_q": entidad_q,
+        }
+        return render(request, self.template_name, context)
+
+    def handle_no_permission(self):
+        return redirect("users:list_customers")
 #endregion -----------------------------------------------------------------------------

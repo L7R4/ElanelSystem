@@ -32,18 +32,30 @@ function buildBajaForm({ init }) {
         </div>
 
         <div class="field">
-          <label for="baja_pct">Porcentaje a devolver</label>
+          <label for="baja_pct">Porcentaje a devolver (%)</label>
           <div class="row">
             <input id="baja_pct" class="input-read-write-default" type="number" min="0" max="100" step="0.01"
-                   value="${porcentaje}" readonly>
+                   inputmode="decimal" value="${porcentaje}" readonly>
             <button type="button" id="editPctBtn" class="button-default-style">Editar</button>
           </div>
+          <p class="hint" id="pctHint">
+            Es un <strong>porcentaje</strong> (de 0 a 100), no un monto en pesos. Para modificarlo hay que ingresar
+            <strong>la contraseña de tu propia cuenta</strong> (la misma con la que iniciás sesión); no hay una contraseña de administración.
+          </p>
+          <p class="field-error" id="pctError" hidden></p>
+        </div>
+
+        <!-- Cuánto se devolvería con el porcentaje elegido (se recalcula al cambiarlo) -->
+        <div class="devolucion-box" id="devolucionBox">
+          <span>Monto a devolver</span>
+          <strong id="devolucionMonto">—</strong>
+          <small id="devolucionDetalle"></small>
         </div>
 
         <!-- Bloque de contraseña (aparece solo si el usuario quiere editar %) -->
         <div id="passArea" class="pass-area" hidden>
-          <label for="passInput">Contraseña</label>
-          <input id="passInput" type="password" class="input-read-write-default" placeholder="Contraseña" autocomplete="current-password">
+          <label for="passInput">Contraseña de tu cuenta</label>
+          <input id="passInput" type="password" class="input-read-write-default" placeholder="La misma con la que iniciás sesión" autocomplete="current-password">
 
           <div class="pass-actions">
             <button type="button" id="validatePassBtn" class="add-button-default">Validar</button>
@@ -109,6 +121,11 @@ export function openBajaVentaModal() {
   const inpPct = root.querySelector("#baja_pct");
   const editPct = root.querySelector("#editPctBtn");
 
+  const pctHint = root.querySelector("#pctHint");
+  const pctError = root.querySelector("#pctError");
+  const devMonto = root.querySelector("#devolucionMonto");
+  const devDetalle = root.querySelector("#devolucionDetalle");
+
   const passArea = root.querySelector("#passArea");
   const inpPass = root.querySelector("#passInput");
   const btnVal = root.querySelector("#validatePassBtn");
@@ -173,6 +190,12 @@ export function openBajaVentaModal() {
           inpPct.classList.add("enable"); // mantiene tu convención visual
           passArea.hidden = true;
           inpPass.value = "";
+          // Ya se puede editar: el botón "Editar" deja de tener sentido
+          editPct.style.display = "none";
+          pctHint.innerHTML =
+            "Edición habilitada: podés modificar el <strong>porcentaje</strong> (de 0 a 100).";
+          inpPct.focus();
+          inpPct.select();
         }
       });
   });
@@ -184,14 +207,68 @@ export function openBajaVentaModal() {
     passArea.hidden = true;
   });
 
-  // Habilitar/Deshabilitar Confirmar según validación mínima (motivo requerido)
+  // El porcentaje tiene que estar entre 0 y 100 (antes se aceptaba cualquier número: se llegó a
+  // tipear un monto en pesos y el monto a devolver terminaba en 0 sin avisar).
+  function pctValido() {
+    const raw = inpPct.value.trim();
+    if (raw === "") return false;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 && n <= 100;
+  }
+
+  function mostrarErrorPct() {
+    const invalido = !pctValido();
+    pctError.hidden = !invalido;
+    pctError.textContent = invalido
+      ? "El porcentaje debe estar entre 0 y 100 (no es un monto en pesos)."
+      : "";
+  }
+
+  // Monto a devolver con el porcentaje actual (lo calcula el servidor con la misma fórmula de la baja)
+  let calcTimer = null;
+  let calcSeq = 0;
+  function actualizarMontoDevolver() {
+    clearTimeout(calcTimer);
+    if (!pctValido()) {
+      devMonto.textContent = "—";
+      devDetalle.textContent = "";
+      return;
+    }
+    calcTimer = setTimeout(async () => {
+      const seq = ++calcSeq;
+      try {
+        const resp = await apiFetch(
+          `/ventas/detalle_venta/${init.ventaId}/calcular_devolucion/`,
+          { params: { pct: inpPct.value.trim() } },
+        );
+        if (seq !== calcSeq) return; // llegó una respuesta más nueva
+        if (!resp?.status) throw new Error(resp?.message || "");
+        devMonto.textContent = resp.monto_display;
+        devDetalle.textContent =
+          resp.cuotas_pagas > 0
+            ? `Sobre ${resp.base_display} abonados en ${resp.cuotas_pagas} cuota(s) paga(s), sin contar la cuota 0.`
+            : "Esta venta no tiene cuotas pagas (sin contar la cuota 0), por eso no hay monto para devolver.";
+      } catch {
+        devMonto.textContent = "—";
+        devDetalle.textContent = "No se pudo calcular el monto.";
+      }
+    }, 250);
+  }
+
+  // Habilitar/Deshabilitar Confirmar según validación mínima (motivo requerido y % válido)
   function updateConfirmDisabled() {
-    const valid = !!inpMotivo.value.trim();
+    const valid = !!inpMotivo.value.trim() && pctValido();
     btnConfirm.disabled = uiMain.isRunning() || !valid;
   }
   root.addEventListener("input", updateConfirmDisabled);
   root.addEventListener("change", updateConfirmDisabled);
+  inpPct.addEventListener("input", () => {
+    mostrarErrorPct();
+    actualizarMontoDevolver();
+    updateConfirmDisabled();
+  });
   updateConfirmDisabled();
+  actualizarMontoDevolver();
 
   modal.open();
 

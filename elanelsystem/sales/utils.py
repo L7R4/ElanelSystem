@@ -398,33 +398,62 @@ def getInfoBaseCannon(venta, cuota):
     }
 
 
-def dataStructureCannons(sucursal=None):
-    from sales.models import Ventas, MetodoPago, CuentaCobranza
+def dataStructureCannons(sucursal=None, campania=None):
+    from sales.models import Ventas, MetodoPago, CuentaCobranza, PagoCannon
     from elanelsystem.views import convertirValoresALista
     from elanelsystem.utils import formatear_dd_mm_yyyy_h_m
     
     if sucursal:
         ventas = get_ventasBySucursal(sucursal)
+        listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
+        if all(x.isdigit() for x in listaAgencias):
+            pagos_qs = PagoCannon.objects.filter(venta__agencia__id__in=[int(x) for x in listaAgencias]).select_related('metodo_pago', 'cobrador')
+        else:
+            pagos_qs = PagoCannon.objects.filter(venta__agencia__pseudonimo__in=listaAgencias).select_related('metodo_pago', 'cobrador')
     else:
         ventas = Ventas.objects.all()
+        pagos_qs = PagoCannon.objects.select_related('metodo_pago', 'cobrador').all()
 
+    if campania:
+        ventas = ventas.filter(campania=campania)
+        pagos_qs = pagos_qs.filter(campana_de_pago=campania)
+
+    # Pre-fetch all payments into a dict to prevent N+1 query overhead
+    pagos_map = {p.id: p for p in pagos_qs}
     cuotas_data = []
 
-    for i in range(int(ventas.count())):
-        venta = ventas[i]
-
+    for venta in ventas:
         for k in range(len(venta.cuotas)):
             cuota = venta.cuotas[k]
             cuotaStatusCleaned = cuota["status"].replace(" ", "").lower()
             if cuotaStatusCleaned in ["pagado", "parcial", "atrasado"]:
                 for pago in cuota["pagos"]:
-                    metodo_pago_obj = get_or_create_metodo_pago(pago['metodoPago'])
-                    cobrador_obj = get_or_create_cobrador(pago["cobrador"])
+                    try:
+                        # pago puede ser un entero (ID de PagoCannon) o un diccionario en registros antiguos/legacy
+                        if isinstance(pago, dict):
+                            pago_monto = pago.get('monto', 0)
+                            pago_fecha = pago.get('fecha', '')
+                            pago_campania = pago.get('campaniaPago', '')
+                            metodo_pago_obj = get_or_create_metodo_pago(pago.get('metodoPago'))
+                            cobrador_obj = get_or_create_cobrador(pago.get('cobrador'))
+                        else:
+                            pago_obj = pagos_map.get(int(pago))
+                            if not pago_obj:
+                                continue
+                            pago_monto = pago_obj.monto
+                            pago_fecha = pago_obj.fecha
+                            pago_campania = pago_obj.campana_de_pago
+                            metodo_pago_obj = pago_obj.metodo_pago
+                            cobrador_obj = pago_obj.cobrador
+                    except Exception as e:
+                        print(f"Error parseando pago {pago}: {e}")
+                        continue
+
                     dias_diferencia = ""
-                    if pago["fecha"] and venta.fecha:
+                    if pago_fecha and venta.fecha:
                         try:
                             # Parsear fecha de pago
-                            fecha_pago = datetime.datetime.strptime(formatear_dd_mm_yyyy_h_m(pago["fecha"]), "%d/%m/%Y %H:%M").date()
+                            fecha_pago = datetime.datetime.strptime(formatear_dd_mm_yyyy_h_m(pago_fecha), "%d/%m/%Y %H:%M").date()
 
                             # Parsear fecha de inscripción (venta.fecha)
                             fecha_inscripcion = datetime.datetime.strptime(formatear_dd_mm_yyyy_h_m(venta.fecha), "%d/%m/%Y %H:%M").date()
@@ -436,14 +465,14 @@ def dataStructureCannons(sucursal=None):
                             dias_diferencia = ""
 
                     mov = {**getInfoBaseCannon(venta, cuota), **{
-                        'metodoPago': {'data': str(metodo_pago_obj.id), 'verbose_name': 'Método de Pago'},
-                        'metodoPagoAlias': {'data': metodo_pago_obj.alias, 'verbose_name': 'Método de Pago'},
-                        'monto': {'data': pago['monto'], 'verbose_name': 'Monto Pagado'},
-                        'montoFormated': {'data': formatear_moneda_sin_centavos(pago['monto']), 'verbose_name': 'Monto Pagado'},
-                        'fecha': {'data': pago['fecha'], 'verbose_name': 'Fecha de Pago'},
-                        'cobrador': {'data': str(cobrador_obj.id), 'verbose_name': 'Cobrador'},
-                        'cobradorAlias': {'data': cobrador_obj.alias, 'verbose_name': 'Cobrador'},
-                        'campaniaPago': {'data': pago["campaniaPago"], 'verbose_name': 'Campaña de pago'},
+                        'metodoPago': {'data': str(metodo_pago_obj.id) if metodo_pago_obj else "", 'verbose_name': 'Método de Pago'},
+                        'metodoPagoAlias': {'data': metodo_pago_obj.alias if metodo_pago_obj else "", 'verbose_name': 'Método de Pago'},
+                        'monto': {'data': pago_monto, 'verbose_name': 'Monto Pagado'},
+                        'montoFormated': {'data': formatear_moneda_sin_centavos(pago_monto), 'verbose_name': 'Monto Pagado'},
+                        'fecha': {'data': pago_fecha, 'verbose_name': 'Fecha de Pago'},
+                        'cobrador': {'data': str(cobrador_obj.id) if cobrador_obj else "", 'verbose_name': 'Cobrador'},
+                        'cobradorAlias': {'data': cobrador_obj.alias if cobrador_obj else "", 'verbose_name': 'Cobrador'},
+                        'campaniaPago': {'data': pago_campania, 'verbose_name': 'Campaña de pago'},
                         'dias_de_diferencia': {'data': dias_diferencia,'verbose_name': 'Días de diferencia'}
 
                     }}
@@ -457,25 +486,32 @@ def dataStructureCannons(sucursal=None):
                 }}
                 cuotas_data.append(mov)
 
-    # cuotas_data.reverse()
-    # Obtener las cuotas con nro_operacion == 597
-    # w = [cuota for cuota in cuotas_data if cuota['nro_operacion']['data'] == "597"]
-    # print(f"\n\n\n {type(w[0]['metodoPago']['data'])} \n\n\n")
     return cuotas_data
 
 
-def dataStructureVentas(sucursal=None):
-    from sales.models import Ventas
+def dataStructureVentas(sucursal=None, campania=None):
+    from sales.models import Ventas, PagoCannon
+    from elanelsystem.views import convertirValoresALista
 
     if sucursal:
         ventas = get_ventasBySucursal(sucursal)
+        listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
+        if all(x.isdigit() for x in listaAgencias):
+            pagos_qs = PagoCannon.objects.filter(venta__agencia__id__in=[int(x) for x in listaAgencias])
+        else:
+            pagos_qs = PagoCannon.objects.filter(venta__agencia__pseudonimo__in=listaAgencias)
     else:
-        ventas = Ventas.objects.all()
+        ventas = Ventas.objects.all().select_related("agencia", "vendedor", "supervisor", "nro_cliente", "producto").prefetch_related("auditorias")
+        pagos_qs = PagoCannon.objects.all()
+
+    if campania:
+        ventas = ventas.filter(campania=campania)
+        pagos_qs = pagos_qs.filter(venta__campania=campania)
         
+    pagos_map = {p.id: p for p in pagos_qs}
     ventasList = []
-    for i in range(int(ventas.count())):
-        venta = ventas[i]
-        dineroEntregado = getDineroEntregado(venta.cuotas)
+    for venta in ventas:
+        dineroEntregado = getDineroEntregado(venta.cuotas, pagos_map)
         ventaDict = {
             'nro_operacion': {'data': venta.nro_operacion, 'verbose_name': 'N° ope'},
             'fecha': {'data': venta.fecha, 'verbose_name': 'Fecha de inscripción'},
@@ -521,21 +557,22 @@ def dataStructureVentas(sucursal=None):
         }
 
         # Agregar el campo si la venta esta AUDITADA  
-        if len(venta.auditoria) > 0:   
-            last_auditoria = venta.auditoria[-1]
+        venta_auditorias = list(venta.auditorias.all())
+        if len(venta_auditorias) > 0:   
+            last_auditoria = venta_auditorias[-1]
             ventaDict["auditada"] = {'data': "Si", 'verbose_name': 'Auditada'}
-            ventaDict["ultima_auditoria"] = {'data': last_auditoria["grade"], 'verbose_name': 'Última auditoría'}
+            ventaDict["ultima_auditoria"] = {'data': last_auditoria.grade, 'verbose_name': 'Última auditoría'}
 
         # Agregar el campo si la venta esta ADJUDICADA
-        if(venta.adjudicado["status"]):
+        if venta.adjudicado and venta.adjudicado.get("status"):
             ventaDict["adjudicado"] = {'data': "Si", 'verbose_name': 'Adjudicado'}
-            ventaDict["tipo_de_adjudicacion"] = {'data': venta.adjudicado["tipo"], 'verbose_name': 'Tipo de adjudicación'}
+            ventaDict["tipo_de_adjudicacion"] = {'data': venta.adjudicado.get("tipo", ""), 'verbose_name': 'Tipo de adjudicación'}
 
         # Agregar el campo si la venta esta DE BAJA
-        if(venta.deBaja["status"]):
+        if venta.deBaja and venta.deBaja.get("status"):
             ventaDict["de_baja"] = {'data': "Si", 'verbose_name': 'De baja'}
-            ventaDict["motivo_de_baja"] = {'data': venta.deBaja["motivo"] , 'verbose_name': 'Motivo de baja'}
-            ventaDict["responsable"] = {'data': venta.deBaja["responsable"], 'verbose_name': 'Responsable'}
+            ventaDict["motivo_de_baja"] = {'data': venta.deBaja.get("motivo", "") , 'verbose_name': 'Motivo de baja'}
+            ventaDict["responsable"] = {'data': venta.deBaja.get("responsable", ""), 'verbose_name': 'Responsable'}
         
         # Agregar el campo si la venta esta SUSPENDIDA
         if(venta.suspendida):
@@ -651,6 +688,7 @@ def get_ventasBySucursal(sucursal=""):
 
     qs = (Ventas.objects
           .select_related("agencia", "vendedor", "supervisor", "nro_cliente", "producto")
+          .prefetch_related("auditorias")
           .only(
               "id", "fecha", "importe","cantidadContratos","nro_operacion",
               "agencia__id", "agencia__pseudonimo",
@@ -663,7 +701,10 @@ def get_ventasBySucursal(sucursal=""):
         return qs
     else:
         listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
-        return qs.filter(agencia__id__in=listaAgencias)
+        if all(x.isdigit() for x in listaAgencias):
+            return qs.filter(agencia__id__in=[int(x) for x in listaAgencias])
+        else:
+            return qs.filter(agencia__pseudonimo__in=listaAgencias)
 
 def get_pagosCannonBySucursal(sucursal=""):
     from sales.models import PagoCannon
@@ -690,7 +731,10 @@ def get_pagosCannonBySucursal(sucursal=""):
         return qs
     else:
         listaAgencias = convertirValoresALista({"agencia": sucursal})["agencia"]
-        return qs.filter(venta__agencia__id__in=listaAgencias)
+        if all(x.isdigit() for x in listaAgencias):
+            return qs.filter(venta__agencia__id__in=[int(x) for x in listaAgencias])
+        else:
+            return qs.filter(venta__agencia__pseudonimo__in=listaAgencias)
 
 def deleteFieldsInDataStructures(lista_dicts, campos_a_eliminar):
     # Iterar sobre cada diccionario en la lista
@@ -702,26 +746,90 @@ def deleteFieldsInDataStructures(lista_dicts, campos_a_eliminar):
     return lista_dicts
 
 
+#region Estado de venta (punto 5 de la minuta)
+# Estados contemplados: ACTIVO, BAJA, SUSPENDIDO, CAMBIO DE PAQ, RECUPERO ACT,
+# RECUPERO BAJA, CAMBIO DE TIT, PENDIENTE, PAGADO, PLAN VENCIDO.
+#
+# Función única que reemplaza la lógica duplicada (y algo inconsistente) que
+# antes vivía separada en getEstadoVenta/getEstadoVenta2. Esas dos se dejan
+# como wrappers finos sobre esta para no tener que tocar todos sus llamadores.
+def estado_venta(venta):
+    deBaja = venta.deBaja or {}
+
+    if deBaja.get("status"):
+        motivo = deBaja.get("motivo", "") or ""
+        if motivo == "plan recupero":
+            return {"code": "RECUPERO_BAJA", "label": "Recupero (baja)", "motivo": motivo}
+        return {
+            "code": "BAJA",
+            "label": f"Baja por {motivo}" if motivo else "Baja",
+            "motivo": motivo,
+        }
+
+    if venta.suspendida:
+        # suspenderOperacion() da de baja automáticamente a partir de 4 cuotas
+        # vencidas; si llegamos acá con suspendida=True y sin deBaja, es la
+        # suspensión "leve" que dispara a partir de 3.
+        cuotas_vencidas = sum(
+            1 for c in (venta.cuotas or []) if str(c.get("status", "")).lower() == "vencido"
+        )
+        if cuotas_vencidas >= 4:
+            return {"code": "PLAN_VENCIDO", "label": "Plan vencido", "motivo": ""}
+        return {"code": "SUSPENDIDO", "label": "Suspendido", "motivo": ""}
+
+    if venta.cambioTitularidadField:
+        return {"code": "CAMBIO_DE_TIT", "label": "Cambio de titularidad", "motivo": ""}
+
+    # ¿Esta venta nació de un Cambio de Paquete o de un Plan de Recupero?
+    # (la venta vieja guarda el pk de la nueva en deBaja.nuevaVentaPK)
+    from sales.models import Ventas
+    origen = (
+        Ventas.objects.filter(deBaja__nuevaVentaPK=venta.pk)
+        .only("deBaja")
+        .first()
+    )
+    if origen:
+        motivo_origen = (origen.deBaja or {}).get("motivo", "")
+        if motivo_origen == "plan recupero":
+            return {"code": "RECUPERO_ACT", "label": "Recupero (activa)", "motivo": ""}
+        if motivo_origen == "cambio de pack":
+            return {"code": "CAMBIO_DE_PAQ", "label": "Cambio de paquete", "motivo": ""}
+
+    cuotas_relevantes = [c for c in (venta.cuotas or []) if c.get("cuota") != "Cuota 0"]
+    if cuotas_relevantes and all(
+        str(c.get("status", "")).lower() == "pagado" for c in cuotas_relevantes
+    ):
+        return {"code": "PAGADO", "label": "Pagado", "motivo": ""}
+
+    if any(str(c.get("status", "")).lower() == "pendiente" for c in cuotas_relevantes):
+        return {"code": "PENDIENTE", "label": "Pendiente", "motivo": ""}
+
+    return {"code": "ACTIVO", "label": "Activo", "motivo": ""}
+
+
 def getEstadoVenta(venta):
-    if(venta.deBaja != {}):
-        return f"De baja por {venta.deBaja['motivo']}"
-    elif(venta.suspendida):
+    estado = estado_venta(venta)
+    if estado["code"] == "BAJA":
+        return f"De baja por {estado['motivo']}" if estado["motivo"] else "De baja"
+    if estado["code"] in ("RECUPERO_BAJA",):
+        return "De baja por plan recupero"
+    if estado["code"] in ("SUSPENDIDO", "PLAN_VENCIDO"):
         return "Suspendida"
-    elif(venta.adjudicado != {}):
+    if venta.adjudicado and venta.adjudicado.get("status"):
         return f"Adjudicada por {venta.adjudicado['tipo']}"
-    else:
-        return "Activo"
-    
+    return estado["label"] if estado["code"] != "ACTIVO" else "Activo"
+
 
 def getEstadoVenta2(venta):
-    if(venta.deBaja["status"]):
-        return {'status': 'Baja', 'motivo': venta.deBaja['motivo']}
-    elif(venta.suspendida):
+    estado = estado_venta(venta)
+    if estado["code"] in ("BAJA", "RECUPERO_BAJA"):
+        return {'status': 'Baja', 'motivo': estado["motivo"]}
+    if estado["code"] in ("SUSPENDIDO", "PLAN_VENCIDO"):
         return {'status': 'Suspendida', 'motivo': ""}
-    elif(venta.adjudicado["status"]):
+    if venta.adjudicado and venta.adjudicado.get("status"):
         return {'status': 'Adjudicada', 'motivo': ""}
-    else:
-        return {'status': 'Activa', 'motivo': ""}
+    return {'status': 'Activa', 'motivo': ""}
+#endregion
 
 def getCuotasPagadasSinCredito(cuotas):
     from sales.models import PagoCannon
@@ -758,30 +866,44 @@ def bloquer_desbloquear_cuotas(cuotas):
     return nuevas_cuotas
 
 
-def getDineroEntregado(cuotas):
+def getDineroEntregado(cuotas, pagos_map=None):
     dineroEntregado = 0
+    from sales.models import PagoCannon
     for cuota in cuotas:
-        pagos = cuota["pagos"]
-        if(len(pagos)>0):
+        pagos = cuota.get("pagos", [])
+        if len(pagos) > 0:
             for pago in pagos:
-                dineroEntregado += pago["monto"]
+                if isinstance(pago, dict):
+                    dineroEntregado += pago.get("monto", 0)
+                else:
+                    if pagos_map is not None:
+                        pago_obj = pagos_map.get(int(pago))
+                        if pago_obj:
+                            dineroEntregado += pago_obj.monto
+                    else:
+                        try:
+                            pago_obj = PagoCannon.objects.get(id=int(pago))
+                            dineroEntregado += pago_obj.monto
+                        except PagoCannon.DoesNotExist:
+                            pass
     return dineroEntregado
 
 
 def obtenerStatusAuditoria(venta): # Devuelve el estado de la ultima auditoria
 
     #Verifica si la lista de auditorías está vacía
-    if len(venta.auditoria) == 0:
+    venta_auditorias = list(venta.auditorias.all())
+    if len(venta_auditorias) == 0:
         return {"statusText": "Pendiente", "statusIcon": static(f"/images/icons/operationSuspendido.svg")}  # No auditada
     
     # Obtiene la última auditoría
-    ultima_auditoria = venta.auditoria[-1]
+    ultima_auditoria = venta_auditorias[-1]
     
     # Verifica el estado de la última auditoría
-    if ultima_auditoria.get("grade") is True:
+    if ultima_auditoria.grade is True:
         return {"statusText": "Aprobada", "statusIcon": static(f"images/icons/operationActivo.svg")}  # No auditada
 
-    elif ultima_auditoria.get("grade") is False:
+    elif ultima_auditoria.grade is False:
         return {"statusText": "Desaprobada", "statusIcon": static(f"images/icons/operationBaja.svg")}  # No auditada
 
 #endregion
@@ -1166,8 +1288,10 @@ def get_dinero_restante_segun_divisa(cannon, tipo_cambio):
     for divisa in divisas:
         if divisa == "ARS":
             total_divisa = cannon["total"] - total_pagado
-        else:  # USD
+        elif tipo_cambio:  # USD
             total_divisa = (cannon["total"] / tipo_cambio) - (total_pagado / tipo_cambio)
+        else:
+            total_divisa = 0
         
         restante_por_divisa[divisa] = round(max(total_divisa, 0), 2)
 

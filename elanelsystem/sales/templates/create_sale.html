@@ -1,495 +1,509 @@
-{% extends 'molde.html' %} {% load static %} {% block css %}
+{% extends 'molde.html' %} 
+{% load static %} 
+
+{% block css %}
 <link rel="stylesheet" href="{% static 'css/create_sale.css' %}" />
 <link rel="stylesheet" href="{% static 'css/root_base.css' %}" />
-<link
-  rel="stylesheet"
-  href="{% static 'js/vanilla-calendar-pro/styles/index.css' %}"
-/>
-<link
-  rel="stylesheet"
-  href="{% static 'js/vanilla-calendar-pro/styles/customStyles.css' %}"
-/>
+<link rel="stylesheet" href="{% static 'js/vanilla-calendar-pro/styles/index.css' %}" />
+<link rel="stylesheet" href="{% static 'js/vanilla-calendar-pro/styles/customStyles.css' %}" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock css %} 
 
-{% endblock css %} {% block content %}
-<div class="wrapper_tittle">
-  <h1>NUEVA OPERACION</h1>
-</div>
-
-<form method="POST" id="form_create_sale" autocomplete="off">
-  <input
-    type="hidden"
-    name="csrfmiddlewaretoken"
-    value="muXN2dHhDr0WwNi0AOAbzsAhQQRDoWQJkQGJfib1LjTggFOSHQ8CovDG0MNneL2J"
-  />
-
-  {% comment %}
-  <div id="wrapperTipoProducto" class="inputWrapper">
-    <label class="labelInput">Tipo de producto</label>
-    <div class="containerInputAndOptions">
-      <img
-        id="tipoComprobanteIconDisplay"
-        class="iconDesplegar"
-        src="{% static 'images/icons/arrowDown.png' %}"
-        alt=""
-      />
-      <input
-        type="text"
-        readonly
-        name="tipo_producto"
-        id="tipoProductoInput"
-        required
-        autocomplete="off"
-        maxlength="50"
-        class="input-select-custom onlySelect"
-      />
-      <ul class="list-select-custom options">
-        <li>Moto</li>
-        <li>Electrodomestico</li>
-        <li>Prestamo</li>
-      </ul>
+{% block content %}
+<div class="sale-creation-container">
+  
+  <!-- Modern Header -->
+  <div class="modern-header">
+    <div class="header-icon-wrapper">
+      <i class="fa-solid fa-circle-plus"></i>
     </div>
-  </div>
-  {% endcomment %}
-
-  <div
-    id="tipoProductoWrapper"
-    class="wrapperTypeFilter wrapperSelectCustom inputWrapper"
-  >
-    <h3 class="labelInput">Tipo de producto</h3>
-    <div class="containerInputAndOptions">
-      <img
-        class="iconDesplegar"
-        src="{% static 'images/icons/arrowDown.png' %}"
-        alt=""
-      />
-      <input
-        type="hidden"
-        required
-        class="filterInput"
-        name="tipo_producto"
-        id="tipoProductoInput"
-        placeholder="Seleccionar"
-        autocomplete="off"
-        readonly
-      />
-      <div class="onlySelect pseudo-input-select-wrapper">
-        <h3></h3>
-      </div>
-      <ul id="contenedorTipoProducto" class="list-select-custom options">
-        <li data-value="Moto">Moto</li>
-        <li data-value="Combo">Electrodomestico</li>
-        <li data-value="Solucion">Solucion dineraria</li>
-      </ul>
+    <div class="header-text">
+      <span class="header-subtitle">GESTIÓN DE VENTAS</span>
+      <h1 class="header-title">Nueva Operación</h1>
+      <span class="header-desc">Registrar nueva operación para <strong>{{object.nombre}}</strong></span>
     </div>
   </div>
 
-  <div
-    id="productoWrapper"
-    class="select-search wrapperTypeFilter wrapperSelectCustom inputWrapper desactive"
-  >
-    <h3 class="labelInput">Producto</h3>
-    <div class="containerInputAndOptions">
-      <img
-        class="iconDesplegar"
-        src="{% static 'images/icons/arrowDown.png' %}"
-        alt=""
-      />
-      <input
-        type="hidden"
-        class="filterInput"
-        name="producto"
-        id="productoInput"
-        placeholder="Seleccionar"
-        autocomplete="off"
-        readonly
-        required
-      />
-      <div class="onlySelect pseudo-input-select-wrapper">
-        <h3></h3>
-      </div>
-      <ul id="contenedorProductos" class="list-select-custom options"></ul>
-    </div>
-  </div>
+  <form method="POST" id="form_create_sale" autocomplete="off" class="modern-sale-form">
+    {% csrf_token %}
 
-  <div id="wrapperChances" class="inputWrapper">
-    <div class="wrapperChanceItem">
-      <div class="chanceItem">
-        <h5>Chance 1)</h5>
-        <div class="wrapperNroSolicitud">
-          <label for="">Nro contrato</label>
-          <input
-            type="text"
-            name="nro_contrato_1"
-            maxlength="10"
-            class="input-read-write-default"
-            oninput="this.value = this.value.replace(/[^0-9]/g, '');"
-            required
-            id="nroContrato_1"
-          />
+    <div class="form-sections-grid">
+      <!-- SECTION 1: Product Selection & Agency -->
+      <div class="form-card glass-panel">
+        <div class="card-header">
+          <i class="fa-solid fa-cart-shopping card-icon"></i>
+          <h2>Producto y Agencia</h2>
         </div>
+        
+        <div class="card-body">
+          <div id="tipoProductoWrapper" class="wrapperSelectCustom inputWrapper">
+            <label class="labelInput">Tipo de Producto</label>
+            <div class="containerInputAndOptions">
+              <i class="fa-solid fa-list-ul select-embed-icon"></i>
+              <input
+                type="hidden"
+                required
+                class="filterInput"
+                name="tipo_producto"
+                id="tipoProductoInput"
+                placeholder="Seleccionar"
+                autocomplete="off"
+                readonly
+              />
+              <div class="onlySelect pseudo-input-select-wrapper">
+                <h3></h3>
+              </div>
+              <i class="fa-solid fa-chevron-down iconDesplegar"></i>
+              <ul id="contenedorTipoProducto" class="list-select-custom options">
+                <li data-value="Moto">Moto</li>
+                <li data-value="Combo">Electrodoméstico</li>
+                <li data-value="Solucion">Solución dineraria</li>
+              </ul>
+            </div>
+          </div>
 
-        <div class="wrapperNroOrden">
-          <label for="">Nro orden</label>
-          <input
-            type="text"
-            name="nro_orden_1"
-            class="input-read-write-default"
-            readonly
-            oninput="this.value=this.value.replace(/[^0-9]/g, '');"
-            required
-            id="nroOrden_1"
-          />
+          <div id="productoWrapper" class="select-search wrapperSelectCustom inputWrapper desactive">
+            <label class="labelInput">Producto</label>
+            <div class="containerInputAndOptions">
+              <i class="fa-solid fa-box select-embed-icon"></i>
+              <input
+                type="hidden"
+                class="filterInput"
+                name="producto"
+                id="productoInput"
+                placeholder="Seleccionar"
+                autocomplete="off"
+                readonly
+                required
+              />
+              <div class="onlySelect pseudo-input-select-wrapper">
+                <h3></h3>
+              </div>
+              <i class="fa-solid fa-chevron-down iconDesplegar"></i>
+              <ul id="contenedorProductos" class="list-select-custom options"></ul>
+            </div>
+          </div>
+
+          <div id="sucursalWrapper" class="wrapperSelectCustom inputWrapper">
+            <label class="labelInput">Agencia</label>
+            <div class="containerInputAndOptions">
+              <i class="fa-solid fa-shop select-embed-icon"></i>
+              <input
+                type="hidden"
+                class="filterInput"
+                required
+                name="agencia"
+                id="id_agencia"
+                placeholder="Seleccionar"
+                autocomplete="off"
+                readonly
+              />
+              <div class="onlySelect pseudo-input-select-wrapper">
+                <h3></h3>
+              </div>
+              <i class="fa-solid fa-chevron-down iconDesplegar"></i>
+              <ul id="contenedorSucursal" class="list-select-custom options">
+                {% for agencia in agencias %}
+                <li data-value="{{agencia.id}}">{{agencia}}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+
+          <div id="modalidadWrapper" class="wrapperSelectCustom inputWrapper">
+            <label class="labelInput">Modalidad</label>
+            <div class="containerInputAndOptions">
+              <i class="fa-solid fa-arrows-spin select-embed-icon"></i>
+              <input
+                type="hidden"
+                class="filterInput"
+                required
+                name="modalidad"
+                id="id_modalidad"
+                placeholder="Seleccionar"
+                autocomplete="off"
+                readonly
+              />
+              <div class="onlySelect pseudo-input-select-wrapper">
+                <h3></h3>
+              </div>
+              <i class="fa-solid fa-chevron-down iconDesplegar"></i>
+              <ul id="contenedorModalidad" class="list-select-custom options">
+                <li data-value="Mensual">Mensual</li>
+              </ul>
+            </div>
+          </div>
+
+          <div id="campanaWrapper" class="wrapperSelectCustom inputWrapper">
+            <label class="labelInput">Campaña</label>
+            <div class="containerInputAndOptions">
+              <i class="fa-solid fa-calendar-check select-embed-icon"></i>
+              <input
+                type="hidden"
+                class="filterInput"
+                required
+                name="campania"
+                id="id_campania"
+                placeholder="Seleccionar"
+                autocomplete="off"
+                readonly
+              />
+              <div class="onlySelect pseudo-input-select-wrapper">
+                <h3></h3>
+              </div>
+              <i class="fa-solid fa-chevron-down iconDesplegar"></i>
+              <ul id="contenedorCampana" class="list-select-custom options">
+                {% for campania in campaniasDisponibles %}
+                <li data-value="{{campania}}">{{campania}}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: Values of the Sale -->
+      <div class="form-card glass-panel">
+        <div class="card-header">
+          <i class="fa-solid fa-dollar-sign card-icon"></i>
+          <h2>Valores de la Venta</h2>
+        </div>
+        
+        <div class="card-body">
+          <div id="wrapperFecha" class="inputWrapper">
+            <label>Fecha de Operación</label>
+            <div class="containerIcon_Input">
+              <i class="fa-regular fa-calendar field-icon"></i>
+              <input
+                type="text"
+                name="fecha"
+                maxlength="10"
+                class="modern-input cursor-pointer"
+                required
+                id="id_fecha"
+                readonly
+              />
+            </div>
+          </div>
+
+          <div id="wrapperNroCuotas" class="inputWrapper">
+            <label>Nro. de Cuotas</label>
+            <div class="containerIcon_Input">
+              <i class="fa-solid fa-list-check field-icon"></i>
+              <input
+                type="number"
+                class="modern-input eventInput"
+                name="nro_cuotas"
+                required
+                id="id_nro_cuotas"
+              />
+            </div>
+          </div>
+
+          <div id="wrapperTasaIntereses" class="inputWrapper">
+            <label>Importe</label>
+            <div class="containerIcon_Input">
+              <i class="fa-solid fa-money-bill-wave field-icon"></i>
+              <input
+                type="number"
+                name="importe"
+                class="not_ed modern-input"
+                readonly
+                required
+                id="id_importe"
+              />
+            </div>
+          </div>
+
+          <div id="wrapperCuota1" class="inputWrapper">
+            <label>Primer Cuota</label>
+            <div class="containerIcon_Input">
+              <i class="fa-solid fa-receipt field-icon"></i>
+              <input
+                type="number"
+                name="primer_cuota"
+                class="not_ed modern-input"
+                readonly
+                required
+                id="id_primer_cuota"
+              />
+            </div>
+          </div>
+
+          <div id="wrapperSuscripcion" class="inputWrapper">
+            <label>Suscripción</label>
+            <div class="containerIcon_Input">
+              <i class="fa-solid fa-signature field-icon"></i>
+              <input
+                type="number"
+                name="anticipo"
+                class="modern-input"
+                required
+                id="id_anticipo"
+              />
+            </div>
+            <p class="field-hint">Se autocompleta con el producto elegido; se puede ajustar a mano si hay un descuento.</p>
+          </div>
+
+          {% if puedeEditarTasaInteres %}
+          <div id="tasaNominalWrapper" class="wrapperSelectCustom inputWrapper">
+            <label class="labelInput">Tasa Nominal Anual</label>
+            <div class="containerInputAndOptions">
+              <i class="fa-solid fa-chart-simple select-embed-icon"></i>
+              <input
+                type="hidden"
+                class="filterInput eventInput"
+                required
+                name="tasa_interes_id"
+                id="id_tasa_interes_id"
+                placeholder="Seleccionar"
+                autocomplete="off"
+                readonly
+                {% for tasa in tasasInteres %}{% if tasa.es_default %}value="{{ tasa.id }}"{% endif %}{% endfor %}
+              />
+              <div class="onlySelect pseudo-input-select-wrapper">
+                <h3></h3>
+              </div>
+              <i class="fa-solid fa-chevron-down iconDesplegar"></i>
+              <ul id="contenedorTasaNominal" class="list-select-custom options">
+                {% for tasa in tasasInteres %}
+                <li data-value="{{ tasa.id }}">{{ tasa.valor|floatformat:0 }}%</li>
+                {% endfor %}
+              </ul>
+            </div>
+            <p class="field-hint">Solo Administracion CENTRAL puede elegir una TNA distinta a la base.</p>
+          </div>
+          {% endif %}
+
+          <div id="wrapperTasaIntereses" class="inputWrapper">
+            <label>Tasa de Interés</label>
+            <div class="containerIcon_Input">
+              <i class="fa-solid fa-percent field-icon"></i>
+              <input
+                type="number"
+                name="tasa_interes"
+                class="not_ed modern-input"
+                readonly
+                required
+                id="id_tasa_interes"
+              />
+            </div>
+          </div>
+
+          <div id="wrapperInteresesGenerados" class="inputWrapper">
+            <label>Intereses Generados</label>
+            <div class="containerIcon_Input">
+              <i class="fa-solid fa-chart-line field-icon"></i>
+              <input
+                type="number"
+                name="intereses_generados"
+                class="not_ed modern-input"
+                readonly
+                required
+                id="id_intereses_generados"
+              />
+            </div>
+          </div>
+
+          <div id="wrapperImportexCuota" class="inputWrapper">
+            <label>Importe x Cuota</label>
+            <div class="containerIcon_Input">
+              <i class="fa-solid fa-circle-dollar-to-slot field-icon"></i>
+              <input
+                type="number"
+                name="importe_x_cuota"
+                class="not_ed modern-input"
+                readonly
+                required
+                id="id_importe_x_cuota"
+              />
+            </div>
+          </div>
+
+          <div id="wrapperTotalAPagar" class="inputWrapper">
+            <label>Total a Pagar</label>
+            <div class="containerIcon_Input">
+              <i class="fa-solid fa-wallet field-icon"></i>
+              <input
+                type="number"
+                name="total_a_pagar"
+                class="not_ed modern-input"
+                readonly
+                required
+                id="id_total_a_pagar"
+              />
+            </div>
+          </div>
+
+          <div id="wrapperPaquete" class="inputWrapper">
+            <label>Paquete</label>
+            <div class="containerIcon_Input">
+              <i class="fa-solid fa-cubes field-icon"></i>
+              <input
+                type="text"
+                name="paquete"
+                class="not_ed modern-input"
+                readonly
+                required
+                id="id_paquete"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: Assignment & Observaciones -->
+      <div class="form-card glass-panel full-width-card">
+        <div class="card-header">
+          <i class="fa-solid fa-user-tie card-icon"></i>
+          <h2>Asignación y Comentarios</h2>
+        </div>
+        
+        <div class="card-body flex-row-layout">
+          <div id="vendedorWrapper" class="select-search wrapperSelectCustom inputWrapper">
+            <label class="labelInput">Vendedor</label>
+            <div class="containerInputAndOptions">
+              <i class="fa-solid fa-user select-embed-icon"></i>
+              <input
+                type="hidden"
+                class="filterInput"
+                name="vendedor"
+                required
+                id="id_vendedor"
+                placeholder="Seleccionar"
+                autocomplete="off"
+                readonly
+              />
+              <div class="onlySelect pseudo-input-select-wrapper">
+                <h3></h3>
+              </div>
+              <i class="fa-solid fa-chevron-down iconDesplegar"></i>
+              <ul id="contenedorVendedor" class="list-select-custom options"></ul>
+            </div>
+          </div>
+
+          <div id="supervisorWrapper" class="select-search wrapperSelectCustom inputWrapper">
+            <label class="labelInput">Supervisor</label>
+            <div class="containerInputAndOptions">
+              <i class="fa-solid fa-user-shield select-embed-icon"></i>
+              <input
+                type="hidden"
+                class="filterInput"
+                name="supervisor"
+                required
+                id="id_supervisor"
+                placeholder="Seleccionar"
+                autocomplete="off"
+                readonly
+              />
+              <div class="onlySelect pseudo-input-select-wrapper">
+                <h3></h3>
+              </div>
+              <i class="fa-solid fa-chevron-down iconDesplegar"></i>
+              <ul id="contenedorSupervisor" class="list-select-custom options"></ul>
+            </div>
+          </div>
+
+          <div id="wrapperObservaciones" class="inputWrapper flex-grow-1">
+            <label>Observaciones</label>
+            <textarea
+              name="observaciones"
+              cols="40"
+              rows="2"
+              class="modern-textarea"
+              placeholder="Notas u observaciones sobre la venta..."
+              id="id_observaciones"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 4: Contract Chances (Full Width) -->
+      <div id="wrapperChances" class="form-card glass-panel full-width-card">
+        <div class="card-header border-bottom">
+          <div class="panel-header-title flex-grow-1">
+            <i class="fa-solid fa-ticket card-icon"></i>
+            <h2>Chances Asociadas</h2>
+          </div>
+          <button
+            type="button"
+            class="btn-add-chance"
+            id="agregarNewChance"
+            onclick="agregarChance()"
+          >
+            <i class="fa-solid fa-plus"></i> Agregar Chance
+          </button>
+        </div>
+        
+        <div class="panel-body">
+          <div class="wrapperChanceItem">
+            <div class="chanceItem chance-card">
+              <h5 class="chance-number"><i class="fa-solid fa-ticket"></i> Chance 1</h5>
+              <div class="chance-fields-row">
+                <div class="wrapperNroSolicitud field-block">
+                  <label>Nro Contrato</label>
+                  <div class="input-container-relative">
+                    <i class="fa-solid fa-file-contract input-icon"></i>
+                    <input
+                      type="text"
+                      name="nro_contrato_1"
+                      maxlength="10"
+                      class="modern-input"
+                      oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                      required
+                      id="nroContrato_1"
+                    />
+                  </div>
+                </div>
+
+                <div class="wrapperNroOrden field-block">
+                  <label>Nro Orden</label>
+                  <div class="input-container-relative">
+                    <i class="fa-solid fa-hashtag input-icon"></i>
+                    <input
+                      type="text"
+                      name="nro_orden_1"
+                      class="modern-input"
+                      readonly
+                      oninput="this.value=this.value.replace(/[^0-9]/g, '');"
+                      required
+                      id="nroOrden_1"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+  </form>
+
+  <!-- Form Actions -->
+  <div id="wrapperButtons" class="action-footer glass-panel">
+    <div id="missingFieldsMsg" class="missing-fields-msg"></div>
     <button
       type="button"
-      class="add-button-default"
-      id="agregarNewChance"
-      onclick="agregarChance()"
+      disabled
+      form="form_create_sale"
+      id="submitCreateSaleButton"
+      class="btn-save"
     >
-      Agregar chance
+      <i class="fa-solid fa-circle-check"></i> Registrar Venta
     </button>
+    <a
+      id="cancelar"
+      class="btn-cancel"
+      href="{% url 'users:cuentaUser' object.id %}"
+    >
+      <i class="fa-solid fa-circle-xmark"></i> Cancelar
+    </a>
   </div>
-
-  <div id="wrapperFecha">
-    <label>Fecha</label>
-    <input
-      type="text"
-      name="fecha"
-      maxlength="10"
-      class="input-read-write-default"
-      required
-      id="id_fecha"
-      readonly
-    />
-  </div>
-
-  <div id="wrapperNroCuotas">
-    <label>Nro cuotas</label>
-    <input
-      type="number"
-      class="input-read-write-default eventInput"
-      name="nro_cuotas"
-      required
-      id="id_nro_cuotas"
-    />
-  </div>
-
-  <div id="wrapperTasaIntereses">
-    <label for="">Importe</label>
-    <div class="containerIcon_Input">
-      <input
-        type="number"
-        name="importe"
-        class="not_ed input-read-write-default"
-        readonly
-        required
-        id="id_importe"
-      />
-      <p class="iconValueInput">$</p>
-    </div>
-  </div>
-
-  <div id="wrapperCuota1">
-    <label for="">Primer cuota</label>
-    <div class="containerIcon_Input">
-      <input
-        type="number"
-        name="primer_cuota"
-        class="not_ed input-read-write-default"
-        readonly
-        required
-        id="id_primer_cuota"
-      />
-      <p class="iconValueInput">$</p>
-    </div>
-  </div>
-
-  <div id="wrapperSuscripcion">
-    <label for="">Suscripción</label>
-    <div class="containerIcon_Input">
-      <input
-        type="number"
-        name="anticipo"
-        class="not_ed input-read-write-default"
-        readonly
-        required
-        id="id_anticipo"
-      />
-      <p class="iconValueInput">$</p>
-    </div>
-  </div>
-
-  <div id="wrapperTasaIntereses">
-    <label for="">Tasa interes</label>
-    <div class="containerIcon_Input">
-      <input
-        type="number"
-        name="tasa_interes"
-        class="not_ed input-read-write-default"
-        readonly
-        required
-        id="id_tasa_interes"
-      />
-      <p class="iconValueInput">%</p>
-    </div>
-  </div>
-
-  <div id="wrapperInteresesGenerados">
-    <label for="">Intereses generados</label>
-    <div class="containerIcon_Input">
-      <input
-        type="number"
-        name="intereses_generados"
-        class="not_ed input-read-write-default"
-        readonly
-        required
-        id="id_intereses_generados"
-      />
-      <p class="iconValueInput">$</p>
-    </div>
-  </div>
-
-  <div id="wrapperImportexCuota">
-    <label for="">Importe x cuota</label>
-    <div class="containerIcon_Input">
-      <input
-        type="number"
-        name="importe_x_cuota"
-        class="not_ed input-read-write-default"
-        readonly
-        required
-        id="id_importe_x_cuota"
-      />
-      <p class="iconValueInput">$</p>
-    </div>
-  </div>
-
-  <div id="wrapperTotalAPagar">
-    <label for="">Total a pagar</label>
-    <div class="containerIcon_Input">
-      <input
-        type="number"
-        name="total_a_pagar"
-        class="not_ed input-read-write-default"
-        readonly
-        required
-        id="id_total_a_pagar"
-      />
-      <p class="iconValueInput">$</p>
-    </div>
-  </div>
-
-  <div id="wrapperPaquete">
-    <label>Paquete</label>
-    <div class="containerIcon_Input">
-      <input
-        type="text"
-        name="paquete"
-        class="not_ed input-read-write-default"
-        readonly
-        required
-        id="id_paquete"
-      />
-    </div>
-  </div>
-
-  <div
-    id="sucursalWrapper"
-    class="wrapperTypeFilter wrapperSelectCustom inputWrapper"
-  >
-    <h3 class="labelInput">Agencia</h3>
-    <div class="containerInputAndOptions">
-      <img
-        class="iconDesplegar"
-        src="{% static 'images/icons/arrowDown.png' %}"
-        alt=""
-      />
-      <input
-        type="hidden"
-        class="filterInput"
-        required
-        name="agencia"
-        id="id_agencia"
-        placeholder="Seleccionar"
-        autocomplete="off"
-        readonly
-      />
-      <div class="onlySelect pseudo-input-select-wrapper">
-        <h3></h3>
-      </div>
-      <ul id="contenedorSucursal" class="list-select-custom options">
-        {% for agencia in agencias %}
-        <li data-value="{{agencia.id}}">{{agencia}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
-
-  <div
-    id="modalidadWrapper"
-    class="wrapperTypeFilter wrapperSelectCustom inputWrapper"
-  >
-    <h3 class="labelInput">Modalidad</h3>
-    <div class="containerInputAndOptions">
-      <img
-        class="iconDesplegar"
-        src="{% static 'images/icons/arrowDown.png' %}"
-        alt=""
-      />
-      <input
-        type="hidden"
-        class="filterInput"
-        required
-        name="modalidad"
-        id="id_modalidad"
-        placeholder="Seleccionar"
-        autocomplete="off"
-        readonly
-      />
-      <div class="onlySelect pseudo-input-select-wrapper">
-        <h3></h3>
-      </div>
-      <ul id="contenedorModalidad" class="list-select-custom options">
-        {% comment %}
-        <li data-value="Diario">Diario</li>
-        <li data-value="Semanal">Semanal</li>
-        <li data-value="Quincenal">Quincenal</li>
-        {% endcomment %}
-        <li data-value="Mensual">Mensual</li>
-      </ul>
-    </div>
-  </div>
-
-  <div
-    id="vendedorWrapper"
-    class="select-search wrapperTypeFilter wrapperSelectCustom inputWrapper"
-  >
-    <h3 class="labelInput">Vendedor</h3>
-    <div class="containerInputAndOptions">
-      <img
-        class="iconDesplegar"
-        src="{% static 'images/icons/arrowDown.png' %}"
-        alt=""
-      />
-      <input
-        type="hidden"
-        class="filterInput"
-        name="vendedor"
-        required
-        id="id_vendedor"
-        placeholder="Seleccionar"
-        autocomplete="off"
-        readonly
-      />
-      <div class="onlySelect pseudo-input-select-wrapper">
-        <h3></h3>
-      </div>
-      <ul id="contenedorVendedor" class="list-select-custom options">
-        {% comment %} {% for vendedor in vendedores %}
-        <li data-value="{{vendedor.id}}">{{vendedor}}</li>
-        {% endfor %} {% endcomment %}
-      </ul>
-    </div>
-  </div>
-
-  <div
-    id="supervisorWrapper"
-    class="select-search wrapperTypeFilter wrapperSelectCustom inputWrapper"
-  >
-    <h3 class="labelInput">Supervisor</h3>
-    <div class="containerInputAndOptions">
-      <img
-        class="iconDesplegar"
-        src="{% static 'images/icons/arrowDown.png' %}"
-        alt=""
-      />
-      <input
-        type="hidden"
-        class="filterInput"
-        name="supervisor"
-        required
-        id="id_supervisor"
-        placeholder="Seleccionar"
-        autocomplete="off"
-        readonly
-      />
-      <div class="onlySelect pseudo-input-select-wrapper">
-        <h3></h3>
-      </div>
-      <ul id="contenedorSupervisor" class="list-select-custom options">
-        {% comment %} {% for supervisor in supervisores %}
-        <li data-value="{{supervisor.id}}">{{supervisor}}</li>
-        {% endfor %} {% endcomment %}
-      </ul>
-    </div>
-  </div>
-
-  <div
-    id="campanaWrapper"
-    class="wrapperTypeFilter wrapperSelectCustom inputWrapper"
-  >
-    <h3 class="labelInput">Campaña</h3>
-    <div class="containerInputAndOptions">
-      <img
-        class="iconDesplegar"
-        src="{% static 'images/icons/arrowDown.png' %}"
-        alt=""
-      />
-      <input
-        type="hidden"
-        class="filterInput"
-        name="campania"
-        required
-        id="id_campania"
-        placeholder="Seleccionar"
-        autocomplete="off"
-        readonly
-      />
-      <div class="onlySelect pseudo-input-select-wrapper">
-        <h3></h3>
-      </div>
-      <ul id="contenedorCampana" class="list-select-custom options">
-        {% for campania in campaniasDisponibles %}
-        <li data-value="{{campania}}">{{campania}}</li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
-
-  <div id="wrapperObservaciones">
-    <label for="">Observaciones</label>
-    <textarea
-      name="observaciones"
-      cols="40"
-      rows="5"
-      class="input-read-write-default"
-      id="id_observaciones"
-    ></textarea>
-  </div>
-</form>
-
-<div id="wrapperButtons">
-  <button
-    type="button"
-    disabled
-    form="form_create_sale"
-    id="submitCreateSaleButton"
-    class="add-button-default"
-  >
-    Terminar
-  </button>
-  <a
-    id="cancelar"
-    class="delete-button-default"
-    href="{% url 'users:cuentaUser' object.id%}"
-  >
-    Cancelar
-  </a>
 </div>
 
-{% endblock content %} {% block js %}
+{% endblock content %} 
+
+{% block js %}
 <script src="{% static 'js/vanilla-calendar-pro/index.js' %}"></script>
 
 <script type="module">
@@ -507,13 +521,19 @@
           disableFuture: true,    // 👈 bloquea futuras
           });
       });
-
 </script>
 
 <script>
   var urlRequestProductos = "{% url 'products:get_products' %}";
   var urlRequestVendedoresSupervisores =
     "{% url 'sales:requestVendedores_Supervisores' %}";
+
+  // Mapa id -> valor de cada TNA activa, para calcular tasa_interes en el
+  // form sin tener que parsear el texto mostrado en el desplegable.
+  // Se arma en el server como JSON (json.dumps) porque interpolar el float
+  // directo acá lo renderiza con coma decimal ("70,0") y rompe el script.
+  var tasasInteresMap = {{ tasasInteresMapJson|safe }};
+  var tnaDefault = {{ tnaDefaultValorJson|safe }};
 </script>
 
 <script src="{% static 'js/sales/form_create_sale.js' %}"></script>

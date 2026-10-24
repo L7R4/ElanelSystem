@@ -69,7 +69,8 @@ inputTipoDeProducto.addEventListener("input", async () => {
   if (productos.length != 0) {
     inputProducto.parentElement.parentElement.classList.remove("desactive"); // Desbloquea el input de producto
 
-    productos.forEach((product) => {
+    // El servidor los manda de la A a la Z y createLiHTMLElement inserta al principio, por eso se recorren al revés.
+    [...productos].reverse().forEach((product) => {
       createLiHTMLElement(listProducto, product.id, product.nombre);
     });
     // updateListOptions(listProducto, inputProducto); // Actualiza los listeners de la lista de productos
@@ -106,16 +107,6 @@ inputProducto.addEventListener("input", async () => {
   rellenarCamposDeVenta(cantidadChances);
 });
 
-function porcentaje_segun_nroCuotas(nroCuotas) {
-  let cuotasList = {
-    24: productoHandled["c24_porcentage"],
-    30: productoHandled["c30_porcentage"],
-    48: productoHandled["c48_porcentage"],
-    60: productoHandled["c60_porcentage"],
-  };
-  return cuotasList[nroCuotas] ? cuotasList[nroCuotas] : null;
-}
-
 // Agrega listener de tipo input a los inputs que son necesarios para calcular los valores de venta
 inputsWithEventInput.forEach((input) => {
   input.addEventListener("input", () => {
@@ -130,17 +121,26 @@ function rellenarCamposDeVenta(cantidadContratos) {
 
     id_importe.value = productoHandled["importe"] * cantidadContratos;
     id_primer_cuota.value = productoHandled["primer_cuota"] * cantidadContratos;
-    id_anticipo.value = productoHandled["suscripcion"] * cantidadContratos;
+    // Suscripción NO se pisa acá: se autocompleta una sola vez al elegir el
+    // producto (más abajo) y después queda editable a mano (descuentos).
 
-    id_tasa_interes.value = (
-      porcentaje_segun_nroCuotas(nroCuotas) * cantidadContratos
-    ).toFixed(2);
+    // Tasa de interés = TNA (70% base, o la elegida por Administracion
+    // CENTRAL) prorrateada por la duración del plan en años.
+    const tnaElegida =
+      (typeof id_tasa_interes_id !== "undefined" &&
+        id_tasa_interes_id &&
+        tasasInteresMap[id_tasa_interes_id.value]) ||
+      tnaDefault;
+    id_tasa_interes.value = (tnaElegida * (nroCuotas / 12)).toFixed(2);
     id_intereses_generados.value = parseInt(
       (productoHandled["importe"] * parseFloat(id_tasa_interes.value)) / 100
     );
-    id_importe_x_cuota.value =
+    // Cuota en pesos enteros (redondeo al más cercano): el server y las cuotas
+    // generadas trabajan con enteros, así que no puede quedar con decimales.
+    id_importe_x_cuota.value = Math.round(
       (productoHandled["importe"] / nroCuotas) * cantidadContratos +
-      parseInt(id_intereses_generados.value) / nroCuotas;
+        parseInt(id_intereses_generados.value) / nroCuotas
+    );
 
     // Se resta 1 cuota comerciale para sumar la cuota 0 y 1
     id_total_a_pagar.value =
@@ -222,7 +222,7 @@ id_agencia.addEventListener("input", async () => {
     if (id_vendedor.value == "") {
       id_supervisor.value = "";
       // console.log("Limpio supervisor");
-      setSelectSearch("#id_supervisor", {
+      window.setSelectValue("#id_supervisor", {
         value: "",
         label: "",
         fire: true,
@@ -237,7 +237,7 @@ id_agencia.addEventListener("input", async () => {
       let sup_id = vendedor_seleccionado["supervisor_id"];
       let sup_nombre = vendedor_seleccionado["supervisor_name"];
       console.log(sup_id, sup_nombre);
-      setSelectSearch("#id_supervisor", {
+      window.setSelectValue("#id_supervisor", {
         value: sup_id,
         label: sup_nombre,
         fire: true,
@@ -304,6 +304,25 @@ function setSubmitEnabled(enabled) {
   }
 }
 
+// Busca la etiqueta visible de un campo para armar el mensaje de "faltan completar"
+function getFieldLabel(input) {
+  const wrapper = input.closest(".inputWrapper, .field-block");
+  const label = wrapper?.querySelector("label");
+  return label ? label.textContent.trim() : input.name || input.id;
+}
+
+function showMissingFieldsMessage(labels) {
+  const msgEl = document.getElementById("missingFieldsMsg");
+  if (!msgEl) return;
+  if (labels.length === 0) {
+    msgEl.textContent = "";
+    msgEl.classList.remove("active");
+  } else {
+    msgEl.textContent = "Faltan completar: " + labels.join(", ");
+    msgEl.classList.add("active");
+  }
+}
+
 function checkInputs() {
   // Tomamos TODOS los requeridos (inputs, textareas, selects)
   let requiredFields = Array.from(
@@ -313,10 +332,9 @@ function checkInputs() {
   // Ignorá requeridos que estén dentro de un bloque desactivado
   requiredFields = requiredFields.filter((el) => !el.closest(".desactive"));
 
-  const allInputsCompleted = requiredFields.every(
-    (input) => input.value.trim() !== ""
-  );
-  setSubmitEnabled(allInputsCompleted);
+  const missing = requiredFields.filter((input) => input.value.trim() === "");
+  setSubmitEnabled(missing.length === 0);
+  showMissingFieldsMessage(missing.map(getFieldLabel));
 }
 
 // Agregar evento de input a los inputs requeridos
@@ -327,6 +345,8 @@ requiredInputs.forEach((input) => {
     debugMissing();
   });
 });
+
+checkInputs(); // muestra el mensaje de campos faltantes ya desde la carga inicial
 
 function debugMissing() {
   const req = Array.from(form_create_sale.querySelectorAll("input[required]"))

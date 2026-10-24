@@ -246,8 +246,8 @@ function confirmEditAgencia(button) {
 // DOM Botones para el estado de "Vista" de la sucursal
 function buttonEditSucursal() {
     return `<div class="buttonsActions">
-                <button type="button" onclick="editarSucursal(this)" class="enableForm add-button-default">Editar</button>
-                <button type="button" onclick="deleteAgencia(this)" class="deleteSucursal delete-button-default" >Eliminar</button>
+                <button type="button" onclick="editarSucursal(this)" class="enableForm add-button-default"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+                <button type="button" onclick="deleteAgencia(this)" class="deleteSucursal delete-button-default"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
             </div>`
 }
 
@@ -255,13 +255,13 @@ function buttonEditSucursal() {
 function buttonConfirmSucursal(edit) {
     if (edit) {
         return `<div class="buttonsActions">
-                    <button type="button" onclick="confirmEditAgencia(this)" class="uploadForm add-button-default">Confirmar</button>
-                    <button type="button" onclick="desableForm(this)" class="desableForm button-default-style">Cancelar</button>
+                    <button type="button" onclick="confirmEditAgencia(this)" class="uploadForm add-button-default"><i class="fa-solid fa-circle-check"></i> Confirmar</button>
+                    <button type="button" onclick="desableForm(this)" class="desableForm button-default-style"><i class="fa-solid fa-circle-xmark"></i> Cancelar</button>
                 </div>`
     } else {
         return `<div class="buttonsActions">
-                    <button type="button" onclick="confirmCreateAgencia()" class="uploadForm add-button-default">Confirmar</button>
-                    <button type="button" onclick="closeFormNewAgencia()"class="desableForm button-default-style">Cancelar</button>
+                    <button type="button" onclick="confirmCreateAgencia()" class="uploadForm add-button-default"><i class="fa-solid fa-circle-check"></i> Confirmar</button>
+                    <button type="button" onclick="closeFormNewAgencia()"class="desableForm button-default-style"><i class="fa-solid fa-circle-xmark"></i> Cancelar</button>
                 </div>`
     }
 }

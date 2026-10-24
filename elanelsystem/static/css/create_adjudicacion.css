@@ -1,305 +1,700 @@
-.wrapper_content {
-  padding: 4rem;
-  display: flex;
-  flex-flow: column;
-  row-gap: 3rem;
-  position: relative;
-  overflow-y: auto;
+/* ==========================================================================
+   MODERN ADJUDICACIÓN PROCESS STYLES
+   ========================================================================== */
+
+/* Main Container Layout */
+.adjudicacion-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    font-family: 'Raleway', sans-serif;
+    color: var(--white-color-800);
 }
 
-body {
-  overflow: hidden;
+/* Glassmorphism Panel Base */
+.glass-panel {
+    background: rgba(24, 31, 46, 0.7);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(250, 248, 255, 0.06);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
 }
 
-.wrapper_tittle > h1 {
-  font-size: clamp(3rem, 3vw, 5rem);
-  font-family: raleway-bold;
-  color: var(--third-color);
+/* Modern Header Styling */
+.modern-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(24, 31, 46, 0.85), rgba(32, 43, 68, 0.85));
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    flex-wrap: wrap;
 }
 
-.wrapperEdicionPorcentaje #editarProcentajeButton {
-  font-size: clamp(1.1rem, 1vw, 1.3rem);
-  font-family: raleway-bold;
-  color: var(--secundary-color);
-  background-color: var(--third-color);
-  border-radius: 0.6rem;
+.header-icon-wrapper {
+    font-size: 2.4rem;
+    color: #f1c40f; /* Gold accent for trophy */
+    background: rgba(241, 196, 15, 0.12);
+    width: 5.5rem;
+    height: 5.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid rgba(241, 196, 15, 0.25);
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.15);
 }
 
-.wrapperEdicionPorcentaje > .wrapperFormAutorizacion {
-  display: none;
-  background-color: var(--third-color);
-  padding: 1.3rem;
-  border-radius: 0.6rem;
+.header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
 }
 
-.wrapperEdicionPorcentaje #guardarAutorizado,
-.wrapperEdicionPorcentaje #cancelarAutorizado {
-  font-size: clamp(1.1rem, 1vw, 1.3rem);
-  font-family: raleway-bold;
-  border-radius: 0.6rem;
+.header-subtitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--blue-accent-color);
+    text-transform: uppercase;
 }
 
-.wrapperEdicionPorcentaje #inputAutorizacion {
-  margin: 0.5rem 0;
+.header-title {
+    font-size: clamp(2rem, 2vw, 3rem);
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+.header-desc {
+    font-size: 1.25rem;
+    color: var(--white-800-80);
+    margin-top: 0.2rem;
+}
+
+/* Form Layout Grid */
+.form-sections-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+}
+
+.full-width-card {
+    grid-column: span 2;
+}
+
+@media (max-width: 992px) {
+    .form-sections-grid {
+        grid-template-columns: 1fr;
+    }
+    .full-width-card {
+        grid-column: span 1;
+    }
+}
+
+/* Cards within Form */
+.form-card {
+    padding: 2.5rem;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.08);
+    padding-bottom: 1.2rem;
+    margin-bottom: 2.2rem;
+}
+
+.card-icon {
+    font-size: 1.8rem;
+    color: var(--white-800-80);
+}
+
+.card-header h2 {
+    font-size: 1.8rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+.card-body {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.8rem;
+}
+
+@media (max-width: 576px) {
+    .card-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Row layouts for full-width cards */
+.card-body.flex-row-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.8rem;
+}
+
+.card-body.flex-row-layout > div {
+    flex: 1;
+    min-width: 250px;
+}
+
+.flex-grow-1 {
+    flex-grow: 1 !important;
+}
+
+/* Form Fields & Inputs */
+.inputWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.labelInput, .inputWrapper label {
+    font-size: 1.25rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--white-800-80);
+    padding-left: 0.2rem;
+    margin: 0;
+}
+
+.field-hint {
+    font-size: 1.1rem;
+    color: var(--white-800-50);
+    margin: -0.2rem 0 0;
+    padding-left: 0.2rem;
+    line-height: 1.4;
+}
+
+/* ==========================================================================
+   Custom Select — Producto, Contrato, Agencia, etc.
+   ========================================================================== */
+.containerInputAndOptions {
+    position: relative;
+    width: 100%;
+}
+
+.select-embed-icon {
+    position: absolute;
+    left: 1.3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.25rem;
+    color: var(--white-800-50);
+    z-index: 5;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.pseudo-input-select-wrapper {
+    width: 100%;
+    height: 4.2rem;
+    background-color: rgba(32, 43, 68, 0.45);
+    border: 1px solid rgba(250, 248, 255, 0.12);
+    border-radius: 10px;
+    padding: 0 1.2rem 0 3.5rem;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.containerInputAndOptions:hover .pseudo-input-select-wrapper {
+    border-color: rgba(6, 137, 250, 0.4);
+    background-color: rgba(32, 43, 68, 0.6);
+}
+
+.containerInputAndOptions:has(.list-select-custom.options.open) .pseudo-input-select-wrapper {
+    border-color: var(--blue-accent-color);
+    background-color: rgba(32, 43, 68, 0.6);
+    box-shadow: 0 0 0 3px rgba(6, 137, 250, 0.18);
+}
+
+.containerInputAndOptions:has(.list-select-custom.options.open) .select-embed-icon {
+    color: var(--blue-accent-color);
+}
+
+.pseudo-input-select-wrapper h3 {
+    font-size: 1.35rem;
+    color: var(--third-color);
+    margin: 0;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pseudo-input-select-wrapper h3.placeholder {
+    color: var(--white-800-50);
+    font-weight: 400;
+}
+
+.iconDesplegar {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.05rem;
+    color: var(--white-800-50);
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), color 0.2s ease;
+    pointer-events: none;
+}
+
+.iconDesplegar.open {
+    transform: translateY(-50%) rotate(180deg);
+    color: var(--blue-accent-color);
+}
+
+.list-select-custom.options {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    width: 100%;
+    background: var(--blue-1);
+    border: 1px solid rgba(250, 248, 255, 0.12);
+    border-radius: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+    z-index: 500;
+    display: block;
+    max-height: 220px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
+}
+
+.list-select-custom.options.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.list-select-custom.options li {
+    padding: 0.85rem 1.2rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    color: var(--third-color);
+}
+
+.list-select-custom.options li:hover {
+    background: rgba(6, 137, 250, 0.15);
+    color: var(--blue-accent-color);
+}
+
+.list-select-custom.options li.selected {
+    background: var(--blue-accent-color);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.list-select-custom.options::-webkit-scrollbar {
+    width: 8px;
+}
+
+.list-select-custom.options::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.list-select-custom.options::-webkit-scrollbar-thumb {
+    background: rgba(250, 248, 255, 0.15);
+    border-radius: 4px;
+}
+
+.list-select-custom.options::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 137, 250, 0.4);
+}
+
+/* Producto deshabilitado hasta elegir Tipo de Producto */
+#wrapperProducto.desactive .pseudo-input-select-wrapper {
+    background-color: rgba(32, 43, 68, 0.15);
+    border-color: rgba(250, 248, 255, 0.04);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#wrapperProducto.desactive .select-embed-icon,
+#wrapperProducto.desactive .iconDesplegar {
+    opacity: 0.35;
+}
+
+#wrapperProducto.desactive .pseudo-input-select-wrapper h3 {
+    color: var(--white-800-20);
+}
+
+/* Numeric Values Fields Input */
+.containerIcon_Input {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.field-icon {
+    position: absolute;
+    left: 1.4rem;
+    font-size: 1.4rem;
+    color: var(--white-800-50);
+    pointer-events: none;
+}
+
+.modern-input {
+    width: 100%;
+    height: 4.2rem;
+    background-color: rgba(32, 43, 68, 0.4);
+    border: 1px solid rgba(250, 248, 255, 0.12);
+    border-radius: 10px;
+    padding: 0 1.5rem 0 3.8rem;
+    color: var(--third-color);
+    font-size: 1.4rem;
+    font-family: 'Raleway', sans-serif;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.modern-input:focus {
+    border-color: var(--blue-accent-color);
+    background-color: rgba(32, 43, 68, 0.6);
+    box-shadow: 0 0 0 3px rgba(6, 137, 250, 0.2);
+}
+
+/* Stats Display Boxes */
+.stat-box-value {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    width: 100%;
+    height: 4.2rem;
+    background-color: rgba(32, 43, 68, 0.25);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 10px;
+    padding: 0 1.5rem;
+    box-sizing: border-box;
+}
+
+.stat-icon {
+    font-size: 1.5rem;
+    color: var(--white-800-50);
+}
+
+.stat-box-value p.textInputP {
+    font-size: 1.55rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+    padding: 0;
+}
+
+.stat-box-value.highlight-success {
+    background-color: rgba(46, 204, 113, 0.08);
+    border-color: rgba(46, 204, 113, 0.2);
+}
+
+.stat-box-value.highlight-success p.textInputP {
+    color: var(--success-color);
+    font-family: 'Raleway-Bold', sans-serif;
+}
+
+.stat-box-value.highlight-success .stat-icon {
+    color: var(--success-color);
+}
+
+/* Read-Only Values overrides (.not_ed): se calculan solos, no se editan */
+.modern-input.not_ed {
+    background-color: rgba(32, 43, 68, 0.2);
+    background-image: repeating-linear-gradient(
+        135deg,
+        rgba(250, 248, 255, 0.025) 0px,
+        rgba(250, 248, 255, 0.025) 6px,
+        transparent 6px,
+        transparent 12px
+    );
+    border-style: dashed;
+    border-color: rgba(250, 248, 255, 0.15);
+    color: rgba(250, 248, 255, 0.6);
+    padding-right: 3.2rem;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.containerIcon_Input:has(.not_ed)::after {
+    content: "\f023";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 1.4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    color: rgba(250, 248, 255, 0.35);
+    pointer-events: none;
+}
+
+/* Textarea Comments */
+.modern-textarea {
+    width: 100%;
+    height: 8rem;
+    background-color: rgba(32, 43, 68, 0.4);
+    border: 1px solid rgba(250, 248, 255, 0.12);
+    border-radius: 10px;
+    padding: 1.2rem;
+    color: var(--third-color);
+    font-size: 1.4rem;
+    font-family: 'Raleway', sans-serif;
+    outline: none;
+    resize: none;
+    box-sizing: border-box;
+    transition: all 0.3s;
+}
+
+.modern-textarea:focus {
+    border-color: var(--blue-accent-color);
+    background-color: rgba(32, 43, 68, 0.6);
+}
+
+/* Context Menu / Editing percentage styles */
+.wrapperEdicionPorcentaje {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+#editarProcentajeButton {
+    background: rgba(6, 137, 250, 0.1);
+    color: var(--blue-accent-color);
+    border: 1px solid rgba(6, 137, 250, 0.25);
+    padding: 0.6rem 1.4rem;
+    font-size: 1.2rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#editarProcentajeButton:hover {
+    background: var(--blue-accent-color);
+    color: #ffffff;
+}
+
+.wrapperFormAutorizacion {
+    background: var(--blue-2);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .wrapperFormAutorizacion label {
-  font-size: clamp(1.1rem, 1vw, 1.3rem);
-  font-family: raleway-bold;
-  color: var(--background-color);
+    font-size: 1.25rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--white-800-80);
 }
 
-/* #region Formulario de adjudicacion */
-#form_create_sale {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
-  gap: 2rem;
-  position: relative;
+.wrapperFormAutorizacion input {
+    height: 3.8rem;
+    background: rgba(32, 43, 68, 0.4);
+    border: 1px solid rgba(250, 248, 255, 0.1);
+    border-radius: 6px;
+    padding: 0 1rem;
+    color: var(--third-color);
+    outline: none;
 }
 
-#form_create_sale > div {
-  display: flex;
-  flex-direction: column;
-  position: relative;
+.wrapperFormAutorizacion .wrapperButtons {
+    display: flex;
+    gap: 0.8rem;
 }
 
-#form_create_sale > div > div {
-  position: relative;
-  display: flex;
-  align-items: center;
+.wrapperFormAutorizacion button {
+    flex: 1;
+    padding: 0.8rem;
+    font-size: 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
 }
 
-#form_create_sale > div > div > input {
-  text-indent: 2.5rem;
+#guardarAutorizado {
+    background: var(--blue-accent-color);
+    color: #ffffff;
 }
 
-#form_create_sale input {
-  height: 3rem;
-  font-family: raleway;
-  color: var(--third-color);
-  /* background-color: var(--background-color); */
+#cancelarAutorizado {
+    background: rgba(231, 76, 60, 0.15);
+    color: var(--danger-color);
+    border: 1px solid rgba(231, 76, 60, 0.2);
 }
 
-p.iconValueInput {
-  position: absolute;
-  font-family: raleway-bold;
-  margin-left: 1rem;
-  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-  color: var(--third-color);
+/* Action Footer */
+.action-footer {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 1.8rem 2.5rem;
+    margin-top: 1rem;
 }
 
-.textInputP {
-  padding-left: 2.2rem;
+/* Apilado de secciones: cada tarjeta y el pie son .glass-panel (backdrop-filter), o sea contextos
+   de apilado propios que se pintan en orden del documento. Sin esto, la lista desplegada de un
+   select (ej. Agencia o Modalidad) quedaba debajo de las tarjetas siguientes y del pie con los
+   botones "Terminar Adjudicación" / "Volver". La tarjeta con una lista abierta pasa por encima. */
+.adjudicacion-container .action-footer {
+    position: relative;
+    z-index: 1;
 }
 
-/* #region Z INDEX INPUTS */
-
-#form_create_sale #wrapperTipoProducto img.iconDesplegar {
-  z-index: 21;
-  filter: invert(1);
+.adjudicacion-container .form-card:has(ul.list-select-custom.open) {
+    position: relative;
+    z-index: 50;
 }
 
-#form_create_sale #wrapperTipoProducto input {
-  position: relative;
-  z-index: 20;
+/* Mensaje de campos obligatorios sin completar */
+.missing-fields-msg {
+    flex: 1 1 auto;
+    text-align: left;
+    font-size: 1.3rem;
+    color: var(--danger-color);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
 }
 
-#form_create_sale #wrapperTipoProducto ul.options {
-  z-index: 19;
+.missing-fields-msg.active {
+    opacity: 1;
+    visibility: visible;
 }
 
-#form_create_sale #wrapperProducto img.iconDesplegar {
-  z-index: 18;
-  filter: invert(1);
+.btn-save, .btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 1.2rem 2.8rem;
+    font-size: 1.45rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    text-decoration: none;
+    border: none;
+    outline: none;
 }
 
-#form_create_sale #wrapperProducto input {
-  position: relative;
-  z-index: 17;
+.btn-save {
+    background: linear-gradient(135deg, var(--blue-accent-color), #006ecf);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(6, 137, 250, 0.3);
 }
 
-#form_create_sale #wrapperProducto ul.options {
-  z-index: 16;
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 137, 250, 0.45);
+    filter: brightness(1.1);
 }
 
-#form_create_sale #wrapperNroSolicitud img.iconDesplegar {
-  z-index: 15;
-  filter: invert(1);
+.btn-save:disabled {
+    opacity: 0.55;
+    pointer-events: none;
+    transform: none;
+    box-shadow: none;
 }
 
-#form_create_sale #wrapperNroSolicitud input {
-  position: relative;
-  z-index: 14;
+.btn-cancel {
+    background: rgba(250, 248, 255, 0.05);
+    color: var(--white-800-80);
+    border: 1px solid rgba(250, 248, 255, 0.1);
 }
 
-#form_create_sale #wrapperNroSolicitud ul.options {
-  z-index: 13;
+.btn-cancel:hover {
+    background: rgba(250, 248, 255, 0.15);
+    color: #ffffff;
+    transform: translateY(-2px);
 }
 
-#form_create_sale #wrapperModalidad img.iconDesplegar {
-  z-index: 12;
-  filter: invert(1);
+/* Chrome/Safari input spin hide */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
-#form_create_sale #wrapperModalidad input {
-  position: relative;
-  z-index: 11;
+/* Firefox spin hide */
+input[type="number"] {
+    -moz-appearance: textfield;
 }
 
-#form_create_sale #wrapperModalidad ul.options {
-  z-index: 10;
+.cursor-pointer {
+    cursor: pointer !important;
 }
 
-#form_create_sale #wrapperAgencia img.iconDesplegar {
-  z-index: 9;
-  filter: invert(1);
-}
-
-#form_create_sale #wrapperAgencia input {
-  position: relative;
-  z-index: 8;
-}
-
-#form_create_sale #wrapperAgencia ul.options {
-  z-index: 7;
-}
-
-#form_create_sale #wrapperVendedor img.iconDesplegar {
-  z-index: 6;
-  filter: invert(1);
-}
-
-#form_create_sale #wrapperVendedor input {
-  position: relative;
-  z-index: 5;
-}
-
-#form_create_sale #wrapperVendedor ul.options {
-  z-index: 4;
-}
-
-#form_create_sale #wrapperSupervisor img.iconDesplegar {
-  z-index: 3;
-  filter: invert(1);
-}
-
-#form_create_sale #wrapperSupervisor input {
-  position: relative;
-  z-index: 2;
-}
-
-#form_create_sale #wrapperSupervisor ul.options {
-  z-index: 1;
-}
-/*#endregion*/
-
-#form_create_sale > #wrapperProducto,
-#form_create_sale > #wrapperAgencia,
-#form_create_sale > #wrapperSupervisor,
-#form_create_sale > #wrapperVendedor {
-  grid-column: 2 span;
-}
-
-#form_create_sale > #wrapperObservaciones {
-  grid-column: 1/2 span;
-}
-
-#form_create_sale > #wrapperProducto.desactive {
-  pointer-events: none;
-}
-
-#form_create_sale > div#wrapperCantidadCuotasPagadas > div,
-#form_create_sale > div#wrapperSumaCuotasPagadas > div {
-  background-color: #3f4653d4 !important;
-  pointer-events: none;
-  border: 2px solid #1c2d45b8 !important;
-  max-height: 3.5rem;
-  min-height: 2.8rem;
-  border: 2px solid var(--secundary-color);
-  font: clamp(1.2rem, 1.2vw, 1.4rem) raleway;
-  position: relative;
-  border-radius: 1rem;
-  width: 100%;
-  font-feature-settings: "pnum" on, "lnum" on;
-  height: 3rem;
-  color: var(--third-color);
-  display: flex;
-  align-items: center;
-}
-
-#form_create_sale > #wrapperProducto.desactive input {
-  background-color: #393e4c;
-  border-color: #243247;
-}
-
-#form_create_sale > #wrapperProducto.desactive img {
-  display: none;
-}
-
-#form_create_sale > div > textarea {
-  padding: 1rem;
-  text-indent: unset;
-  max-height: none;
-  font-family: raleway;
-  color: var(--third-color);
-}
-
-#form_create_sale h3.labelInput,
-#form_create_sale label {
-  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-  font-family: raleway-semibold;
-  color: var(--third-color);
-  width: fit-content;
-  padding-left: 0.7rem;
-  padding-bottom: 0.3rem;
-}
-
-#form_create_sale input[type="number"]::-webkit-inner-spin-button,
-#form_create_sale input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.not_ed {
-  background-color: #3f4653d4 !important;
-  pointer-events: none;
-  border: 2px solid #1c2d45b8 !important;
-}
-
-/* #endregion */
-
-/* INPUTS DESIGN */
-.wrapperButtons {
-  display: flex;
-  align-self: flex-end;
-  margin-top: auto;
-  gap: 1rem;
-}
-
-.wrapperButtons > a,
-.wrapperButtons > button {
-  font-size: clamp(1.4rem, 1.3vw, 1.6rem);
-}
-.wrapperButtons a#cancelar {
-  font-size: clamp(1.4rem, 1.3vw, 1.6rem) !important;
-  text-decoration: none;
-  padding: 1rem 2rem !important;
-}
-
+/* Error messages */
 #form_create_sale p.message-error {
-  position: absolute;
-  font-size: clamp(1.1rem, 1vw, 1.3rem);
-  font-family: raleway-semibold;
-  color: #ff7b7b;
-  padding: 0.3rem 0.6rem;
-  left: 0;
-  top: 100%;
-  border-radius: 0.6rem;
-  white-space: nowrap;
+    font-size: 1.15rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--danger-color);
+    margin-top: 0.4rem;
+    padding-left: 0.4rem;
+    position: relative;
+    top: unset;
+}
+body {
+    overflow: hidden;
+}
+.wrapper_content {
+    overflow-y: auto;
 }
 
-button#enviar:disabled {
-  opacity: 0.5;
-  pointer-events: none;
+
+/* ==========================================================================
+   Selects: ícono a la izquierda y texto después del ícono.
+   root_base.css se carga después de esta hoja y pisaba el padding izquierdo
+   (y el modo búsqueda lo dejaba en 0), así que el texto quedaba encima del
+   ícono; además el ícono quedaba detrás del fondo del campo por el z-index
+   inline que le asigna z_index_orders_selects.js.
+   ========================================================================== */
+.adjudicacion-container .containerInputAndOptions .pseudo-input-select-wrapper {
+    padding: 0 3.2rem 0 3.6rem;
+    /* misma altura que .modern-input (4.2rem): root_base.css la dejaba en
+       height:100% con max/min-height propios, y sin fijarla se achica. */
+    height: 4.2rem;
+    min-height: 4.2rem;
+    max-height: 4.2rem;
+}
+
+.adjudicacion-container .select-search .containerInputAndOptions .pseudo-input-select-wrapper {
+    padding: 0;
+}
+
+.adjudicacion-container .select-search .pseudo-input-select-wrapper .editable-product-input {
+    padding: 0 3.2rem 0 3.6rem;
+    max-height: none;
+    height: 100%;
+    font-size: 1.35rem;
+}
+
+.adjudicacion-container .select-embed-icon {
+    z-index: 100;
+    color: var(--white-800-80);
 }

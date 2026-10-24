@@ -28,6 +28,7 @@ urlpatterns = [
     # path("ventas/detalle_venta/anular_cuota/",anularCuota,name="anularCuota"),
 
     path("ventas/detalle_venta/<int:pk>/dar_baja/",darBaja,name="darBaja"),
+    path("ventas/detalle_venta/<int:pk>/calcular_devolucion/",calcularDevolucion,name="calcularDevolucion"),
     path("ventas/<int:pk>/adjudicacion/sorteo/",CreateAdjudicacion.as_view(),name="adjSorteo"),
     path("ventas/<int:pk>/adjudicacion/negociacion/",CreateAdjudicacion.as_view(),name="adjNegociacion"),
     path("ventas/<int:pk>/cambiopack",ChangePack.as_view(),name="cambioPack"),
@@ -99,4 +100,6 @@ urlpatterns = [
     path("api/cotizaciones/dolar/", cotizaciones_dolar, name="cotizaciones_dolar"),
     path("sorteo/", SorteoView.as_view(), name="sorteo"),
     path("api/sorteo/generar/", GenerarSorteoAPI.as_view(), name="api_generar_sorteo"),
+
+    path("trazabilidad/", TrazabilidadView.as_view(), name="trazabilidad"),
 ]

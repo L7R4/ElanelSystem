@@ -69,7 +69,7 @@ inputTipoDeProducto.addEventListener("input", async () => {
 
         inputProducto.parentElement.parentElement.classList.remove("desactive") // Desbloquea el input de producto
 
-        productos.forEach(product => {
+        [...productos].reverse().forEach(product => { // se inserta al principio, se recorre al revés para quedar de la A a la Z
             createProductoHTMLElement(listProducto, product["nombre"]);
         });
         updateListOptions(listProducto, inputProducto); // Actualiza los listeners de la lista de productos
@@ -133,7 +133,8 @@ function rellenarCamposDeVenta(cantidadContratos) {
         id_tasa_interes.value = (porcentaje_segun_nroCuotas(nroCuotas) * cantidadContratos).toFixed(2);
         id_intereses_generados.value = parseInt((productoHandled["importe"] * parseFloat(id_tasa_interes.value)) / 100)
         let total = (parseInt(id_intereses_generados.value) + parseInt(id_importe.value)) - dineroDeCuotas
-        id_importe_x_cuota.value = ((productoHandled["importe"] / nroCuotas) * cantidadContratos + (parseInt(id_intereses_generados.value) / nroCuotas))
+        // Cuota en pesos enteros: el server la lee con int() y no acepta decimales
+        id_importe_x_cuota.value = Math.round((productoHandled["importe"] / nroCuotas) * cantidadContratos + (parseInt(id_intereses_generados.value) / nroCuotas))
         id_total_a_pagar.value = total
     }
 

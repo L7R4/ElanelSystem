@@ -5,45 +5,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baja contrato N°{{nroContrato}}</title>
-
 </head>
-<body>
-    <img src="{% static 'images/logoElanelPDF.png' %}" alt="">
-    <div id ="imageLogo">
+<body class="{{densidad}}">
+    <div id="banner">
+        <img id="bannerIcon" src="{% static 'images/icono.sinfondo_admin.png' %}" alt="">
+        <div id="bannerText">
+            <span id="bannerNombre">ELANEL</span>
+            <span id="bannerSub">SERVICIOS S.R.L.</span>
+        </div>
     </div>
+
     <div id="subtittle">
         <h2>Solicitud de baja</h2>
-        <h2>{{agencia}}</h2>
+        <h2>Agencia: <strong>{{agencia}}</strong></h2>
     </div>
-    <div id ="detalle">
-        <h2>Numero de contraro: <strong>{{nroContrato}}</strong></h2>
+
+    <div id="detalle">
+        <h2>Nro. de contrato: <strong>{{nroContrato}}</strong></h2>
         <h2>Cliente: <strong>{{cliente}}</strong></h2>
         <h2>Domicilio: <strong>{{domicilio}}</strong></h2>
+        <h2>Barrio: <span class="blank"></span></h2>
         <h2>Localidad: <strong>{{localidad}}</strong></h2>
-        <h2>Producto: <strong>{{producto}}</strong></h2>
+        <h2>Producto / Servicio elegido: <strong>{{producto}}</strong></h2>
         <h2>Pack: <strong>{{pack}}</strong></h2>
+        <h2>Fecha de la baja: <strong>{{fecha}}</strong></h2>
         <h2>Cantidad de cuotas pagas: <strong>{{cantCuotasPagadas}}</strong></h2>
         <h2>Cantidad de cuotas emitidas: <strong>{{cuotas}}</strong></h2>
-        <h2>Dinero a devolver: <strong>{{dineroDevolver}}</strong></h2>
+        <h2>Cant. de cuotas impagas: <strong>{{cuotasImpagas}}</strong></h2>
         <h2>Motivo de la baja: <strong>{{motivo}}</strong></h2>
-        <h2>Observacion: <strong>{{observacion}}</strong></h2>
-        <h2>Fecha de la baja: <strong>{{fecha}}</strong></h2>
+        <h2>Importe a reintegrar: <strong>{{dineroDevolver}}</strong> <span class="nota">({{porcentajeDevolver}} de lo abonado)</span></h2>
     </div>
-    <div id="contrato">
-        <p>Por la presente solicito la baja del contrato suscripto dejando constancia  que mi voluntad resolutiva importa la extinción  de la relación contractual habida con Elanel Servicios y Soluciones, decisión que ha sido adoptada luego de ser debidamente informado y con pleno conocimiento de las consecuencias de la misma, conforme Art. 4 de la ley 24.240; no teniendo más nada que reclamar en ningún concepto.</p>
+
+    <div id="reintegro">
+        <h3>Forma de reintegro <span class="nota">(tildar lo que corresponda)</span></h3>
+        <p id="reintegroOpciones">
+            <span class="checkbox"></span><span class="checkLabel">Efectivo</span>
+            <span class="checkbox"></span><span class="checkLabel">Transferencia</span>
+        </p>
     </div>
+
+    <div id="datosBancarios">
+        <h3>Datos bancarios para transferencia</h3>
+        <h2>Nombre completo del titular: <span class="blank largo"></span></h2>
+        <h2>Alias: <span class="blank largo"></span></h2>
+        <h2>CBU: <span class="blank largo"></span></h2>
+        <h2>CUIL: <span class="blank largo"></span></h2>
+    </div>
+
+    <div id="observaciones">
+        <h3>Observaciones</h3>
+        <div id="contrato">
+            <p>Por la presente solicito la baja del contrato suscripto dejando constancia  que mi voluntad resolutiva importa la extinción  de la relación contractual habida con Elanel Servicios y Soluciones, decisión que ha sido adoptada luego de ser debidamente informado y con pleno conocimiento de las consecuencias de la misma, conforme Art. 4 de la ley 24.240; no teniendo más nada que reclamar en ningún concepto.</p>
+        </div>
+    </div>
+
     <div id="firmas">
         <div>
-            <p>_______________________________</p>
-            <h6><strong>Firma de conformidad</strong></h6>
+            <span class="signatureLine"></span>
+            <h6>Firma de conformidad</h6>
         </div>
         <div>
-            <p>_______________________________</p>
-            <h6><strong>Aclaración de la Firma y DNI</strong></h6>
+            <span class="signatureLine"></span>
+            <h6>Aclaración de la firma y DNI</h6>
         </div>
-        
     </div>
 </body>
 </html>
-
-

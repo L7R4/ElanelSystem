@@ -1,1716 +1,1698 @@
-.wrapper_content {
-  overflow: hidden;
-  box-sizing: border-box;
-  padding: 4rem;
-  gap: 3rem;
-  display: flex;
-  flex-direction: column;
+/* ==========================================================================
+   MODERN SALE DETAILS & OPERATIONS STYLES
+   ========================================================================== */
+
+/* Main Container Layout */
+.sale-details-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    font-family: 'Raleway', sans-serif;
+    color: var(--white-color-800);
+}
+
+/* Glassmorphism Panel Base */
+.glass-panel {
+    background: rgba(24, 31, 46, 0.65);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(250, 248, 255, 0.06);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* Modern Header Styling */
+.modern-sale-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(24, 31, 46, 0.85), rgba(32, 43, 68, 0.85));
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    flex-wrap: wrap;
+}
+
+.header-icon-wrapper {
+    font-size: 2.4rem;
+    color: var(--blue-accent-color);
+    background: rgba(6, 137, 250, 0.12);
+    width: 5.5rem;
+    height: 5.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid rgba(6, 137, 250, 0.25);
+    box-shadow: 0 0 15px rgba(6, 137, 250, 0.15);
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.header-subtitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--blue-accent-color);
+    text-transform: uppercase;
+}
+
+.header-title {
+    font-size: clamp(2rem, 2vw, 3rem);
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+/* Status Badges Group in Header */
+.sale-status-group {
+    display: flex;
+    align-items: center;
+    margin-left: 1.5rem;
+}
+
+.badgeStatus {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1.4rem;
+    border-radius: 20px;
+    font-size: 1.25rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+}
+
+.badgeStatus.status-activo {
+    background: rgba(46, 204, 113, 0.12);
+    border: 1px solid rgba(46, 204, 113, 0.25);
+    color: var(--success-color);
+}
+
+.badgeStatus.status-suspendida {
+    background: rgba(243, 156, 18, 0.12);
+    border: 1px solid rgba(243, 156, 18, 0.25);
+    color: var(--warning-color);
+}
+
+.badgeStatus.status-baja {
+    background: rgba(231, 76, 60, 0.12);
+    border: 1px solid rgba(231, 76, 60, 0.25);
+    color: var(--danger-color);
+}
+
+.badgeStatus.status-adjudicado {
+    background: rgba(6, 137, 250, 0.12);
+    border: 1px solid rgba(6, 137, 250, 0.25);
+    color: var(--blue-accent-color);
+}
+
+/* Header Actions buttons */
+.header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+@media (max-width: 992px) {
+    .header-actions {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 1rem;
+        justify-content: flex-start;
+    }
+    .sale-status-group {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}
+
+.btn-action-delete {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    padding: 1rem 2.2rem;
+    font-size: 1.35rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.btn-action-delete:hover {
+    background: var(--danger-color);
+    color: #ffffff;
+    border-color: var(--danger-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+/* Dar de baja: la venta se conserva con estado BAJA (no se borra) */
+.btn-action-baja {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: rgba(243, 156, 18, 0.1);
+    color: var(--warning-color);
+    border: 1px solid rgba(243, 156, 18, 0.3);
+    padding: 1rem 2.2rem;
+    font-size: 1.35rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.btn-action-baja:hover {
+    background: var(--warning-color);
+    color: #ffffff;
+    border-color: var(--warning-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+}
+
+/* ==========================================================================
+   Modales de esta pantalla (descuento, baja, eliminar, confirmaciones y
+   respuesta). Mismo diseño que .modalContainerFilter de caja.css: tarjeta con
+   degradado oscuro, esquinas de 16px, fondo desenfocado, título con línea,
+   inputs de 4rem y botones de pie azul / gris.
+   ========================================================================== */
+.tingle-modal:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) .tingle-modal-box {
+    background: linear-gradient(135deg, #182030, #0f1524);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+    width: 92%;
+    max-width: 54rem;
+    /* sin overflow:hidden para que la lista del select pueda desplegarse por encima del pie */
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) .tingle-modal-box__content {
+    background: transparent;
+    padding: 3rem 3.5rem;
+    font-family: 'Raleway', sans-serif;
+    color: var(--white-color-800);
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) .tingle-modal-box__footer {
+    background: rgba(15, 21, 36, 0.5);
+    border-top: 1px solid rgba(250, 248, 255, 0.06);
+    border-radius: 0 0 16px 16px;
+    padding: 2rem 3.5rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Título */
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) :is(h1, h2) {
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    font-size: 2.2rem;
+    line-height: 1.25;
+    margin: 0 0 2rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.08);
+}
+
+:is(.modalDeleteVenta, .modalContainerFilter) p,
+.modalDeleteVenta .inputClaveWrapper p {
+    font-size: 1.4rem;
+    line-height: 1.5;
+    color: var(--white-800-80);
+    margin: 0 0 1.2rem 0;
+}
+
+/* Campos: etiqueta arriba, input debajo */
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta) form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta) :is(.wrapperInput, .field, .inputClaveWrapper) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta) label {
+    font-family: 'Raleway-SemiBold', sans-serif;
+    font-size: 1.25rem;
+    color: var(--white-800-80);
+    padding-left: 0.2rem;
+    text-transform: none;
+    letter-spacing: normal;
+    margin: 0;
+}
+
+.modalDescuento .labelOptional {
+    color: var(--white-800-50);
+    font-family: 'Raleway', sans-serif;
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta) :is(input[type="text"], input[type="number"], input[type="password"], input.input-read-write-default) {
+    width: 100%;
+    height: 4rem;
+    min-height: 4rem;
+    max-height: 4rem;
+    background-color: rgba(15, 21, 36, 0.6);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 8px;
+    color: var(--third-color);
+    font-size: 1.35rem;
+    font-family: 'Raleway', sans-serif;
+    padding: 0 1.2rem;
+    text-indent: 0;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.25s;
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta) textarea.input-read-write-default {
+    width: 100%;
+    min-height: 9rem;
+    max-height: none;
+    background-color: rgba(15, 21, 36, 0.6);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 8px;
+    color: var(--third-color);
+    font-size: 1.35rem;
+    font-family: 'Raleway', sans-serif;
+    padding: 1.1rem 1.2rem;
+    box-sizing: border-box;
+    outline: none;
+    resize: vertical;
+    transition: all 0.25s;
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta) :is(input, textarea)::placeholder {
+    color: var(--white-800-50);
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta) :is(input, textarea):hover {
+    border-color: rgba(6, 137, 250, 0.3);
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta) :is(input, textarea):focus {
+    border-color: var(--blue-accent-color);
+    background-color: rgba(15, 21, 36, 0.8);
+    box-shadow: 0 0 0 2px rgba(6, 137, 250, 0.15);
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta) input:read-only:not([type="hidden"]) {
+    color: var(--white-800-80);
+    cursor: default;
+}
+
+/* Select personalizado dentro de los modales */
+.modalDescuento .containerInputAndOptions {
+    position: relative;
+    width: 100%;
+}
+
+.modalDescuento .pseudo-input-select-wrapper {
+    width: 100%;
+    height: 4rem;
+    min-height: 4rem;
+    max-height: 4rem;
+    background-color: rgba(15, 21, 36, 0.6);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 8px;
+    padding: 0 3.6rem 0 1.2rem;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.modalDescuento .pseudo-input-select-wrapper:hover {
+    border-color: rgba(6, 137, 250, 0.3);
+}
+
+.modalDescuento .pseudo-input-select-wrapper h3 {
+    font-family: 'Raleway', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: var(--third-color);
+    margin: 0;
+    border: 0;
+    padding: 0;
 }
 
-/*#region HEADER BUTTONS  */
-.wrapperButtonManageVenta {
-  width: 100%;
-  display: flex;
-  column-gap: 2rem;
-  justify-content: flex-end;
+.modalDescuento .containerInputAndOptions > .iconDesplegar {
+    top: 50%;
+    right: 1.2rem;
+    margin: 0;
+    transform: translateY(-50%);
+    align-self: auto;
+    pointer-events: none;
 }
+
+.modalDescuento .containerInputAndOptions > .iconDesplegar.open {
+    transform: translateY(-50%) rotate(180deg);
+}
 
-.wrapperButtonManageVenta > div {
-  height: fit-content;
-  position: relative;
+.modalDescuento ul.list-select-custom.options {
+    background: var(--blue-2);
+    border: 1px solid rgba(250, 248, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    z-index: 600;
 }
 
-/* #region Estilos de boton de baja */
-.wrapperButtonManageVenta > .buttonDeBaja {
-  display: flex;
-  justify-content: center;
+.modalDescuento ul.list-select-custom.open {
+    height: auto;
 }
 
-.wrapperButtonManageVenta > .buttonDeBaja > #bajaBtn {
-  box-sizing: border-box;
-  padding: 1rem 2.3rem;
-  font-family: raleway-semibold;
-  font-size: clamp(1rem, 1vw, 1.5rem);
-  background-color: var(--danger-color);
-  color: white;
-  border: none;
-  border-radius: 0.6rem;
-  outline: none;
-  cursor: pointer;
-}
-
-.buttonDeBaja > .formConfirmBajaWrapper {
-  position: absolute;
-  z-index: 6;
-  width: 15vw;
-  max-width: 30rem;
-  min-width: 25rem;
-  top: 130%;
-  display: none;
+/* Baja: fila porcentaje + botón editar y bloque de contraseña */
+.modalBajaVenta .form-baja .row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-.buttonDeBaja > .formConfirmBajaWrapper.active {
-  display: unset;
-}
+.modalBajaVenta .form-baja .row input {
+    flex: 1;
+}
 
-.buttonDeBaja > .formConfirmBajaWrapper > .formsContainer {
-  position: relative;
+.modalBajaVenta .form-baja .pass-area {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
 }
+
+.modalBajaVenta .form-baja .pass-area[hidden] {
+    display: none;
+}
+
+.modalBajaVenta .form-baja .pass-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.modalBajaVenta .form-baja .row button,
+.modalBajaVenta .form-baja .pass-actions button {
+    height: 4rem;
+    padding: 0 1.8rem;
+    font-size: 1.3rem;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+/* Baja: aclaración de la contraseña, error de porcentaje y monto a devolver */
+.modalBajaVenta .form-baja .hint {
+    margin: 0.4rem 0 0 0;
+    font-size: 1.2rem;
+    line-height: 1.45;
+    color: var(--white-800-50);
+}
+
+.modalBajaVenta .form-baja .hint strong {
+    color: var(--white-800-80);
+    font-family: 'Raleway-SemiBold', sans-serif;
+}
 
-/* #region Form baja */
-#formBaja {
-  padding: 2rem;
-  background-color: var(--third-color);
-  box-sizing: border-box;
-  border-radius: 0.6rem;
+.modalBajaVenta .form-baja .field-error {
+    margin: 0.4rem 0 0 0;
+    font-size: 1.2rem;
+    color: var(--danger-color);
 }
 
-#formBaja > .backgroundBlockForm {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-  background-color: #00000083;
-  z-index: 10;
+.modalBajaVenta .form-baja .field-error[hidden] {
+    display: none;
 }
 
-#formBaja > .porcentajeWrapper > div > p {
-  font-family: "raleway-semibold";
-  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
-  color: var(--background-color);
+.modalBajaVenta .form-baja .devolucion-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1.2rem 1.5rem;
+    background: rgba(6, 137, 250, 0.08);
+    border: 1px solid rgba(6, 137, 250, 0.22);
+    border-radius: 8px;
 }
 
-#formBaja .porcentajeContainer {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  box-sizing: border-box;
-  margin-top: 0.6rem;
+.modalBajaVenta .form-baja .devolucion-box span {
+    font-size: 1.2rem;
+    color: var(--white-800-80);
+    font-family: 'Raleway-SemiBold', sans-serif;
 }
 
-#formBaja .porcentajeContainer > .inputPorcentajeContainer {
-  width: 30%;
-  max-width: 7rem;
-  min-width: 3rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.modalBajaVenta .form-baja .devolucion-box strong {
+    font-size: 2.2rem;
+    color: var(--third-color);
+    font-family: 'Raleway-Bold', sans-serif;
 }
 
-#formBaja .porcentajeContainer > .inputPorcentajeContainer > * {
-  font-family: "raleway-semibold";
-  font-size: clamp(1rem, 1vw, 1.5rem);
-  color: var(--background-color);
+.modalBajaVenta .form-baja .devolucion-box small {
+    font-size: 1.15rem;
+    line-height: 1.4;
+    color: var(--white-800-50);
 }
 
-#formBaja .porcentajeContainer > .inputPorcentajeContainer > input {
-  width: 100%;
-  border: 1px solid var(--background-color);
-  box-sizing: border-box;
-  border-radius: 0.5rem;
-  padding: 0.2rem 0.5rem;
-  pointer-events: none;
-  background-color: #00000027;
+/* Respuesta (éxito / error) */
+.modalResponse .messageReponseModal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.6rem;
+    text-align: center;
 }
 
-#formBaja .porcentajeContainer > .inputPorcentajeContainer > input.enable {
-  background-color: transparent;
-  pointer-events: all;
+.modalResponse .messageReponseModal img {
+    width: 6rem;
+    height: 6rem;
 }
 
-#formBaja
-  .porcentajeContainer
-  > .inputPorcentajeContainer
-  > input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.modalResponse .messageReponseModal h2 {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin: 0;
+    font-size: 2rem;
+}
+
+/* Botones del pie (mismos valores que caja.css) */
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) .tingle-modal-box__footer .tingle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 4.2rem;
+    min-height: 4.2rem;
+    max-height: 4.2rem;
+    min-width: 12rem;
+    max-width: none;
+    margin: 0;
+    padding: 0 2.5rem;
+    font-size: 1.35rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) .tingle-modal-box__footer .tingle-btn--primary {
+    background: linear-gradient(135deg, var(--blue-accent-color), #006ecf);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(6, 137, 250, 0.25);
 }
 
-#formBaja .porcentajeContainer > #porcentajeBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: clamp(1rem, 1vw, 1.5rem);
-  font-family: "raleway-semibold";
-  color: var(--background-color);
-  background-color: transparent;
-  border-radius: 0.5rem;
-  outline: none;
-  box-sizing: border-box;
-  border: 1px solid #3d7bd8d5;
-  padding: 0.2rem 1rem;
-  cursor: pointer;
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) .tingle-modal-box__footer .tingle-btn--primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(6, 137, 250, 0.35);
+}
+
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) .tingle-modal-box__footer .tingle-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
-#formBaja .porcentajeContainer > #porcentajeBtn > img {
-  width: 1.5rem;
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) .tingle-modal-box__footer .tingle-btn--default {
+    background: rgba(250, 248, 255, 0.05);
+    color: var(--white-800-80);
+    border: 1px solid rgba(250, 248, 255, 0.1);
 }
 
-#formBaja > .motivoBaja > h3 {
-  font-family: raleway-semibold;
-  font-size: 1.3rem;
-  margin-bottom: 0.3rem;
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) .tingle-modal-box__footer .tingle-btn--default:hover {
+    background: rgba(250, 248, 255, 0.15);
+    color: #ffffff;
 }
 
-#formBaja > #selectMotivoWrapper {
-  margin-top: 1rem;
+/* Botón de cierre (X) de tingle */
+:is(.modalDescuento, .modalBajaVenta, .modalDeleteVenta, .modalContainerFilter, .modalResponse) .tingle-modal__close {
+    color: var(--white-800-80);
 }
 
-#formBaja > #selectMotivoWrapper > h3 {
-  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
-  font-family: "raleway-semibold";
-  color: var(--background-color);
-  margin-bottom: 0.3rem;
+/* Adjudication Dropdown Menu */
+.selectAdjudicacion {
+    position: relative;
 }
 
-#formBaja > #selectMotivoWrapper > .containerInputAndOptions > input {
-  border: 1px solid #3d7bd8d5;
-  font-size: clamp(1rem, 1vw, 1.4rem);
-  font-family: "raleway";
-  border-radius: 0.6rem;
-  color: var(--background-color);
-  z-index: 5;
+.btn-action-adjudicate {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: linear-gradient(135deg, var(--blue-accent-color), #006ecf);
+    color: #ffffff;
+    border: none;
+    padding: 1rem 2.2rem;
+    font-size: 1.35rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(6, 137, 250, 0.2);
+    transition: all 0.25s;
 }
 
-#formBaja > #selectMotivoWrapper > .containerInputAndOptions > .options {
-  z-index: 4;
+.btn-action-adjudicate h2 {
+    font-size: 1.35rem;
+    margin: 0;
 }
 
-#formBaja > .motivoBaja {
-  margin-top: 1rem;
+.btn-action-adjudicate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 137, 250, 0.35);
+    filter: brightness(1.1);
 }
 
-#formBaja > .motivoBaja > h3 {
-  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
-  font-family: "raleway-semibold";
-  color: var(--background-color);
+.selectAdjudicacion .options {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    width: 200px;
+    background: var(--blue-2);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 8px;
+    list-style: none;
+    padding: 0.5rem 0;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-#formBaja > .motivoBaja > textarea {
-  width: 100%;
-  resize: none;
-  outline: none;
-  padding: 0.5rem;
-  box-sizing: border-box;
-  border-radius: 0.6rem;
-  border: 1px solid #3d7bd8d5;
-  font-size: clamp(1rem, 1vw, 1.4rem);
-  font-family: "raleway";
-  color: var(--background-color);
+.selectAdjudicacion:hover .options {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
-#formBaja > .confirmWrapper {
-  margin-top: 1rem;
+.selectAdjudicacion .options a {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem 1.6rem;
+    color: var(--third-color);
+    text-decoration: none;
+    font-size: 1.3rem;
+    transition: background 0.2s;
 }
 
-#formBaja > .confirmWrapper > h3 {
-  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
-  font-family: "raleway-semibold";
-  color: var(--background-color);
+.selectAdjudicacion .options a:hover {
+    background: rgba(6, 137, 250, 0.15);
+    color: var(--blue-accent-color);
 }
 
-#formBaja > .confirmWrapper > div {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-top: 0.4rem;
+/* Layout Grid */
+.sale-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 2.5rem;
+    align-items: start;
 }
 
-#formBaja > .confirmWrapper > div > #yesConfirm,
-#formBaja > .confirmWrapper > div > #noConfirm {
-  padding: 0.4rem 3rem;
+@media (max-width: 1100px) {
+    .sale-layout-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
-/* #endregion */
+/* Panels */
+.info-panel {
+    display: flex;
+    flex-direction: column;
+}
 
-/* #region Form descuento baja */
-.buttonDeBaja > .formConfirmBajaWrapper > .formsContainer > #formPassword {
-  position: absolute;
-  top: 0;
-  right: 115%;
-  width: 100%;
-  background-color: var(--third-color);
-  box-sizing: border-box;
-  padding: 2rem;
-  border-radius: 0.6rem;
-  min-width: fit-content;
-  display: none;
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 2rem 2.5rem;
 }
 
-.buttonDeBaja
-  > .formConfirmBajaWrapper
-  > .formsContainer
-  > #formPassword.active {
-  display: unset;
+.panel-header.border-bottom {
+    border-bottom: 1px solid rgba(250, 248, 255, 0.06);
 }
 
-#formPassword > .inputClaveWrapper > p {
-  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
-  font-family: "raleway-semibold";
-  color: var(--background-color);
+.panel-header-title {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
 }
 
-#formPassword > .inputClaveWrapper > #clave {
-  width: 100%;
-  font-size: clamp(1rem, 1vw, 1.5rem);
-  font-family: "raleway-semibold";
-  color: var(--background-color);
-  border: 1px solid #3d7bd8d5;
-  border-radius: 0.4rem;
-  padding: 0.2rem 1rem;
-  box-sizing: border-box;
-  outline: none;
-  margin-top: 0.3rem;
+.panel-header h2 {
+    font-size: 1.9rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
 }
 
-#formPassword > .inputClaveWrapper > #clave::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.icon-accent {
+    font-size: 1.8rem;
+    color: var(--blue-accent-color);
 }
 
-#formPassword > .confirmClaveWrapper {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-top: 0.6rem;
+.panel-body {
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
 }
 
-#formPassword > .confirmClaveWrapper > #confirmPass,
-#formPassword > .confirmClaveWrapper > #notConfirmPass {
-  padding: 0.4rem 2rem;
-  font-size: clamp(1rem, 1vw, 1.3rem);
+/* Info Cards Grid */
+.info-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
 }
 
-#formPassword > .messageErrorPass {
-  font-size: clamp(1rem, 1vw, 1.5rem);
-  font-family: "raleway-semibold";
-  color: #ed1717;
-  margin-top: 0.6rem;
+@media (max-width: 768px) {
+    .info-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
-.modalBajaVenta__content > h2 {
-  font-size: clamp(1.5rem, 1.5vw, 2rem);
-  font-family: raleway-bold;
-  color: var(--white-color-800);
-  margin-bottom: 1rem;
+.info-item-card {
+    background: rgba(32, 43, 68, 0.35);
+    border: 1px solid rgba(250, 248, 255, 0.05);
+    border-radius: 10px;
+    padding: 1.2rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
 }
-.modalBajaVenta__content .field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 1rem;
+
+.info-item-card.double-width {
+    grid-column: span 2;
 }
-#passArea {
-  margin-top: 1rem;
+
+.info-item-card.full-width {
+    grid-column: span 4;
 }
-#passArea > .pass-actions {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-top: 1rem;
+
+@media (max-width: 768px) {
+    .info-item-card.double-width, .info-item-card.full-width {
+        grid-column: span 2;
+    }
 }
-#passArea > label {
-  font-size: clamp(1rem, 1.1vw, 1.4rem);
-  font-family: raleway-bold;
-  color: var(--white-800-80);
-  margin-bottom: 0.6rem;
-  display: block;
+
+.info-label {
+    font-size: 1.1rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--white-800-50);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
 }
-#passArea > #passInput {
-  width: 50%;
-  min-width: 230px;
+
+.info-label i {
+    color: var(--blue-accent-color);
+    font-size: 1.15rem;
 }
 
-.modalBajaVenta__content .field > label {
-  font-size: clamp(1rem, 1.1vw, 1.4rem);
-  font-family: raleway-bold;
-  color: var(--white-800-80);
+.info-value {
+    font-size: 1.45rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
 }
 
-.modalBajaVenta__content .field > .row {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  width: 50%;
-  min-width: 230px;
+/* Specialty highlight cards */
+.info-item-card.highlight-card {
+    background: rgba(6, 137, 250, 0.08);
+    border-color: rgba(6, 137, 250, 0.2);
 }
 
-/* #endregion */
+.info-item-card.total-card {
+    background: rgba(46, 204, 113, 0.08);
+    border-color: rgba(46, 204, 113, 0.2);
+}
 
-/* #endregion */
+.info-item-card.total-card .info-value {
+    color: var(--success-color);
+    font-family: 'Raleway-Bold', sans-serif;
+    font-size: 1.55rem;
+}
 
-/*#region Estilos de boton adjudicacion */
+/* Chances / Contracts Sub Grid */
+.chances-section, .titularidad-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    border-top: 1px solid rgba(250, 248, 255, 0.06);
+    padding-top: 2rem;
+}
 
-.wrapperButtonManageVenta > .selectAdjudicacion {
-  position: relative;
+.section-title {
+    font-size: 1.6rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-.wrapperButtonManageVenta > .selectAdjudicacion > .selectedOption {
-  box-sizing: border-box;
-  padding: 1rem 2.3rem;
-  background-color: var(--blue-accent-color);
-  gap: 1rem;
-  width: 100%;
-  border-radius: 0.6rem;
-  position: relative;
-  z-index: 2;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
+.section-title i {
+    color: var(--blue-accent-color);
 }
 
-.wrapperButtonManageVenta > .selectAdjudicacion > .selectedOption > h2 {
-  font-size: clamp(1rem, 1vw, 1.5rem);
-  font-family: raleway-semibold;
-  color: var(--third-color);
+.contracts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
 }
 
-.wrapperButtonManageVenta > .selectAdjudicacion > .selectedOption > img {
-  filter: invert(1);
-  width: 1.5rem;
+.contract-card {
+    background: rgba(24, 31, 46, 0.5);
+    border: 1px solid rgba(250, 248, 255, 0.05);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    transition: all 0.3s;
 }
 
-.wrapperButtonManageVenta > .selectAdjudicacion > .options {
-  list-style: none;
-  font-size: clamp(1rem, 1vw, 1.5rem);
-  font-family: raleway-semibold;
-  width: 100%;
-  background-color: rgba(255, 255, 255, 1);
-  max-height: 0rem;
-  overflow: hidden;
-  position: absolute;
-  top: 75%;
-  z-index: 1;
-  border-bottom-left-radius: 0.6rem;
-  border-bottom-right-radius: 0.6rem;
+.contract-card:hover {
+    background: rgba(24, 31, 46, 0.7);
+    border-color: rgba(6, 137, 250, 0.2);
 }
 
-.wrapperButtonManageVenta > .selectAdjudicacion > .options.active {
-  max-height: none;
+.contract-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.wrapperButtonManageVenta > .selectAdjudicacion > .options > a {
-  cursor: pointer;
-  width: 100%;
-  text-decoration: none;
-  color: #000;
-  display: block;
-  padding: 1rem;
-  box-sizing: border-box;
+.chance-tag {
+    font-size: 1.25rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
 }
 
-.wrapperButtonManageVenta > .selectAdjudicacion > .options > a:first-child {
-  margin-top: 1rem;
+.winner-tag {
+    font-size: 1.15rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--blue-accent-color);
+    background: rgba(6, 137, 250, 0.12);
+    padding: 0.2rem 0.8rem;
+    border-radius: 20px;
+    border: 1px solid rgba(6, 137, 250, 0.2);
 }
 
-.wrapperButtonManageVenta > .selectAdjudicacion > .options > a:hover {
-  color: var(--secundary-color);
+.contract-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
 }
 
-/* #endregion */
+.contract-body > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.04);
+    padding-bottom: 0.4rem;
+}
 
-/* #region Estilos de demas botones */
-.buttonChangePack > a,
-.buttonChangeTitularidad > a {
-  text-decoration: none;
-  color: var(--third-color);
-  font-size: clamp(1rem, 1vw, 1.5rem);
-  font-family: raleway-semibold;
-  padding: 0.8rem 2rem;
+.contract-body > div:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
-.buttonChangePack:hover,
-.buttonChangeTitularidad:hover {
-  background-color: rgba(23, 84, 237, 0.07);
+.field-lbl {
+    font-size: 1.15rem;
+    color: var(--white-800-50);
 }
 
-/* #endregion */
+.field-val {
+    font-size: 1.3rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--third-color);
+}
 
-/* #endregion */
+/* Card States */
+.contract-card.card-adjudicado {
+    background: rgba(6, 137, 250, 0.06);
+    border-color: rgba(6, 137, 250, 0.25);
+    box-shadow: 0 4px 15px rgba(6, 137, 250, 0.08);
+}
 
-.wrapperBase {
-  display: flex;
-  flex-wrap: wrap;
-  box-sizing: border-box;
-  /* margin-top: 4rem; */
-  gap: 5%;
-  gap: 5%;
-  flex: 1 1 auto;
-  min-height: 0;
+.contract-card.card-disabled {
+    opacity: 0.45;
 }
 
-/*#region  WRAPPER INFORMATION */
-.wrapper_information {
-  width: 65%;
-  box-sizing: border-box;
-  min-width: 50rem;
-  overflow-y: hidden;
-  /* padding: 1.5rem; */
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
+/* Titularidad Card Styles */
+.titularidad-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
 }
 
-.information {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(10rem, 1fr));
-  gap: 2rem;
-  overflow: auto;
-  height: 90%;
-  padding-right: 2rem;
-  flex: 1 1 auto;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+.titularidad-card {
+    background: rgba(24, 31, 46, 0.5);
+    border: 1px solid rgba(250, 248, 255, 0.05);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
 }
 
-.wrapper_information > h1 {
-  color: var(--third-color);
-  font-size: clamp(3rem, 3vw, 5rem);
-  font-family: raleway-bold;
-  margin-bottom: 1.5rem;
-  box-sizing: border-box;
+.titularidad-names {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
 }
 
-.inputs > h2 {
-  color: var(--third-color);
-  font-size: clamp(1.3rem, 1vw, 1.6rem);
-  font-family: raleway-semibold;
-  margin-bottom: 0.3rem;
-  box-sizing: border-box;
+.client-link {
+    font-size: 1.35rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--blue-accent-color);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+}
 
-  white-space: nowrap;
-  /* Evita que el texto salte de línea */
-  overflow: hidden;
-  /* Oculta el texto que excede el contenedor */
-  text-overflow: ellipsis;
-  /* Añade puntos suspensivos (...) al final del texto que no cabe */
+.client-link:hover {
+    text-decoration: underline;
 }
 
-/* INPUTS */
+.client-link.old-client {
+    color: var(--white-800-50);
+}
 
-#supervisor,
-#vendedor,
-#producto,
-#paquete {
-  grid-column: 2 span;
+.transfer-arrow {
+    font-size: 1.4rem;
+    color: var(--white-800-50);
+    transform: rotate(-90deg);
 }
-#observaciones {
-  grid-column: 1 / -1;
-  /* grid-row: 2 /3; */
+
+.titularidad-details {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    font-size: 1.2rem;
+    color: var(--white-800-50);
 }
-#wrapperContratos {
-  grid-column: 1/ -1;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(12rem, 1fr));
-  gap: 2rem;
-  /* border: 2px solid var(--third-color); */
-  /* padding: 1.3rem; */
-  border-radius: 0.6rem;
+
+.btn-pdf-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--danger-color);
+    text-decoration: none;
+    font-family: 'Raleway-SemiBold', sans-serif;
 }
 
-#wrapperContratos > .contratosItem {
-  padding: 1.5rem;
-  border-radius: 0.6rem;
-  background-color: rgb(24 30 44);
-  box-shadow: 0px 0px 9px 0px rgba(127, 140, 141, 0.75);
-  -webkit-box-shadow: 3px 3px 6px 0px rgb(137 137 171 / 15%);
+.btn-pdf-link:hover {
+    text-decoration: underline;
 }
 
-#wrapperContratos > .contratosItem.contratoAdjudicado {
-  box-shadow: 0px 0px 9px 2px rgba(0, 0, 0, 0.34);
+/* Right Panel Payments list */
+.payments-panel {
+    display: flex;
+    flex-direction: column;
 }
 
-#wrapperContratos > .contratosItem.contratoDisable {
-  opacity: 0.5;
+.payments-panel .panel-body {
+    padding: 2rem;
+    max-height: 700px;
+    position: relative;
+    overflow: hidden;
 }
 
-#wrapperContratos > .contratosItem > h2 {
-  color: var(--blue-accent-color);
-  font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-  font-family: raleway-semibold;
+.payments-panel .panel-body.flex-column {
+    display: flex;
+    flex-direction: column;
 }
 
-#wrapperContratos > .contratosItem > h2.adjText {
-  color: var(--secundary-color);
-  background-color: var(--third-color);
-  padding: 0.4rem;
-  margin-bottom: 0.5rem;
-  text-align: center;
-  border-radius: 0.6rem;
+.wrapperTittleCuotas {
+    margin-bottom: 1.2rem;
+    padding: 0 0.5rem;
 }
 
-#wrapperContratos > .contratosItem > .inputs {
-  margin-top: 1rem;
+.wrapperTittleCuotas h3 {
+    font-size: 1.6rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
 }
 
-.inputs > div {
-  display: flex;
-  align-items: center;
-  /* background-color: var(--info-color-20); */
-  background-color: rgb(30 68 123 / 20%);
-  position: relative;
-  border-radius: 1rem;
-  outline: none;
-  text-indent: 1rem;
-  width: 100%;
+/* Referencia de colores del estado de cuota */
+.cuotasLegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.2rem;
+    list-style: none;
+    margin: 0 0 1.2rem;
+    padding: 0 0.5rem;
 }
 
-.inputs > div > h3 {
-  font: clamp(1.1rem, 1vw, 1.4rem) raleway-semibold;
-  font-feature-settings:
-    "pnum" on,
-    "lnum" on;
-  color: var(--third-color);
-  padding: 1rem;
-  word-break: break-all;
-  overflow-wrap: break-word;
+.cuotasLegend li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.15rem;
+    color: var(--white-800-50);
 }
 
-/* #endregion */
+.cuotasLegend .marca {
+    position: static;
+}
 
-/* #region WRAPPER CUOTAS */
-.wrapper_cuotas {
-  width: 30%;
-  min-width: 23rem;
-  min-height: 35rem;
-  /* max-height: 65rem; */
-  display: flex;
-  align-items: center;
-  position: relative;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
+.cuotas-disabled-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(32, 43, 68, 0.2);
+    border-radius: 12px;
+    border: 1px dashed rgba(250, 248, 255, 0.1);
 }
 
-.wrapper_cuotas > .wrapperTittleCuotas {
-  margin-bottom: 0.6rem;
+.cuotas-disabled-message i {
+    font-size: 3rem;
 }
 
-.wrapper_cuotas > .wrapperTittleCuotas > h3 {
-  font-size: clamp(2rem, 1.8vw, 3rem);
-  font-family: raleway-bold;
-  color: var(--third-color);
+.cuotas-disabled-message h3 {
+    font-size: 1.5rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
 }
 
-.wrapper_cuotas.adjudicado,
-.wrapper_cuotas.enBaja {
-  justify-content: center;
+.cuotas-disabled-message p {
+    font-size: 1.25rem;
+    color: var(--white-800-50);
 }
 
 .wrapperDetalleEstadoVenta {
-  box-sizing: border-box;
-  width: 100%;
-  /* height: 95%; */
-  flex: 1 1 auto;
-  border-radius: 1rem;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    position: relative;
+    width: 100%;
+    /* Alto fijo (en vez de 100%, que no puede resolverse dentro de un
+       .panel-body con max-height): así la lista scrollea puertas adentro
+       y el formulario de pago aparece siempre a la vista, sin tener que
+       bajar por toda la página para encontrarlo. */
+    height: 560px;
+    min-height: 450px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .wrapperCuotasList {
-  color: var(--third-color);
-  position: relative;
-  background-color: var(--blue-1);
-  /* border: 1px solid var(--white-800-50); */
-  height: 100%;
-  width: 100%;
-  overflow-y: auto;
-  border-radius: 1rem;
-  padding: 1.2rem; /* aire interno (izq/der + sup/inf) */
-  /* scrollbar-gutter: stable both-edges;   */
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 0.5rem;
 }
 
-.wrapperCuotasList::-webkit-scrollbar {
-  width: 4px;
-  border-radius: 5px;
+.cuotas_list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
 }
 
-.wrapperCuotasList::-webkit-scrollbar-thumb {
-  background: #000000c0;
-  border-radius: 1rem;
+/* Timeline Item / Cuota */
+.cuota {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.2rem 1.6rem;
+    border-radius: 10px;
+    background: rgba(32, 43, 68, 0.35);
+    border: 1px solid rgba(250, 248, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.25s;
 }
 
-.wrapperCuotasList > .cuotas_list {
-  list-style: none;
-  /* padding: .8rem; */
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  row-gap: 1.2rem;
+.cuota:hover {
+    background: rgba(32, 43, 68, 0.5);
+    border-color: rgba(6, 137, 250, 0.2);
+    transform: translateX(3px);
 }
 
-.wrapperCuotasList > .cuotas_list > .cuota {
-  display: flex;
-  column-gap: 2rem;
-  box-sizing: border-box;
-  width: 100%;
-  padding: 0.6rem 0;
-  align-items: center;
-  border-radius: 0.8rem;
-  position: relative;
+.cuota.bloqueado {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(24, 31, 46, 0.3);
 }
 
-.wrapperCuotasList > .cuotas_list > .cuota.bloqueado {
-  background-color: var(--white-800-20);
+.cuota.bloqueado:hover {
+    transform: none;
+    border-color: rgba(250, 248, 255, 0.05);
 }
 
-.wrapperCuotasList > .cuotas_list > .cuota > input {
-  display: none;
+.marca {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
-.wrapperCuotasList > .cuotas_list > .cuota > h4 {
-  color: var(--white-color-800);
-  font-size: clamp(1.4rem, 1.2vw, 1.8rem);
-  font-family: raleway-semibold;
-  cursor: pointer;
+.marca.Pendiente { background-color: var(--white-800-50); }
+.marca.Pagado { background-color: var(--success-color); }
+.marca.Parcial { background-color: var(--warning-color); }
+.marca.Vencido { background-color: var(--danger-color); }
+
+.marca.bloqueado {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    width: 14px;
+    height: 14px;
 }
 
-.wrapperCuotasList > .cuotas_list > .cuota > h5 {
-  display: none;
+.cuota h4 {
+    font-size: 1.35rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
 }
 
-.wrapperCuotasList > .cuotas_list > .cuota > .marca {
-  width: 9%;
-  /* Esto hace que sea un cuadrado  */
-  aspect-ratio: 1 / 1;
-  border-radius: 0.5rem;
-  background-size: contain;
-  margin-left: 1rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-image: none;
-}
-
-.wrapperCuotasList > .cuotas_list > .cuota > .marca.Pendiente {
-  background-color: var(--white-color-800);
-}
-
-/* .wrapperCuotasList>.cuotas_list>.cuota.Pagado {
-    cursor: default;
-    pointer-events: none;
-} */
-
-.wrapperCuotasList > .cuotas_list > .cuota > .marca.Pagado {
-  background-color: var(--success-color);
-}
-
-.wrapperCuotasList > .cuotas_list > .cuota > .marca.Vencido {
-  background-color: var(--danger-color);
-}
-.wrapperCuotasList > .cuotas_list > .cuota > .marca.vencido {
-  background-color: var(--danger-color);
-}
-
-.wrapperCuotasList > .cuotas_list > .cuota.Vencido > h5 {
-  display: unset;
-  color: var(--danger-color);
-  font-size: clamp(1.2rem, 1.1vw, 1.6rem);
-  font-family: raleway-semibold;
-  cursor: pointer;
-}
-
-.wrapperCuotasList > .cuotas_list > .cuota.vencido > h5 {
-  display: unset;
-  color: var(--danger-color);
-  font-size: clamp(1.2rem, 1.1vw, 1.6rem);
-  font-family: raleway-semibold;
-  cursor: pointer;
-}
-
-.wrapperCuotasList > .cuotas_list > .cuota > .marca.Parcial {
-  background-color: var(--warning-color);
-}
-
-.wrapperCuotasList > .cuotas_list > .cuota > .marca.bloqueado {
-  background-color: transparent;
-  background-size: contain;
-}
-
-.wrapperCuotasList > .cuotas_list > .cuota:hover {
-  background-color: color-mix(in srgb, var(--blue-2) 90%, white);
-  cursor: pointer;
-}
-
-.wrapperCuotasList > .cuotas_list > .cuota.bloqueado {
-  cursor: default;
-  pointer-events: none;
-}
-
-.wrapperCuotasList > .cuotas_list > .cuota.pagoBloqueado > h4 {
-  cursor: default;
-  pointer-events: none;
-}
-
-/* #endregion */
-
-/* #region WRAPPER CUOTAS EN BAJA*/
-
-.wrapper_cuotas.enBaja > .cuotas {
-  height: 80%;
-  background-color: var(--third-color);
-  justify-content: center;
-  border-radius: 0.8rem;
-}
-
-.wrapper_cuotas.enBaja > .cuotas > h1 {
-  font-size: clamp(2rem, 1.8vw, 3rem);
-  font-family: raleway-semibold;
-  color: #ed1717;
-}
-
-.wrapper_cuotas.enBaja > .cuotas > h2 {
-  font-size: clamp(1.4rem, 1.2vw, 2rem);
-  font-family: raleway-semibold;
-  color: var(--background-color);
-}
-
-/* #endregion */
-
-.containerDetalleCuota {
-  padding: 1.5rem;
-  box-sizing: border-box;
-  position: absolute;
-  overflow-y: auto;
-  border-radius: 1rem;
-  right: -100%;
-  top: 0;
-  background-color: var(--blue-1);
-  border: 1px solid var(--white-800-50);
-  height: 100%;
-  width: 100%;
-  transition: all 0.3s ease-in-out;
-  display: flex;
-  flex-direction: column;
-}
-
-/* #region FORM PAY CUOTA */
-
-/* #payCuotaForm::-webkit-scrollbar {
-    width: 4px;
-    border-radius: 5px;
-}
-
-#payCuotaForm::-webkit-scrollbar-thumb {
-    background: #000000c0;
-    border-radius: 1rem;
-} */
-
-#payCuotaForm.active {
-  right: 0%;
-}
-
-.descuentoWrapperBackground {
-  position: absolute;
-  width: 100%;
-  z-index: 20;
-  border-bottom: 2px solid var(--secundary-color);
-  height: 100%;
-  left: 0;
-  top: 0;
-  background-color: #00000058;
-}
-
-.descuentoWrapperBackground > div {
-  padding: 2rem;
-  box-sizing: border-box;
-  border-bottom: 2px solid var(--secundary-color);
-  background-color: var(--third-color);
-}
-
-.descuentoWrapperBackground > div > h3 {
-  font-size: clamp(1.2rem, 1.1vw, 1.6rem);
-  font-family: raleway-semibold;
-  color: var(--background-color);
-  margin-bottom: 0.4rem;
-}
-
-#descuentoCuotaForm {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.descuentoWrapperBackground
-  > div
-  > #descuentoCuotaForm
-  > .buttonsActionsDescuentoWrapper {
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.descuentoWrapperBackground > div > #descuentoCuotaForm > input {
-  font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-  font-family: raleway;
-  color: var(--background-color);
-}
-
-.descuentoWrapperBackground > div > #descuentoCuotaForm > #dineroDescuento {
-  margin-bottom: 1.2rem;
-}
-
-.modalDescuento .titleModalDescuento {
-  font-size: clamp(1.4rem, 1.4vw, 1.8rem);
-  font-family: raleway-semibold;
-  color: var(--white-color-800);
-  margin-bottom: 0.4rem;
-}
-
-.tingle-btn[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.modalDescuento #descuentoCuotaForm > div > h3 {
-  font-size: clamp(1rem, 1.1vw, 1.3rem);
-  font-family: raleway-semibold;
-  color: var(--white-800-80);
-  margin-bottom: 0.4rem;
-}
-
-.descuentoWrapperBackground
-  > div
-  > #descuentoCuotaForm
-  > #dineroDescuento::-webkit-inner-spin-button,
-.descuentoWrapperBackground
-  > div
-  > #descuentoCuotaForm
-  > #dineroDescuento::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-#descuentoCuotaForm > .buttonsActionsDescuentoWrapper > #closeFormDescuento {
-  color: var(--background-color);
-  font-size: clamp(1.1rem, 1vw, 1.5rem);
-  padding: 0.8rem 1.5rem;
-}
-
-#descuentoCuotaForm > .buttonsActionsDescuentoWrapper > #submitDescuento {
-  font-size: clamp(1.1rem, 1vw, 1.5rem);
-  padding: 0.8rem 1.5rem;
-}
-
-#descuentoCuotaForm
-  > .buttonsActionsDescuentoWrapper
-  > #submitDescuento:disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.buttonsActions {
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.buttonsActions > button {
-  background-color: transparent;
-  outline: none;
-  border: none;
-  width: 3rem;
-  height: 3rem;
-  cursor: pointer;
-}
-
-/* .buttonsActions>button#closeFormCuota {
+.atraso-tag {
     margin-left: auto;
-} */
-
-button#btnReciboCuota {
-  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-  font-family: raleway-semibold;
-  background-color: var(--blue-3);
-  padding: 0.6rem 1.6rem;
-  text-decoration: none;
-  border-radius: 0.6rem;
-  color: var(--white-800-80);
-  z-index: 1;
-  border-color: transparent;
-  cursor: pointer;
+    font-size: 1.15rem;
+    background: rgba(231, 76, 60, 0.12);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    color: var(--danger-color);
+    padding: 0.2rem 0.8rem;
+    border-radius: 12px;
 }
 
-button#btnReciboCuota:hover {
-  background-color: var(--blue-4);
+/* Slide-in Payment Form & View Details */
+.containerDetalleCuota {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    background: var(--blue-2);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-y: auto;
 }
 
-.buttonsActions > button > img {
-  width: 100%;
-  filter: invert(1);
+.containerDetalleCuota.active {
+    transform: translateX(0);
 }
 
-.buttonsActions > button.buttonCancelarPago {
-  background-color: var(--danger-color);
+.containerDetalleCuota .buttonsActions {
+    display: flex;
+    justify-content: flex-end;
 }
 
-.buttonsActions > button#btnAnularCuota {
-  background-color: var(--danger-color);
+.containerDetalleCuota .buttonsActions button {
+    background: none;
+    border: none;
+    color: var(--white-800-80);
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: color 0.2s;
 }
 
-.labelInput {
-  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-  font-family: raleway-semibold;
-  color: var(--white-800-80);
+.containerDetalleCuota .buttonsActions button:hover {
+    color: #ffffff;
 }
 
-.wrapperSelectFilter {
-  margin-top: 1.3rem;
+/* "Anular cuota": botón de acción a la izquierda, con la X de cierre a la derecha */
+.containerDetalleCuota .buttonsActions {
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.containerDetalleCuota .buttonsActions:has(> :only-child) {
+    justify-content: flex-end;
+}
+
+.containerDetalleCuota .buttonsActions .btn-anular-cuota {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    height: 3.8rem;
+    padding: 0 1.8rem;
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(231, 76, 60, 0.25);
+    border-radius: 8px;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    font-size: 1.3rem;
+    transition: all 0.25s;
+}
+
+.containerDetalleCuota .buttonsActions .btn-anular-cuota:hover {
+    background: var(--danger-color);
+    color: #ffffff;
+    border-color: var(--danger-color);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
 .cuotaPicked {
-  font-size: clamp(2.2rem, 1.9vw, 3rem);
-  font-family: raleway-bold;
-  color: var(--white-color-800);
-  margin-top: 2rem;
-  margin-bottom: 0.4rem;
-  text-align: center;
+    font-size: 1.7rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--blue-accent-color);
+    margin: 0 0 0.5rem 0;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.06);
+    padding-bottom: 0.8rem;
 }
 
-#payCuotaForm > .typesPayments > h3 {
-  font-size: clamp(1.4rem, 1.2vw, 2rem);
-  font-family: raleway-semibold;
-  color: var(--white-800-80);
-  text-align: center;
+/* Payment Type selection */
+.typesPayments {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
 }
 
-#payCuotaForm > .typesPayments > .wrapperChoices {
-  display: flex;
-  column-gap: 1rem;
-  margin-top: 0.5rem;
-  justify-content: center;
+.typesPayments h3 {
+    font-size: 1.2rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--white-800-50);
+    text-transform: uppercase;
 }
 
-#payCuotaForm > .typesPayments > .wrapperChoices > .choice {
-  width: 50%;
-  box-sizing: border-box;
-  padding: 0.6rem 0rem;
-  border-radius: 0.6rem;
-  border: 1px solid var(--blue-4);
-  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-  font-family: raleway-semibold;
-  text-align: center;
-  cursor: pointer;
+.wrapperChoices {
+    display: flex;
+    gap: 1rem;
 }
 
-#payCuotaForm > .typesPayments > .wrapperChoices > .choice h3 {
-  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-  font-family: raleway-semibold;
-  color: var(--white-color-800);
-  cursor: pointer;
+.choice {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: rgba(24, 31, 46, 0.5);
+    border: 1px solid rgba(250, 248, 255, 0.05);
+    padding: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-#payCuotaForm > .typesPayments > .wrapperChoices > .choice:hover {
-  cursor: pointer;
+.choice h3 {
+    font-size: 1.25rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
 }
 
-#payCuotaForm > .typesPayments > .wrapperChoices > .choice:hover {
-  background-color: var(--blue-3);
-  color: var(--third-color);
+.choice:hover, .choice.active {
+    border-color: var(--blue-accent-color);
+    background: rgba(6, 137, 250, 0.05);
 }
 
-#payCuotaForm > .typesPayments > .wrapperChoices > .choice.active {
-  background-color: var(--blue-3);
+/* Custom Select Dropdowns in Form */
+.wrapperInput {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-#payCuotaForm > .typesPayments > .wrapperChoices > .choice.active h3,
-#payCuotaForm > .typesPayments > .wrapperChoices > .choice:hover h3 {
-  color: var(--third-color);
+.labelInput {
+    font-size: 1.15rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--white-800-50);
+    text-transform: uppercase;
+    margin: 0;
 }
 
-#payCuotaForm > .typesPayments > .choice.active {
-  background-color: var(--blue-4);
-  color: var(--third-color);
+.containerInputAndOptions {
+    position: relative;
+    width: 100%;
 }
 
-#payCuotaForm > .typesPayments > .wrapperChoices > .choice input {
-  display: none;
+.select-embed-icon {
+    position: absolute;
+    left: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.25rem;
+    color: var(--white-800-50);
+    z-index: 5;
+    pointer-events: none;
+    transition: color 0.2s ease;
 }
 
-#payCuotaForm > .pickedAmount {
-  position: relative;
-  margin-top: 1rem;
-  margin: 0 auto;
-  margin-top: 1rem;
-  width: 80%;
-  /* display: none; */
+.pseudo-input-select-wrapper {
+    width: 100%;
+    height: 4rem;
+    background: rgba(24, 31, 46, 0.5);
+    border: 1px solid rgba(250, 248, 255, 0.1);
+    border-radius: 10px;
+    padding: 0 1.2rem 0 3.5rem;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-#payCuotaForm > .pickedAmount.active {
-  display: unset;
+.containerInputAndOptions:hover .pseudo-input-select-wrapper {
+    border-color: rgba(6, 137, 250, 0.4);
+    background: rgba(32, 43, 68, 0.5);
 }
 
-#payCuotaForm > .pickedAmount > h4 {
-  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-  font-family: raleway-semibold;
-  color: var(--white-800-80);
-  margin-bottom: 0.6rem;
+.containerInputAndOptions:has(.list-select-custom.options.open) .pseudo-input-select-wrapper {
+    border-color: var(--blue-accent-color);
+    background: rgba(32, 43, 68, 0.5);
+    box-shadow: 0 0 0 3px rgba(6, 137, 250, 0.18);
 }
 
-#payCuotaForm > .pickedAmount > input {
-  width: 100%;
-  color: var(--white-800-80);
+.containerInputAndOptions:has(.list-select-custom.options.open) .select-embed-icon {
+    color: var(--blue-accent-color);
 }
 
-#payCuotaForm > .wrapperSelect {
-  width: 80%;
-  margin: 0 auto;
+.pseudo-input-select-wrapper h3 {
+    font-size: 1.3rem;
+    color: var(--third-color);
+    margin: 0;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-#payCuotaForm > .wrapperSelect > h3 {
-  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-  font-family: raleway-semibold;
-  color: var(--background-color);
-  margin-top: 1rem;
+.pseudo-input-select-wrapper h3.placeholder {
+    color: var(--white-800-50);
+    font-weight: 400;
 }
 
-#payCuotaForm > #selectWrapperSelectCobrador > .containerInputAndOptions > img {
-  z-index: 6;
-  filter: invert(1);
+.iconDesplegar {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    color: var(--white-800-50);
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), color 0.2s ease;
+    pointer-events: none;
 }
 
-#payCuotaForm
-  > #selectWrapperSelectCobrador
-  > .containerInputAndOptions
-  > .pseudo-input-select-wrapper {
-  z-index: 5;
-  /* background-color: var(--third-color); */
+.iconDesplegar.open {
+    transform: translateY(-50%) rotate(180deg);
+    color: var(--blue-accent-color);
 }
 
-#payCuotaForm
-  > #selectWrapperSelectCobrador
-  > .containerInputAndOptions
-  > .options {
-  z-index: 4;
-}
-
-#payCuotaForm
-  > #selectWrapperSelectTypePayments
-  > .containerInputAndOptions
-  > img {
-  z-index: 3;
-  filter: invert(1);
-}
-
-#payCuotaForm
-  > #selectWrapperSelectTypePayments
-  > .containerInputAndOptions
-  > .pseudo-input-select-wrapper {
-  z-index: 2;
-}
-
-#payCuotaForm
-  > #selectWrapperSelectTypePayments
-  > .containerInputAndOptions
-  > .options {
-  z-index: 1;
-}
-
-.wrapperButtonPayCuota {
-  box-sizing: border-box;
-  display: flex;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-  margin-top: auto;
-  flex-direction: column;
-  gap: 1rem;
-}
-.wrapperButtonPayCuota > button#btnDescuentoCuota {
-  padding: 0.3rem 4rem;
-  border-radius: 0.6rem;
-  width: fit-content;
-  height: fit-content;
-  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-  font-family: raleway-semibold;
-  background-color: transparent;
-  border: 1px solid;
-  color: var(--blue-accent-color);
-  cursor: pointer;
-}
-.wrapperButtonPayCuota > button#sendPayment {
-  padding: 0.8rem 4rem;
-  width: fit-content;
-  height: fit-content;
-  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-  font-family: raleway-semibold;
-}
-
-/* .wrapperButtonPayCuota>#sendPayment {} */
-
-.payCuotaStatus {
-  width: 95%;
-  height: 10%;
-  max-height: 6rem;
-  min-height: 3rem;
-  box-sizing: border-box;
-  border-radius: 0.8rem;
-  position: absolute;
-  bottom: -8rem;
-  padding: 1rem;
-  background: var(--background-color);
-  border: 3px solid var(--primary-color);
-  /* border: 3px solid #ed1717; */
-  display: flex;
-  column-gap: 2rem;
-  align-items: center;
-  transition: 0.7s all ease;
-}
-
-.payCuotaStatus.active {
-  bottom: 1rem;
-}
-
-.payCuotaStatus > img {
-  width: 8%;
-  max-width: 3rem;
-  min-width: 2rem;
-}
-
-.payCuotaStatus > h2 {
-  font-size: clamp(1.3rem, 1.1vw, 1.6rem);
-  font-family: raleway-semibold;
-  color: var(--third-color);
-}
-
-/* #endregion */
-
-/* #region WRAPPER VIEW DETALLE DE CUOTA */
-
-#wrapperVerDetallesPago.active {
-  right: 0%;
-  display: flex;
-  flex-direction: column;
-}
-
-.wrapperInfo_cuota {
-  /* max-height: 70%;
+.list-select-custom.options {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    width: 100%;
+    background: var(--blue-1);
+    border: 1px solid rgba(250, 248, 255, 0.12);
+    border-radius: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+    z-index: 500;
+    display: block;
+    max-height: 200px;
     overflow-y: auto;
-    padding-right: 1rem; */
-  width: 100%;
-  margin-top: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
 }
 
-/* #wrapperVerDetallesPago>.cuotaPicked {
-    font-size: clamp(1.5rem, 2vw, 3rem);
-    font-family: raleway-semibold;
-    color: var(--background-color);
-    padding: .6rem 0;
-    text-align: center;
-} */
-
-.info_cuota {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: rgb(127 140 141 / 5%);
-  padding: 0.7rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-  border-radius: 0.6rem;
-  row-gap: 0.7rem;
-  cursor: pointer;
-}
-.info_cuota.title_payment {
-  background-color: transparent;
-  /* justify-content: center; */
-
-  /* cursor: default; */
+.list-select-custom.options.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
-.info_cuota.detail_view_more:first-child {
-  background-color: transparent;
+.list-select-custom.options li {
+    padding: 0.8rem 1.1rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    color: var(--third-color);
 }
 
-.info_cuota.detail_view_more > h3 {
-  font-size: clamp(1.1rem, 1vw, 1.5rem);
-  font-family: raleway-semibold;
+.list-select-custom.options li:hover {
+    background: rgba(6, 137, 250, 0.15);
+    color: var(--blue-accent-color);
 }
 
-.info_cuota.detail_view_more.title_payment > h3 {
-  color: var(--blue-accent-color);
+.list-select-custom.options li.selected {
+    background: var(--blue-accent-color);
+    color: #ffffff;
+    font-weight: 600;
 }
 
-.info_cuota.view_more > img {
-  width: 1.5rem;
-  filter: invert(1);
+.list-select-custom.options::-webkit-scrollbar {
+    width: 8px;
 }
 
-.info_cuota.view_more > img.active {
-  rotate: 180deg;
+.list-select-custom.options::-webkit-scrollbar-track {
+    background: transparent;
 }
 
-.info_cuota > h3 {
-  font-size: clamp(1.2rem, 1.1vw, 1.6rem);
-  font-family: raleway-semibold;
-  color: var(--white-800-80);
+.list-select-custom.options::-webkit-scrollbar-thumb {
+    background: rgba(250, 248, 255, 0.15);
+    border-radius: 4px;
 }
 
-.view_more > .wrapperDetail_view_more.active {
-  display: block;
+.list-select-custom.options::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 137, 250, 0.4);
 }
 
-.view_more > .wrapperDetail_view_more {
-  display: none;
-  flex-basis: 100%;
-  padding-left: 0.5rem;
+/* Amounts & currency */
+.montoMonedaWrapper {
+    display: flex;
+    gap: 1.5rem;
 }
 
-.view_more > .wrapperDetail_view_more > h3 {
-  font-size: clamp(1rem, 1vw, 1.4rem);
-  font-family: raleway-semibold;
-  color: var(--white-800-80);
+.montoMonedaWrapper > div {
+    flex: 1;
 }
 
-#wrapperVerDetallesPago > #anularButton {
-  margin-top: auto;
-  cursor: pointer;
+.pickedAmount h4 {
+    font-size: 1.15rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--white-800-50);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
 }
 
-#formAnularCuota {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  padding: 2rem;
-  left: 0;
-  border-top: 2px solid var(--primary-color);
-  background-color: var(--third-color);
-  z-index: 10;
-  border-radius: 0.8rem;
-  display: flex;
-  flex-direction: column;
-  row-gap: 1rem;
-  box-shadow: 0px 1px 8px 4px rgba(0, 0, 0, 0.2);
+.pickedAmount input {
+    width: 100%;
+    height: 4rem;
+    background: rgba(24, 31, 46, 0.5);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 8px;
+    padding: 0 1.2rem;
+    color: var(--third-color);
+    font-size: 1.35rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.3s;
 }
 
-#formAnularCuota > h3 {
-  font-size: clamp(1rem, 1vw, 1.4rem);
-  font-family: raleway-semibold;
-  color: var(--background-color);
-}
-
-#formAnularCuota #cancelarAnularButton {
-  color: var(--background-color);
-}
-
-.buttonsWrapperAnularCuota {
-  display: flex;
-  gap: 1rem;
-}
-
-/* #endregion */
-.selectMotivoWrapper {
-  width: 100%;
-  position: relative;
-  margin: 1rem 0;
-}
-
-.motivoSelectedWrapper {
-  background-color: white;
-  width: 90%;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  padding: 0.6rem;
-  font-size: clamp(0.9rem, 1vw, 1.1em);
-  font-family: raleway-semibold;
-  border: 1px solid #3d7bd8d5;
-  border-radius: 0.6rem;
-  cursor: pointer;
-  position: relative;
-  z-index: 2;
-}
-
-.motivosList {
-  width: 90%;
-  padding: 0.6rem;
-  margin: 0 auto;
-  list-style: none;
-  background-color: white;
-  border-radius: 0.6rem;
-  position: absolute;
-  top: 70%;
-  height: 0rem;
-  overflow: auto;
-  z-index: 1;
-}
-
-.motivosList > li:first-child {
-  padding-top: 1.5rem;
-}
-
-.motivosList > li {
-  font-size: clamp(1rem, 1vw, 1.2rem);
-  font-family: raleway-semibold;
-  padding: 0.5rem 0;
-  cursor: pointer;
-}
-
-.motivosList > li:hover {
-  color: var(--third-color);
-}
-
-.motivosList.active {
-  border: 1px solid #3d7bd8d5;
-  height: 9rem;
-}
-
-.buttonSubmitWrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-}
-
-#sendPayment.blocked {
-  pointer-events: none;
-  background-color: var(--blue-2);
-}
-
-#amountParcial.invalido {
-  border: 2px solid rgba(255, 0, 0, 0.616);
-}
-
-.errorMessageSendBaja {
-  font-family: raleway-semibold;
-  font-size: 1.3rem;
-  color: #ed1717;
-  margin-top: 0.5rem;
+.pickedAmount input:focus {
+    border-color: var(--blue-accent-color);
 }
 
 #dineroRestante {
-  font-size: clamp(1.2rem, 1vw, 1.2rem);
-  font-family: raleway-semibold;
-  color: var(--danger-color);
-  text-align: center;
-  margin-top: 0.2rem;
+    font-size: 1.15rem;
+    color: var(--white-800-50);
+    margin-top: 0.4rem;
 }
 
-#sendPayment:hover {
-  transition: 0.1s all ease;
-  transform: scale(1.02);
+/* Abonar pay button */
+.wrapperButtonPayCuota {
+    margin-top: 1rem;
 }
 
-.textAtrasado {
-  font-size: clamp(1.2rem, 1vw, 1.6rem);
-  font-family: raleway-bold;
-  color: rgb(240, 7, 7);
-  margin-left: 1.3rem;
+/* Mensaje de campos obligatorios sin completar */
+.missing-fields-msg {
+    font-size: 1.15rem;
+    color: var(--danger-color);
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+    transition: opacity 0.2s ease;
 }
 
-.cuotas {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  flex-flow: column;
-  max-width: 38rem;
+.missing-fields-msg.active {
+    opacity: 1;
+    visibility: visible;
+    max-height: none;
+    margin-bottom: 0.8rem;
 }
 
-.cuotas > h3 {
-  color: white;
-  font-size: 2rem;
-  font-family: raleway-bold;
-  margin-bottom: 1rem;
-}
-
-.cuotaSuccess {
-  position: absolute;
-  bottom: 2rem;
-  display: flex;
-  left: 100%;
-  background-color: #fff;
-  padding: 0.8rem 1.5rem;
-  align-items: center;
-  border-radius: 1rem;
-  min-width: fit-content;
-  transition: 1s all ease;
-}
-
-.cuotaSuccess.active {
-  left: -20%;
-}
-
-.cuotaSuccess > img {
-  width: 3rem;
-  margin-right: 1.5rem;
-}
-
-.cuotaPagada {
-  font-size: clamp(1.2rem, 1.3vw, 1.6rem);
-  font-family: raleway-semibold;
-  white-space: nowrap;
-}
-
-.cuotaPagada > strong {
-  color: var(--primary-color);
-}
-
-.wrapperSelectAdjudicacion {
-  position: relative;
-  height: 100%;
-}
-
-.wrapperSelectAdjudicacion > h3 {
-  font-family: raleway-semibold;
-  font-size: 1.4rem;
-  color: white;
-  margin-bottom: 0.4rem;
-  margin-left: 0.2rem;
-}
-
-.selectedOption > img {
-  width: 2rem;
-  filter: invert(1);
-}
-
-.changeTitularidadWrapper {
-  width: 100%;
-  border-top: 1px #ffffff85 solid;
-  margin-top: 1rem;
-  height: 20rem;
-  overflow: auto;
-}
-
-.changeTitularidadWrapper::-webkit-scrollbar {
-  width: 4px;
-  border-radius: 5px;
-}
-
-.changeTitularidadWrapper::-webkit-scrollbar-thumb {
-  background: #585858;
-  border-radius: 1rem;
-}
-
-.changeTitularidadWrapper > h2 {
-  font-size: clamp(1.6rem, 1.5vw, 2.1rem);
-  font-family: raleway-semibold;
-  color: white;
-  margin-left: 0.4rem;
-  margin-bottom: 0.9rem;
-  margin-top: 1.5rem;
-}
-
-.changeItem {
-  border: 2px var(--primary-color) solid;
-  display: flex;
-  justify-content: space-around;
-  padding: 1rem;
-  border-radius: 0.8rem;
-  margin-bottom: 1rem;
-}
-
-.changeItem > .names > img {
-  width: 2rem;
-  filter: invert(1);
-  transform: rotate(180deg);
-}
-
-.changeItem > .names > a {
-  color: white;
-  text-decoration: none;
-  font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-  font-family: raleway-semibold;
-  width: fit-content;
-}
-
-.changeItem > .names > a:hover {
-  transition: 0.1s all ease;
-  transform: scale(0.98);
-}
-
-.changeItem > .names > a:last-child {
-  color: rgba(255, 255, 255, 0.464);
-}
-
-.changeItem > .names {
-  width: 30%;
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  align-items: center;
-}
-
-.changeItem > .changeItemInformation {
-  width: 60%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
-}
-
-.changeItem > .changeItemInformation > h3 {
-  color: var(--third-color);
-
-  font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-  font-family: raleway-semibold;
-  margin-bottom: 0.4rem;
-}
-
-.changeItem > .changeItemInformation > h3 > strong {
-  color: white;
-
-  margin-left: 0.5rem;
-}
-
-#verPDFTitularidad {
-  position: absolute;
-  right: 2rem;
-  top: 0.2rem;
-  font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-  font-family: raleway-semibold;
-  color: white;
-  padding-bottom: 0.1rem;
-  text-decoration: none;
-  border-bottom: 1px solid white;
-}
-
-#verPDFTitularidad:hover {
-  color: var(--primary-color);
-  border-bottom: 1px solid var(--primary-color);
-}
-
-.wrapperUrlRecupero {
-  margin-top: 1rem;
-}
-
-.wrapperUrlRecupero > a {
-  text-decoration: none;
-  color: var(--third-color);
-  font-size: clamp(1rem, 1vw, 1.5rem);
-  font-family: raleway-semibold;
-}
-
-/* #region Eliminar la venta */
-.deleteSale {
-  margin-right: auto;
-}
-
-.deleteSale > #showDeleteWrapper {
-  font-size: clamp(1rem, 1vw, 1.5rem);
-}
-/* 
-.wrapperFormDeleteSale {
-    position: fixed;
-    background-color: #060607b6;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
+/* Los botones se apilan a todo el ancho, con la misma medida y separados.
+   Se pisan max-width/max-height/min-width de .add-button-default (root_base.css),
+   que dejaba "Abonar" más angosto y bajo que "Aplicar descuento". */
+.wrapperButtonPayCuota button {
+    box-sizing: border-box;
     width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-} */
-/* 
-.wrapperFormDeleteSale.active {
+    max-width: none;
+    min-width: 0;
+    min-height: 4.2rem;
+    max-height: 4.2rem;
+    padding: 0 1.5rem;
+    background: linear-gradient(135deg, var(--blue-accent-color), #006ecf);
+    border: none;
+    color: #ffffff;
+    font-size: 1.4rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(6, 137, 250, 0.25);
     display: flex;
-} */
-
-#formDeleteSale > h1 {
-  font-size: clamp(2rem, 1.7vw, 3rem);
-  font-family: raleway-bold;
-  color: var(--white-color-800);
-  /* text-align: center; */
-  margin-bottom: 1.6rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    transition: all 0.25s;
 }
 
-#formDeleteSale > .inputClaveWrapper > p {
-  font-size: clamp(1.4rem, 1.4vw, 1.8rem);
-  font-family: raleway-semibold;
-  color: var(--white-800-80);
-  margin-bottom: 1rem;
+.wrapperButtonPayCuota button + button {
+    margin-top: 1.2rem;
 }
 
-#formDeleteSale > .inputClaveWrapper > p > strong {
-  color: var(--blue-accent-color);
+/* "Aplicar descuento": acción secundaria (contorno) para no competir con "Abonar" */
+.wrapperButtonPayCuota button.buttonDescuentoCuota {
+    background: transparent;
+    border: 1px solid rgba(6, 137, 250, 0.45);
+    color: var(--blue-accent-color);
+    box-shadow: none;
 }
 
-#formDeleteSale > .inputClaveWrapper > input {
-  font-size: clamp(1.3rem, 1.3vw, 1.7rem);
-  font-family: raleway-semibold;
-  max-width: 30rem;
-  /* height: 4rem; */
+.wrapperButtonPayCuota button.buttonDescuentoCuota:hover {
+    background: rgba(6, 137, 250, 0.12);
+    box-shadow: none;
 }
 
-/* #endregion */
-
-.modalContainerFilter .tingle-modal-box__content {
-  font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-  font-family: raleway-semibold;
+.wrapperButtonPayCuota button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(6, 137, 250, 0.4);
 }
 
-.modalContainerFilter .tingle-modal-box__footer > button {
-  font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-  font-family: raleway-semibold;
+.wrapperButtonPayCuota button.blocked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
-.modalResponse .messageReponseModal {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-  font-family: raleway-semibold;
-  font-size: clamp(1.3rem, 1.2vw, 1.6rem);
-  color: var(--white-color-800);
+/* Dynamic view-details generated styles */
+.wrapperInfo_cuota {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-top: 1rem;
 }
 
-.modalResponse .messageReponseModal > img {
-  width: 4vw;
-  min-width: 5rem;
-  max-width: 7rem;
+.info_cuota {
+    background: rgba(24, 31, 46, 0.4);
+    border: 1px solid rgba(250, 248, 255, 0.04);
+    padding: 1.2rem 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.2s;
 }
 
-.modalResponse .tingle-modal-box__footer > button {
-  font-size: clamp(1.3rem, 1.2vw, 1.5rem);
-  font-family: raleway-semibold;
+.info_cuota h3 {
+    font-size: 1.3rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
 }
 
-.wrapperCuotasList::-webkit-scrollbar {
-  width: 8px; /* antes: 4px */
-}
-.wrapperCuotasList::-webkit-scrollbar-track {
-  background: transparent;
-  margin-block: 8px; /* aire arriba y abajo del riel */
-}
-.wrapperCuotasList::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 8px;
-  border: 2px solid transparent; /* “separa” el pulgar del borde */
-  /* background-clip: content-box; */
+.info_cuota h3:first-child {
+    color: var(--white-800-50);
 }
 
-/* Firefox */
-.wrapperCuotasList {
-  scrollbar-width: thin; /* auto | thin */
-  scrollbar-color: var(--white-800-50) transparent;
+/* View More Payments lists */
+.info_cuota.view_more {
+    cursor: pointer;
+    flex-wrap: wrap;
+    gap: 1rem;
+    position: relative;
 }
 
-.inline-loader {
-  margin-top: 1rem;
+.info_cuota.view_more:hover {
+    background: rgba(24, 31, 46, 0.6);
 }
 
-.montoMonedaWrapper {
-  display: flex;
-  align-items: center;
-  column-gap: 0.8rem;
+/* Texto de apoyo de la fila "Pagos registrados" (cantidad de pagos / vacío) */
+.info_cuota.view_more .pagos-meta {
+    margin-right: auto;
+    font-size: 1.15rem;
+    color: var(--white-800-50);
 }
 
-.montoMonedaWrapper #selectWrapperSelectMoneda {
-  flex: 1 0 40%;
+/* Sin pagos no hay nada para desplegar: no parece clickeable */
+.info_cuota.view_more.sin-pagos {
+    cursor: default;
 }
 
-.montoMonedaWrapper .pickedAmount {
-  flex: 1 0 60%;
+.info_cuota.view_more.sin-pagos:hover {
+    background: rgba(24, 31, 46, 0.4);
+}
+
+.info_cuota.view_more #btnReciboCuota {
+    background: rgba(6, 137, 250, 0.12);
+    border: 1px solid rgba(6, 137, 250, 0.25);
+    color: var(--blue-accent-color);
+    padding: 0.4rem 1.2rem;
+    border-radius: 6px;
+    font-size: 1.15rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    cursor: pointer;
+}
+
+.info_cuota.view_more #btnReciboCuota:hover {
+    background: var(--blue-accent-color);
+    color: #ffffff;
+}
+
+.info_cuota.view_more .iconDisplayViewMore {
+    width: 1.2rem;
+    transition: transform 0.2s;
+}
+
+.info_cuota.view_more .iconDisplayViewMore.active {
+    transform: rotate(180deg);
+}
+
+.wrapperDetail_view_more {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 0.8rem;
+    border-top: 1px solid rgba(250, 248, 255, 0.05);
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+}
+
+.wrapperDetail_view_more.active {
+    display: flex;
+}
+
+.info_cuota.detail_view_more {
+    background: none;
+    border: none;
+    padding: 0.4rem 0.5rem;
+}
+
+/* Pago hecho en dólares: se destaca para distinguirlo del importe en pesos */
+.info_cuota.detail_view_more.pago-usd h3:last-child {
+    color: var(--success-color);
+    font-family: 'Raleway-Bold', sans-serif;
+}
+
+.info_cuota.detail_view_more.title_payment h3 {
+    color: var(--blue-accent-color) !important;
+    font-family: 'Raleway-Bold', sans-serif;
+}
+
+/* Payment Status bar notifications */
+.payCuotaStatus {
+    position: absolute;
+    bottom: -100px;
+    left: 1.5rem;
+    right: 1.5rem;
+    background: rgba(24, 31, 46, 0.95);
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 10px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    z-index: 1000;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.payCuotaStatus.active {
+    transform: translateY(-120px);
+}
+
+.payCuotaStatus img {
+    width: 2.2rem;
+    height: 2.2rem;
+    display: none;
+}
+
+.payCuotaStatus h2 {
+    font-size: 1.35rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+.payCuotaStatus.ok {
+    border-color: rgba(46, 204, 113, 0.3);
+}
+
+.payCuotaStatus.failed {
+    border-color: rgba(231, 76, 60, 0.3);
+}
+
+
+/* ==========================================================================
+   Selects: ícono a la izquierda y texto después del ícono.
+   root_base.css se carga después de esta hoja y pisaba el padding izquierdo
+   (y el modo búsqueda lo dejaba en 0), así que el texto quedaba encima del
+   ícono; además el ícono quedaba detrás del fondo del campo por el z-index
+   inline que le asigna z_index_orders_selects.js.
+   ========================================================================== */
+.sale-details-container .containerInputAndOptions .pseudo-input-select-wrapper {
+    padding: 0 3.2rem 0 3.6rem;
+    /* misma altura que los inputs de esta pantalla (4rem) */
+    height: 4rem;
+    min-height: 4rem;
+    max-height: 4rem;
+}
+
+.sale-details-container .select-search .containerInputAndOptions .pseudo-input-select-wrapper {
+    padding: 0;
+}
+
+.sale-details-container .select-search .pseudo-input-select-wrapper .editable-product-input {
+    padding: 0 3.2rem 0 3.6rem;
+    max-height: none;
+    height: 100%;
+    font-size: 1.35rem;
+}
+
+.sale-details-container .select-embed-icon {
+    z-index: 100;
+    color: var(--white-800-80);
 }

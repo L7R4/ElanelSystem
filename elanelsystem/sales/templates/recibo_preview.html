@@ -102,6 +102,18 @@
                   <span>$ {{ context.sumas.bancos }}</span>
                 </div>
 
+                {% if context.pagos_usd %}
+                <div class="pagos-usd">
+                  <p class="pagos-usd-titulo">Pagado en dólares (incluido en los importes de arriba)</p>
+                  {% for p in context.pagos_usd %}
+                  <div class="fila-pago-usd">
+                    <span>U$S {{ p.monto_usd_display }} al cambio de $ {{ p.tipo_cambio_display }}</span>
+                    <span>= $ {{ p.monto_display }}</span>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+
                 <div class="total">
                   <strong>TOTAL $</strong>
                   <div class="linea-total">{{ context.recibo.total }}</div>

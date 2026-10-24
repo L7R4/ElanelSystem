@@ -68,7 +68,7 @@ inputTipoDeProducto.addEventListener("input", async () => {
 
         inputProducto.parentElement.parentElement.classList.remove("desactive") // Desbloquea el input de producto
 
-        productos.forEach(product => {
+        [...productos].reverse().forEach(product => { // se inserta al principio, se recorre al revés para quedar de la A a la Z
             createLiHTMLElement(listProducto, product["nombre"]);
         });
         updateListOptions(listProducto, inputProducto); // Actualiza los listeners de la lista de productos

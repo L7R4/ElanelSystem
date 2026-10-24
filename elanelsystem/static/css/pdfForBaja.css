@@ -15,95 +15,290 @@
   font-family: raleway-semibold;
   src: url("../fonts/Raleway-SemiBold.ttf");
 }
+
+/* Documento imprimible: fondo blanco y texto oscuro, igual que el resto de los PDF del sistema
+   (recibo, informe, titularidad). El banner es la única mancha de color, a modo de membrete. */
+:root {
+  --banner: rgb(32, 43, 68);
+  --text: #2d2e2f;
+  --text-70: rgba(45, 46, 47, 0.7);
+  --text-45: rgba(45, 46, 47, 0.45);
+  --accent: rgb(243, 156, 18); /* ámbar: todo lo que se completa a mano (líneas en blanco, checkboxes) */
+}
+
+/* Una sola hoja A4. Margen superior 0: el banner queda pegado al borde de la hoja. */
+@page {
+  size: A4;
+  margin: 0 75px 28px 75px;
+}
+
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
   font-feature-settings: "pnum" on, "lnum" on;
 }
+
 html {
-    box-sizing: border-box;
-    font-size: 62.5%;
-    /* border: 1px solid #2D2E2F; */
-    /* border-radius: .7rem; */
+  font-size: 62.5%;
+  background: #ffffff;
+  color: var(--text);
 }
 
-
-
-img{
-    width: 100%;
-    height: 8rem;
-    margin-left: 2rem;
-    object-fit: contain;
-    margin-bottom: 3rem;
+body {
+  font-family: raleway;
 }
 
-#subtittle{
-    width: 100%;
-    display: flex;
-    /* height: 10%; */
-    justify-content: space-around;
-    align-items: center;
-    color: #2D2E2F;
-    border-bottom: #2D2E2F 1px solid;
-    margin-bottom: 1.5rem;
-    padding: .4rem;
+/* ===================== Banner superior ===================== */
+/* Full-bleed: sangra hasta el borde físico de la hoja usando márgenes negativos iguales al margen de @page */
+#banner {
+  width: calc(100% + 150px);
+  margin: 0 -75px 2.2rem -75px;
+  background: var(--banner);
+  padding: 1.1rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  min-height: 5rem;
 }
-#subtittle > h2{
-    font-size: 1.8rem;
-    font-family: raleway-semibold;
+#bannerIcon {
+  height: 2.8rem;
+  width: auto;
 }
-#detalle{
-    margin-bottom: 10rem;
-    margin-top: 3rem;
+#bannerText {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  align-items: flex-end;
+  line-height: 1.15;
 }
-#detalle > h2{
-    font-size: 1.6rem;
-    color: #2D2E2F;
-    font-family: raleway;
-    margin-bottom: 1.6rem;
+#bannerNombre {
+  font-family: raleway-bold;
+  font-size: 2rem;
+  letter-spacing: 0.3rem;
+  color: #faf8ff;
+  white-space: nowrap;
 }
-#detalle > h2 > strong{
-    color:var(--third-color) ;
-}
-
-#contrato{
-    width: 77.5rem;
-    border: 1px solid #2D2E2F;
-    border-radius: .8rem;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 5rem;
-    padding: 3rem 0rem;
-    margin: 0 auto;
-    margin-right: 1rem;
-    position: relative;
-    left:-6.8rem;
-}
-#contrato > p{
-    width:90%;
-    font-size: 1.3rem;
-    font-family: raleway-semibold;
-    color: #000;
-    text-align: center;
+#bannerSub {
+  font-family: raleway;
+  font-size: 1.05rem;
+  letter-spacing: 0.1rem;
+  color: rgba(250, 248, 255, 0.75);
+  white-space: nowrap;
 }
 
-#firmas{
-    margin-top: 13rem;
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
+/* ===================== Título / agencia ===================== */
+#subtittle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-#firmas > div{
-    /* width: 50%; */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
+#subtittle > h2 {
+  font-family: raleway-semibold;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 0.3rem;
 }
-#firmas > div > h6,#firmas > div > p{
-    font-size: 1.2rem;
-    font-family: raleway;
-    color: #2D2E2F;
-    white-space: nowrap
+#subtittle > h2 > strong {
+  font-family: raleway-bold;
 }
+
+/* ===================== Detalle (campos ya conocidos por el sistema) ===================== */
+#detalle > h2 {
+  font-family: raleway;
+  color: var(--text-70);
+  line-height: 1.3;
+}
+#detalle > h2 > strong {
+  font-family: raleway-semibold;
+  color: var(--text);
+}
+#detalle > h2 > .nota {
+  color: var(--text-45);
+  font-family: raleway;
+}
+
+/* Línea en blanco para completar a mano (ej. Barrio) */
+.blank {
+  display: inline-block;
+  min-width: 24rem;
+  border-bottom: 1px solid var(--accent);
+  vertical-align: bottom;
+}
+
+/* ===================== Forma de reintegro (checkboxes) ===================== */
+#reintegro > h3 {
+  font-family: raleway-semibold;
+  color: var(--text);
+}
+#reintegro > h3 > .nota {
+  font-family: raleway;
+  color: var(--text-45);
+}
+/* Sin flex/gap acá a propósito: en algún render de WeasyPrint un span vacío dentro de un flex row
+   quedaba con ancho casi nulo (el checkbox se veía como una línea diagonal, pegado al texto). Con
+   inline-block + márgenes explícitos el resultado es previsible. */
+#reintegroOpciones {
+  font-size: 0; /* evita el espacio en blanco entre inline-blocks por los saltos de línea del HTML */
+}
+.checkLabel {
+  display: inline-block;
+  font-family: raleway;
+  color: var(--text-70);
+  vertical-align: middle;
+}
+.checkbox {
+  border: 1.5px solid var(--accent);
+  border-radius: 0.3rem;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ===================== Datos bancarios ===================== */
+#datosBancarios > h3 {
+  font-family: raleway-semibold;
+  color: var(--text);
+}
+/* Mismo patrón "h2 con .blank" que Barrio en #detalle, solo que más angosto (son 4 renglones seguidos) */
+#datosBancarios > h2 {
+  font-family: raleway;
+  color: var(--text-70);
+}
+.blank.largo {
+  min-width: 30rem;
+}
+
+/* ===================== Observaciones (texto legal fijo) ===================== */
+#observaciones > h3 {
+  font-family: raleway-semibold;
+  color: var(--text);
+}
+#contrato {
+  border: 1px solid var(--accent);
+  border-radius: 0.6rem;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+#contrato > p {
+  font-family: raleway;
+  color: var(--text-70);
+  text-align: justify;
+}
+
+/* ===================== Firmas ===================== */
+#firmas {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+#firmas > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.signatureLine {
+  display: inline-block;
+  border-bottom: 1px solid var(--text-45);
+}
+#firmas > div > h6 {
+  font-family: raleway-semibold;
+  color: var(--text-70);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Densidad: "normal" (texto corto) usa tipografía y espaciados grandes para
+   que el contenido llene la hoja sin dejar un tercio en blanco abajo.
+   "compacta"/"minima" entran cuando el motivo/observación son largos, y
+   comprimen TODA la hoja (no solo #detalle) para seguir entrando en una sola
+   hoja. La clase va en <body> a propósito, para que las tres franjas
+   (densidad, tamaño de fuente, separación) avancen juntas en cada sección.
+   ========================================================================== */
+body.normal #subtittle { margin-bottom: 2.24rem; }
+body.compacta #subtittle { margin-bottom: 2rem; }
+body.minima #subtittle { margin-bottom: 1.84rem; }
+
+body.normal #subtittle > h2 { font-size: 1.72rem; }
+body.compacta #subtittle > h2 { font-size: 1.75rem; }
+body.minima #subtittle > h2 { font-size: 1.78rem; }
+
+body.normal #detalle > h2 { font-size: 1.59rem; margin-bottom: 1.33rem; }
+body.compacta #detalle > h2 { font-size: 1.55rem; margin-bottom: 1.05rem; }
+body.minima #detalle > h2 { font-size: 1.5rem; margin-bottom: 0.8rem; }
+
+body.normal #detalle > h2 > .nota { font-size: 1.16rem; }
+body.compacta #detalle > h2 > .nota { font-size: 1.2rem; }
+body.minima #detalle > h2 > .nota { font-size: 1.2rem; }
+
+body.normal .blank { height: 1.63rem; }
+body.compacta .blank { height: 1.7rem; }
+body.minima .blank { height: 1.73rem; }
+
+body.normal #reintegro { margin-bottom: 2.24rem; }
+body.compacta #reintegro { margin-bottom: 2rem; }
+body.minima #reintegro { margin-bottom: 1.73rem; }
+
+body.normal #reintegro > h3 { font-size: 1.46rem; margin-bottom: 0.95rem; }
+body.compacta #reintegro > h3 { font-size: 1.5rem; margin-bottom: 0.85rem; }
+body.minima #reintegro > h3 { font-size: 1.5rem; margin-bottom: 0.75rem; }
+
+body.normal #reintegro > h3 > .nota { font-size: 1.16rem; }
+body.compacta #reintegro > h3 > .nota { font-size: 1.2rem; }
+body.minima #reintegro > h3 > .nota { font-size: 1.2rem; }
+
+body.normal .checkLabel { font-size: 1.46rem; margin-right: 4.3rem; }
+body.compacta .checkLabel { font-size: 1.5rem; margin-right: 4.5rem; }
+body.minima .checkLabel { font-size: 1.5rem; margin-right: 4.6rem; }
+
+body.normal .checkbox { width: 1.8rem; height: 1.8rem; margin-right: 0.95rem; }
+body.compacta .checkbox { width: 1.9rem; height: 1.9rem; margin-right: 1rem; }
+body.minima .checkbox { width: 1.84rem; height: 1.84rem; margin-right: 0.92rem; }
+
+body.normal #datosBancarios { margin-bottom: 2.24rem; }
+body.compacta #datosBancarios { margin-bottom: 2rem; }
+body.minima #datosBancarios { margin-bottom: 1.73rem; }
+
+body.normal #datosBancarios > h3 { font-size: 1.46rem; margin-bottom: 1.12rem; }
+body.compacta #datosBancarios > h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+body.minima #datosBancarios > h3 { font-size: 1.5rem; margin-bottom: 0.92rem; }
+
+body.normal #datosBancarios > h2 { font-size: 1.42rem; margin-bottom: 1.12rem; }
+body.compacta #datosBancarios > h2 { font-size: 1.45rem; margin-bottom: 1rem; }
+body.minima #datosBancarios > h2 { font-size: 1.44rem; margin-bottom: 0.92rem; }
+
+body.normal #observaciones { margin-bottom: 2.24rem; }
+body.compacta #observaciones { margin-bottom: 2rem; }
+body.minima #observaciones { margin-bottom: 1.73rem; }
+
+body.normal #observaciones > h3 { font-size: 1.46rem; margin-bottom: 0.95rem; }
+body.compacta #observaciones > h3 { font-size: 1.5rem; margin-bottom: 0.85rem; }
+body.minima #observaciones > h3 { font-size: 1.5rem; margin-bottom: 0.75rem; }
+
+body.normal #contrato { padding: 1.8rem 2.24rem; }
+body.compacta #contrato { padding: 1.7rem 2.2rem; }
+body.minima #contrato { padding: 1.5rem 2.07rem; }
+
+body.normal #contrato > p { font-size: 1.29rem; line-height: 1.5; }
+body.compacta #contrato > p { font-size: 1.3rem; line-height: 1.5; }
+body.minima #contrato > p { font-size: 1.32rem; line-height: 1.48; }
+
+body.normal #firmas { margin-top: 3.96rem; }
+body.compacta #firmas { margin-top: 3.4rem; }
+body.minima #firmas { margin-top: 2.76rem; }
+
+body.normal #firmas > div { gap: 1.12rem; }
+body.compacta #firmas > div { gap: 1.1rem; }
+body.minima #firmas > div { gap: 1.04rem; }
+
+body.normal .signatureLine { width: 23.2rem; }
+body.compacta .signatureLine { width: 25rem; }
+body.minima .signatureLine { width: 25.3rem; }
+
+body.normal #firmas > div > h6 { font-size: 1.29rem; }
+body.compacta #firmas > div > h6 { font-size: 1.35rem; }
+body.minima #firmas > div > h6 { font-size: 1.38rem; }

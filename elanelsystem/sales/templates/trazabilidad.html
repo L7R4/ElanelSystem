@@ -1,0 +1,89 @@
+{% extends 'molde.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/trazabilidad.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock css %}
+
+{% block content %}
+<div class="trazabilidad-container">
+
+    <div class="modern-header">
+        <div class="header-icon-wrapper">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div class="header-text">
+            <span class="header-subtitle">AUDITORÍA</span>
+            <h1 class="header-title">Trazabilidad de Operaciones</h1>
+            <span class="header-desc">Quién hizo cada cambio, cuándo, y sobre qué cliente, venta o pago.</span>
+        </div>
+    </div>
+
+    <form method="GET" class="traz-filters glass-panel">
+        <div class="traz-filter-field">
+            <label>Usuario</label>
+            <input type="text" name="usuario" value="{{ usuario_q }}" placeholder="Buscar por usuario...">
+        </div>
+        <div class="traz-filter-field">
+            <label>Tipo</label>
+            <select name="entidad">
+                <option value="" {% if not entidad_q %}selected{% endif %}>Todos</option>
+                <option value="Venta" {% if entidad_q == "Venta" %}selected{% endif %}>Venta</option>
+                <option value="Cliente" {% if entidad_q == "Cliente" %}selected{% endif %}>Cliente</option>
+                <option value="Pago" {% if entidad_q == "Pago" %}selected{% endif %}>Pago</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-save">
+            <i class="fa-solid fa-filter"></i> Filtrar
+        </button>
+        {% if usuario_q or entidad_q %}
+        <a href="{% url 'sales:trazabilidad' %}" class="btn-cancel">Limpiar</a>
+        {% endif %}
+    </form>
+
+    <div class="traz-table-wrapper glass-panel">
+        <table class="traz-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Usuario</th>
+                    <th>Operación</th>
+                    <th>Tipo</th>
+                    <th>Referencia</th>
+                    <th>Cliente</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in page_obj %}
+                <tr>
+                    <td class="traz-fecha">{{ r.fecha|date:"d/m/Y H:i" }}</td>
+                    <td>{{ r.usuario }}</td>
+                    <td><span class="traz-operacion-tag">{{ r.tipo_operacion }}</span></td>
+                    <td>{{ r.entidad }}</td>
+                    <td>{{ r.referencia }}</td>
+                    <td>{{ r.cliente }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="traz-empty">No hay registros que coincidan con el filtro.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="traz-pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&usuario={{ usuario_q }}&entidad={{ entidad_q }}">◀ Anterior</a>
+        {% endif %}
+        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&usuario={{ usuario_q }}&entidad={{ entidad_q }}">Siguiente ▶</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock content %}

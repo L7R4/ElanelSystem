@@ -28,5 +28,5 @@ def _on_pago_cannon_changed(sender, instance, **kwargs):
     # sincronizar todas las cuotas de la venta
     venta.sync_estado_cuotas()
     # guardamos sólo el JSON de cuotas y campo suspendida/deBaja
-    print("✅ Actualizando cuotas de la venta desde el signal")
+    print("Actualizando cuotas de la venta desde el signal")
     venta.save(update_fields=['cuotas','suspendida','deBaja'])

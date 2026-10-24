@@ -44,6 +44,9 @@ function listenerColocarUltimos3Digitos(nro_contrato,nro_orden) {
         // Obtener los últimos 3 dígitos del número de contrato
         const ultimosTresDigitos = input_nro_contrato.value.slice(-3);
         input_nro_orden.value = ultimosTresDigitos;
+        // Se avisa el cambio para que el chequeo de campos requeridos lo vea: si no, al pegar el
+        // contrato el Nro Orden figuraba como faltante y "Registrar Venta" quedaba bloqueado.
+        input_nro_orden.dispatchEvent(new Event("input", { bubbles: true }));
 
     })
 }

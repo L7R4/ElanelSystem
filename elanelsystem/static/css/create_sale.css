@@ -1,462 +1,717 @@
-.wrapper_content {
-  /* padding-left: 5rem; */
-  overflow: hidden;
-  padding: 5rem;
-  display: flex;
-  gap: 2rem;
-  flex-flow: column;
+/* ==========================================================================
+   MODERN SALE CREATION FORM STYLES
+   ========================================================================== */
+
+/* Main Container Layout */
+.sale-creation-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    font-family: 'Raleway', sans-serif;
+    color: var(--white-color-800);
 }
 
-.not_ed {
-  background-color: var(--white-800-20) !important;
-  pointer-events: none;
-  /* border: 2px solid #1c2d45b8 !important; */
+/* Glassmorphism Panel Base */
+.glass-panel {
+    background: rgba(24, 31, 46, 0.7);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(250, 248, 255, 0.06);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
 }
 
-.input-select-custom {
-  background-color: var(--background-color);
-  color: var(--third-color);
+/* Modern Header Styling */
+.modern-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(24, 31, 46, 0.85), rgba(32, 43, 68, 0.85));
+    border: 1px solid rgba(250, 248, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    flex-wrap: wrap;
 }
 
-.containerIcon_Input {
-  position: relative;
-  display: flex;
-  align-items: center;
+.header-icon-wrapper {
+    font-size: 2.4rem;
+    color: var(--blue-accent-color);
+    background: rgba(6, 137, 250, 0.12);
+    width: 5.5rem;
+    height: 5.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid rgba(6, 137, 250, 0.25);
+    box-shadow: 0 0 15px rgba(6, 137, 250, 0.15);
 }
 
-p.iconValueInput {
-  position: absolute;
-  font-family: raleway-bold;
-  margin-left: 1rem;
-  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-  color: var(--third-color);
+.header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
 }
 
-.wrapper_tittle {
-  flex: 0 0 auto;
+.header-subtitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--blue-accent-color);
+    text-transform: uppercase;
 }
 
-.wrapper_tittle > h1 {
-  font-size: clamp(3rem, 3vw, 5rem);
-  font-family: raleway-bold;
-  color: var(--third-color);
+.header-title {
+    font-size: clamp(2rem, 2vw, 3rem);
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
 }
 
-#form_create_sale {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
-  gap: 2rem;
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 1rem;
-}
-/* El calendario que se inserta dentro del form */
-#form_create_sale .vc {
-  position: absolute !important;
-  z-index: 9999; /* que quede por encima de inputs/modales */
+.header-desc {
+    font-size: 1.25rem;
+    color: var(--white-800-80);
+    margin-top: 0.2rem;
 }
 
-#form_create_sale > div {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  min-width: 25rem;
+/* Form Layout Grid */
+.form-sections-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
 }
 
-#form_create_sale > #wrapperProducto.desactive input {
-  background-color: #393e4c;
-  border-color: #243247;
+.full-width-card {
+    grid-column: span 2;
 }
 
-#form_create_sale > #wrapperProducto.desactive img {
-  display: none;
+@media (max-width: 992px) {
+    .form-sections-grid {
+        grid-template-columns: 1fr;
+    }
+    .full-width-card {
+        grid-column: span 1;
+    }
 }
 
-#form_create_sale > div > p {
-  position: absolute;
-  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-  font-family: raleway-semibold;
-  color: #ff7b7b;
-  padding: 0.3rem 0.5rem;
-  left: 0;
-  top: 100%;
-  border-radius: 0.6rem;
+/* Cards within Form */
+.form-card {
+    padding: 2.5rem;
 }
 
-#form_create_sale div.containerIcon_Input > input {
-  color: var(--third-color);
-  text-indent: 2.2rem;
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    border-bottom: 1px solid rgba(250, 248, 255, 0.08);
+    padding-bottom: 1.2rem;
+    margin-bottom: 2.2rem;
+}
+
+.card-icon {
+    font-size: 1.8rem;
+    color: var(--white-800-80);
+}
+
+.card-header h2 {
+    font-size: 1.8rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: var(--third-color);
+    margin: 0;
+}
+
+.card-body {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.8rem;
+}
+
+@media (max-width: 576px) {
+    .card-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Row layouts for full-width cards */
+.card-body.flex-row-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.8rem;
+}
+
+.card-body.flex-row-layout > div {
+    flex: 1;
+    min-width: 250px;
+}
+
+.flex-grow-1 {
+    flex-grow: 1 !important;
+}
+
+/* Form Fields & Inputs */
+.inputWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.labelInput, .inputWrapper label {
+    font-size: 1.25rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--white-800-80);
+    padding-left: 0.2rem;
+    margin: 0;
+}
+
+.field-hint {
+    font-size: 1.1rem;
+    color: var(--white-800-50);
+    margin: -0.2rem 0 0;
+    padding-left: 0.2rem;
+    line-height: 1.4;
+}
+
+/* ==========================================================================
+   Custom Select — Producto y Agencia, etc.
+   ========================================================================== */
+.containerInputAndOptions {
+    position: relative;
+    width: 100%;
+}
+
+.select-embed-icon {
+    position: absolute;
+    left: 1.3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.25rem;
+    color: var(--white-800-50);
+    z-index: 5;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.pseudo-input-select-wrapper {
+    width: 100%;
+    height: 4.2rem;
+    background-color: rgba(32, 43, 68, 0.45);
+    border: 1px solid rgba(250, 248, 255, 0.12);
+    border-radius: 10px;
+    padding: 0 1.2rem 0 3.5rem;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.containerInputAndOptions:hover .pseudo-input-select-wrapper {
+    border-color: rgba(6, 137, 250, 0.4);
+    background-color: rgba(32, 43, 68, 0.6);
+}
+
+.containerInputAndOptions:has(.list-select-custom.options.open) .pseudo-input-select-wrapper {
+    border-color: var(--blue-accent-color);
+    background-color: rgba(32, 43, 68, 0.6);
+    box-shadow: 0 0 0 3px rgba(6, 137, 250, 0.18);
+}
+
+.containerInputAndOptions:has(.list-select-custom.options.open) .select-embed-icon {
+    color: var(--blue-accent-color);
+}
+
+.pseudo-input-select-wrapper h3 {
+    font-size: 1.35rem;
+    color: var(--third-color);
+    margin: 0;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pseudo-input-select-wrapper h3.placeholder {
+    color: var(--white-800-50);
+    font-weight: 400;
 }
 
 .iconDesplegar {
-  filter: invert(1);
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.05rem;
+    color: var(--white-800-50);
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), color 0.2s ease;
+    pointer-events: none;
 }
 
-#productoWrapper {
-  grid-column: 2 / -2;
-}
-#vendedorWrapper {
-  grid-column: 1 / span 2;
-}
-#supervisorWrapper {
-  grid-column: 3 / span 2;
+.iconDesplegar.open {
+    transform: translateY(-50%) rotate(180deg);
+    color: var(--blue-accent-color);
 }
 
-#form_create_sale > div > textarea.input-read-write-default {
-  padding: 1.2rem;
-  text-indent: 0;
-  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-  font-family: raleway;
-  color: var(--third-color);
-  max-height: unset;
+.list-select-custom.options {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    width: 100%;
+    background: var(--blue-1);
+    border: 1px solid rgba(250, 248, 255, 0.12);
+    border-radius: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+    z-index: 500;
+    display: block;
+    max-height: 220px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
 }
 
-#form_create_sale > div > label {
-  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-  font-family: raleway-semibold;
-  color: var(--white-800-80);
-  width: fit-content;
-  padding-left: 0.5rem;
-  padding-bottom: 0.3rem;
+.list-select-custom.options.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
-#form_create_sale input[type="number"]::-webkit-inner-spin-button,
-#form_create_sale input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.list-select-custom.options li {
+    padding: 0.85rem 1.2rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    color: var(--third-color);
 }
 
-/* INPUTS DESIGN */
-
-#wrapperButtons {
-  display: flex;
-  gap: 1rem;
-  margin-top: auto;
-  align-self: end;
+.list-select-custom.options li:hover {
+    background: rgba(6, 137, 250, 0.15);
+    color: var(--blue-accent-color);
 }
 
-#wrapperButtons > #submitCreateSaleButton,
-#wrapperButtons > #cancelar {
-  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
+.list-select-custom.options li.selected {
+    background: var(--blue-accent-color);
+    color: #ffffff;
+    font-weight: 600;
 }
 
-#form_create_sale p.message-error {
-  position: absolute;
-  font-size: clamp(1.1rem, 1vw, 1.3rem);
-  font-family: raleway-semibold;
-  color: #ff7b7b;
-  padding: 0.3rem 0.6rem;
-  left: 0;
-  top: 100%;
-  border-radius: 0.6rem;
-  white-space: nowrap;
+.list-select-custom.options::-webkit-scrollbar {
+    width: 8px;
 }
 
-#form_create_sale > div > .select {
-  position: absolute;
-  height: 0;
-  overflow-y: auto;
-  top: 80%;
-  transition: all 0.4s ease;
-  width: 100%;
-  background: white;
-  border-radius: 0.5rem;
-  max-height: 13rem;
+.list-select-custom.options::-webkit-scrollbar-track {
+    background: transparent;
 }
 
-#form_create_sale > div > .select > li {
-  padding: 1rem;
-  font-family: raleway;
-  font-size: 1.4rem;
-  color: black;
+.list-select-custom.options::-webkit-scrollbar-thumb {
+    background: rgba(250, 248, 255, 0.15);
+    border-radius: 4px;
 }
 
-#form_create_sale > div > .select > li:first-child {
-  padding-top: 2rem;
+.list-select-custom.options::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 137, 250, 0.4);
 }
 
-#form_create_sale > div > .select > li:hover {
-  background-color: #3d7bd867;
-  cursor: pointer;
+/* Deactivated Product Select */
+#productoWrapper.desactive .pseudo-input-select-wrapper {
+    background-color: rgba(32, 43, 68, 0.15);
+    border-color: rgba(250, 248, 255, 0.04);
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
-#form_create_sale > div > .select::-webkit-scrollbar {
-  width: 4px;
-  border-radius: 5px;
+#productoWrapper.desactive .select-embed-icon,
+#productoWrapper.desactive .iconDesplegar {
+    opacity: 0.35;
 }
 
-#form_create_sale > div > .select::-webkit-scrollbar-thumb {
-  background: #0b386289;
-  border-radius: 1rem;
+#productoWrapper.desactive .pseudo-input-select-wrapper h3 {
+    color: var(--white-800-20);
 }
 
-button#submitCreateSaleButton:disabled {
-  opacity: 0.5;
-  pointer-events: none;
+/* Numeric Values Fields Input */
+.containerIcon_Input {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
 }
 
-/* DISEÑO DE INPUTS */
-
-#wrapperProducto,
-#wrapperVendedor,
-#wrapperSupervisor,
-#wrapperAgencia {
-  grid-column: span 2;
-}
-#wrapperChances {
-  grid-column: 1/-1;
+.field-icon {
+    position: absolute;
+    left: 1.4rem;
+    font-size: 1.4rem;
+    color: var(--white-800-50);
+    pointer-events: none;
+    transition: all 0.3s ease;
 }
 
-#wrapperObservaciones {
-  grid-column: 1 / span 2;
-  grid-row: span 2;
+.modern-input {
+    width: 100%;
+    height: 4.2rem;
+    background-color: rgba(32, 43, 68, 0.4);
+    border: 1px solid rgba(250, 248, 255, 0.12);
+    border-radius: 10px;
+    padding: 0 1.5rem 0 3.8rem;
+    color: var(--third-color);
+    font-size: 1.4rem;
+    font-family: 'Raleway', sans-serif;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-#id_producto.desactive {
-  background-color: #3f4653d4 !important;
-  pointer-events: none;
-  border: 2px solid #1c2d45b8 !important;
-}
-.labelInput {
-  font-size: clamp(1.4rem, 1.3vw, 1.5rem);
-  font-family: raleway-semibold;
-  color: var(--white-800-80);
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.3rem;
-  width: fit-content;
+.modern-input:focus {
+    border-color: var(--blue-accent-color);
+    background-color: rgba(32, 43, 68, 0.6);
+    box-shadow: 0 0 0 3px rgba(6, 137, 250, 0.2);
 }
 
-/* #region Multiples chances */
-#agregarNewChance {
-  margin-top: 1rem;
+.inputWrapper:focus-within label {
+    color: var(--blue-accent-color);
 }
+
+.inputWrapper:focus-within .field-icon {
+    color: var(--blue-accent-color);
+}
+
+/* Read-Only Values overrides (.not_ed): se calculan solos, no se editan */
+.modern-input.not_ed {
+    background-color: rgba(32, 43, 68, 0.2);
+    background-image: repeating-linear-gradient(
+        135deg,
+        rgba(250, 248, 255, 0.025) 0px,
+        rgba(250, 248, 255, 0.025) 6px,
+        transparent 6px,
+        transparent 12px
+    );
+    border-style: dashed;
+    border-color: rgba(250, 248, 255, 0.15);
+    color: rgba(250, 248, 255, 0.6);
+    padding-right: 3.2rem;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.containerIcon_Input:has(.not_ed)::after {
+    content: "\f023";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 1.4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    color: rgba(250, 248, 255, 0.35);
+    pointer-events: none;
+}
+
+/* Textarea Comments */
+.modern-textarea {
+    width: 100%;
+    height: 8rem;
+    background-color: rgba(32, 43, 68, 0.4);
+    border: 1px solid rgba(250, 248, 255, 0.12);
+    border-radius: 10px;
+    padding: 1.2rem;
+    color: var(--third-color);
+    font-size: 1.4rem;
+    font-family: 'Raleway', sans-serif;
+    outline: none;
+    resize: none;
+    box-sizing: border-box;
+    transition: all 0.3s;
+}
+
+.modern-textarea:focus {
+    border-color: var(--blue-accent-color);
+    background-color: rgba(32, 43, 68, 0.6);
+}
+
+/* SECTION 4: Chances / Contracts Styling */
+.btn-add-chance {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(6, 137, 250, 0.1);
+    color: var(--blue-accent-color);
+    border: 1px solid rgba(6, 137, 250, 0.2);
+    padding: 0.8rem 1.6rem;
+    font-size: 1.3rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.btn-add-chance:hover {
+    background: var(--blue-accent-color);
+    color: #ffffff;
+}
+
 .wrapperChanceItem {
-  display: flex;
-  width: 100%;
-  gap: 2rem;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
-.wrapperChanceItem > .chanceItem {
-  padding: 1rem;
-  border: 1px solid var(--third-color);
-  border-radius: 0.6rem;
-  width: 25%;
-  min-width: 25rem;
-}
-.wrapperChanceItem > .chanceItem > div {
-  display: flex;
-  flex-direction: column;
-}
-.wrapperChanceItem > .chanceItem > div > input {
-  color: var(--third-color);
-  height: 3.3rem;
+.chanceItem {
+    background: rgba(32, 43, 68, 0.35);
+    border: 1px solid rgba(250, 248, 255, 0.05);
+    border-radius: 12px;
+    padding: 1.8rem;
+    width: calc(33.33% - 1rem);
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    box-sizing: border-box;
 }
 
-.wrapperChanceItem > .chanceItem > h5 {
-  font-size: clamp(1.4rem, 1.2vw, 1.5rem);
-  font-family: raleway-semibold;
-  color: var(--background-color);
-  margin-bottom: 0.7rem;
-  width: 100%;
-  background-color: var(--third-color);
-  padding: 0.3rem;
-  border-radius: 0.6rem;
-  padding-left: 1rem;
+.chanceItem input.input-read-write-default {
+    width: 100%;
+    height: 3.8rem;
+    background-color: rgba(32, 43, 68, 0.4);
+    border: 1px solid rgba(250, 248, 255, 0.12);
+    border-radius: 8px;
+    padding: 0 1.2rem;
+    color: var(--third-color);
+    font-size: 1.35rem;
+    font-family: 'Raleway', sans-serif;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.3s;
 }
 
-.wrapperChanceItem > .chanceItem > .wrapperNroOrden {
-  margin: 0.6rem 0;
+.chanceItem input.input-read-write-default:focus {
+    border-color: var(--blue-accent-color);
+    background-color: rgba(32, 43, 68, 0.6);
 }
 
-.wrapperChanceItem > .chanceItem > div > label {
-  font-size: clamp(1.2rem, 1.1vw, 1.4rem);
-  font-family: raleway-semibold;
-  color: var(--third-color);
-  padding-left: 0.5rem;
-  padding-bottom: 0.3rem;
+.chanceItem input.input-read-write-default[readonly] {
+    background-color: rgba(32, 43, 68, 0.2);
+    border-color: rgba(250, 248, 255, 0.05);
+    color: rgba(250, 248, 255, 0.6);
 }
 
-button.quitarChanceButton {
-  font-size: clamp(1rem, 1vw, 1.2rem);
-  padding: 0.5rem 1rem;
-  min-height: unset;
-}
-/* #endregion */
-
-/* #region Input editable de productos con filtrado */
-/* Estilos para el input editable dentro del pseudo-input-select-wrapper */
-.select-search .pseudo-input-select-wrapper {
-  padding: 0;
-  cursor: text;
-  border-radius: 0.6rem 0.6rem 0 0;
-  border-bottom: none;
+@media (max-width: 900px) {
+    .chanceItem {
+        width: 100%;
+    }
 }
 
-/* Cuando el select está abierto, quitar el borde inferior del wrapper para unirse con la lista */
-.select-search #contenedorProductos.open ~ .pseudo-input-select-wrapper,
-.select-search
-  .containerInputAndOptions:has(#contenedorProductos.open)
-  .pseudo-input-select-wrapper {
-  border-bottom: none;
-  border-radius: 0.6rem 0.6rem 0 0;
-}
-.select-search .editable-product-input {
-  width: 100%;
-  height: 100%;
-  max-height: 3.5rem;
-  min-height: 3rem;
-  border: none;
-  outline: none;
-  background-color: transparent;
-  color: var(--third-color);
-  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-  font-family: raleway;
-  padding: 0 1rem;
-  text-indent: 0;
-  border-radius: 0.6rem 0.6rem 0 0;
-  font-feature-settings: "pnum" on, "lnum" on;
-  box-sizing: border-box;
-  cursor: text;
+.chance-number, .chanceItem > h5 {
+    font-size: 1.3rem;
+    font-family: 'Raleway-Bold', sans-serif;
+    color: #ffffff;
+    background: var(--blue-accent-color);
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    width: fit-content;
 }
 
-.editable-product-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-  opacity: 0.5;
+.chance-fields-row {
+    display: flex;
+    gap: 1rem;
 }
 
-.editable-product-input:focus {
-  outline: none;
+.field-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-/* Estilos para las opciones filtradas */
-.list-select-custom li[style*="display: none"] {
-  display: none !important;
+.field-block label {
+    font-size: 1.2rem;
+    color: var(--white-800-50);
 }
 
-/* Estilo para el elemento activo en navegación por teclado */
-.list-select-custom li.active {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  color: var(--third-color);
-  font-weight: 600;
+.input-container-relative {
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
-/* Estilo cuando hay un elemento activo y está seleccionado */
-.list-select-custom li.active.selected {
-  background-color: rgba(255, 255, 255, 0.3) !important;
+.input-icon {
+    position: absolute;
+    left: 1.2rem;
+    font-size: 1.25rem;
+    color: var(--white-800-50);
 }
 
-/* Transición suave para los cambios de estado */
-.list-select-custom li {
-  transition: background-color 0.15s ease, color 0.15s ease;
+.input-container-relative .modern-input {
+    padding-left: 3.2rem;
+    height: 3.8rem;
 }
 
-/* Asegurar que el icono de desplegar esté visible y funcional */
-.select-search .iconDesplegar {
-  z-index: 10;
-  pointer-events: auto;
+/* Quitar Chance button */
+.quitarChanceButton {
+    align-self: flex-end;
+    margin-top: 0.5rem;
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    padding: 0.6rem 1.2rem;
+    font-size: 1.2rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-/* Estado cuando el select está abierto */
-/* #productoWrapper #contenedorProductos.open {
-  z-index: 100;
-} */
-
-/* Aumentar el espacio entre el input y el primer resultado */
-.select-search .list-select-custom {
-  top: calc(100% + 0.2rem);
-  border-radius: 0 0 0.6rem 0.6rem;
-  border-top: none;
+.quitarChanceButton:hover {
+    background: var(--danger-color);
+    color: #ffffff;
+    border-color: var(--danger-color);
 }
 
-/* Aumentar el padding superior del primer elemento de la lista */
-.select-search .list-select-custom > li:first-child {
-  padding-top: 1rem;
+/* Action Footer */
+.action-footer {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 1.8rem 2.5rem;
+    margin-top: 1rem;
 }
 
-/* Estilo para el mensaje cuando no hay productos que coincidan */
-.select-search .list-select-custom li.no-results-message {
-  padding: 1rem 2rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: clamp(1rem, 1vw, 1.3rem);
-  font-family: raleway;
-  text-align: center;
-  font-style: italic;
-  cursor: default;
-  pointer-events: none;
-  background-color: transparent !important;
-  border: none;
-  opacity: 0.7;
+/* Mensaje de campos obligatorios sin completar */
+.missing-fields-msg {
+    flex: 1 1 auto;
+    text-align: left;
+    font-size: 1.3rem;
+    color: var(--danger-color);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
 }
 
-/* Mejoras visuales para el wrapper del producto */
-.select-search .containerInputAndOptions {
-  position: relative;
+.missing-fields-msg.active {
+    opacity: 1;
+    visibility: visible;
 }
 
-/* Asegurar que el input editable ocupe todo el espacio disponible */
-.select-search .pseudo-input-select-wrapper .editable-product-input {
-  flex: 1;
-  width: 100%;
+.btn-save, .btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 1.2rem 2.8rem;
+    font-size: 1.45rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    text-decoration: none;
+    border: none;
+    outline: none;
 }
 
-/* Estilo para cuando el producto está desactivado */
-.select-search.desactive .editable-product-input {
-  background-color: #393e4c;
-  color: rgba(255, 255, 255, 0.4);
-  cursor: not-allowed;
-  pointer-events: none;
+.btn-save {
+    background: linear-gradient(135deg, var(--blue-accent-color), #006ecf);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(6, 137, 250, 0.3);
 }
 
-.select-search.desactive .pseudo-input-select-wrapper {
-  border-color: #243247;
-  background-color: #393e4c;
-  pointer-events: none;
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 137, 250, 0.45);
+    filter: brightness(1.1);
 }
 
-/* Scrollbar personalizado para la lista de productos */
-.select-search .list-select-custom::-webkit-scrollbar {
-  width: 6px;
+.btn-save:disabled {
+    opacity: 0.55;
+    pointer-events: none;
+    transform: none;
+    box-shadow: none;
 }
 
-.select-search .list-select-custom::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+.btn-cancel {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(231, 76, 60, 0.2);
 }
 
-.select-search .list-select-custom::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+.btn-cancel:hover {
+    background: var(--danger-color);
+    color: #ffffff;
+    border-color: var(--danger-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
 }
 
-.select-search .list-select-custom::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-/* #endregion */
-
-/* Que la lista no tape al input cuando está cerrada */
-.select-search .options {
-  pointer-events: none;
-}
-.select-search .options.open {
-  pointer-events: auto;
+/* Chrome/Safari input spin hide */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
-/* El input visible ocupa el alto y es escribible */
-.select-search .pseudo-input-select-wrapper {
-  pointer-events: auto;
+/* Firefox spin hide */
+input[type="number"] {
+    -moz-appearance: textfield;
 }
-.select-search .editable-product-input {
-  width: 100%;
-  min-height: 3rem;
-  max-height: 3.5rem;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: var(--third-color);
-  font-size: clamp(1.2rem, 1.2vw, 1.4rem);
-  padding: 0 1rem;
-  box-sizing: border-box;
+
+/* Chrome/Firefox date pointer */
+.cursor-pointer {
+    cursor: pointer !important;
+}
+
+/* Error message styling */
+#form_create_sale p.message-error {
+    font-size: 1.15rem;
+    font-family: 'Raleway-SemiBold', sans-serif;
+    color: var(--danger-color);
+    margin-top: 0.4rem;
+    padding-left: 0.4rem;
+    position: relative;
+    top: unset;
+}
+
+
+/* ==========================================================================
+   Selects: ícono a la izquierda y texto después del ícono.
+   root_base.css se carga después de esta hoja y pisaba el padding izquierdo
+   (y el modo búsqueda lo dejaba en 0), así que el texto quedaba encima del
+   ícono; además el ícono quedaba detrás del fondo del campo por el z-index
+   inline que le asigna z_index_orders_selects.js.
+   ========================================================================== */
+.sale-creation-container .containerInputAndOptions .pseudo-input-select-wrapper {
+    padding: 0 3.2rem 0 3.6rem;
+    /* misma altura que .modern-input (4.2rem): root_base.css la dejaba en
+       height:100% con max/min-height propios, y sin fijarla se achica. */
+    height: 4.2rem;
+    min-height: 4.2rem;
+    max-height: 4.2rem;
+}
+
+.sale-creation-container .select-search .containerInputAndOptions .pseudo-input-select-wrapper {
+    padding: 0;
+}
+
+.sale-creation-container .select-search .pseudo-input-select-wrapper .editable-product-input {
+    padding: 0 3.2rem 0 3.6rem;
+    max-height: none;
+    height: 100%;
+    font-size: 1.35rem;
+}
+
+.sale-creation-container .select-embed-icon {
+    z-index: 100;
+    color: var(--white-800-80);
 }
