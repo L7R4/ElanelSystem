@@ -202,7 +202,7 @@ export function initInputCalendar(selector, options = {}) {
 
           self.selectedDates = [iso];
           self.selectedYear = now.getFullYear();
-          self.selectedMonth = now.getMonth() + 1;
+          self.selectedMonth = now.getMonth(); // selectedMonth es 0-indexado (0 = enero), igual que Date.getMonth()
           inputEl.value = formatToInput(iso);
           self.update({ dates: true, month: true, year: true });
           if (options.autoClose !== false) self.hide();

@@ -137,7 +137,7 @@ function closeOptionsList(optionsList, iconDisplay) {
 // Función para seleccionar una opción
 function toggleOption_singleSelect(hiddenInput, displayText, option, optionsList) {
     let selectedText = option.textContent;
-    let selectedValue = option.getAttribute("data-value") || selectedText;
+    let selectedValue = option.hasAttribute("data-value") ? option.getAttribute("data-value") : selectedText;
 
     // Si la opción ya está seleccionada, la deseleccionamos
     if (option.classList.contains("selected")) {

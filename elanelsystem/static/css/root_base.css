@@ -284,8 +284,13 @@ ul.list-select-custom {
   height: 0;
   overflow-y: auto;
   max-height: 16rem;
-  top: 60%;
+  /* Debajo del input, no encima: antes arrancaba al 60% y quedaba tapado por
+     el propio input, pero ahora que la lista va por encima lo pisaba. */
+  top: calc(100% + 0.4rem);
   transition: height 0.3s ease;
+  /* Alto y fijo: la lista desplegada tiene que quedar por encima de las
+     secciones que vienen después en la página (paneles con position:relative). */
+  z-index: 500;
 }
 
 ul.list-select-custom > li {
@@ -294,7 +299,7 @@ ul.list-select-custom > li {
 }
 
 ul.list-select-custom > li:first-child {
-  padding-top: 2rem;
+  padding-top: 1rem;
 }
 
 ul.list-select-custom > li.selected {
